@@ -61,6 +61,7 @@ export class Game {
   ) {
     this.fp = new FPWeapon('usmcAssault', quality.id);
     this.fp.showCasings = quality.id !== 'low';
+    this.fp.onShot = () => this.audio.shot();
     camera.add(this.fp.root);
     this.effects = new Effects(quality.maxDecals);
     scene.add(this.effects.root);
@@ -120,8 +121,9 @@ export class Game {
     const eye = this.camera.position;
     for (const e of this.driver.takeEvents()) {
       if (e.type === 'shot') {
-        if (e.owner === this.driver.localId) this.audio.shot();
-        else {
+        if (e.owner === this.driver.localId) {
+          /* vlastní zvuk/záblesk už přehrála predikce (FPWeapon.onShot) */
+        } else {
           const d = Math.hypot(e.origin.x - eye.x, e.origin.y - eye.y, e.origin.z - eye.z);
           const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
           const dir = new THREE.Vector3(e.origin.x - eye.x, 0, e.origin.z - eye.z).normalize();

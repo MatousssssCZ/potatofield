@@ -79,6 +79,13 @@ export class InputSystem {
   onLockChange: (locked: boolean) => void = () => {};
   onMenuKey: () => void = () => {};
   onDevKey: () => void = () => {};
+  /** Klávesy týmového UI (chat, rádio, rozkazy, četa, skóre) – nejsou bojové akce. */
+  onUiKey: (code: string, down: boolean) => boolean = () => false;
+  /** Dočasné potlačení střelby (otevřené rádiové kolo – klik potvrzuje povel). */
+  suppressFire = false;
+  /** Pohyb myši při otevřeném kole (místo otáčení pohledu). */
+  onUiMouse: ((dx: number, dy: number) => void) | null = null;
+  onUiClick: (() => void) | null = null;
   private layout: Map<string, string> | null = null;
   private listeners: Array<[EventTarget, string, EventListener, AddEventListenerOptions?]> = [];
 
@@ -153,6 +160,10 @@ export class InputSystem {
       this.onMenuKey();
       return;
     }
+    if (!e.repeat && this.onUiKey(e.code, true)) {
+      e.preventDefault();
+      return;
+    }
     if (this.isBound(e.code)) e.preventDefault();
     if (e.repeat) return; // key repeat netvoří nové stisky
     this.held.add(e.code);
@@ -161,6 +172,7 @@ export class InputSystem {
 
   private keyUp(e: KeyboardEvent) {
     this.held.delete(e.code);
+    if (this.locked) this.onUiKey(e.code, false);
   }
 
   private mouse(e: MouseEvent, down: boolean) {
@@ -171,12 +183,20 @@ export class InputSystem {
     }
     // Klik, kterým se zámek teprve získává, není výstřel.
     if (!this.locked) return;
+    if (this.onUiClick && e.button === 0) {
+      this.onUiClick();
+      return;
+    }
     this.held.add(code);
     this.pressedCodes.add(code);
   }
 
   private mouseMove(e: MouseEvent) {
     if (!this.locked) return;
+    if (this.onUiMouse) {
+      this.onUiMouse(e.movementX, e.movementY);
+      return;
+    }
     const k = this.radPerCount * this.settings.sensitivity * this.adsSensScale;
     this.look.add(e.movementX, e.movementY, k, this.settings.invertY);
     this.pendingYaw = this.look.dyaw;
@@ -203,6 +223,10 @@ export class InputSystem {
       if (pressed & BTN.CROUCH) this.crouchLatched = !this.crouchLatched;
       if (pressed & (BTN.JUMP | BTN.PRONE)) this.crouchLatched = false;
       held = this.crouchLatched ? held | BTN.CROUCH : held & ~BTN.CROUCH;
+    }
+    if (this.suppressFire) {
+      held &= ~BTN.FIRE;
+      pressed &= ~BTN.FIRE;
     }
     const [dyaw, dpitch] = this.look.take();
     this.pendingYaw = this.pendingPitch = 0;

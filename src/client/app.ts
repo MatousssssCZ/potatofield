@@ -24,6 +24,10 @@ import { QUALITY, type QualityProfile } from './render/quality';
 import { WorldView } from './render/worldView';
 import { PlaySession } from './runtime/session';
 import { GameAudio } from './runtime/audio';
+import { NetDriver } from './runtime/netDriver';
+import { TeamUi } from './ui/teamUi';
+import type { WsLike } from '../shared/net/client';
+import type { GameDriver } from './runtime/driver';
 import type { Team } from '../shared/map/schema';
 import { buildControlsUI, buildSettingsUI, loadSettings, type Settings } from './ui/settings';
 
@@ -293,7 +297,61 @@ export class App {
 
   // ---------------- režimy ----------------
 
-  async enterPlay() {
+  private teamUi: TeamUi | null = null;
+  private editorDocBeforeNet: MapDocument | null = null;
+
+  /** Připojení k autoritativnímu serveru: mapa přijde ze serveru (klient ji neposílá jako pravdu). */
+  async joinServer() {
+    const b = document.createElement('div');
+    const host = location.hostname || 'localhost';
+    b.innerHTML = `<div class="prop"><span class="lbl">Server</span><input id="mp-url" type="text" value="ws://${host}:8787"></div>
+      <div class="prop"><span class="lbl">Jméno</span><input id="mp-name" type="text" maxlength="24" value="Vojín"></div>
+      <div class="prop"><span class="lbl">Simulace RTT<small>ms (test)</small></span><input id="mp-lag" type="number" value="0" min="0" max="500"></div>
+      <div class="prop"><span class="lbl">Jitter / ztráty<small>ms / %</small></span><div class="vec" style="grid-template-columns:1fr 1fr"><input id="mp-jit" type="number" value="0" min="0" max="100"><input id="mp-loss" type="number" value="0" min="0" max="20"></div></div>
+      <div class="note">Server spustíte příkazem <code>npm run server</code>. Ovládání v síťové hře: J/K/L chat, Q rádio, T rozkaz čety, Home/P čety, Tab skóre.</div>`;
+    const ch = await modal('Multiplayer', b, [
+      { id: 'cancel', label: 'Zrušit' },
+      { id: 'ok', label: 'Připojit', primary: true },
+    ]);
+    if (ch !== 'ok') return;
+    const url = (b.querySelector('#mp-url') as HTMLInputElement).value.trim();
+    const name = (b.querySelector('#mp-name') as HTMLInputElement).value.trim() || 'Vojín';
+    const lag = Number((b.querySelector('#mp-lag') as HTMLInputElement).value) || 0;
+    const cond = { latencyMs: lag / 2, jitterMs: Number((b.querySelector('#mp-jit') as HTMLInputElement).value) || 0, lossPct: Number((b.querySelector('#mp-loss') as HTMLInputElement).value) || 0 };
+    await this.connectTo(url, name, cond);
+  }
+
+  async connectTo(url: string, name: string, cond = { latencyMs: 0, jitterMs: 0, lossPct: 0 }) {
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(url);
+    } catch (e) {
+      toast(`Neplatná adresa: ${(e as Error).message}`, 'warn');
+      return;
+    }
+    const driver = new NetDriver(ws as unknown as WsLike, name, cond);
+    toast('Připojuji…');
+    for (let i = 0; i < 100 && !driver.net.welcome && !driver.net.closed; i++) await new Promise((r) => setTimeout(r, 50));
+    const w = driver.net.welcome;
+    if (!w) {
+      driver.dispose();
+      await modal('Připojení selhalo', driver.net.closeReason || 'Server neodpověděl. Běží npm run server a je adresa správná?', [{ id: 'ok', label: 'Zavřít', primary: true }]);
+      return;
+    }
+    const v = validateMap(JSON.parse(JSON.stringify(w.map)));
+    if (!v.ok) {
+      driver.dispose();
+      await modal('Mapa serveru je neplatná', issuesList(v.issues), [{ id: 'ok', label: 'Zavřít', primary: true }]);
+      return;
+    }
+    await this.saver.flush();
+    this.editorDocBeforeNet = this.ed.doc;
+    this.openDoc(w.map, false);
+    driver.attachWorld(this.phys, [...this.ladders.values()].flat());
+    await this.enterPlay(driver);
+  }
+
+  async enterPlay(netDriver?: GameDriver) {
     if (this.mode === 'play' || this.editor.stroking) return;
     if (this.editor.terrainMode) this.editor.setTerrainMode(false);
     const v = validateMap(JSON.parse(JSON.stringify(this.ed.doc)));
@@ -303,7 +361,7 @@ export class App {
     }
     let spawn = this.ed.doc.testSpawn?.position ?? [0, 0, 0];
     const yaw = this.ed.doc.testSpawn?.rotation[1] ?? 0;
-    const issue = this.spawnIssue();
+    const issue = netDriver ? undefined : this.spawnIssue();
     if (issue) {
       const safe = this.findSafeSpawn();
       const choice = await modal(
@@ -326,7 +384,7 @@ export class App {
     // Volba režimu: volný test od markeru, nebo Conquest (scénář + tým), má-li mapa body.
     let mode: { conquest: boolean; scenarioId?: string; team: Team } = { conquest: false, team: 'teamA' };
     const doc = this.ed.doc;
-    if (doc.controlPoints.length && doc.scenarios.length && !this.forceFreeTest) {
+    if (doc.controlPoints.length && doc.scenarios.length && !this.forceFreeTest && !netDriver) {
       const b = document.createElement('div');
       b.innerHTML = `<div class="prop"><span class="lbl">Scénář</span><select id="pm-sc">${doc.scenarios.map((x) => `<option value="${x.id}">${x.name.replace(/[<>&"]/g, '')}</option>`).join('')}</select></div><div class="prop"><span class="lbl">Tým</span><select id="pm-team"><option value="teamA">Tým A</option><option value="teamB">Tým B</option></select></div><div class="note">Conquest běží lokálně (bez botů): zabírání, tickety, respawn a zóny podle scénáře.</div>`;
       const ch = await modal('Testovat', b, [
@@ -359,8 +417,9 @@ export class App {
       { sensitivity: s.sensitivity, invertY: s.invertY, crouchToggle: s.crouchToggle },
       { hFov: s.hFov, bob: s.bob, landingKick: s.landingKick },
       CAMERA.radiansPerCount,
-      mode,
+      { ...mode, driver: netDriver },
     );
+    if (netDriver instanceof NetDriver) this.teamUi = new TeamUi(netDriver, this.session.input, this.ed.doc);
     const inp = this.session.input;
     inp.onDevKey = () => this.toggleDev();
     inp.onMenuKey = () => inp.releaseLock();
@@ -404,6 +463,8 @@ export class App {
 
   exitPlay() {
     if (this.mode !== 'play' || !this.session) return;
+    this.teamUi?.dispose();
+    this.teamUi = null;
     this.session.dispose();
     this.audio.suspend();
     this.session = null;
@@ -427,6 +488,11 @@ export class App {
     this.camera.updateProjectionMatrix();
     this.resize();
     this.uiDirty = true;
+    if (this.editorDocBeforeNet) {
+      const d = this.editorDocBeforeNet;
+      this.editorDocBeforeNet = null;
+      this.openDoc(d, false);
+    }
   }
 
   private toggleDev() {
@@ -491,6 +557,7 @@ export class App {
     });
 
     $('#tb-play').addEventListener('click', () => void this.enterPlay());
+    $('#tb-net').addEventListener('click', () => void this.joinServer());
     $('#btn-resume').addEventListener('click', () => void this.lockPointer());
     $('#btn-editor').addEventListener('click', () => this.exitPlay());
     $('#btn-settings').addEventListener('click', () => $('#settings').classList.toggle('hidden'));
@@ -733,6 +800,7 @@ export class App {
     this.renderer.info.reset();
     if (this.session) {
       this.session.update(dt);
+      if (this.teamUi) this.teamUi.update(this.session.game.driver.local(), this.session.game.driver.remotes());
       this.updateHud();
     } else {
       this.editor.update(dt);

@@ -84,6 +84,9 @@ export class FPWeapon {
   private casingGeo: THREE.BufferGeometry;
   private casingMat: THREE.MeshStandardMaterial;
   private lastSeq = -1;
+  private maxSeq = -1;
+  /** Vlastní výstřel (jednou na shotSeq – korekce/predikce efekt nezopakuje). */
+  onShot: () => void = () => {};
   // stav prezentace
   private kick = 0;
   private kickV = 0;
@@ -281,13 +284,17 @@ export class FPWeapon {
 
     // Kopnutí při výstřelu: pružina (impulsy se skládají, nerestartují animaci).
     if (ws && ws.shotSeq !== this.lastSeq) {
-      if (this.lastSeq >= 0 && ws.shotSeq > this.lastSeq) {
+      if (this.lastSeq >= 0 && ws.shotSeq > this.maxSeq) {
+        this.maxSeq = ws.shotSeq;
+        this.onShot();
         this.kickV += 9 * (1 - 0.3 * e);
         this.flashUntil = this.time + 0.045;
         this.flash.rotation.z = Math.random() * Math.PI;
         this.flash.scale.setScalar(0.85 + Math.random() * 0.4);
         if (this.showCasings) this.ejectCasing();
       }
+      if (this.lastSeq < 0) this.maxSeq = ws.shotSeq;
+      if (ws.shotSeq < this.lastSeq) this.maxSeq = Math.max(this.maxSeq, this.lastSeq);
       this.lastSeq = ws.shotSeq;
     }
     this.kickV += (-this.kick * 420 - this.kickV * 28) * dt;

@@ -105,10 +105,47 @@ export function buildStreetMap(): MapDocument {
     terrain: streetTerrain(),
     environment: { ...DEFAULT_ENVIRONMENT, sunAzimuthDeg: 235, sunElevationDeg: 52 },
     objects,
-    controlPoints: [],
-    spawnPoints: [],
-    zones: [],
-    scenarios: [],
+    // Testovací Conquest data pro síťový pilot (autor si první čtyřbodovou mapu postaví sám).
+    controlPoints: [
+      { id: 'cp_baseA', name: 'Základna A', position: [0, 0.08, 9], radius: 8, height: 4, defaultOwner: 'teamA', capturable: false, spawnEnabled: true, countsForBleed: false },
+      { id: 'cp_market', name: 'Tržiště', position: [-5, 0.15, -20], radius: 9, height: 4, defaultOwner: 'neutral', capturable: true, spawnEnabled: true, countsForBleed: true },
+      { id: 'cp_cross', name: 'Křižovatka', position: [0, 0.06, -33.5], radius: 10, height: 4, defaultOwner: 'neutral', capturable: true, spawnEnabled: true, countsForBleed: true },
+      { id: 'cp_hotel', name: 'Hotel', position: [-4.5, 0.15, -46], radius: 9, height: 4, defaultOwner: 'neutral', capturable: true, spawnEnabled: true, countsForBleed: true },
+      { id: 'cp_baseB', name: 'Základna B', position: [0, 0.06, -68], radius: 8, height: 4, defaultOwner: 'teamB', capturable: false, spawnEnabled: true, countsForBleed: false },
+    ],
+    spawnPoints: [
+      ...[-2, 0, 2].map((x, i) => ({ id: `sa${i}`, position: [x, 0.1, 10] as [number, number, number], yaw: 0, teams: ['teamA' as const], controlPointId: 'cp_baseA' })),
+      ...[-2, 0, 2].map((x, i) => ({ id: `sb${i}`, position: [x, 0.1, -69] as [number, number, number], yaw: Math.PI, teams: ['teamB' as const], controlPointId: 'cp_baseB' })),
+      ...(['teamA', 'teamB'] as const).flatMap((t) => [
+        { id: `sm_${t}`, position: [-6.5, 0.2, -17] as [number, number, number], yaw: 0, teams: [t], controlPointId: 'cp_market' },
+        { id: `sc_${t}`, position: [2.5, 0.1, -30] as [number, number, number], yaw: 0, teams: [t], controlPointId: 'cp_cross' },
+        { id: `sh_${t}`, position: [-6, 0.2, -50] as [number, number, number], yaw: Math.PI, teams: [t], controlPointId: 'cp_hotel' },
+      ]),
+    ],
+    zones: [
+      { id: 'zone_baseA', kind: 'forbidden', center: [0, 3, 9], halfExtents: [7, 4, 5], yaw: 0, appliesTo: ['teamB'], countdown: 10 },
+      { id: 'zone_baseB', kind: 'forbidden', center: [0, 3, -68], halfExtents: [7, 4, 5], yaw: 0, appliesTo: ['teamA'], countdown: 10 },
+    ],
+    scenarios: [
+      { id: 'sc_bases', name: 'Dvě základny', overrides: [], tickets: { teamA: 100, teamB: 100 }, timeLimit: 1200, respawnDelay: 10, captureTime: 10, neutralizeTime: 10, bleedInterval: 5, zoneIds: ['zone_baseA', 'zone_baseB'] },
+      {
+        id: 'sc_defense',
+        name: 'Obrana města',
+        overrides: [
+          { controlPointId: 'cp_market', defaultOwner: 'teamB' },
+          { controlPointId: 'cp_cross', defaultOwner: 'teamB' },
+          { controlPointId: 'cp_hotel', defaultOwner: 'teamB' },
+          { controlPointId: 'cp_baseB', disabled: true },
+        ],
+        tickets: { teamA: 150, teamB: 100 },
+        timeLimit: 1200,
+        respawnDelay: 10,
+        captureTime: 10,
+        neutralizeTime: 10,
+        bleedInterval: 5,
+        zoneIds: ['zone_baseA'],
+      },
+    ],
     testSpawn: { position: [1.5, 0.08, 6], rotation: [0, 0, 0] },
   };
 }

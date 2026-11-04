@@ -98,6 +98,8 @@ export class MatchSim {
   events: SimEvent[] = [];
   private seed: number;
   ladders: LadderDef[] = [];
+  /** Spawn u velitele čety (řeší server): vrací pozici nebo důvod odmítnutí. */
+  squadSpawn?: (p: SimPlayer, leaderId: string) => { pos: V3; yaw: number } | string;
 
   constructor(
     readonly phys: PhysicsWorld,
@@ -169,7 +171,12 @@ export class MatchSim {
     if (this.time < p.respawnAt - 1e-9) return 'respawn ještě neuplynul';
     if (this.conquest?.ended) return 'zápas skončil';
     let pos: V3, yaw = 0;
-    if (this.conquest) {
+    if (spawnId?.startsWith('squad:') && this.squadSpawn) {
+      const r = this.squadSpawn(p, spawnId.slice(6));
+      if (typeof r === 'string') return r;
+      pos = r.pos;
+      yaw = r.yaw;
+    } else if (this.conquest) {
       const opts = this.spawnOptions(p.team);
       const sp = opts.find((s) => s.id === spawnId) ?? (spawnId === null ? undefined : null);
       if (sp === null) return 'spawn není pro tým dostupný';
@@ -200,7 +207,7 @@ export class MatchSim {
     return null;
   }
 
-  private spawnFree(pos: V3, self: SimPlayer) {
+  spawnFree(pos: V3, self: SimPlayer) {
     for (const o of this.players.values()) {
       if (o === self || !o.alive) continue;
       if (Math.hypot(o.state.pos.x - pos.x, o.state.pos.z - pos.z) < 0.8 && Math.abs(o.state.pos.y - pos.y) < 1.8) return false;
@@ -208,7 +215,7 @@ export class MatchSim {
     return self.ctrl.fits(this.cfg.stances.stand.height, 0, { ...pos, y: pos.y + 0.03 });
   }
 
-  private kill(p: SimPlayer, killer: string | null, cause: 'weapon' | 'zone' | 'fall') {
+  kill(p: SimPlayer, killer: string | null, cause: 'weapon' | 'zone' | 'fall') {
     if (!p.alive) return;
     p.alive = false;
     p.hp = 0;

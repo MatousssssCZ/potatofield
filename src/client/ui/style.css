@@ -902,3 +902,129 @@ kbd {
 .h-death button:disabled {
   opacity: 0.4;
 }
+
+/* ---------- Týmové UI (síť) ---------- */
+.tui-log {
+  position: absolute;
+  left: 16px;
+  bottom: 70px;
+  width: min(460px, 60vw);
+  font-size: 12px;
+  text-shadow: 0 1px 2px #000;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tui-log div {
+  transition: opacity 1s;
+}
+.tui-log div.old {
+  opacity: 0.25;
+}
+.tui-log .ch-team {
+  color: #8fb8f0;
+}
+.tui-log .ch-squad {
+  color: #7fe07f;
+}
+.tui-log .ch-all {
+  color: #eadfc8;
+}
+.tui-log .ch-system {
+  color: #d9a441;
+}
+.tui-log .ch-radio {
+  color: #ffd27a;
+}
+.tui-chat {
+  position: absolute;
+  left: 16px;
+  bottom: 44px;
+  pointer-events: auto;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 8px;
+  font: 700 12px var(--font);
+}
+.tui-chat input {
+  width: min(380px, 50vw);
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  font: 13px var(--font);
+  outline: none;
+}
+.tui-radial {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 360px;
+  height: 360px;
+  margin: -180px 0 0 -180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.15) 18%, rgba(10, 9, 7, 0.65) 19%);
+}
+.tui-radial div {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font: 600 12px var(--font);
+  text-align: center;
+  width: 110px;
+  padding: 4px;
+  text-shadow: 0 1px 2px #000;
+}
+.tui-radial div.on {
+  background: var(--accent);
+  color: var(--accent-ink);
+  text-shadow: none;
+}
+.tui-map {
+  position: absolute;
+  right: 14px;
+  top: 64px;
+  width: 200px;
+  height: 200px;
+}
+.tui-squad,
+.tui-score,
+.tui-order {
+  position: absolute;
+  left: 50%;
+  top: 18%;
+  transform: translateX(-50%);
+  background: rgba(20, 17, 13, 0.9);
+  border: 1px solid var(--line);
+  padding: 12px;
+  pointer-events: auto;
+  min-width: 300px;
+  font-size: 12px;
+}
+.tui-score {
+  display: flex;
+  gap: 40px;
+}
+.tui-squad .sq {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px;
+  margin: 6px 0;
+}
+.tui-squad .sq span {
+  grid-column: 1;
+  color: var(--dim);
+}
+.tui-squad button,
+.tui-order button {
+  font: 600 12px var(--font);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.tui-order {
+  top: 30%;
+  pointer-events: none;
+}
