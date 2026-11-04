@@ -26,6 +26,8 @@ export interface AssetDef {
   defaultMaterial: string;
   /** Povolit jednotné zvětšení rigidní rekvizity (parametrické typy ne). */
   uniformScale?: { min: number; max: number };
+  /** Rozměrové handly: osa gizma → parametr generátoru (mění parametry, ne mesh.scale). */
+  sizeParams?: { x?: string; y?: string; z?: string };
   generate(p: Params, seed: number, material: string): Part[];
 }
 

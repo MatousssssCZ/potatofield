@@ -4,13 +4,14 @@ import { registerAsset, type Params } from '../registry';
 
 const n = (p: Params, k: string) => p[k] as number;
 
-const SURFACE_MATERIALS = ['concrete', 'plaster', 'plasterWarm', 'brick', 'paintedMetal', 'wood', 'asphalt', 'paving', 'sandstone'];
+const SURFACE_MATERIALS = ['concrete', 'concreteLight', 'plaster', 'plasterWarm', 'plasterWhite', 'brick', 'sandstone', 'paving', 'asphalt', 'wood', 'woodDark', 'metal', 'paintedMetal', 'paintedMetalBlue', 'paintedMetalRed'];
 
 registerAsset({
   assetId: 'prim.box',
   label: 'Kvádr',
   category: 'primitives',
   generatorVersion: 1,
+  sizeParams: { x: 'width', y: 'height', z: 'depth' },
   params: [
     { key: 'width', label: 'Šířka', type: 'number', min: 0.05, max: 200, step: 0.05, unit: 'm', default: 2 },
     { key: 'height', label: 'Výška', type: 'number', min: 0.05, max: 100, step: 0.05, unit: 'm', default: 2 },
@@ -29,6 +30,7 @@ registerAsset({
   label: 'Rampa / svah',
   category: 'primitives',
   generatorVersion: 1,
+  sizeParams: { x: 'width', z: 'length' },
   params: [
     { key: 'width', label: 'Šířka', type: 'number', min: 0.5, max: 50, step: 0.25, unit: 'm', default: 3 },
     { key: 'length', label: 'Délka (půdorys)', type: 'number', min: 0.5, max: 50, step: 0.25, unit: 'm', default: 4 },
@@ -48,6 +50,7 @@ registerAsset({
   label: 'Válec / sloup',
   category: 'primitives',
   generatorVersion: 1,
+  sizeParams: { x: 'diameter', y: 'height', z: 'diameter' },
   params: [
     { key: 'diameter', label: 'Průměr', type: 'number', min: 0.05, max: 20, step: 0.05, unit: 'm', default: 0.6 },
     { key: 'height', label: 'Výška', type: 'number', min: 0.05, max: 50, step: 0.05, unit: 'm', default: 3 },
@@ -115,6 +118,7 @@ registerAsset({
   label: 'Betonová bariéra',
   category: 'cover',
   generatorVersion: 1,
+  sizeParams: { x: 'length' },
   params: [{ key: 'length', label: 'Délka', type: 'number', min: 1, max: 6, step: 0.5, unit: 'm', default: 3 }],
   materials: ['concrete', 'concreteLight'],
   defaultMaterial: 'concreteLight',
@@ -175,6 +179,7 @@ registerAsset({
   label: 'Metrová značka',
   category: 'range',
   generatorVersion: 1,
+  sizeParams: { x: 'width' },
   params: [
     { key: 'width', label: 'Šířka', type: 'number', min: 0.5, max: 50, step: 0.5, unit: 'm', default: 6 },
     { key: 'major', label: 'Hlavní', type: 'bool', default: false },
@@ -194,6 +199,7 @@ registerAsset({
   label: 'Pytle s pískem',
   category: 'cover',
   generatorVersion: 1,
+  sizeParams: { x: 'length' },
   params: [
     { key: 'length', label: 'Délka', type: 'number', min: 1, max: 8, step: 0.5, unit: 'm', default: 2.5 },
     { key: 'rows', label: 'Řady', type: 'int', min: 1, max: 4, step: 1, default: 3 },

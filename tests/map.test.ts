@@ -102,3 +102,13 @@ describe('pohled myší', () => {
     expect(d(p30, p144)).toBeLessThan(0.1);
   });
 });
+
+describe('materiály referenčních map', () => {
+  it('každý materiál objektu v mapě je pro jeho typ povolený (jinak by se tiše vykreslil jiný)', async () => {
+    const { getAsset } = await import('../src/world');
+    for (const o of buildRangeMap().objects) {
+      if (!o.material) continue;
+      expect(getAsset(o.assetId)!.materials, `${o.id} ${o.assetId}`).toContain(o.material);
+    }
+  });
+});

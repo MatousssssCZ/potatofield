@@ -30,15 +30,25 @@ Legenda: `[x]` hotovo a ověřeno testem/během, `[~]` částečně, `[ ]` zbýv
 - [ ] Výkonové měření na i5-1335U (čeká na zařízení; měření v tomto prostředí neproběhlo)
 
 ## Krok 2 – editor a přepnutí
-- [ ] Rozložení (katalog / viewport / inspektor / nástroje / stav), sbalitelné panely, 1366×768
-- [ ] Volná kamera RMB+WASD, výběr LMB/Ctrl/rámeček, gizma W/E/R, F, Delete, Ctrl+D
-- [ ] Mřížka 0,25–2 m, snap rotace, číselné zadání, lokální/světové osy, skupinový pivot
-- [ ] Testovací marker, „Testovat“/F5, runtime kopie dokumentu, Esc → menu → zpět do editoru
-- [ ] Test: 20 přepnutí bez nárůstu entit/listenerů
+- [x] Rozložení (katalog / viewport / vlastnosti / nástroje / stav), sbalitelné panely, ověřeno 1366×768
+- [x] Volná kamera RMB+WASD+Q/E, Shift, kolečko; výběr LMB / Ctrl+LMB / rámeček; klik na gizmo nevybírá
+- [x] Gizma W/E/R (TransformControls), F, Delete, Ctrl+D, Esc
+- [x] Mřížka 0,25–2 m, rotace 15°/90°/volná, Alt vypne snap; číselné zadání s jednotkami a mezemi
+- [x] Lokální/světové osy, společný pivot skupiny, hromadný posun/rotace, blokace nejednotného škálování skupiny
+- [x] Testovací marker, „Testovat“/F5, validace a runtime kopie dokumentu, kontrola spawnu + nabídka opravy
+- [x] Esc → menu → „Zpět do editoru“/F5; obnoví kameru, výběr i historii
+- [x] 20 přepnutí: scéna 399 → 399 objektů, listenery 9 → 9, kolize 88 → 88, geometrie stabilní (+1 po zahřátí)
+- [x] Psaní do polí nehýbe kamerou, nemaže a nestřílí (ověřeno skutečnými událostmi)
+- [x] Skrýt/zamknout objekt (jen editor) vs. skrýt ve hře (render + kolize)
 
 ## Krok 3 – historie a persistence
-- [ ] Undo/redo (jedno tažení = jedna položka), duplikace se správnými vazbami
-- [ ] IndexedDB, autosave s debounce, poslední dobrá verze, export/import JSON, kvóta → nabídka exportu
+- [x] Undo/redo příkazů; jedno tažení = jedna položka; pořadí objektů se obnoví přesně (test)
+- [x] Sekvence vložení → posun → parametr → duplikace → smazání se vrátí i zopakuje do shodného stavu (test)
+- [x] Duplikace: nové ID, stejné parametry i seed, vnitřní skupiny přemapované
+- [x] IndexedDB, autosave s debounce a stavem, záloha poslední dobré verze, obnovení po zavření (ověřeno)
+- [x] Export/import JSON se zachováním ID, parametrů, prostředí, spawnu; chybný import nic nepřepíše (ověřeno)
+- [x] Plné úložiště → chyba ve stavovém řádku s výzvou k exportu (ověřeno simulací)
+- [ ] Migrace schématu (zatím jen verze 1 – první migrace přijde s první změnou formátu)
 
 ## Krok 4 – parametrické objekty
 - [ ] Plot/zeď (10 m → 5 polí, 11 m → 6 polí), napojování koncových bodů

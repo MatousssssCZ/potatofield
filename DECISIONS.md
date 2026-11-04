@@ -55,6 +55,21 @@ Všechny číselné hodnoty jsou návrhy Potatofieldu (`proposed`), ne změřen�
 - Profily kvality mění render scale, DPR, stíny, rozlišení textur a AO. **Nemění** kolize, herní mlhu ani kryty.
 - Výchozí profil je **Vysoká** (autor má výkonné PC); měření na i5-1335U se dělá na Nízké podle zadání.
 
+## Editor
+- Jedna scéna, jeden renderer, **jedna kamera** pro editor i test; editor si pamatuje pozici kamery,
+  výběr a historii. Test pracuje s runtime kopií dokumentu; kolize jsou sdílené, protože se v testu
+  nemění (žádná destrukce).
+- Každá změna mapy je příkaz se stavem objektu *před* a *po* (ne diff polí) – jednoduché, robustní,
+  undo vrací přesný autorský stav včetně pořadí.
+- Při změně objektu se přegeneruje jen on: render i kolize (stará geometrie se uvolní).
+- Rotace gizmem jen kolem svislé osy (městská stavebnice; X/Z rotace by rozbily parametrické stavby).
+- Během tažení rozměrového handlu je jen lehký náhled (natažení existujícího meshe); po puštění se
+  hodnota přepočte na parametry generátoru, přichytí na mřížku a ořízne do mezí, mesh se přegeneruje.
+- Dočasné vypnutí přichycení: **Alt** (Ctrl je výběr, Shift rychlost kamery).
+- Při prvním spuštění se otevře šablona střelnice, ať je co prohlížet; „Nová mapa“ je v menu Mapa.
+  Šablona dostane vlastní ID, takže úpravy nepřepíší referenční soubor.
+- Nejbližší volné místo pro spawn: spirála po 0,5 m do 40 m, položení paprskem na povrch, test kapslí hráče.
+
 ## Dočasné / placeholdery
 - Puška ve FP je 3D placeholder z kvádrů bez rukou a střelby (krok 6 dodá PF-Rifle s rukama a ADS).
 - Figuríny na střelnici zatím nemají hitboxy (krok 7 – projektily).

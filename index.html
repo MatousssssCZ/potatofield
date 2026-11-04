@@ -6,25 +6,85 @@
     <title>Potatofield</title>
     <link rel="stylesheet" href="/src/client/ui/style.css" />
   </head>
-  <body>
-    <canvas id="view"></canvas>
-    <div id="hud" class="hidden">
-      <div id="crosshair"><i class="t"></i><i class="b"></i><i class="l"></i><i class="r"></i></div>
-      <div id="stamina"><div class="bar"><div class="fill"></div></div></div>
-      <div id="stance"></div>
+  <body class="mode-editor">
+    <div id="app">
+      <header id="toolbar">
+        <div class="tb-group">
+          <span class="logo">POTATOFIELD</span>
+          <button id="tb-map" title="Mapy: nová, otevřít, import, export">Mapa ▾</button>
+          <span id="tb-mapname" class="mapname"></span>
+        </div>
+        <div class="tb-group">
+          <button id="tb-undo" title="Zpět (Ctrl+Z)">↶</button>
+          <button id="tb-redo" title="Znovu (Ctrl+Shift+Z / Ctrl+Y)">↷</button>
+          <span class="sep"></span>
+          <button class="tool" data-tool="translate" title="Posun (W)">✥ Posun</button>
+          <button class="tool" data-tool="rotate" title="Rotace (E)">⟳ Rotace</button>
+          <button class="tool" data-tool="scale" title="Rozměry (R)">⤢ Rozměry</button>
+          <span class="sep"></span>
+          <button id="tb-space" title="Osy gizma: světové / lokální">Svět</button>
+          <button id="tb-check" title="Kontrola mapy">✓ Kontrola</button>
+        </div>
+        <div class="tb-group">
+          <button id="tb-play" class="primary" title="Testovat (F5)">▶ Testovat <kbd>F5</kbd></button>
+        </div>
+      </header>
+      <aside id="left" class="panel">
+        <div class="panel-head">
+          <div class="tabs"><button data-tab="catalog" class="on">Katalog</button><button data-tab="scene">Scéna</button></div>
+          <button class="collapse" data-collapse="left" title="Sbalit panel">«</button>
+        </div>
+        <div class="tab-body" data-body="catalog">
+          <input id="cat-search" type="search" placeholder="Hledat…" autocomplete="off" />
+          <div id="cat-list"></div>
+        </div>
+        <div class="tab-body hidden" data-body="scene"><div id="scene-list"></div></div>
+      </aside>
+      <main id="viewport">
+        <canvas id="view"></canvas>
+        <button class="expand hidden" data-expand="left" title="Rozbalit katalog">»</button>
+        <button class="expand hidden" data-expand="right" title="Rozbalit vlastnosti">«</button>
+        <div id="hud" class="hidden">
+          <div id="crosshair"><i class="t"></i><i class="b"></i><i class="l"></i><i class="r"></i></div>
+          <div id="stamina"><div class="bar"><div class="fill"></div></div></div>
+          <div id="stance"></div>
+        </div>
+        <div id="dev" class="hidden"></div>
+        <div id="toasts"></div>
+        <div id="viewhint">RMB + WASD kamera · Q/E dolů/nahoru · Shift rychleji · kolečko přiblížení · LMB výběr · Ctrl+LMB přidat · tažení = rámeček · Alt = bez přichycení</div>
+      </main>
+      <aside id="right" class="panel">
+        <div class="panel-head">
+          <span class="title">Vlastnosti</span>
+          <button class="collapse" data-collapse="right" title="Sbalit panel">»</button>
+        </div>
+        <div id="inspector"></div>
+      </aside>
+      <footer id="status">
+        <span id="st-save" class="save">●</span>
+        <label>Mřížka <select id="st-grid"><option>0.25</option><option selected>0.5</option><option>1</option><option>2</option></select> m</label>
+        <label>Rotace <select id="st-rot"><option value="15" selected>15°</option><option value="90">90°</option><option value="0">volná</option></select></label>
+        <span id="st-snap"></span>
+        <span id="st-speed"></span>
+        <span id="st-count"></span>
+        <span class="grow"></span>
+        <span id="st-hint"></span>
+      </footer>
     </div>
-    <div id="dev" class="hidden"></div>
+
     <div id="loading">
       <div class="brand">POTATOFIELD</div>
-      <div class="sub">pěchotní konflikt • technická střelnice</div>
+      <div class="sub">editor map a pěchotní konflikt</div>
       <div class="progress"><div class="fill"></div></div>
       <div class="status">Načítám…</div>
     </div>
+
     <div id="menu" class="hidden">
-      <div class="panel">
+      <div class="panel-menu">
         <div class="brand">POTATOFIELD</div>
         <div class="sub" id="menu-map"></div>
-        <button id="btn-play" class="primary">Hrát</button>
+        <button id="btn-resume" class="primary">Pokračovat</button>
+        <button id="btn-editor">Zpět do editoru <kbd>F5</kbd></button>
         <button id="btn-settings">Nastavení</button>
         <button id="btn-controls">Ovládání</button>
         <div id="settings" class="hidden sect"></div>
@@ -32,6 +92,9 @@
         <div class="hint">Esc uvolní myš a otevře menu • F3 dev panel</div>
       </div>
     </div>
+
+    <div id="modal" class="hidden"><div class="modal-box"><h3></h3><div class="modal-body"></div><div class="modal-buttons"></div></div></div>
+    <input id="file-import" type="file" accept=".json,application/json" class="hidden" />
     <script type="module" src="/src/client/main.ts"></script>
   </body>
 </html>

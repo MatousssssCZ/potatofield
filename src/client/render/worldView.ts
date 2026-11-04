@@ -12,6 +12,9 @@ import { MATERIALS, sharedUniforms, type MaterialLibrary, type TexSet } from './
 export class WorldView {
   readonly root = new THREE.Group();
   readonly objects = new Map<string, THREE.Group>();
+  /** Objekty zobrazené jako placeholder (chybějící asset / novější generátor). */
+  readonly missing = new Map<string, string>();
+  mode: 'editor' | 'play' = 'editor';
   private terrainMesh: THREE.Mesh | null = null;
   private targets: Array<{ mesh: THREE.Object3D; base: THREE.Vector3; amp: number; speed: number; axis: THREE.Vector3 }> = [];
 
@@ -30,7 +33,12 @@ export class WorldView {
 
   addObject(g: GeneratedObject) {
     const o = g.object;
+    if (this.objects.has(o.id)) this.removeObject(o.id);
+    if (g.missing) this.missing.set(o.id, g.missing);
+    else this.missing.delete(o.id);
     const group = new THREE.Group();
+    group.userData.editorHidden = !!o.editor?.hidden;
+    group.userData.gameHidden = !!o.gameHidden;
     group.name = o.id;
     group.userData.objectId = o.id;
     const [px, py, pz] = o.transform.position;
@@ -55,12 +63,24 @@ export class WorldView {
       group.add(mesh);
     }
     if (o.assetId === 'range.target') this.addTargetFigure(group, o.params);
+    this.applyVisibility(group);
     group.updateMatrixWorld(true);
     this.root.add(group);
     this.objects.set(o.id, group);
   }
 
+  private applyVisibility(g: THREE.Object3D) {
+    g.visible = this.mode === 'editor' ? !g.userData.editorHidden : !g.userData.gameHidden;
+  }
+
+  /** Editor: skrytí v editoru; hra: herní viditelnost (skrytí v editoru hru nemění). */
+  setMode(mode: 'editor' | 'play') {
+    this.mode = mode;
+    for (const g of this.objects.values()) this.applyVisibility(g);
+  }
+
   removeObject(id: string) {
+    this.missing.delete(id);
     const g = this.objects.get(id);
     if (!g) return;
     g.traverse((c) => {
