@@ -167,7 +167,7 @@ function addCylinder(b: Builder, part: Part, scale: number) {
 
 export interface ObjectGeometry {
   byMaterial: Map<string, { geometry: THREE.BufferGeometry; castShadow: boolean }>;
-  labels: Array<{ text: string; matrix: THREE.Matrix4; w: number; h: number }>;
+  labels: Array<{ text: string; style: string; matrix: THREE.Matrix4; w: number; h: number }>;
 }
 
 export function buildObjectGeometry(parts: Part[], scale = 1): ObjectGeometry {
@@ -176,7 +176,7 @@ export function buildObjectGeometry(parts: Part[], scale = 1): ObjectGeometry {
   for (const p of parts) {
     if (p.render === false) continue;
     if (p.shape === 'label') {
-      labels.push({ text: p.text ?? '', matrix: partMatrix(p, scale).clone(), w: p.size[0], h: p.size[1] });
+      labels.push({ text: p.text ?? '', style: p.material, matrix: partMatrix(p, scale).clone(), w: p.size[0], h: p.size[1] });
       continue;
     }
     const cast = p.castShadow !== false;

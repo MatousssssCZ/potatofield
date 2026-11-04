@@ -581,11 +581,14 @@ export class Editor {
         if (Math.abs(f - 1) < 1e-4) continue;
         const spec = def.params.find((q) => q.key === key)!;
         let v = (p[key] as number) * f;
-        if (!this.altHeld) v = Math.max(this.settings.grid, Math.round(v / this.settings.grid) * this.settings.grid);
+        if (spec.type === 'int') v = Math.round(v); // moduly / patra: jen celé počty
+        else if (!this.altHeld) v = Math.max(this.settings.grid, Math.round(v / this.settings.grid) * this.settings.grid);
         v = THREE.MathUtils.clamp(v, spec.min ?? 0, spec.max ?? 1e6);
         next[key] = r4(v);
       }
-      return cmds.update(this.ed, id, (obj) => Object.assign(obj.params, next), 'Rozměry');
+      const c = cmds.update(this.ed, id, (obj) => Object.assign(obj.params, next), 'Rozměry');
+      if (def.describe) this.onToast(`${def.label}: ${def.describe({ ...p, ...next })}`);
+      return c;
     }
     if (def.uniformScale) {
       const f = (s.x + s.y + s.z) / 3;

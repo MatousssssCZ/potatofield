@@ -19,6 +19,18 @@ const MATERIAL_LABELS: Record<string, string> = {
   plaster: 'Omítka',
   plasterWarm: 'Omítka okrová',
   plasterWhite: 'Omítka bílá',
+  plasterOchre: 'Omítka okrová tmavá',
+  metalSheet: 'Vlnitý plech',
+  metalSheetRust: 'Vlnitý plech rezavý',
+  containerRed: 'Červená',
+  containerBlue: 'Modrá',
+  containerGreen: 'Zelená',
+  containerSand: 'Písková',
+  awningRed: 'Červené pruhy',
+  awningBlue: 'Modré pruhy',
+  awningGreen: 'Zelené pruhy',
+  awningSand: 'Pískové pruhy',
+  acUnit: 'Klimatizace',
   brick: 'Cihla',
   sandstone: 'Pískovec',
   paving: 'Dlažba',
@@ -303,6 +315,7 @@ export function renderInspector(ed: EditorDoc, history: History, editor: Editor,
   if (def && def.params.length) {
     root.appendChild(el('div', { class: 'sec' }, 'Parametry'));
     const p = resolveParams(def, o.params);
+    if (def.describe) root.appendChild(el('div', { class: 'note' }, def.describe(p)));
     for (const spec of def.params) {
       const sub = spec.type === 'number' || spec.type === 'int' ? `${spec.min ?? ''}–${spec.max ?? ''} ${spec.unit ?? ''}`.trim() : undefined;
       root.appendChild(prop(spec.label, sub, paramControl(spec, p[spec.key], (v) => upd(spec.label, (x) => (x.params[spec.key] = v)))));

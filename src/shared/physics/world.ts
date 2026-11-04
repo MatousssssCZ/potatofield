@@ -21,11 +21,12 @@ export const GROUP = {
   BULLET_ONLY: 0x0002,
   PLAYER: 0x0004,
   BULLET: 0x0008,
+  MOVE_ONLY: 0x0010,
 } as const;
 
 const groups = (membership: number, filter: number) => ((membership & 0xffff) << 16) | (filter & 0xffff);
 
-export const MOVE_QUERY_GROUPS = groups(GROUP.PLAYER, GROUP.WORLD);
+export const MOVE_QUERY_GROUPS = groups(GROUP.PLAYER, GROUP.WORLD | GROUP.MOVE_ONLY);
 export const BULLET_QUERY_GROUPS = groups(GROUP.BULLET, GROUP.WORLD | GROUP.BULLET_ONLY);
 
 export interface RayHit {
@@ -69,7 +70,7 @@ export class PhysicsWorld {
         desc = R.ColliderDesc.convexHull(new Float32Array(d.points!));
       }
       if (!desc) continue;
-      desc.setCollisionGroups(groups(d.bulletOnly ? GROUP.BULLET_ONLY : GROUP.WORLD, 0xffff));
+      desc.setCollisionGroups(groups(d.bulletOnly ? GROUP.BULLET_ONLY : d.moveOnly ? GROUP.MOVE_ONLY : GROUP.WORLD, 0xffff));
       const c = this.world.createCollider(desc);
       this.meta.set(c.handle, { surface: d.surface, objectId: d.objectId });
       const list = this.objectColliders.get(d.objectId) ?? [];

@@ -96,6 +96,8 @@ interface Px {
   r: number;
   m: number;
   ao: number;
+  /** Průhlednost (alpha test), výchozí 1. */
+  a?: number;
 }
 
 type Recipe = (u: number, v: number) => Px;
@@ -336,6 +338,97 @@ function target(seed: number): Recipe {
   };
 }
 
+
+function corrugated(seed: number, paint: string, rustAmt: number, ribs = 24): Recipe {
+  const p = hex(paint), rust = hex('#6e4126');
+  return (u, v) => {
+    const wave = Math.sin(u * Math.PI * 2 * ribs);
+    const n = fbm(u, v, 6, 5, seed);
+    const streak = smooth(0.5, 0.85, fbm(u * 1.0, v * 0.12, 10, 4, seed + 3));
+    const rustT = smooth(1 - rustAmt, 1 - rustAmt + 0.2, fbm(u, v, 5, 5, seed + 7));
+    const dent = smooth(0.7, 0.9, fbm(u, v, 3, 3, seed + 11)) * 0.3;
+    let c = mulc(p, 0.85 + n * 0.2 + wave * 0.05);
+    c = mixc(c, rust, Math.max(streak * 0.4, rustT * 0.85) * (rustAmt > 0 ? 1 : 0.3));
+    c = mulc(c, 1 - dent * 0.15);
+    return { c, h: 0.5 + wave * 0.45 - dent * 0.1, r: 0.55 + rustT * 0.35 + n * 0.1, m: 0.25 * (1 - rustT), ao: 0.85 + 0.15 * (wave * 0.5 + 0.5) };
+  };
+}
+
+function chainLink(seed: number): Recipe {
+  const m = hex('#8b8d8a');
+  return (u, v) => {
+    const k = 24;
+    const a = (u + v) * k, b = (u - v) * k;
+    const da = Math.abs(a - Math.round(a)), db = Math.abs(b - Math.round(b));
+    const wire = 1 - smooth(0.04, 0.09, Math.min(da, db));
+    const n = vnoise(u * 50, v * 50, 50, seed);
+    return { c: mulc(m, 0.75 + n * 0.3), h: wire, r: 0.5, m: 0.8, ao: 1, a: wire };
+  };
+}
+
+function bitumen(seed: number): Recipe {
+  const b = hex('#5b5650');
+  return (u, v) => {
+    const n = fbm(u, v, 4, 5, seed);
+    const g = vnoise(u * 300, v * 300, 300, seed + 1);
+    const seam = 1 - smooth(0, 0.01, Math.abs(mod(v * 3, 1) - 0.5) - 0.49);
+    const c = mulc(mixc(b, hex('#8a8173'), smooth(0.5, 0.8, n) * 0.5), 0.85 + g * 0.3 - seam * 0.2);
+    return { c, h: 0.5 + g * 0.2 + seam * 0.2, r: 0.9, m: 0, ao: 1 - seam * 0.3 };
+  };
+}
+
+function shutter(seed: number, paint: string): Recipe {
+  const p = hex(paint);
+  return (u, v) => {
+    const slats = 22;
+    const f = mod(v * slats, 1);
+    const groove = 1 - smooth(0.0, 0.12, Math.min(f, 1 - f));
+    const n = fbm(u, v, 6, 4, seed);
+    const grime = smooth(0.4, 0.9, fbm(u * 0.5, v * 1.5, 4, 4, seed + 2));
+    const graffiti = smooth(0.78, 0.8, fbm(u, v, 3, 4, seed + 9)) * (v > 0.3 && v < 0.7 ? 1 : 0);
+    let c = mulc(p, 0.85 + n * 0.2 - groove * 0.35);
+    c = mixc(c, hex('#4d443a'), grime * 0.35);
+    c = mixc(c, hex('#2c3c66'), graffiti * 0.7);
+    return { c, h: 0.6 - groove * 0.5, r: 0.6 + grime * 0.3, m: 0.3, ao: 1 - groove * 0.4 };
+  };
+}
+
+function stripes(seed: number, a: string, b2: string, count: number): Recipe {
+  const ca = hex(a), cb = hex(b2);
+  return (u, v) => {
+    const s = mod(u * count, 1) < 0.5 ? 1 : 0;
+    const n = fbm(u, v, 5, 4, seed);
+    const fade = smooth(0.4, 0.9, fbm(u, v, 3, 3, seed + 4));
+    const weave = (Math.sin(u * Math.PI * 2 * 180) * Math.sin(v * Math.PI * 2 * 180)) * 0.5 + 0.5;
+    let c = mixc(cb, ca, s);
+    c = mulc(c, 0.85 + n * 0.2 + weave * 0.05);
+    c = mixc(c, hex('#d8cdb4'), fade * 0.3);
+    return { c, h: 0.5 + weave * 0.2, r: 0.95, m: 0, ao: 1 };
+  };
+}
+
+function acUnit(seed: number): Recipe {
+  const b = hex('#cfcbc0');
+  return (u, v) => {
+    const slot = mod(v * 14, 1) < 0.35 && u > 0.08 && u < 0.92 ? 1 : 0;
+    const n = fbm(u, v, 5, 4, seed);
+    const dirt = smooth(0.3, 0.9, fbm(u, v * 0.3, 6, 4, seed + 2));
+    let c = mulc(b, 0.85 + n * 0.15 - slot * 0.5);
+    c = mixc(c, hex('#6b5a45'), dirt * 0.35);
+    return { c, h: 0.6 - slot * 0.4, r: 0.6, m: 0.1, ao: 1 - slot * 0.4 };
+  };
+}
+
+function produce(seed: number, col: string): Recipe {
+  const c0 = hex(col);
+  return (u, v) => {
+    const w = worley(u, v, 16, seed);
+    const ball = smooth(0.5, 0.1, w.d);
+    const c = mulc(c0, 0.6 + ball * 0.5 + w.id * 0.15);
+    return { c, h: ball, r: 0.6, m: 0, ao: 0.6 + ball * 0.4 };
+  };
+}
+
 export const RECIPES: Record<string, { recipe: () => Recipe; normalStrength: number }> = {
   plaster: { recipe: () => plaster('#d8c8a8', '#a68e6a', 11), normalStrength: 2.2 },
   plasterWarm: { recipe: () => plaster('#d9b98a', '#9c7a55', 23), normalStrength: 2.2 },
@@ -358,6 +451,25 @@ export const RECIPES: Record<string, { recipe: () => Recipe; normalStrength: num
   paint: { recipe: () => paint(181, '#e8e2d2'), normalStrength: 1 },
   paintDim: { recipe: () => paint(191, '#cfc6b0'), normalStrength: 1 },
   target: { recipe: () => target(201), normalStrength: 1 },
+  plasterOchre: { recipe: () => plaster('#c99a5f', '#8a6a44', 211), normalStrength: 2.2 },
+  concreteDark: { recipe: () => concrete('#6f6b63', 221, false), normalStrength: 2.5 },
+  metalSheet: { recipe: () => corrugated(231, '#a7aaa6', 0.25), normalStrength: 6 },
+  metalSheetRust: { recipe: () => corrugated(241, '#8a7f6e', 0.7), normalStrength: 6 },
+  containerRed: { recipe: () => corrugated(251, '#8f2f24', 0.3, 18), normalStrength: 6 },
+  containerBlue: { recipe: () => corrugated(261, '#2f5476', 0.3, 18), normalStrength: 6 },
+  containerGreen: { recipe: () => corrugated(271, '#3f5a3a', 0.3, 18), normalStrength: 6 },
+  containerSand: { recipe: () => corrugated(281, '#b39a6c', 0.3, 18), normalStrength: 6 },
+  chainLink: { recipe: () => chainLink(291), normalStrength: 2 },
+  roof: { recipe: () => bitumen(301), normalStrength: 2 },
+  shutter: { recipe: () => shutter(311, '#9c9a92'), normalStrength: 4 },
+  awningRed: { recipe: () => stripes(321, '#a8352a', '#e3d6bb', 8), normalStrength: 1 },
+  awningBlue: { recipe: () => stripes(331, '#2f5d8a', '#e3d6bb', 8), normalStrength: 1 },
+  awningGreen: { recipe: () => stripes(341, '#3f6b3c', '#e3d6bb', 8), normalStrength: 1 },
+  awningSand: { recipe: () => stripes(351, '#b5864a', '#e3d6bb', 6), normalStrength: 1 },
+  acUnit: { recipe: () => acUnit(361), normalStrength: 2 },
+  crateFruitA: { recipe: () => produce(371, '#c8551f'), normalStrength: 3 },
+  crateFruitB: { recipe: () => produce(381, '#c9a227'), normalStrength: 3 },
+  crateFruitC: { recipe: () => produce(391, '#5f8a2c'), normalStrength: 3 },
 };
 
 /** sRGB kódování lineární hodnoty. */
@@ -382,7 +494,7 @@ export function generateTexture(id: string, size: number): TexOutput {
       albedo[i * 4] = Math.round(toSRGB(px.c[0]) * 255);
       albedo[i * 4 + 1] = Math.round(toSRGB(px.c[1]) * 255);
       albedo[i * 4 + 2] = Math.round(toSRGB(px.c[2]) * 255);
-      albedo[i * 4 + 3] = 255;
+      albedo[i * 4 + 3] = Math.round(clamp01(px.a ?? 1) * 255);
       orm[i * 4] = Math.round(clamp01(px.ao) * 255);
       orm[i * 4 + 1] = Math.round(clamp01(px.r) * 255);
       orm[i * 4 + 2] = Math.round(clamp01(px.m) * 255);

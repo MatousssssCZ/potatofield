@@ -27,6 +27,8 @@ export interface Part {
   text?: string;
   /** Kolize dílu pouze pro střely (ne pro pohyb), např. tenké plachty. */
   bulletOnly?: boolean;
+  /** Kolize jen pro pohyb (střely projdou), např. pletivo. */
+  moveOnly?: boolean;
   /** Vrhá stín (výchozí ano). */
   castShadow?: boolean;
 }
@@ -47,6 +49,7 @@ export interface ColliderDef {
   surface: HitSurface;
   objectId: string;
   bulletOnly?: boolean;
+  moveOnly?: boolean;
 }
 
 export function objectFrame(o: MapObject) {
@@ -88,7 +91,7 @@ export function partsToColliders(o: MapObject, parts: Part[]): ColliderDef[] {
         for (let iy = 0; iy < ny; iy++)
           for (let iz = 0; iz < nz; iz++) {
             const local = { x: -half.x + ch.x * (2 * ix + 1), y: -half.y + ch.y * (2 * iy + 1), z: -half.z + ch.z * (2 * iz + 1) };
-            out.push({ kind: 'box', center: add(center, rotate(wq, local)), rotation: wq, half: ch, surface, objectId: o.id, bulletOnly: part.bulletOnly });
+            out.push({ kind: 'box', center: add(center, rotate(wq, local)), rotation: wq, half: ch, surface, objectId: o.id, bulletOnly: part.bulletOnly, moveOnly: part.moveOnly });
           }
     } else if (part.shape === 'cylinder') {
       out.push({
@@ -99,6 +102,7 @@ export function partsToColliders(o: MapObject, parts: Part[]): ColliderDef[] {
         surface,
         objectId: o.id,
         bulletOnly: part.bulletOnly,
+        moveOnly: part.moveOnly,
       });
     } else if (part.shape === 'wedge') {
       const pts: number[] = [];
@@ -106,7 +110,7 @@ export function partsToColliders(o: MapObject, parts: Part[]): ColliderDef[] {
         const w = add(center, rotate(wq, lp));
         pts.push(w.x, w.y, w.z);
       }
-      out.push({ kind: 'hull', center, rotation: wq, half, points: pts, surface, objectId: o.id, bulletOnly: part.bulletOnly });
+      out.push({ kind: 'hull', center, rotation: wq, half, points: pts, surface, objectId: o.id, bulletOnly: part.bulletOnly, moveOnly: part.moveOnly });
     }
   }
   return out;
@@ -122,4 +126,36 @@ export function wedgeLocalPoints(h: V3): V3[] {
     { x: -h.x, y: h.y, z: h.z },
     { x: h.x, y: h.y, z: h.z },
   ];
+}
+
+/** Žebřík v lokálním prostoru objektu (generátor) a ve světě (simulace). */
+export interface LadderLocal {
+  /** Střed paty žebříku (u země) v lokálních souřadnicích objektu. */
+  base: [number, number, number];
+  height: number;
+  width: number;
+  /** Natočení: lezec stojí na straně −Z žebříku a dívá se k +Z (lokálně, před rotací objektu). */
+  yaw: number;
+}
+
+export interface LadderDef {
+  id: string;
+  base: V3;
+  height: number;
+  width: number;
+  /** Směr, kterým se lezec dívá na žebřík (jednotkový, vodorovný). */
+  facing: V3;
+  /** Kde lezec stojí: kousek před žebříkem. */
+  climbOffset: number;
+}
+
+export function laddersToWorld(o: MapObject, list: LadderLocal[]): LadderDef[] {
+  const { q, pos, s } = objectFrame(o);
+  return list.map((l, i) => {
+    const base = add(pos, rotate(q, scale({ x: l.base[0], y: l.base[1], z: l.base[2] }, s)));
+    const yaw = l.yaw;
+    const f = rotate(q, { x: Math.sin(yaw), y: 0, z: Math.cos(yaw) });
+    const fl = Math.hypot(f.x, f.z) || 1;
+    return { id: `${o.id}#${i}`, base, height: l.height * s, width: l.width * s, facing: { x: f.x / fl, y: 0, z: f.z / fl }, climbOffset: 0.42 };
+  });
 }

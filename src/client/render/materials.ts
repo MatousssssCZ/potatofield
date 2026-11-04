@@ -18,6 +18,10 @@ export interface MatDef {
   macro?: number;
   emissive?: string;
   side?: THREE.Side;
+  alphaTest?: number;
+  transparent?: boolean;
+  opacity?: number;
+  envMapIntensity?: number;
 }
 
 export const MATERIALS: Record<string, MatDef> = {
@@ -42,6 +46,29 @@ export const MATERIALS: Record<string, MatDef> = {
   paint: { tex: 'paint', tile: 2 },
   paintDim: { tex: 'paintDim', tile: 2 },
   target: { tex: 'target', tile: 1 },
+  plasterOchre: { tex: 'plasterOchre', tile: 3, dust: 0.7, macro: 0.6 },
+  concreteDark: { tex: 'concreteDark', tile: 2.5, dust: 0.3, macro: 0.5 },
+  metalSheet: { tex: 'metalSheet', tile: 2.4, dust: 0.5, macro: 0.4 },
+  metalSheetRust: { tex: 'metalSheetRust', tile: 2.4, dust: 0.5, macro: 0.4 },
+  containerRed: { tex: 'containerRed', tile: 2.5, dust: 0.5, macro: 0.3 },
+  containerBlue: { tex: 'containerBlue', tile: 2.5, dust: 0.5, macro: 0.3 },
+  containerGreen: { tex: 'containerGreen', tile: 2.5, dust: 0.5, macro: 0.3 },
+  containerSand: { tex: 'containerSand', tile: 2.5, dust: 0.5, macro: 0.3 },
+  chainLink: { tex: 'chainLink', tile: 1, alphaTest: 0.5, side: THREE.DoubleSide },
+  roof: { tex: 'roof', tile: 3, macro: 0.4 },
+  shutter: { tex: 'shutter', tile: 2.5, dust: 0.5, macro: 0.4 },
+  shutterBox: { tex: 'paintedMetal', tile: 1.5, tint: '#c8c4b8' },
+  awningRed: { tex: 'awningRed', tile: 2.5, side: THREE.DoubleSide },
+  awningBlue: { tex: 'awningBlue', tile: 2.5, side: THREE.DoubleSide },
+  awningGreen: { tex: 'awningGreen', tile: 2.5, side: THREE.DoubleSide },
+  awningSand: { tex: 'awningSand', tile: 2.5, side: THREE.DoubleSide },
+  acUnit: { tex: 'acUnit', tile: 0.8 },
+  crateFruitA: { tex: 'crateFruitA', tile: 0.5 },
+  crateFruitB: { tex: 'crateFruitB', tile: 0.5 },
+  crateFruitC: { tex: 'crateFruitC', tile: 0.5 },
+  glass: { tile: 1, tint: '#1d2933', roughness: 0.12, metalness: 0.0, envMapIntensity: 2.2 },
+  glassShop: { tile: 1, tint: '#2a3a40', roughness: 0.18, metalness: 0.0, envMapIntensity: 1.8 },
+  lamp: { tile: 1, tint: '#efe6c8', emissive: '#4a4030', roughness: 0.4 },
   gunMetal: { tex: 'metal', tile: 0.35, tint: '#9a9ca0', metalness: 0.55, roughness: 0.9 },
   gunPolymer: { tex: 'paintedMetal', tile: 0.4, tint: '#8f927a' },
   debugMissing: { tile: 1, tint: '#ff00ff', emissive: '#550055', roughness: 0.5 },
@@ -193,6 +220,12 @@ export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, m
   mat.customProgramCacheKey = () => `weather-${dust.toFixed(2)}-${macro.toFixed(2)}`;
 }
 
+const LABEL_STYLES: Record<string, { bg: string; fg: string; font: string; border: boolean; glow?: number }> = {
+  label: { bg: '#e9e1cc', fg: '#2c2a24', font: '"Arial Narrow", Arial, sans-serif', border: true },
+  labelHotel: { bg: '#8a2a20', fg: '#f6e7b8', font: 'Georgia, "Times New Roman", serif', border: false, glow: 0.25 },
+  labelSign: { bg: '#24456a', fg: '#f1ead6', font: '"Trebuchet MS", Arial, sans-serif', border: true },
+};
+
 export class MaterialLibrary {
   private cache = new Map<string, THREE.Material>();
   constructor(private textures: Map<string, TexSet>) {}
@@ -207,7 +240,9 @@ export class MaterialLibrary {
       roughness: def.roughness ?? 1,
       metalness: def.metalness ?? (tex ? 1 : 0),
       side: def.side ?? THREE.FrontSide,
+      alphaTest: def.alphaTest ?? 0,
     });
+    if (def.envMapIntensity !== undefined) sm.envMapIntensity = def.envMapIntensity;
     if (tex) {
       sm.map = tex.map;
       sm.normalMap = tex.normalMap;
@@ -225,28 +260,41 @@ export class MaterialLibrary {
 
   private labels = new Map<string, THREE.Material>();
   /** Materiál pro textový štítek (text renderovaný jako text, nikdy jako HTML). */
-  label(text: string): THREE.Material {
-    let m = this.labels.get(text);
+  label(text: string, style = 'label'): THREE.Material {
+    const key = `${style}|${text}`;
+    let m = this.labels.get(key);
     if (m) return m;
+    const st = LABEL_STYLES[style] ?? LABEL_STYLES.label;
     const c = document.createElement('canvas');
     c.width = 512;
     c.height = 200;
     const g = c.getContext('2d')!;
-    g.fillStyle = '#e9e1cc';
+    const txt = text.slice(0, 32);
+    c.width = Math.min(2048, Math.max(512, txt.length * 110));
+    g.fillStyle = st.bg;
     g.fillRect(0, 0, c.width, c.height);
-    g.strokeStyle = '#2c2a24';
-    g.lineWidth = 10;
-    g.strokeRect(10, 10, c.width - 20, c.height - 20);
-    g.fillStyle = '#2c2a24';
-    g.font = 'bold 120px "Arial Narrow", Arial, sans-serif';
+    if (st.border) {
+      g.strokeStyle = st.fg;
+      g.lineWidth = 10;
+      g.strokeRect(10, 10, c.width - 20, c.height - 20);
+    }
+    g.fillStyle = st.fg;
+    g.font = `bold 120px ${st.font}`;
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    g.fillText(text.slice(0, 20), c.width / 2, c.height / 2 + 6);
+    // Text se vykresluje jako text (nikdy jako HTML); šířka se přizpůsobí.
+    const w = g.measureText(txt).width;
+    const sx = Math.min(1, (c.width - 60) / Math.max(1, w));
+    g.save();
+    g.translate(c.width / 2, c.height / 2 + 6);
+    g.scale(sx, 1);
+    g.fillText(txt, 0, 0);
+    g.restore();
     const t = new THREE.CanvasTexture(c);
     t.colorSpace = THREE.SRGBColorSpace;
     t.anisotropy = 8;
-    m = new THREE.MeshStandardMaterial({ map: t, roughness: 0.8, polygonOffset: true, polygonOffsetFactor: -2 });
-    this.labels.set(text, m);
+    m = new THREE.MeshStandardMaterial({ map: t, roughness: 0.8, polygonOffset: true, polygonOffsetFactor: -2, emissive: st.glow ? '#ffffff' : '#000000', emissiveMap: st.glow ? t : null, emissiveIntensity: st.glow ?? 0 });
+    this.labels.set(key, m);
     return m;
   }
 }

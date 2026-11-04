@@ -3,6 +3,9 @@ import { deg, jumpVelocity, type MovementConfig, type Stance } from '../config/m
 import { clamp, quatFromEuler, quatMul, quatYaw, angleDiff, type V3 } from '../math';
 import { MOVE_QUERY_GROUPS, type PhysicsWorld } from '../physics/world';
 import { BTN, type InputFrame } from './input';
+import type { LadderDef } from '../../world/parts';
+
+export const LADDER = { speed: 2.2, reach: 0.95, exitForward: 0.6, detachPush: 1.6 } as const;
 
 /**
  * Stav pěšáka. Čistá data (kopírovatelná pro rollback/replay a síť).
@@ -42,6 +45,8 @@ export interface PlayerState {
   weaponBlocksSprint: boolean;
   /** Důvody blokace pro debug panel. */
   blocked: string[];
+  /** ID žebříku, na kterém hráč visí (null = nelezé). */
+  ladder: string | null;
 }
 
 export function createPlayerState(cfg: MovementConfig, pos: V3, yaw = 0): PlayerState {
@@ -68,6 +73,7 @@ export function createPlayerState(cfg: MovementConfig, pos: V3, yaw = 0): Player
     adsProgress: 0,
     weaponBlocksSprint: false,
     blocked: [],
+    ladder: null,
   };
 }
 
@@ -116,6 +122,8 @@ export class PlayerController {
   readonly collider: RAPIER.Collider;
   private kcc: RAPIER.KinematicCharacterController;
   private shapeKey = '';
+  /** Žebříky mapy (odvozené z dat mapy, stejné pro klienta i server). */
+  ladders: LadderDef[] = [];
 
   constructor(phys: PhysicsWorld, cfg: MovementConfig) {
     this.cfg = cfg;
@@ -196,8 +204,114 @@ export class PlayerController {
     return hit.normal1.y >= Math.cos(deg(this.cfg.maxWalkSlopeDeg)) - 1e-3;
   }
 
+  /** Bod, kde lezec stojí (před žebříkem) ve výšce chodidel y. */
+  private ladderPoint(L: LadderDef, y: number): V3 {
+    return { x: L.base.x - L.facing.x * L.climbOffset, y, z: L.base.z - L.facing.z * L.climbOffset };
+  }
+
+  /**
+   * Lezení: E nastoupí (zespodu i shora), W/S nahoru/dolů, Space pustí.
+   * Vrací true, pokud tento tick obsloužil žebřík (normální pohyb se přeskočí).
+   */
+  private stepLadder(s: PlayerState, input: InputFrame, t: number, dt: number): boolean {
+    const cfg = this.cfg;
+    const standH = cfg.stances.stand.height;
+    const pressed = (b: number) => (input.pressed & b) !== 0;
+    if (!s.ladder) {
+      // Nástup: dosah k bodu před žebříkem a pohled zhruba k žebříku.
+      const fw = forwardOf(s.yaw);
+      for (const L of this.ladders) {
+        const top = L.base.y + L.height;
+        const front = this.ladderPoint(L, s.pos.y);
+        const dist = Math.hypot(front.x - s.pos.x, front.z - s.pos.z);
+        const facingDot = fw.x * L.facing.x + fw.z * L.facing.z;
+        if (dist < LADDER.reach && s.pos.y >= L.base.y - 0.4 && s.pos.y <= top - 0.6 && facingDot > 0.2) {
+          if (!this.fits(standH, s.yaw, front)) {
+            s.blocked.push('žebřík: není místo');
+            return false;
+          }
+          s.ladder = L.id;
+          s.pos = front;
+          break;
+        }
+        // Nástup shora: hráč stojí na hraně nad žebříkem a dívá se ven (k lezci).
+        const topPt = { x: L.base.x + L.facing.x * LADDER.exitForward, z: L.base.z + L.facing.z * LADDER.exitForward };
+        if (Math.hypot(topPt.x - s.pos.x, topPt.z - s.pos.z) < LADDER.reach && Math.abs(s.pos.y - top) < 0.45 && facingDot < -0.2) {
+          const p = this.ladderPoint(L, top - standH + 0.3);
+          if (!this.fits(standH, s.yaw, p)) {
+            s.blocked.push('žebřík: není místo pro sestup');
+            return false;
+          }
+          s.ladder = L.id;
+          s.pos = p;
+          break;
+        }
+      }
+      if (!s.ladder) return false;
+      s.vel = { x: 0, y: 0, z: 0 };
+      s.stance = 'stand';
+      s.height = standH;
+      s.proneToggle = false;
+      s.sprinting = false;
+      s.grounded = false;
+      this.applyPose(s);
+      return true;
+    }
+    const L = this.ladders.find((l) => l.id === s.ladder);
+    if (!L) {
+      s.ladder = null;
+      return false;
+    }
+    s.sprinting = false;
+    s.blocked.push('na žebříku: bez střelby a míření');
+    if (pressed(BTN.JUMP)) {
+      // Pustit se: malý odraz od žebříku, dál běžná fyzika.
+      s.ladder = null;
+      s.vel = { x: -L.facing.x * LADDER.detachPush, y: 0, z: -L.facing.z * LADDER.detachPush };
+      s.takeoffSpeed = LADDER.detachPush;
+      s.grounded = false;
+      return false;
+    }
+    const top = L.base.y + L.height;
+    const climb = Math.max(-1, Math.min(1, input.moveZ)) * LADDER.speed * dt;
+    let y = s.pos.y + climb;
+    if (input.moveZ > 0 && y >= top - 0.25) {
+      // Výstup nahoře: jen když se tělo vejde – jinak zůstat (neprojít zdí ani stropem).
+      const exit = { x: L.base.x + L.facing.x * LADDER.exitForward, y: top + 0.02, z: L.base.z + L.facing.z * LADDER.exitForward };
+      if (this.fits(standH, s.yaw, exit)) {
+        s.ladder = null;
+        s.pos = exit;
+        s.vel = { x: 0, y: 0, z: 0 };
+        s.grounded = false;
+        this.applyPose(s);
+        return true;
+      }
+      s.blocked.push('žebřík: výstup blokován');
+      y = Math.min(y, top - 0.25);
+    }
+    if (y <= L.base.y) {
+      y = L.base.y;
+      if (input.moveZ < 0) {
+        s.ladder = null;
+        s.pos = this.ladderPoint(L, y);
+        this.applyPose(s);
+        return true;
+      }
+    }
+    const next = this.ladderPoint(L, y);
+    if (this.fits(standH, s.yaw, next)) s.pos = next;
+    else s.blocked.push('žebřík: překážka');
+    s.vel = { x: 0, y: climb / dt, z: 0 };
+    s.grounded = false;
+    // Výdrž se na žebříku obnovuje normálně.
+    if (t >= s.staminaRegenAt) s.stamina = Math.min(cfg.stamina.max, s.stamina + cfg.stamina.regenPerSec * dt);
+    this.applyPose(s);
+    return true;
+  }
+
   /** Umístí hráče (spawn/teleport) a vynuluje dynamiku. */
   place(s: PlayerState, feet: V3, yaw: number) {
+    s.ladder = null;
     s.pos = { ...feet };
     s.vel = { x: 0, y: 0, z: 0 };
     s.yaw = yaw;
@@ -220,6 +334,14 @@ export class PlayerController {
     s.yaw = (s.yaw + input.lookDYaw) % (Math.PI * 2);
     const pl = deg(89);
     s.pitch = clamp(s.pitch + input.lookDPitch, -pl, pl);
+
+    // --- Žebřík (sdílený stav pohybu, žádný teleport editoru) ---
+    if (s.ladder || pressed(BTN.USE)) {
+      if (this.stepLadder(s, input, t, dt)) {
+        s.tick++;
+        return;
+      }
+    }
 
     // --- Záměr postoje ---
     let jumpConsumed = false;

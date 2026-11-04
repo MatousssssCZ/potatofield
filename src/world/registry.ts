@@ -1,5 +1,5 @@
 import type { MapDocument, MapObject } from '../shared/map/schema';
-import { partsToColliders, type ColliderDef, type Part } from './parts';
+import { laddersToWorld, partsToColliders, type ColliderDef, type LadderDef, type LadderLocal, type Part } from './parts';
 
 export interface ParamSpec {
   key: string;
@@ -29,6 +29,10 @@ export interface AssetDef {
   /** Rozměrové handly: osa gizma → parametr generátoru (mění parametry, ne mesh.scale). */
   sizeParams?: { x?: string; y?: string; z?: string };
   generate(p: Params, seed: number, material: string): Part[];
+  /** Žebříky objektu (pro simulaci lezení). */
+  ladders?(p: Params): LadderLocal[];
+  /** Popis výsledného rozměru pro UI (např. „5 polí, 6 sloupků“). */
+  describe?(p: Params): string;
 }
 
 const registry = new Map<string, AssetDef>();
@@ -66,6 +70,7 @@ export function resolveParams(def: AssetDef, raw: Params): Params {
 export interface GeneratedObject {
   object: MapObject;
   parts: Part[];
+  ladders: LadderDef[];
   /** Asset neexistuje nebo má novější verzi generátoru – zobrazí se jako placeholder. */
   missing?: string;
 }
@@ -77,16 +82,18 @@ function placeholderParts(): Part[] {
 
 export function generateObject(o: MapObject): GeneratedObject {
   const def = registry.get(o.assetId);
-  if (!def) return { object: o, parts: placeholderParts(), missing: `neznámý asset "${o.assetId}"` };
+  if (!def) return { object: o, parts: placeholderParts(), ladders: [], missing: `neznámý asset "${o.assetId}"` };
   if (o.generatorVersion > def.generatorVersion) {
     return {
       object: o,
       parts: placeholderParts(),
+      ladders: [],
       missing: `asset "${o.assetId}" vyžaduje generátor v${o.generatorVersion}, aplikace má v${def.generatorVersion}`,
     };
   }
   const material = o.material && def.materials.includes(o.material) ? o.material : def.defaultMaterial;
-  return { object: o, parts: def.generate(resolveParams(def, o.params), o.seed, material) };
+  const p = resolveParams(def, o.params);
+  return { object: o, parts: def.generate(p, o.seed, material), ladders: def.ladders ? laddersToWorld(o, def.ladders(p)) : [] };
 }
 
 export function generateMap(doc: MapDocument): GeneratedObject[] {
@@ -97,4 +104,8 @@ export function collidersForMap(gen: GeneratedObject[]): ColliderDef[] {
   const out: ColliderDef[] = [];
   for (const g of gen) out.push(...partsToColliders(g.object, g.parts));
   return out;
+}
+
+export function laddersForMap(gen: GeneratedObject[]): LadderDef[] {
+  return gen.filter((g) => !g.object.gameHidden).flatMap((g) => g.ladders);
 }

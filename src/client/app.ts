@@ -4,9 +4,10 @@ import { MOVEMENT, toDeg } from '../shared/config/movement';
 import type { MapDocument } from '../shared/map/schema';
 import { validateMap } from '../shared/map/validate';
 import { PhysicsWorld, initRapier } from '../shared/physics/world';
-import { generateObject, partsToColliders, collidersForMap, generateMap } from '../world';
+import { generateObject, partsToColliders, collidersForMap, generateMap, type LadderDef } from '../world';
 import { buildEmptyMap } from '../world/maps/empty';
 import { buildRangeMap } from '../world/maps/range';
+import { buildStreetMap } from '../world/maps/street';
 import { Editor, TEST_SPAWN_ID } from './editor/editor';
 import { EditorDoc, History, type Change } from './editor/editorDoc';
 import { AutoSaver, MapStore, exportMapFile, readMapFile } from './editor/persistence';
@@ -49,6 +50,8 @@ export class App {
   private uiDirty = true;
   private unsub: (() => void) | null = null;
   switches = 0;
+  /** Žebříky po objektech (pro simulaci lezení v testu). */
+  ladders = new Map<string, LadderDef[]>();
 
   async init() {
     const urlQ = new URLSearchParams(location.search).get('q');
@@ -110,6 +113,12 @@ export class App {
     (window as unknown as Record<string, unknown>).__pf = this;
   }
 
+  streetTemplate() {
+    const d = buildStreetMap();
+    d.id = `street_${Date.now().toString(36)}`;
+    return d;
+  }
+
   private rangeTemplate() {
     const d = buildRangeMap();
     d.id = `range_${Date.now().toString(36)}`;
@@ -127,6 +136,8 @@ export class App {
     this.ed = new EditorDoc(doc);
     this.history = new History(this.ed);
     const gen = generateMap(doc);
+    this.ladders.clear();
+    for (const g of gen) if (g.ladders.length && !g.object.gameHidden) this.ladders.set(g.object.id, g.ladders);
     this.phys.setTerrain(doc.terrain);
     this.phys.addColliders(collidersForMap(gen.filter((g) => !g.object.gameHidden)));
     this.phys.sync();
@@ -170,9 +181,11 @@ export class App {
         const now = this.ed.getObject(c.id);
         this.world.removeObject(c.id);
         this.phys.removeObject(c.id);
+        this.ladders.delete(c.id);
         if (now) {
           const g = generateObject(now);
           this.world.addObject(g);
+          if (g.ladders.length && !now.gameHidden) this.ladders.set(now.id, g.ladders);
           if (!now.gameHidden) this.phys.addColliders(partsToColliders(now, g.parts));
         }
       } else if (c.kind === 'testSpawn') this.editor.updateSpawnMarker();
@@ -272,6 +285,7 @@ export class App {
       { hFov: s.hFov, bob: s.bob, landingKick: s.landingKick },
       CAMERA.radiansPerCount,
     );
+    this.session.game.ctrl.ladders = [...this.ladders.values()].flat();
     const inp = this.session.input;
     inp.onDevKey = () => this.toggleDev();
     inp.onMenuKey = () => inp.releaseLock();
@@ -493,6 +507,7 @@ export class App {
       { id: 'close', label: 'Zavřít' },
       { id: 'new', label: 'Nová mapa' },
       { id: 'range', label: 'Šablona: střelnice' },
+      { id: 'street', label: 'Šablona: ulice' },
       { id: 'import', label: 'Importovat…' },
       { id: 'export', label: 'Exportovat', primary: true },
     ]);
@@ -504,6 +519,7 @@ export class App {
     }
     if (choice === 'new') this.openDoc(buildEmptyMap());
     else if (choice === 'range') this.openDoc(this.rangeTemplate());
+    else if (choice === 'street') this.openDoc(this.streetTemplate());
     else if (choice === 'import') $<HTMLInputElement>('#file-import').click();
     else if (choice === 'export') exportMapFile(this.ed.doc);
   }

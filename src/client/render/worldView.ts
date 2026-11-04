@@ -56,7 +56,7 @@ export class WorldView {
       group.add(mesh);
     }
     for (const l of geo.labels) {
-      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(l.w, l.h), this.mats.label(l.text));
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(l.w, l.h), this.mats.label(l.text, l.style));
       mesh.applyMatrix4(l.matrix);
       mesh.receiveShadow = true;
       mesh.userData.objectId = o.id;
