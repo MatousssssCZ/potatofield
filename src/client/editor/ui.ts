@@ -2,6 +2,8 @@ import { DEFAULT_ENVIRONMENT, type EnvironmentProfile, type MapObject } from '..
 import { allAssets, getAsset, resolveParams, type AssetDef, type ParamSpec } from '../../world/registry';
 import { cmds, type EditorDoc, type History } from './editorDoc';
 import { TEST_SPAWN_ID, type Editor } from './editor';
+import { markerId } from './markers';
+import { renderMarkerInspector, renderScenarios, type GameUiState } from './uiGame';
 
 const CATEGORY_LABELS: Record<AssetDef['category'], string> = {
   buildings: 'Budovy',
@@ -31,6 +33,9 @@ const MATERIAL_LABELS: Record<string, string> = {
   awningGreen: 'Zelené pruhy',
   awningSand: 'Pískové pruhy',
   acUnit: 'Klimatizace',
+  burntMetal: 'Ohořelý kov',
+  hescoFill: 'Geotextilie',
+  rubber: 'Pryž',
   brick: 'Cihla',
   sandstone: 'Pískovec',
   paving: 'Dlažba',
@@ -104,6 +109,13 @@ export function issuesList(issues: Array<{ severity: string; path: string; messa
 
 // ---------------- Katalog ----------------
 
+const MARKER_ITEMS: Array<{ id: string; label: string }> = [
+  { id: 'marker.flag', label: 'Vlajka / kontrolní bod' },
+  { id: 'marker.spawnA', label: 'Spawn – tým A' },
+  { id: 'marker.spawnB', label: 'Spawn – tým B' },
+  { id: 'marker.zone', label: 'Zakázaná zóna' },
+];
+
 export function buildCatalog(onPick: (assetId: string) => void) {
   const list = document.getElementById('cat-list')!;
   const search = document.getElementById('cat-search') as HTMLInputElement;
@@ -116,6 +128,18 @@ export function buildCatalog(onPick: (assetId: string) => void) {
       const arr = groups.get(a.category) ?? [];
       arr.push(a);
       groups.set(a.category, arr);
+    }
+    const mk = MARKER_ITEMS.filter((m) => !q || m.label.toLowerCase().includes(q));
+    if (mk.length) {
+      const g = el('div', { class: 'cat-group' });
+      g.appendChild(el('h4', {}, 'Herní markery'));
+      for (const m of mk) {
+        const b = el('button', { class: 'cat-item' });
+        b.append(el('span', {}, m.label), el('small', {}, 'marker'));
+        b.addEventListener('click', () => onPick(m.id));
+        g.appendChild(b);
+      }
+      list.appendChild(g);
     }
     for (const [cat, items] of groups) {
       const g = el('div', { class: 'cat-group' });
@@ -159,6 +183,9 @@ export function renderSceneList(ed: EditorDoc, history: History, editor: Editor)
     root.appendChild(r);
   };
   row(TEST_SPAWN_ID, '◎ Testovací spawn');
+  for (const c of ed.doc.controlPoints) row(markerId.cp(c.id), `⚑ ${c.name}`);
+  for (const sp of ed.doc.spawnPoints) row(markerId.sp(sp.id), `⬆ Spawn ${sp.teams.map((t) => (t === 'teamA' ? 'A' : 'B')).join('+')}`);
+  for (const z of ed.doc.zones) row(markerId.zn(z.id), `⛔ Zóna ${z.id}`);
   for (const o of ed.doc.objects) {
     row(o.id, objectName(o), (r) => {
       const eye = el('button', { title: 'Skrýt v editoru (nemění hru)', class: o.editor?.hidden ? 'off' : '' }, '👁');
@@ -235,7 +262,12 @@ function paramControl(spec: ParamSpec, value: number | string | boolean, commit:
   );
 }
 
-export function renderInspector(ed: EditorDoc, history: History, editor: Editor, extra: { missing: (id: string) => string | undefined; spawnIssue: () => string | undefined }) {
+export function renderInspector(
+  ed: EditorDoc,
+  history: History,
+  editor: Editor,
+  extra: { missing: (id: string) => string | undefined; spawnIssue: () => string | undefined; game: GameUiState; rerender: () => void; dropToSurface: (ids: string[]) => void },
+) {
   const root = document.getElementById('inspector')!;
   // Nepřekreslovat pod rukama, když uživatel právě píše do pole inspektoru.
   if (root.contains(document.activeElement) && (document.activeElement as HTMLElement).tagName === 'INPUT') {
@@ -248,6 +280,11 @@ export function renderInspector(ed: EditorDoc, history: History, editor: Editor,
 
   if (sel.length === 0) {
     renderMapProps(root, ed, history);
+    renderScenarios(root, ed, history);
+    return;
+  }
+  if (sel.length === 1 && markerId.parse(sel[0])) {
+    renderMarkerInspector(root, sel[0], ed, history, editor, extra.game, extra.rerender);
     return;
   }
   if (sel.length > 1) {
@@ -258,6 +295,9 @@ export function renderInspector(ed: EditorDoc, history: History, editor: Editor,
     d.addEventListener('click', () => editor.duplicate());
     const x = el('button', {}, 'Smazat (Del)');
     x.addEventListener('click', () => editor.deleteSelection());
+    const drop = el('button', {}, 'Položit na povrch');
+    drop.addEventListener('click', () => extra.dropToSurface(sel));
+    row.appendChild(drop);
     const lockAll = el('button', {}, 'Zamknout vše');
     lockAll.addEventListener('click', () => history.execute(cmds.updateMany(ed, sel.filter((s) => s !== TEST_SPAWN_ID), (o) => (o.editor = { ...o.editor, locked: true }), 'Zamknout')));
     row.append(d, x, lockAll);
@@ -343,6 +383,9 @@ export function renderInspector(ed: EditorDoc, history: History, editor: Editor,
   const row = el('div', { class: 'btnrow' });
   const f = el('button', {}, 'Zaměřit (F)');
   f.addEventListener('click', () => editor.frameSelection());
+  const dropB = el('button', { title: 'Jednorázově položí objekt na povrch pod ním (terén nebo objekt)' }, 'Položit na povrch');
+  dropB.addEventListener('click', () => extra.dropToSurface([id]));
+  row.appendChild(dropB);
   const d = el('button', {}, 'Duplikovat (Ctrl+D)');
   d.addEventListener('click', () => editor.duplicate());
   const x = el('button', {}, 'Smazat (Del)');

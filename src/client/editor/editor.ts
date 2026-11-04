@@ -4,6 +4,8 @@ import type { MapObject, Transform } from '../../shared/map/schema';
 import { getAsset, resolveParams } from '../../world/registry';
 import type { WorldView } from '../render/worldView';
 import { cmds, type Command, type EditorDoc, type History } from './editorDoc';
+import { MarkerView, markerId } from './markers';
+import { applyBrush, heightAt, readRegion, unionRegion, type Brush, type Region } from '../../world/terrain';
 
 export type Tool = 'translate' | 'rotate' | 'scale';
 export const TEST_SPAWN_ID = '__testSpawn';
@@ -40,6 +42,15 @@ export class Editor {
   private grid: THREE.GridHelper | null = null;
   private boxes = new Map<string, THREE.Box3Helper>();
   readonly spawnMarker: THREE.Group;
+  readonly markers = new MarkerView();
+  /** Režim úprav terénu (štětce místo výběru objektů). */
+  terrainMode = false;
+  brush: Brush = { kind: 'raise', radius: 6, strength: 1.5 };
+  onTerrainPreview: () => void = () => {};
+  private stroke: { snapshot: ReturnType<typeof readRegion>; full: number[]; dirt?: number[]; urban?: number[]; region: Region | null } | null = null;
+  brushPoint: THREE.Vector3 | null = null;
+  private brushRing: THREE.Line;
+  private pointerNdc = new THREE.Vector2(9, 9);
 
   // kamera
   private yaw = 0;
@@ -74,6 +85,12 @@ export class Editor {
     this.tc.disconnect();
     this.spawnMarker = makeSpawnMarker();
     this.root.add(this.spawnMarker);
+    this.root.add(this.markers.root);
+    this.brushRing = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: '#ffd27a', depthTest: false, transparent: true }));
+    this.brushRing.renderOrder = 20;
+    this.brushRing.visible = false;
+    this.brushRing.raycast = () => {};
+    this.root.add(this.brushRing);
     this.rectEl = document.createElement('div');
     this.rectEl.className = 'select-rect hidden';
     canvas.parentElement!.appendChild(this.rectEl);
@@ -169,6 +186,8 @@ export class Editor {
       }
     }
     this.applyCamera();
+    this.updateBrush(dt);
+    this.markers.update(performance.now() / 1000);
     // Pivot sleduje výběr, když se zrovna netáhne (např. po undo).
     if (!this.dragging) this.placePivot();
     for (const [id, h] of this.boxes) {
@@ -265,12 +284,17 @@ export class Editor {
       return;
     }
     if (e.button !== 0) return;
+    if (this.terrainMode) {
+      this.beginStroke(e.shiftKey);
+      return;
+    }
     // Klik na gizmo nevybírá objekt za ním.
     if (this.tc.axis !== null || this.dragging) return;
     this.down = { x: e.clientX, y: e.clientY, ctrl: e.ctrlKey || e.metaKey, button: 0 };
   }
 
   private pointerMove(e: PointerEvent) {
+    this.pointerNdc = this.ndc(e.clientX, e.clientY);
     if (this.flying && document.pointerLockElement === this.canvas) {
       this.yaw -= e.movementX * 0.0025;
       this.pitch = THREE.MathUtils.clamp(this.pitch - e.movementY * 0.0025, -1.55, 1.55);
@@ -292,6 +316,10 @@ export class Editor {
       this.flying = false;
       this.keys.clear();
       if (document.pointerLockElement === this.canvas) document.exitPointerLock();
+      return;
+    }
+    if (e.button === 0 && this.stroke) {
+      this.endStroke();
       return;
     }
     if (e.button !== 0 || !this.down) return;
@@ -324,7 +352,7 @@ export class Editor {
   /** Paprsek z bodu obrazovky do světa (objekty, terén). */
   pick(cx: number, cy: number, includeLocked = false): { id: string | null; point: THREE.Vector3 | null } {
     this.raycaster.setFromCamera(this.ndc(cx, cy), this.camera);
-    const targets: THREE.Object3D[] = [this.world.root];
+    const targets: THREE.Object3D[] = [this.world.root, this.markers.root];
     if (this.spawnMarker.visible) targets.push(this.spawnMarker);
     const hits = this.raycaster.intersectObjects(targets, true);
     for (const h of hits) {
@@ -332,7 +360,7 @@ export class Editor {
       let o: THREE.Object3D | null = h.object;
       while (o && !o.userData.objectId && !o.userData.special) o = o.parent;
       if (!o) continue;
-      if (o.userData.special === TEST_SPAWN_ID) return { id: TEST_SPAWN_ID, point: h.point };
+      if (o.userData.special) return { id: o.userData.special as string, point: h.point };
       const id = o.userData.objectId as string;
       if (id === '__terrain') return { id: null, point: h.point };
       const obj = this.ed.getObject(id);
@@ -373,7 +401,7 @@ export class Editor {
   select(ids: string[], keepTool = true) {
     void keepTool;
     this.selection.clear();
-    for (const id of ids) if (id === TEST_SPAWN_ID || this.ed.getObject(id)) this.selection.add(id);
+    for (const id of ids) if (this.exists(id)) this.selection.add(id);
     this.refreshSelectionVisuals();
     this.onSelection();
   }
@@ -382,7 +410,7 @@ export class Editor {
   pruneSelection() {
     let changed = false;
     for (const id of [...this.selection]) {
-      if (id !== TEST_SPAWN_ID && !this.ed.getObject(id)) {
+      if (!this.exists(id)) {
         this.selection.delete(id);
         changed = true;
       }
@@ -405,7 +433,7 @@ export class Editor {
       this.boxes.set(id, h);
     }
     this.placePivot();
-    const movable = [...this.selection].filter((id) => id === TEST_SPAWN_ID || !this.ed.getObject(id)?.editor?.locked);
+    const movable = [...this.selection].filter((id) => id === TEST_SPAWN_ID || markerId.parse(id) || !this.ed.getObject(id)?.editor?.locked);
     if (movable.length > 0) this.tc.attach(this.pivot);
     else this.tc.detach();
     this.applyTool();
@@ -427,7 +455,8 @@ export class Editor {
     this.tc.showX = this.tool !== 'rotate';
     this.tc.showZ = this.tool !== 'rotate';
     this.tc.showY = true;
-    if (this.tool === 'scale' && multi) this.tc.detach();
+    const only = [...this.selection][0];
+    if (this.tool === 'scale' && (multi || only === TEST_SPAWN_ID || only?.startsWith('sp:'))) this.tc.detach();
     this.updateSnap();
   }
 
@@ -461,8 +490,23 @@ export class Editor {
     this.root.add(this.grid);
   }
 
+  exists(id: string) {
+    if (id === TEST_SPAWN_ID) return true;
+    const m = markerId.parse(id);
+    if (m) return !!this.ed.getEntity(m.collection, m.id);
+    return !!this.ed.getObject(id);
+  }
+
   private transformOf(id: string): Transform | undefined {
-    return id === TEST_SPAWN_ID ? this.ed.doc.testSpawn : this.ed.getObject(id)?.transform;
+    if (id === TEST_SPAWN_ID) return this.ed.doc.testSpawn;
+    const m = markerId.parse(id);
+    if (m) {
+      const e = this.ed.getEntity(m.collection, m.id) as unknown as Record<string, unknown> | undefined;
+      if (!e) return undefined;
+      const pos = (e.position ?? e.center) as [number, number, number];
+      return { position: pos, rotation: [0, (e.yaw as number) ?? 0, 0] };
+    }
+    return this.ed.getObject(id)?.transform;
   }
 
   private placePivot() {
@@ -487,7 +531,9 @@ export class Editor {
   }
 
   private groupOf(id: string): THREE.Object3D | undefined {
-    return id === TEST_SPAWN_ID ? this.spawnMarker : this.world.objects.get(id);
+    if (id === TEST_SPAWN_ID) return this.spawnMarker;
+    if (markerId.parse(id)) return this.markers.objectFor(id);
+    return this.world.objects.get(id);
   }
 
   private beginDrag() {
@@ -535,7 +581,22 @@ export class Editor {
       const id = [...this.selection][0];
       const s = this.pivot.scale.clone();
       const g = this.groupOf(id);
-      if (id && id !== TEST_SPAWN_ID) {
+      const mk = markerId.parse(id ?? '');
+      if (mk && mk.collection !== 'spawnPoints') {
+        const c = cmds.entity(this.ed, mk.collection, mk.id, (e) => {
+          const x = e as unknown as Record<string, unknown>;
+          if (mk.collection === 'zones') {
+            const he = x.halfExtents as number[];
+            x.halfExtents = [r4(Math.max(0.5, he[0] * s.x)), r4(Math.max(0.5, he[1] * s.y)), r4(Math.max(0.5, he[2] * s.z))];
+          } else {
+            x.radius = r4(THREE.MathUtils.clamp((x.radius as number) * (s.x + s.z) / 2, 1, 100));
+            x.height = r4(THREE.MathUtils.clamp((x.height as number) * s.y, 1, 50));
+          }
+        }, 'Rozměry markeru');
+        changes.push(...c.changes);
+        const g = this.groupOf(id);
+        if (g) g.scale.set(1, 1, 1);
+      } else if (id && id !== TEST_SPAWN_ID) {
         const c = this.scaleCommand(id, s);
         if (c) changes.push(...c.changes);
         else if (g && this.startMats.get(id)) this.startMats.get(id)!.decompose(g.position, g.quaternion, g.scale);
@@ -548,9 +609,22 @@ export class Editor {
         const e = new THREE.Euler().setFromQuaternion(g.quaternion, 'XYZ');
         const pos: [number, number, number] = [r4(g.position.x), r4(g.position.y), r4(g.position.z)];
         const rot: [number, number, number] = [r4(e.x), r4(normAngle(e.y)), r4(e.z)];
+        const mk = markerId.parse(id);
         if (id === TEST_SPAWN_ID) {
           const before = this.ed.doc.testSpawn;
           changes.push({ kind: 'testSpawn', before, after: { position: pos, rotation: [0, rot[1], 0] } });
+        } else if (mk) {
+          const c = cmds.entity(this.ed, mk.collection, mk.id, (e) => {
+            const x = e as unknown as Record<string, unknown>;
+            if (mk.collection === 'zones') {
+              x.center = pos;
+              x.yaw = rot[1];
+            } else {
+              x.position = pos;
+              if (mk.collection === 'spawnPoints') x.yaw = rot[1];
+            }
+          }, 'Posun markeru');
+          changes.push(...c.changes);
         } else {
           const c = cmds.update(this.ed, id, (o) => {
             o.transform.position = pos;
@@ -614,14 +688,48 @@ export class Editor {
   }
 
   deleteSelection() {
-    const ids = [...this.selection].filter((id) => id !== TEST_SPAWN_ID && !this.ed.getObject(id)?.editor?.locked);
-    if (!ids.length) return;
-    this.history.execute(cmds.remove(this.ed, ids));
+    const ids = [...this.selection].filter((id) => id !== TEST_SPAWN_ID && !markerId.parse(id) && !this.ed.getObject(id)?.editor?.locked);
+    const changes: Command['changes'] = [...cmds.remove(this.ed, ids).changes];
+    for (const id of this.selection) {
+      const m = markerId.parse(id);
+      if (!m) continue;
+      changes.push(...cmds.entity(this.ed, m.collection, m.id, null, 'Smazat').changes);
+      // Smazaný bod: odpojit spawny, které na něj odkazují (vazby přes ID).
+      if (m.collection === 'controlPoints') {
+        for (const sp of this.ed.doc.spawnPoints)
+          if (sp.controlPointId === m.id) changes.push(...cmds.entity(this.ed, 'spawnPoints', sp.id, (e) => delete (e as { controlPointId?: string }).controlPointId, 'Odpojit spawn').changes);
+        for (const sc of this.ed.doc.scenarios)
+          if (sc.overrides.some((o) => o.controlPointId === m.id))
+            changes.push(...cmds.entity(this.ed, 'scenarios', sc.id, (e) => {
+              const x = e as typeof sc;
+              x.overrides = x.overrides.filter((o) => o.controlPointId !== m.id);
+            }, 'Upravit scénář').changes);
+      }
+    }
+    if (!changes.length) return;
+    this.history.execute({ label: 'Smazat', changes });
     this.select([], false);
   }
 
   duplicate() {
-    const ids = [...this.selection].filter((id) => id !== TEST_SPAWN_ID);
+    const ids = [...this.selection].filter((id) => id !== TEST_SPAWN_ID && !markerId.parse(id));
+    const mk = [...this.selection].map((id) => markerId.parse(id)).filter((m) => m && m.collection !== 'controlPoints');
+    if (mk.length) {
+      const changes: Command['changes'] = [];
+      const sel: string[] = [];
+      for (const m of mk) {
+        const e = structuredClone(this.ed.getEntity(m!.collection, m!.id)) as unknown as Record<string, unknown>;
+        e.id = this.ed.newId(m!.collection === 'zones' ? 'zone' : 'spawn');
+        const p = (e.position ?? e.center) as number[];
+        p[0] += 2;
+        p[2] += 2;
+        changes.push(...cmds.addEntity(m!.collection, e as never, 'Duplikovat').changes);
+        sel.push(m!.collection === 'zones' ? markerId.zn(e.id as string) : markerId.sp(e.id as string));
+      }
+      this.history.execute({ label: 'Duplikovat', changes });
+      this.select(sel, false);
+      return;
+    }
     if (!ids.length) return;
     const off = Math.max(this.settings.grid, 1);
     const { cmd, newIds } = cmds.duplicate(this.ed, ids, [off, 0, off]);
@@ -662,6 +770,80 @@ export class Editor {
       this.spawnMarker.position.set(...t.position);
       this.spawnMarker.rotation.set(0, t.rotation[1], 0);
     }
+  }
+
+  // ---------------- terén ----------------
+
+  setTerrainMode(on: boolean) {
+    this.terrainMode = on;
+    if (on) this.select([], false);
+    this.brushRing.visible = false;
+    this.onStatus();
+  }
+
+  private terrainHit(): THREE.Vector3 | null {
+    const mesh = this.world.terrain;
+    if (!mesh) return null;
+    this.raycaster.setFromCamera(this.pointerNdc, this.camera);
+    const h = this.raycaster.intersectObject(mesh, false)[0];
+    return h ? h.point : null;
+  }
+
+  private beginStroke(pickHeight: boolean) {
+    const p = this.terrainHit();
+    if (!p) return;
+    const t = this.ed.doc.terrain;
+    if (pickHeight || (this.brush.kind === 'flatten' && this.brush.target === undefined)) {
+      this.brush.target = Math.round((heightAt(t, p.x, p.z) ?? 0) * 100) / 100;
+      this.onToast(`Cílová výška srovnání: ${this.brush.target.toFixed(2)} m`);
+      this.onStatus();
+      if (pickHeight) return;
+    }
+    // Snímek celého pole (jen kopie čísel) → přesné „před“ pro undo jedné položky.
+    this.stroke = { snapshot: readRegion(t, { x0: 0, z0: 0, x1: 0, z1: 0 }), full: t.heights.slice(), dirt: t.dirt?.slice(), urban: t.urban?.slice(), region: null };
+  }
+
+  private updateBrush(dt: number) {
+    if (!this.terrainMode || this.flying) {
+      this.brushRing.visible = false;
+      return;
+    }
+    const p = this.terrainHit();
+    this.brushPoint = p;
+    this.brushRing.visible = !!p;
+    const t = this.ed.doc.terrain;
+    if (p) {
+      const pts: THREE.Vector3[] = [];
+      for (let i = 0; i <= 64; i++) {
+        const a = (i / 64) * Math.PI * 2;
+        const x = p.x + Math.cos(a) * this.brush.radius, z = p.z + Math.sin(a) * this.brush.radius;
+        pts.push(new THREE.Vector3(x, (heightAt(t, x, z) ?? p.y) + 0.08, z));
+      }
+      this.brushRing.geometry.dispose();
+      this.brushRing.geometry = new THREE.BufferGeometry().setFromPoints(pts);
+    }
+    if (this.stroke && p) {
+      const r = applyBrush(t, this.brush, p.x, p.z, Math.min(dt, 0.1));
+      this.stroke.region = unionRegion(this.stroke.region, r);
+      this.onTerrainPreview();
+    }
+  }
+
+  private endStroke() {
+    const st = this.stroke;
+    this.stroke = null;
+    if (!st || !st.region) return;
+    const t = this.ed.doc.terrain;
+    const after = readRegion(t, st.region);
+    // „Před“ ze snímku na začátku tahu.
+    const tmp = { ...t, heights: st.full, dirt: st.dirt ?? (after.dirt ? new Array(t.heights.length).fill(0) : undefined), urban: st.urban ?? (after.urban ? new Array(t.heights.length).fill(0) : undefined) };
+    const before = readRegion(tmp, st.region);
+    const label = { raise: 'Zvýšit terén', lower: 'Snížit terén', smooth: 'Vyhladit terén', flatten: 'Srovnat terén', paintDirt: 'Malovat hlínu', paintUrban: 'Malovat městský povrch', paintErase: 'Smazat malbu' }[this.brush.kind];
+    this.history.execute({ label, changes: [{ kind: 'terrain', region: st.region, before, after }] });
+  }
+
+  get stroking() {
+    return this.stroke !== null;
   }
 
   dispose() {

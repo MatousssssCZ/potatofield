@@ -130,10 +130,11 @@ export class PhysicsWorld {
     return this.meta.get(c.handle);
   }
 
-  castRay(from: V3, dir: V3, maxDist: number, queryGroups = BULLET_QUERY_GROUPS, exclude?: RAPIER.Collider): RayHit | null {
+  castRay(from: V3, dir: V3, maxDist: number, queryGroups = BULLET_QUERY_GROUPS, exclude?: RAPIER.Collider, excludeObject?: string): RayHit | null {
     this.sync();
     const ray = new this.R.Ray(from, dir);
-    const hit = this.world.castRayAndGetNormal(ray, maxDist, true, undefined, queryGroups, exclude);
+    const pred = excludeObject ? (c: RAPIER.Collider) => this.meta.get(c.handle)?.objectId !== excludeObject : undefined;
+    const hit = this.world.castRayAndGetNormal(ray, maxDist, true, undefined, queryGroups, exclude, undefined, pred);
     if (!hit) return null;
     const m = this.meta.get(hit.collider.handle);
     if (!m) return null;
@@ -182,4 +183,10 @@ export class PhysicsWorld {
   free() {
     this.world.free();
   }
+}
+
+/** Kolizní tvary pro ladicí zobrazení (čáry). */
+export function debugLines(p: PhysicsWorld) {
+  p.sync();
+  return p.world.debugRender();
 }

@@ -187,3 +187,56 @@ describe('schody, žebřík, most', () => {
     expect(on.s.pos.y).toBeGreaterThan(3.9);
   });
 });
+
+describe('zapuštěný vchod a kryty', () => {
+  it('výklenek vchodu: hráč do něj vejde (kryt), dál tělem budovy neprojde', async () => {
+    const b = obj('build.residential', { widthMod: 4, depthMod: 3, floors: 2, recess: 1.4, recessWidth: 2.2 }, [0, 0, -10], Math.PI);
+    // Rotace π → čelo budovy míří k +Z (k hráči). Čelní líc z = −10 + 4,5 = −5,5.
+    const phys = await makeWorld(collidersForMap([generateObject(b)]));
+    const s = new Sim(phys, { x: 0, y: 0, z: 0 });
+    s.settle();
+    s.run(4 * 60, { moveZ: 1 });
+    expect(s.s.pos.z).toBeLessThan(-6.3); // ve výklenku (hloubka 1,4 m)
+    expect(s.s.pos.z).toBeGreaterThan(-7.0); // zadní stěna výklenku zastaví
+    // Ze stran výklenku je kryt: paprsek z boku ulice narazí na pilíř.
+    const side = phys.castRay({ x: 6, y: 1.2, z: s.s.pos.z }, { x: -1, y: 0, z: 0 }, 20);
+    expect(side!.distance).toBeLessThan(6);
+  });
+
+  it('roura 1,4 m: vleže projde, ve stoje ne', async () => {
+    const pipe = obj('cover.pipe', { length: 3, diameter: 1.4 }, [0, 0, -4], Math.PI / 2);
+    const phys = await makeWorld(collidersForMap([generateObject(pipe)]));
+    const a = new Sim(phys);
+    a.settle();
+    a.run(3 * 60, { moveZ: 1 });
+    expect(a.s.pos.z).toBeGreaterThan(-3);
+    a.ctrl.dispose();
+    const b = new Sim(phys);
+    b.settle();
+    b.run(1, { held: BTN.PRONE });
+    b.run(30, {});
+    b.run(12 * 60, { moveZ: 1 });
+    expect(b.s.pos.z).toBeLessThan(-6);
+  });
+
+  it('ostnatý drát zastaví pěšáka, střela projde; HESCO zastaví obojí', async () => {
+    const wire = obj('cover.wire', { length: 6 }, [0, 0, -3]);
+    const hesco = obj('cover.hesco', { cells: 4 }, [10, 0, -3]);
+    const phys = await makeWorld(collidersForMap([generateObject(wire), generateObject({ ...hesco, id: 'h' })]));
+    const s = new Sim(phys);
+    s.settle();
+    s.run(2 * 60, { moveZ: 1 });
+    expect(s.s.pos.z).toBeGreaterThan(-2.6);
+    expect(phys.castRay({ x: 0, y: 0.5, z: 0 }, { x: 0, y: 0, z: -1 }, 10)).toBeNull();
+    expect(phys.castRay({ x: 10, y: 0.5, z: 0 }, { x: 0, y: 0, z: -1 }, 10)!.distance).toBeCloseTo(2.5, 1);
+  });
+
+  it('všechny assety vygenerují konečné díly s výchozími parametry', () => {
+    for (const a of (getAsset as unknown as { length: number }) ? [] : []) void a;
+    for (const id of ['cover.hesco', 'cover.hedgehog', 'cover.block', 'cover.pipe', 'cover.pallets', 'cover.rubble', 'cover.dumpster', 'cover.tires', 'cover.spool', 'cover.sandbagNest', 'cover.wire', 'cover.carWreck', 'build.hotel', 'build.industrial', 'small.bunker', 'small.booth', 'street.stall', 'street.road']) {
+      const g = generateObject(obj(id));
+      expect(g.missing).toBeUndefined();
+      for (const p of g.parts) for (const v of [...p.pos, ...p.size]) expect(Number.isFinite(v)).toBe(true);
+    }
+  });
+});

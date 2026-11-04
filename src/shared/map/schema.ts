@@ -29,6 +29,10 @@ export interface TerrainData {
   heights: number[];
   /** Základní povrch pro jednoduché výškové/svahové míchání. */
   baseMaterial: 'sand' | 'dirt' | 'urban';
+  /** Volitelná malovaná vrstva: podíl hlíny 0–1 na vzorek (stejné indexování jako heights). */
+  dirt?: number[];
+  /** Volitelná malovaná vrstva: podíl hrubého městského povrchu 0–1 na vzorek. */
+  urban?: number[];
 }
 
 export interface EnvironmentProfile {

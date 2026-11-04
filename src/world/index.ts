@@ -4,6 +4,7 @@ import './assets/structures';
 import './assets/buildings';
 import './assets/small';
 import './assets/props';
+import './assets/cover';
 
 export * from './registry';
 export * from './parts';

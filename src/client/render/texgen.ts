@@ -470,6 +470,9 @@ export const RECIPES: Record<string, { recipe: () => Recipe; normalStrength: num
   crateFruitA: { recipe: () => produce(371, '#c8551f'), normalStrength: 3 },
   crateFruitB: { recipe: () => produce(381, '#c9a227'), normalStrength: 3 },
   crateFruitC: { recipe: () => produce(391, '#5f8a2c'), normalStrength: 3 },
+  burntMetal: { recipe: () => paintedMetal(401, '#3b3530', 0.5), normalStrength: 2.5 },
+  hescoFill: { recipe: () => canvas(411, '#a6906a'), normalStrength: 3 },
+  rubber: { recipe: () => concrete('#2a2a29', 421, false), normalStrength: 1.5 },
 };
 
 /** sRGB kódování lineární hodnoty. */

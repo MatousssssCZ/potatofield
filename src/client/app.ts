@@ -12,6 +12,9 @@ import { Editor, TEST_SPAWN_ID } from './editor/editor';
 import { EditorDoc, History, type Change } from './editor/editorDoc';
 import { AutoSaver, MapStore, exportMapFile, readMapFile } from './editor/persistence';
 import { buildCatalog, issuesList, modal, renderInspector, renderSceneList, toast } from './editor/ui';
+import { insertMarker, renderTerrainPanel, type GameUiState } from './editor/uiGame';
+import { debugLines } from '../shared/physics/world';
+import { heightAt } from '../world/terrain';
 import { EnvironmentRig } from './render/environment';
 import { MaterialLibrary, TEXTURE_IDS, generateTextures, makeMacroNoise, sharedUniforms } from './render/materials';
 import { PostPipeline } from './render/post';
@@ -52,6 +55,9 @@ export class App {
   switches = 0;
   /** Žebříky po objektech (pro simulaci lezení v testu). */
   ladders = new Map<string, LadderDef[]>();
+  gameUi: GameUiState = { scenario: null };
+  private colliderLines: THREE.LineSegments | null = null;
+  private showColliders = false;
 
   async init() {
     const urlQ = new URLSearchParams(location.search).get('q');
@@ -152,6 +158,9 @@ export class App {
     this.editor.onStatus = () => this.renderStatus();
     this.editor.onToast = (m, k) => toast(m, k);
     this.editor.updateSpawnMarker();
+    this.editor.markers.rebuild(doc);
+    this.editor.onTerrainPreview = () => this.world.updateTerrain(this.ed.doc.terrain);
+    this.gameUi.scenario = null;
     this.editor.attach();
     this.unsub = this.ed.onChange((changes) => this.applyChanges(changes));
     this.history.onChange = () => {
@@ -188,12 +197,53 @@ export class App {
           if (g.ladders.length && !now.gameHidden) this.ladders.set(now.id, g.ladders);
           if (!now.gameHidden) this.phys.addColliders(partsToColliders(now, g.parts));
         }
+      } else if (c.kind === 'terrain') {
+        // Render i kolize terénu se aktualizují spolu (i při undo) – test nikdy nepoběží se starým colliderem.
+        this.world.updateTerrain(this.ed.doc.terrain);
+        this.phys.setTerrain(this.ed.doc.terrain);
+      } else if (c.kind === 'entity') {
+        this.editor.markers.rebuild(this.ed.doc);
       } else if (c.kind === 'testSpawn') this.editor.updateSpawnMarker();
       else if (c.kind === 'environment') this.env.apply(this.ed.doc.environment, this.quality);
       else if (c.kind === 'name') $('#tb-mapname').textContent = this.ed.doc.name;
     }
     this.phys.sync();
     this.editor.refreshSelectionVisuals();
+    if (this.showColliders) this.rebuildColliderLines();
+  }
+
+  private rebuildColliderLines() {
+    if (this.colliderLines) {
+      this.colliderLines.geometry.dispose();
+      (this.colliderLines.material as THREE.Material).dispose();
+      this.colliderLines.removeFromParent();
+      this.colliderLines = null;
+    }
+    if (!this.showColliders) return;
+    const { vertices, colors } = debugLines(this.phys);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    g.setAttribute('color', new THREE.BufferAttribute(colors, 4));
+    this.colliderLines = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.6, depthTest: false }));
+    this.colliderLines.renderOrder = 15;
+    this.colliderLines.raycast = () => {};
+    this.editor.root.add(this.colliderLines);
+  }
+
+  /** Jednorázové položení objektů na povrch pod nimi (terén nebo jiný objekt). */
+  dropToSurface(ids: string[]) {
+    const changes: Change[] = [];
+    for (const id of ids) {
+      const o = this.ed.getObject(id);
+      if (!o) continue;
+      const [x, y, z] = o.transform.position;
+      const hit = this.phys.castRay({ x, y: y + 50, z }, { x: 0, y: -1, z: 0 }, 200, undefined, undefined, id);
+      const ny = hit ? hit.point.y : heightAt(this.ed.doc.terrain, x, z);
+      if (ny === null || ny === undefined || Math.abs(ny - y) < 1e-4) continue;
+      changes.push({ kind: 'object', id, before: structuredClone(o), after: { ...structuredClone(o), transform: { ...o.transform, position: [x, Math.round(ny * 1000) / 1000, z] } } });
+    }
+    if (changes.length) this.history.execute({ label: 'Položit na povrch', changes });
+    else toast('Objekt už leží na povrchu.');
   }
 
   // ---------------- testovací spawn ----------------
@@ -239,7 +289,8 @@ export class App {
   // ---------------- režimy ----------------
 
   async enterPlay() {
-    if (this.mode === 'play') return;
+    if (this.mode === 'play' || this.editor.stroking) return;
+    if (this.editor.terrainMode) this.editor.setTerrainMode(false);
     const v = validateMap(JSON.parse(JSON.stringify(this.ed.doc)));
     if (!v.ok) {
       await modal('Mapu nelze testovat', issuesList(v.issues.filter((i) => i.severity === 'error')), [{ id: 'ok', label: 'Rozumím', primary: true }]);
@@ -351,7 +402,31 @@ export class App {
   // ---------------- UI ----------------
 
   private bindUI() {
-    buildCatalog((id) => this.editor.insertAsset(id));
+    buildCatalog((id) => {
+      if (id.startsWith('marker.')) {
+        const r = $('#view').getBoundingClientRect();
+        const hit = this.editor.pick(r.left + r.width / 2, r.top + r.height / 2, true).point;
+        const at: [number, number, number] = hit ? [hit.x, hit.y, hit.z] : [this.camera.position.x, 0, this.camera.position.z - 10];
+        insertMarker(this.ed, this.history, this.editor, ({ 'marker.flag': 'flag', 'marker.spawnA': 'spawnA', 'marker.spawnB': 'spawnB', 'marker.zone': 'zone' } as const)[id as 'marker.flag']!, at);
+      } else {
+        if (this.editor.terrainMode) this.editor.setTerrainMode(false);
+        this.editor.insertAsset(id);
+      }
+    });
+    $('#tb-vis-vol').addEventListener('click', () => {
+      const on = !this.editor.markers.showVolumes;
+      this.editor.markers.setVolumesVisible(on);
+      $('#tb-vis-vol').classList.toggle('on', on);
+    });
+    $('#tb-vis-col').addEventListener('click', () => {
+      this.showColliders = !this.showColliders;
+      $('#tb-vis-col').classList.toggle('on', this.showColliders);
+      this.rebuildColliderLines();
+    });
+    $('#tb-vis-slope').addEventListener('click', () => {
+      this.world.slopeDebug.value = this.world.slopeDebug.value ? 0 : 1;
+      $('#tb-vis-slope').classList.toggle('on', !!this.world.slopeDebug.value);
+    });
     buildSettingsUI(this.settings, () => {
       const g = this.session?.game;
       if (g) g.settings = { hFov: this.settings.hFov, bob: this.settings.bob, landingKick: this.settings.landingKick };
@@ -433,7 +508,11 @@ export class App {
     renderInspector(this.ed, this.history, this.editor, {
       missing: (id) => this.world.missing.get(id),
       spawnIssue: () => this.spawnIssue(),
+      game: this.gameUi,
+      rerender: () => (this.uiDirty = true),
+      dropToSurface: (ids) => this.dropToSurface(ids),
     });
+    if (!$('[data-body="terrain"]').classList.contains('hidden')) renderTerrainPanel($('#terrain-panel'), this.editor, () => (this.uiDirty = true));
     if (!$('[data-body="scene"]').classList.contains('hidden')) renderSceneList(this.ed, this.history, this.editor);
     $<HTMLButtonElement>('#tb-undo').disabled = !this.history.canUndo;
     $<HTMLButtonElement>('#tb-redo').disabled = !this.history.canRedo;
@@ -466,6 +545,39 @@ export class App {
     const si = this.spawnIssue();
     if (si) issues.push({ severity: 'warning', path: 'testSpawn', message: si });
     for (const [id, m] of this.world.missing) issues.push({ severity: 'warning', path: id, message: `placeholder: ${m}` });
+    const doc = this.ed.doc;
+    // Spawny proti objemu hráče a terénu.
+    for (const sp of doc.spawnPoints) {
+      const iss = this.spawnIssue(sp.position);
+      if (iss) issues.push({ severity: 'error', path: `spawn ${sp.id}`, message: iss });
+    }
+    // Žebříky: volný výstup nahoře.
+    for (const [oid, list] of this.ladders) {
+      for (const L of list) {
+        const exit = { x: L.base.x + L.facing.x * 0.6, y: L.base.y + L.height + 0.05, z: L.base.z + L.facing.z * 0.6 };
+        if (this.phys.capsuleBlocked(exit, MOVEMENT.stances.stand.height, MOVEMENT.radius)) issues.push({ severity: 'warning', path: oid, message: 'žebřík: výstup nahoře je blokovaný (nepoužitelný žebřík)' });
+      }
+    }
+    if (doc.controlPoints.length && !doc.scenarios.length) issues.push({ severity: 'warning', path: 'scenarios', message: 'mapa má body, ale žádný scénář – Conquest nelze spustit' });
+    for (const sc of doc.scenarios) {
+      for (const team of ['teamA', 'teamB'] as const) {
+        const ok = doc.spawnPoints.some((sp) => {
+          if (!sp.teams.includes(team)) return false;
+          if (!sp.controlPointId) return true;
+          const cp = doc.controlPoints.find((c) => c.id === sp.controlPointId);
+          const ov = sc.overrides.find((o) => o.controlPointId === sp.controlPointId);
+          const owner = ov?.defaultOwner ?? cp?.defaultOwner;
+          const en = ov?.spawnEnabled ?? cp?.spawnEnabled;
+          return owner === team && en && !ov?.disabled;
+        });
+        if (!ok) issues.push({ severity: 'error', path: `scénář ${sc.name}`, message: `tým ${team === 'teamA' ? 'A' : 'B'} nemá na začátku žádný dostupný spawn` });
+      }
+      const counted = doc.controlPoints.filter((c) => {
+        const ov = sc.overrides.find((o) => o.controlPointId === c.id);
+        return !ov?.disabled && (ov?.countsForBleed ?? c.countsForBleed);
+      });
+      if (!counted.length) issues.push({ severity: 'warning', path: `scénář ${sc.name}`, message: 'žádný bod se nepočítá do bleed – tickety budou ubývat jen smrtí' });
+    }
     const body = issues.length ? issuesList(issues) : document.createTextNode('Bez chyb a upozornění. (Kontrola neprokazuje vyváženost mapy.)');
     await modal('Kontrola mapy', body, [{ id: 'ok', label: 'Zavřít', primary: true }]);
   }
@@ -517,7 +629,20 @@ export class App {
       else toast('Mapu se nepodařilo načíst.', 'warn');
       return;
     }
-    if (choice === 'new') this.openDoc(buildEmptyMap());
+    if (choice === 'new') {
+      const b = document.createElement('div');
+      b.innerHTML = '<div class="prop"><span class="lbl">Rozměr plátna</span><select id="nm-size"><option value="128">128 × 128 m</option><option value="256" selected>256 × 256 m</option><option value="512">512 × 512 m</option><option value="1024">1024 × 1024 m</option></select></div><div class="prop"><span class="lbl">Rozteč terénu</span><select id="nm-sp"><option value="1" selected>1 m</option><option value="2">2 m</option><option value="4">4 m</option></select></div><div class="note">Rozměr a rozlišení terénu se nastavují před tvorbou; pozdější změna plátna je v pilotu zablokovaná.</div>';
+      const c = await modal('Nová mapa', b, [
+        { id: 'cancel', label: 'Zrušit' },
+        { id: 'ok', label: 'Vytvořit', primary: true },
+      ]);
+      if (c === 'ok') {
+        const size = Number((b.querySelector('#nm-size') as HTMLSelectElement).value);
+        let sp = Number((b.querySelector('#nm-sp') as HTMLSelectElement).value);
+        if (size / sp > 1024) sp = size / 1024;
+        this.openDoc(buildEmptyMap('Nová mapa', size, sp));
+      }
+    }
     else if (choice === 'range') this.openDoc(this.rangeTemplate());
     else if (choice === 'street') this.openDoc(this.streetTemplate());
     else if (choice === 'import') $<HTMLInputElement>('#file-import').click();

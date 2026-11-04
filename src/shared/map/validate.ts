@@ -177,6 +177,21 @@ export function validateMap(input: unknown, opts: { fileBytes?: number } = {}): 
             break;
           }
         }
+        for (const layer of ['dirt', 'urban'] as const) {
+          const arr = t[layer];
+          if (arr === undefined) continue;
+          if (!Array.isArray(arr) || arr.length !== n) {
+            c.err(`terrain.${layer}`, `očekáváno ${n} hodnot 0–1`);
+            continue;
+          }
+          for (let i = 0; i < arr.length; i++) {
+            const v = arr[i];
+            if (typeof v !== 'number' || !(v >= 0 && v <= 1)) {
+              c.err(`terrain.${layer}[${i}]`, 'hodnota mimo 0–1');
+              break;
+            }
+          }
+        }
       }
     }
   }

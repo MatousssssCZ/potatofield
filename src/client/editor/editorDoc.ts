@@ -1,4 +1,9 @@
-import type { EnvironmentProfile, MapDocument, MapObject, Transform } from '../../shared/map/schema';
+import type { ControlPoint, EnvironmentProfile, MapDocument, MapObject, Scenario, SpawnPoint, Transform, Zone } from '../../shared/map/schema';
+import { readRegion, writeRegion, type Region } from '../../world/terrain';
+
+export type EntityCollection = 'controlPoints' | 'spawnPoints' | 'zones' | 'scenarios';
+export type Entity = ControlPoint | SpawnPoint | Zone | Scenario;
+type RegionValues = ReturnType<typeof readRegion>;
 
 /**
  * Autorský dokument editoru. Jediné místo, kde se mění mapa – vždy přes
@@ -8,7 +13,9 @@ export type Change =
   | { kind: 'object'; id: string; before: MapObject | null; after: MapObject | null; index?: number }
   | { kind: 'testSpawn'; before: Transform | undefined; after: Transform | undefined }
   | { kind: 'environment'; before: EnvironmentProfile; after: EnvironmentProfile }
-  | { kind: 'name'; before: string; after: string };
+  | { kind: 'name'; before: string; after: string }
+  | { kind: 'terrain'; region: Region; before: RegionValues; after: RegionValues }
+  | { kind: 'entity'; collection: EntityCollection; id: string; before: Entity | null; after: Entity | null; index?: number };
 
 export interface Command {
   label: string;
@@ -69,14 +76,34 @@ export class EditorDoc {
         case 'name':
           this.doc.name = target as string;
           break;
+        case 'terrain':
+          writeRegion(this.doc.terrain, c.region, target as RegionValues);
+          break;
+        case 'entity': {
+          const arr = this.doc[c.collection] as Entity[];
+          const i = arr.findIndex((e) => e.id === c.id);
+          const v = target as Entity | null;
+          if (v === null) {
+            if (i >= 0) {
+              if (direction === 'do') c.index = i;
+              arr.splice(i, 1);
+            }
+          } else if (i >= 0) arr[i] = clone(v);
+          else arr.splice(c.index !== undefined ? Math.min(c.index, arr.length) : arr.length, 0, clone(v));
+          break;
+        }
       }
     }
     for (const l of this.listeners) l(list, direction);
   }
 
+  getEntity(collection: EntityCollection, id: string): Entity | undefined {
+    return (this.doc[collection] as Entity[]).find((e) => e.id === id);
+  }
+
   /** Vytvoří nové unikátní ID objektu. */
   newId(prefix = 'obj'): string {
-    const used = new Set(this.doc.objects.map((o) => o.id));
+    const used = new Set([...this.doc.objects, ...this.doc.controlPoints, ...this.doc.spawnPoints, ...this.doc.zones, ...this.doc.scenarios].map((o) => o.id));
     for (;;) {
       const id = `${prefix}_${Math.random().toString(36).slice(2, 8)}`;
       if (!used.has(id)) return id;
@@ -144,6 +171,18 @@ export class History {
 
 /** Pomocné konstruktory příkazů. */
 export const cmds = {
+  entity<T extends Entity>(ed: EditorDoc, collection: EntityCollection, id: string, mutate: ((e: T) => void) | null, label: string): Command {
+    const before = ed.getEntity(collection, id) as T | undefined;
+    if (!before) return { label, changes: [] };
+    if (!mutate) return { label, changes: [{ kind: 'entity', collection, id, before: clone(before), after: null }] };
+    const after = clone(before);
+    mutate(after);
+    if (JSON.stringify(after) === JSON.stringify(before)) return { label, changes: [] };
+    return { label, changes: [{ kind: 'entity', collection, id, before: clone(before), after }] };
+  },
+  addEntity(collection: EntityCollection, e: Entity, label: string): Command {
+    return { label, changes: [{ kind: 'entity', collection, id: e.id, before: null, after: clone(e) }] };
+  },
   insert(_ed: EditorDoc, objs: MapObject[], label = 'Vložit'): Command {
     return { label, changes: objs.map((o) => ({ kind: 'object', id: o.id, before: null, after: clone(o) })) };
   },

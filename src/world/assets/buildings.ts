@@ -49,6 +49,8 @@ function commonParams(d: { w: number; d: number; floors: number; fh: number; mod
       ],
     },
     { key: 'details', label: 'Klimatizace a detaily', type: 'bool', default: true },
+    { key: 'recess', label: 'Zapuštění vchodu', type: 'number', min: 0, max: 3, step: 0.1, unit: 'm', default: 0 },
+    { key: 'recessWidth', label: 'Šířka výklenku', type: 'number', min: 1.4, max: 8, step: 0.1, unit: 'm', default: 2.4 },
   ];
 }
 
@@ -73,9 +75,24 @@ function buildingParts(family: Family, p: Params, seed: number, wall: string): P
       ? { wall, trim: 'concreteLight', base: 'concreteDark', shutter: 'shutter', door: 'shutter' }
       : { wall, trim: wall === 'brick' ? 'sandstone' : 'concreteLight', base: 'concreteDark', shutter: ['woodDark', 'paintedMetalBlue', 'paintedMetal'][Math.floor(r() * 3)], door: 'woodDark' };
   const parts: Part[] = [];
-  // Pevné tělo – jedna kolize, render po plochách (dělení zajišťuje geometrie).
-  parts.push({ shape: 'box', pos: [0, H / 2, 0], size: [W, H, D], material: wall, collide: true });
-  parts.push({ shape: 'box', pos: [0, 0.3, 0], size: [W + 0.08, 0.6, D + 0.08], material: style.base, collide: true });
+  const rec = recessDims(family, p);
+  if (!rec) {
+    // Pevné tělo – jedna kolize, render po plochách (dělení zajišťuje geometrie).
+    parts.push({ shape: 'box', pos: [0, H / 2, 0], size: [W, H, D], material: wall, collide: true });
+    parts.push({ shape: 'box', pos: [0, 0.3, 0], size: [W + 0.08, 0.6, D + 0.08], material: style.base, collide: true });
+  } else {
+    // Zapuštěný vchod: tělo rozdělené na zadní hmotu, dva boční pilíře a nadpraží → skutečný výklenek (kryt).
+    const { rd, rw, rh } = rec;
+    const sw = (W - rw) / 2;
+    parts.push({ shape: 'box', pos: [0, H / 2, rd / 2], size: [W, H, D - rd], material: wall, collide: true });
+    for (const sx of [-1, 1]) {
+      parts.push({ shape: 'box', pos: [sx * (rw / 2 + sw / 2), H / 2, -D / 2 + rd / 2], size: [sw, H, rd], material: wall, collide: true });
+      parts.push({ shape: 'box', pos: [sx * (rw / 2 + sw / 2), 0.3, -D / 2 + rd / 2 - 0.02], size: [sw + 0.04, 0.6, rd + 0.04], material: style.base, collide: true });
+    }
+    parts.push({ shape: 'box', pos: [0, rh + (H - rh) / 2, -D / 2 + rd / 2], size: [rw, H - rh, rd], material: wall, collide: true });
+    parts.push({ shape: 'box', pos: [0, 0.3, rd / 2], size: [W + 0.08, 0.6, D - rd + 0.08], material: style.base, collide: true });
+    recessDetails(parts, family, rec, W, D, style, r);
+  }
   if (family !== 'industrial') {
     for (let f = 1; f < floors; f++) parts.push({ shape: 'box', pos: [0, f * fh, 0], size: [W + 0.1, 0.14, D + 0.1], material: style.trim });
     // Nárožní pilastry.
@@ -127,6 +144,7 @@ function buildingParts(family: Family, p: Params, seed: number, wall: string): P
         const base = fl * fh;
         const isGround = fl === 0;
         const centerMod = m === Math.floor(mods / 2);
+        if (isGround && side === 'front' && rec && Math.abs(u) < rec.rw / 2 + mod * 0.45) continue; // výklenek má vlastní vstup
         if (isGround && side === 'front') {
           if (family === 'commercial' || family === 'hotel') {
             shopfront(parts, f, u, mod, fh, r, family === 'hotel' && centerMod);
@@ -175,6 +193,51 @@ function buildingParts(family: Family, p: Params, seed: number, wall: string): P
     for (const s of [-1, 1]) parts.push(fbox(f, (s * Math.min(W * 0.4, 6)) / 2.3, 1.5, 1.85, [0.12, 3.0, 0.12], 'metal', { collide: true }));
   }
   return parts;
+}
+
+interface Recess {
+  rd: number;
+  rw: number;
+  rh: number;
+}
+
+function recessDims(family: Family, p: Params): Recess | null {
+  const { W, D, H, fh } = dims(p);
+  const depth = n(p, 'recess');
+  if (!(depth > 0.05)) return null;
+  const rd = Math.min(depth, D - 2);
+  const rw = Math.max(1.4, Math.min(n(p, 'recessWidth'), W - 1.2));
+  const rh = family === 'industrial' ? Math.min(5, H - 0.6) : Math.min(fh - 0.3, H - 0.3, 3.2);
+  if (rd < 0.3 || rh < 2.2) return null;
+  return { rd, rw, rh };
+}
+
+/** Výklenek: dveře / výloha / vrata na zadní stěně, dlažba, ostění a světlo. */
+function recessDetails(parts: Part[], family: Family, rec: Recess, W: number, D: number, style: Style, r: () => number) {
+  const { rd, rw, rh } = rec;
+  const f = facade('front', W, D);
+  // Podlaha výklenku (o 10 cm výš než terén, pochozí) a obklad ostění.
+  parts.push(fbox(f, 0, 0.05, -rd / 2, [rw, 0.1, rd], 'paving', { collide: true }));
+  parts.push(fbox(f, 0, rh - 0.06, -rd / 2, [rw, 0.12, rd], style.trim));
+  for (const s of [-1, 1]) parts.push(fbox(f, s * (rw / 2 + 0.12), rh / 2, 0.03, [0.24, rh, 0.08], style.trim));
+  parts.push(fbox(f, 0, rh + 0.12, 0.05, [rw + 0.5, 0.24, 0.12], style.trim));
+  const back = -rd;
+  if (family === 'industrial') {
+    rollerDoor(parts, { ...f, pos: (u: number, v: number, w: number) => f.pos(u, v, w + back) }, 0, Math.min(rw - 0.4, 4.5), Math.min(rh - 0.3, 4.2), r);
+    return;
+  }
+  if (family === 'commercial' || family === 'hotel') {
+    const gw = rw - 0.3;
+    parts.push(fbox(f, 0, 0.1 + (rh - 0.4) / 2, back + 0.004, [gw, rh - 0.4, 0.02], 'glassShop'));
+    for (const s of [-1, 1]) parts.push(fbox(f, (s * gw) / 2, 0.1 + (rh - 0.4) / 2, back + 0.03, [0.08, rh - 0.4, 0.08], 'paintedMetal'));
+    parts.push(fbox(f, 0, 1.15, back + 0.03, [1.0, 2.1, 0.03], 'paintedMetal'));
+  } else {
+    parts.push(fbox(f, 0, 0.1 + 1.15, back + 0.02, [1.2, 2.3, 0.05], style.door));
+    parts.push(fbox(f, 0, 0.1 + 2.4, back + 0.06, [1.6, 0.18, 0.12], style.trim));
+    // Schránky a cedulka u dveří.
+    parts.push(fbox(f, rw / 2 - 0.35, 1.3, back + 0.05, [0.4, 0.5, 0.1], 'paintedMetal'));
+  }
+  parts.push(fbox(f, 0, rh - 0.2, -rd / 2, [0.3, 0.12, 0.3], 'lamp'));
 }
 
 function windowModule(parts: Part[], f: ReturnType<typeof facade>, u: number, base: number, fh: number, variant: string, style: Style, r: () => number, ground: boolean, details: boolean, m: number, fl: number) {

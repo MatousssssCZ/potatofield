@@ -16,6 +16,29 @@ export class WorldView {
   readonly missing = new Map<string, string>();
   mode: 'editor' | 'play' = 'editor';
   private terrainMesh: THREE.Mesh | null = null;
+  get terrain() {
+    return this.terrainMesh;
+  }
+  readonly slopeDebug = { value: 0 };
+
+  /** Aktualizace renderu terénu po tahu štětcem (výšky, malba, normály) bez přestavby materiálu. */
+  updateTerrain(t: TerrainData) {
+    const m = this.terrainMesh;
+    if (!m) return this.setTerrain(t);
+    const g = m.geometry as THREE.BufferGeometry;
+    const pos = g.getAttribute('position') as THREE.BufferAttribute;
+    if (pos.count !== t.heights.length) return this.setTerrain(t);
+    for (let i = 0; i < t.heights.length; i++) pos.setY(i, t.heights[i]);
+    pos.needsUpdate = true;
+    const d = g.getAttribute('aDirt') as THREE.BufferAttribute, u = g.getAttribute('aUrban') as THREE.BufferAttribute;
+    for (let i = 0; i < t.heights.length; i++) {
+      d.setX(i, t.dirt?.[i] ?? 0);
+      u.setX(i, t.urban?.[i] ?? 0);
+    }
+    d.needsUpdate = u.needsUpdate = true;
+    g.computeVertexNormals();
+    g.computeBoundingSphere();
+  }
   private targets: Array<{ mesh: THREE.Object3D; base: THREE.Vector3; amp: number; speed: number; axis: THREE.Vector3 }> = [];
 
   constructor(
@@ -155,7 +178,7 @@ export class WorldView {
   private terrainMat: THREE.MeshStandardMaterial | null = null;
   private terrainMaterial(): THREE.MeshStandardMaterial {
     if (this.terrainMat) return this.terrainMat;
-    const sand = this.textures.get('sand')!, dirt = this.textures.get('dirt')!;
+    const sand = this.textures.get('sand')!, dirt = this.textures.get('dirt')!, urban = this.textures.get('concreteDark')!;
     const m = new THREE.MeshStandardMaterial({
       map: sand.map,
       normalMap: sand.normalMap,
@@ -167,17 +190,20 @@ export class WorldView {
     m.onBeforeCompile = (sh) => {
       sh.uniforms.uDirt = { value: dirt.map };
       sh.uniforms.uDirtN = { value: dirt.normalMap };
+      sh.uniforms.uUrban = { value: urban.map };
+      sh.uniforms.uUrbanN = { value: urban.normalMap };
       sh.uniforms.uMacro = sharedUniforms.uMacro;
+      sh.uniforms.uSlopeDebug = this.slopeDebug;
       sh.vertexShader = sh.vertexShader
-        .replace('#include <common>', '#include <common>\nvarying vec3 vWPos;\nvarying float vUpN;')
+        .replace('#include <common>', '#include <common>\nattribute float aDirt;\nattribute float aUrban;\nvarying vec3 vWPos;\nvarying float vUpN;\nvarying float vDirt;\nvarying float vUrban;')
         .replace(
           '#include <worldpos_vertex>',
-          '#include <worldpos_vertex>\nvWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvUpN = normal.y;',
+          '#include <worldpos_vertex>\nvWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvUpN = normal.y;\nvDirt = aDirt;\nvUrban = aUrban;',
         );
       sh.fragmentShader = sh.fragmentShader
         .replace(
           '#include <common>',
-          '#include <common>\nuniform sampler2D uDirt;\nuniform sampler2D uDirtN;\nuniform sampler2D uMacro;\nvarying vec3 vWPos;\nvarying float vUpN;\nfloat gTerrainMix;',
+          '#include <common>\nuniform sampler2D uDirt;\nuniform sampler2D uDirtN;\nuniform sampler2D uUrban;\nuniform sampler2D uUrbanN;\nuniform sampler2D uMacro;\nuniform float uSlopeDebug;\nvarying vec3 vWPos;\nvarying float vUpN;\nvarying float vDirt;\nvarying float vUrban;\nfloat gTerrainMix;\nfloat gUrbanMix;',
         )
         .replace(
           '#include <map_fragment>',
@@ -190,9 +216,14 @@ export class WorldView {
             vec4 sA = mix(texture2D(map, uvA), texture2D(map, uvB), 0.45);
             vec4 dA = mix(texture2D(uDirt, uvA * 0.9), texture2D(uDirt, uvB * 1.1), 0.45);
             float slope = 1.0 - smoothstep(0.75, 0.95, vUpN);
-            gTerrainMix = clamp(smoothstep(0.45, 0.75, m1 * 0.75 + m2 * 0.35) + slope, 0.0, 1.0);
+            gTerrainMix = clamp(max(smoothstep(0.45, 0.75, m1 * 0.75 + m2 * 0.35) + slope, smoothstep(0.0, 1.0, vDirt + (m2 - 0.5) * 0.3 * vDirt)), 0.0, 1.0);
+            gUrbanMix = clamp(vUrban + (m2 - 0.5) * 0.4 * vUrban, 0.0, 1.0);
             vec4 col = mix(sA, dA, gTerrainMix);
+            vec4 uA = mix(texture2D(uUrban, uvA * 1.4), texture2D(uUrban, uvB * 1.7), 0.4);
+            col = mix(col, uA, gUrbanMix);
             col.rgb *= 0.86 + 0.26 * m2;
+            // Debug: příliš prudké svahy (> 45°) červeně (jen zobrazení, nic se nevyrovnává).
+            if (uSlopeDebug > 0.5 && vUpN < 0.7071) col.rgb = mix(col.rgb, vec3(1.0, 0.1, 0.05), 0.65);
             diffuseColor *= col;
           }`,
         )
@@ -201,13 +232,14 @@ export class WorldView {
           `{
             vec3 nA = texture2D(normalMap, vNormalMapUv).xyz;
             vec3 nB = texture2D(uDirtN, vNormalMapUv * 0.9).xyz;
-            vec3 mapN = mix(nA, nB, gTerrainMix) * 2.0 - 1.0;
+            vec3 nU = texture2D(uUrbanN, vNormalMapUv * 1.4).xyz;
+            vec3 mapN = mix(mix(nA, nB, gTerrainMix), nU, gUrbanMix) * 2.0 - 1.0;
             mapN.xy *= normalScale;
             normal = normalize( tbn * mapN );
           }`,
         );
     };
-    m.customProgramCacheKey = () => 'terrain-v1';
+    m.customProgramCacheKey = () => 'terrain-v2';
     this.terrainMat = m;
     return m;
   }
@@ -261,6 +293,8 @@ export function terrainGeometry(t: TerrainData, tile: number): THREE.BufferGeome
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  g.setAttribute('aDirt', new THREE.BufferAttribute(Float32Array.from(t.dirt ?? new Array(nx * nz).fill(0)), 1));
+  g.setAttribute('aUrban', new THREE.BufferAttribute(Float32Array.from(t.urban ?? new Array(nx * nz).fill(0)), 1));
   g.setIndex(idx);
   g.computeVertexNormals();
   g.computeBoundingSphere();

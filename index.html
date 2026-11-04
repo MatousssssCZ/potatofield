@@ -24,6 +24,10 @@
           <span class="sep"></span>
           <button id="tb-space" title="Osy gizma: světové / lokální">Svět</button>
           <button id="tb-check" title="Kontrola mapy">✓ Kontrola</button>
+          <span class="sep"></span>
+          <button id="tb-vis-vol" class="on" title="Objemy zabírání, vazby spawnů">Objemy</button>
+          <button id="tb-vis-col" title="Zobrazit kolizní tvary">Kolize</button>
+          <button id="tb-vis-slope" title="Zvýraznit svahy nad 45°">Svahy</button>
         </div>
         <div class="tb-group">
           <button id="tb-play" class="primary" title="Testovat (F5)">▶ Testovat <kbd>F5</kbd></button>
@@ -31,7 +35,7 @@
       </header>
       <aside id="left" class="panel">
         <div class="panel-head">
-          <div class="tabs"><button data-tab="catalog" class="on">Katalog</button><button data-tab="scene">Scéna</button></div>
+          <div class="tabs"><button data-tab="catalog" class="on">Katalog</button><button data-tab="scene">Scéna</button><button data-tab="terrain">Terén</button></div>
           <button class="collapse" data-collapse="left" title="Sbalit panel">«</button>
         </div>
         <div class="tab-body" data-body="catalog">
@@ -39,6 +43,7 @@
           <div id="cat-list"></div>
         </div>
         <div class="tab-body hidden" data-body="scene"><div id="scene-list"></div></div>
+        <div class="tab-body hidden" data-body="terrain"><div id="terrain-panel"></div></div>
       </aside>
       <main id="viewport">
         <canvas id="view"></canvas>
