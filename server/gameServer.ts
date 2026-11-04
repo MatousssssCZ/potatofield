@@ -2,7 +2,7 @@ import { WebSocketServer, type WebSocket } from 'ws';
 import type { MapDocument, Team } from '../src/shared/map/schema';
 import { validateMap } from '../src/shared/map/validate';
 import { PhysicsWorld } from '../src/shared/physics/world';
-import { NET, PROTOCOL_VERSION, RADIO_TEXT, mapHash, parseClientMsg, type ClientMsg, type RemoteState, type ServerMsg } from '../src/shared/net/protocol';
+import { NET, PROTOCOL_VERSION, RADIO_TEXT, encodeRemote, mapHash, parseClientMsg, type ClientMsg, type RemoteState, type RemoteTuple, type ServerMsg } from '../src/shared/net/protocol';
 import { TeamLayer } from '../src/shared/net/team';
 import { MatchSim, type SimEvent, type SimPlayer } from '../src/shared/sim/match';
 import { emptyInput, sanitizeInput, type InputFrame } from '../src/shared/sim/input';
@@ -62,6 +62,8 @@ export class GameServer {
   private last = 0;
   private seq = 0;
   private snapAcc = 0;
+  private snapCount = 0;
+  private remoteCache: Map<string, RemoteTuple> | null = null;
   private tickTimes: number[] = [];
   private bytesWindow: Array<[number, number]> = [];
   private msgsWindow: number[] = [];
@@ -213,8 +215,15 @@ export class GameServer {
           c.inputs.push(sanitizeInput(f));
         }
         c.inputs.sort((a, b) => a.seq - b.seq);
-        // Omezení fronty: maximálně 0,5 s dopředu (ochrana proti speedhacku hromaděním vstupů).
-        if (c.inputs.length > 30) c.inputs.splice(0, c.inputs.length - 30);
+        // Krátká fronta (≤ 3 ticky): přebytečné vstupy se sloučí do následujícího –
+        // stisky a pohyb myši se neztratí, pohybový krok ano (žádný speedhack hromaděním).
+        while (c.inputs.length > 3) {
+          const old = c.inputs.shift()!;
+          const nx = c.inputs[0];
+          nx.pressed |= old.pressed;
+          nx.lookDYaw += old.lookDYaw;
+          nx.lookDPitch += old.lookDPitch;
+        }
         break;
       }
       case 'spawn': {
@@ -387,7 +396,11 @@ export class GameServer {
     this.snapAcc += 1 / 60;
     if (this.snapAcc >= 1 / NET.snapshotHz - 1e-9) {
       this.snapAcc -= 1 / NET.snapshotHz;
+      this.snapCount++;
+      // Vzdálení hráči se kódují jednou pro všechny příjemce.
+      this.remoteCache = new Map([...this.sim.players.values()].map((p) => [p.id, encodeRemote(this.remote(p))]));
       for (const c of this.clients.values()) if (c.player) this.sendSnapshot(c);
+      this.remoteCache = null;
     }
     this.tickTimes.push(performance.now() - t0);
     if (this.tickTimes.length > 3600) this.tickTimes.shift();
@@ -434,8 +447,8 @@ export class GameServer {
     const p = c.player!;
     const mem = this.team.members.get(c.id);
     const cq = this.sim.conquest;
-    const others: RemoteState[] = [];
-    for (const o of this.sim.players.values()) if (o.id !== c.id) others.push(this.remote(o));
+    const o: RemoteTuple[] = [];
+    for (const pl of this.sim.players.values()) if (pl.id !== c.id) o.push(this.remoteCache?.get(pl.id) ?? encodeRemote(this.remote(pl)));
     const spawns = cq && !p.alive ? this.sim.spawnOptions(p.team).map((s) => s.id) : [];
     const sq = mem?.squad ? this.team.squads.get(mem.squad) : undefined;
     const canSquad = !!sq && sq.leader !== c.id && !mem!.joinedWhileDead && !!this.sim.players.get(sq.leader)?.alive && (!cq || cq.cps.some((x) => x.owner === p.team));
@@ -444,8 +457,9 @@ export class GameServer {
       tick: this.sim.tick,
       time: this.sim.time,
       ack: c.lastSeq,
-      me: { state: p.state, weapon: p.weapon, hp: p.hp, alive: p.alive, respawnAt: p.respawnAt, zone: p.zone, kills: p.kills, deaths: p.deaths, team: p.team, squad: mem?.squad ?? null, canSquadSpawn: canSquad },
-      others,
+      me: { state: { ...p.state, blocked: [] }, weapon: p.weapon, hp: p.hp, alive: p.alive, respawnAt: p.respawnAt, zone: p.zone, kills: p.kills, deaths: p.deaths, team: p.team, squad: mem?.squad ?? null, canSquadSpawn: canSquad },
+      others: [],
+      o,
       cps: cq ? cq.cps.map((x) => ({ id: x.id, owner: x.owner, p: r3(x.p), activity: x.activity })) : null,
       tickets: cq ? { ...cq.tickets } : null,
       cqTime: cq?.time ?? 0,
@@ -457,7 +471,8 @@ export class GameServer {
       order: this.team.orderFor(mem?.squad ?? null),
       contacts: this.team.contacts[p.team],
       spawns,
-      scores: [...this.sim.players.values()].map((o) => ({ id: o.id, name: o.name, team: o.team, kills: o.kills, deaths: o.deaths, ping: this.clients.get(o.id)?.ping ?? 0, squad: o.team === p.team ? (this.team.members.get(o.id)?.squad ?? null) : null })),
+      // Skóre stačí 1×/s (šetří přenos); ostatní data každý snapshot.
+      scores: this.snapCount % NET.snapshotHz !== 1 ? [] : [...this.sim.players.values()].map((o) => ({ id: o.id, name: o.name, team: o.team, kills: o.kills, deaths: o.deaths, ping: this.clients.get(o.id)?.ping ?? 0, squad: o.team === p.team ? (this.team.members.get(o.id)?.squad ?? null) : null })),
     });
   }
 

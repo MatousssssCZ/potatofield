@@ -91,6 +91,9 @@ export class EnvironmentRig {
   private envRT: THREE.WebGLRenderTarget | null = null;
   private shadowRange = 45;
   private time = 0;
+  /** Déšť: kosmetický efekt jen kolem kamery (Low ho vypíná; herní viditelnost nemění). */
+  private rain: THREE.LineSegments | null = null;
+  private rainPos: Float32Array | null = null;
 
   constructor(
     private renderer: THREE.WebGLRenderer,
@@ -148,6 +151,31 @@ export class EnvironmentRig {
     sh.radius = 3;
 
     this.rebuildEnvMap(look);
+    this.setRain(env.preset === 'overcastRain' && q.id !== 'low' ? (q.id === 'high' ? 4000 : 2200) : 0);
+  }
+
+  private setRain(count: number) {
+    if (this.rain) {
+      this.rain.geometry.dispose();
+      (this.rain.material as THREE.Material).dispose();
+      this.rain.removeFromParent();
+      this.rain = null;
+      this.rainPos = null;
+    }
+    if (!count) return;
+    const pos = new Float32Array(count * 6);
+    for (let i = 0; i < count; i++) {
+      const x = (Math.random() - 0.5) * 40, y = Math.random() * 20, z = (Math.random() - 0.5) * 40;
+      pos.set([x, y, z, x + 0.02, y - 0.45, z + 0.01], i * 6);
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const m = new THREE.LineBasicMaterial({ color: '#b9c2c8', transparent: true, opacity: 0.35, depthWrite: false });
+    this.rain = new THREE.LineSegments(g, m);
+    this.rain.frustumCulled = false;
+    this.rain.raycast = () => {};
+    this.rainPos = pos;
+    this.scene.add(this.rain);
   }
 
   /**
@@ -207,9 +235,24 @@ export class EnvironmentRig {
     this.sun.position.copy(snapped).addScaledVector(this.sunDir, 200);
     this.sun.target.updateMatrixWorld();
     this.sky.position.copy(focus);
+    if (this.rain && this.rainPos) {
+      const p = this.rainPos;
+      const fall = 14 * dt;
+      for (let i = 0; i < p.length; i += 6) {
+        p[i + 1] -= fall;
+        p[i + 4] -= fall;
+        if (p[i + 4] < -2) {
+          p[i + 1] += 20;
+          p[i + 4] += 20;
+        }
+      }
+      this.rain.geometry.getAttribute('position').needsUpdate = true;
+      this.rain.position.set(Math.round(focus.x / 4) * 4, focus.y - 4, Math.round(focus.z / 4) * 4);
+    }
   }
 
   dispose() {
     this.envRT?.dispose();
+    this.setRain(0);
   }
 }

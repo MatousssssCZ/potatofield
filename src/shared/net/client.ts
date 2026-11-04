@@ -1,4 +1,4 @@
-import { NET, PROTOCOL_VERSION, type ClientMsg, type ServerMsg } from './protocol';
+import { NET, PROTOCOL_VERSION, decodeRemote, type ClientMsg, type ServerMsg } from './protocol';
 import type { InputFrame } from '../sim/input';
 
 /** Minimální rozhraní WebSocketu (prohlížeč i knihovna ws). */
@@ -82,6 +82,10 @@ export class NetClient {
       this.welcome = m;
       this.id = m.id;
     } else if (m.t === 'snap') {
+      if (m.o) {
+        m.others = m.o.map(decodeRemote);
+        delete m.o;
+      }
       // Zprávy mimo pořadí (jitter) – starší snapshot zahodit.
       if (this.lastSnap && m.tick <= this.lastSnap.tick) return;
       this.lastSnap = m;

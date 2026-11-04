@@ -98,7 +98,7 @@ export class NetDriver implements GameDriver {
     this.squads = s.squads;
     this.order = s.order;
     this.contacts = s.contacts;
-    this.scores = s.scores;
+    if (s.scores.length) this.scores = s.scores;
     if (!this.ctrl) return;
     // Korekce: autoritativní stav + přehrání vstupů, které server ještě nezpracoval.
     const before = this.state ? { ...this.state.pos } : null;

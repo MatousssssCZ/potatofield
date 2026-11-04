@@ -414,7 +414,7 @@ function renderMapProps(root: HTMLElement, ed: EditorDoc, history: History) {
   for (const [v, l] of [
     ['dustyNoon', 'Prašné poledne'],
     ['clearSun', 'Čisté slunečno'],
-    ['overcastRain', 'Zataženo (déšť později)'],
+    ['overcastRain', 'Zataženo s deštěm'],
   ])
     preset.appendChild(el('option', { value: v }, l));
   preset.value = env.preset;

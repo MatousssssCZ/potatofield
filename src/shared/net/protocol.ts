@@ -126,6 +126,8 @@ export type ServerMsg =
       ack: number;
       me: SelfState;
       others: RemoteState[];
+      /** Kompaktní forma others na drátě (klient ji rozbalí do `others`). */
+      o?: RemoteTuple[];
       cps: Array<Pick<CPState, 'id' | 'owner' | 'p' | 'activity'>> | null;
       tickets: Record<Team, number> | null;
       cqTime: number;
@@ -205,3 +207,30 @@ export const RADIO_TEXT: Record<RadioId, string> = {
   thanks: 'Díky!',
   sorry: 'Promiň!',
 };
+
+/** Kompaktní n-tice vzdáleného hráče (pořadí polí = verze protokolu). */
+export type RemoteTuple = [string, string, 0 | 1, 0 | 1, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, string | null, string | null];
+const STANCES = ['stand', 'crouch', 'prone'] as const;
+const ACTIONS = ['equip', 'idle', 'reload', 'sprintOut'] as const;
+
+export function encodeRemote(r: RemoteState): RemoteTuple {
+  return [
+    r.id, r.name, r.team === 'teamA' ? 0 : 1, r.alive ? 1 : 0,
+    r.pos[0], r.pos[1], r.pos[2], r.vel[0], r.vel[1], r.vel[2],
+    r.yaw, r.pitch, r.bodyYaw, r.height,
+    STANCES.indexOf(r.stance), (r.grounded ? 1 : 0) | (r.sprinting ? 2 : 0), r.ads,
+    ACTIONS.indexOf(r.action), r.actionStart, r.actionEnd, r.shotSeq, 0, 0,
+    r.ladder, r.squad,
+  ];
+}
+
+export function decodeRemote(t: RemoteTuple): RemoteState {
+  return {
+    id: t[0], name: t[1], team: t[2] === 0 ? 'teamA' : 'teamB', alive: t[3] === 1,
+    pos: [t[4], t[5], t[6]], vel: [t[7], t[8], t[9]],
+    yaw: t[10], pitch: t[11], bodyYaw: t[12], height: t[13],
+    stance: STANCES[t[14]] ?? 'stand', grounded: (t[15] & 1) !== 0, sprinting: (t[15] & 2) !== 0, ads: t[16],
+    action: ACTIONS[t[17]] ?? 'idle', actionStart: t[18], actionEnd: t[19], shotSeq: t[20],
+    ladder: t[23], squad: t[24],
+  };
+}

@@ -70,9 +70,27 @@ Všechny číselné hodnoty jsou návrhy Potatofieldu (`proposed`), ne změřen�
   Šablona dostane vlastní ID, takže úpravy nepřepíší referenční soubor.
 - Nejbližší volné místo pro spawn: spirála po 0,5 m do 40 m, položení paprskem na povrch, test kapslí hráče.
 
+## Zbraň a pohyb vojáků
+- Vizuálně M4A1 (grafické zadání), pravidla střelby zůstávají PF-Rifle z původního zadání (600 RPM, 30/120, …).
+- **Přebíjení za sprintu je povolené** (zadání „Pohyb vojáků“, kap. 10) – sprint reload nepřeruší; střelba během reloadu blokována.
+- Recoil = zbývající offset zamíření (návrat jen tohoto offsetu); rozptyl = rovnoměrný kužel ze seedu
+  serveru a pořadí výstřelu; kosmetické kopnutí jen v renderu.
+- Herní ústí ze sdíleného profilu PF_RIG (oči → ústí → bod zamíření); blízká překážka zbraň stáhne a pod 0,55 m blokuje střelbu.
+- Kolimátor: tečka v shaderu podle směru pohledu vůči ose optiky (kolimace), viditelná jen průhledem tubusu; ADS přiblížení 1,35× je prezentace kamery.
+- Ruce: skinned mesh (1 draw call/ruka), pózy = data; full-body IK se nepoužívá.
+
+## Multiplayer
+- JSON přes WebSocket (`ws`, MIT), permessage-deflate. Server 60 Hz, snapshot 30 Hz, interpolace 100 ms.
+- Fronta vstupů ≤ 3 ticky; přebytek se slučuje (stisky a pohyb myši se zachovají) – zátěžový test odhalil zpoždění 0,5 s.
+- Bez lag compensation: zásahy proti aktuální poloze na serveru (vysoký ping je nevýhoda – přiznáno).
+- Spot: server ověřuje kužel 1,5°, dosah 200 m a viditelnost paprskem; „podezřelá oblast“ je jen na viditelném povrchu.
+- Hitmarker (zásah) dostává jen střelec a oběť; chat/kontakty/čety se distribuují podle týmu a čety.
+- Referenční ulice obsahuje testovací Conquest data (5 bodů, 2 scénáře) jen pro síťový pilot.
+
 ## Dočasné / placeholdery
-- Puška ve FP je 3D placeholder z kvádrů bez rukou a střelby (krok 6 dodá PF-Rifle s rukama a ADS).
-- Figuríny na střelnici zatím nemají hitboxy (krok 7 – projektily).
+- Ostatních 11 zbraní arzenálu není hotových (prohlížeč je označuje „čeká“).
+- World model vojáka je jednoduchá figura bez skeletu (kolena/kyčle pózy ze stavu); 3P rig podle zadání pohybu vojáků zbývá.
+- Ruce: póza levé ruky a prstů vyžaduje další ladění.
 
 ## Prostředí, kde vznikal kód
 - Screenshoty v `docs/screenshots/` jsou ze skutečné aplikace, ale renderované **softwarově (SwiftShader)**

@@ -3,10 +3,9 @@
 Browserová pěchotní FPS inspirovaná Battlefield 2 a integrovaný editor map.
 TypeScript + Vite + Three.js, kolize a pohyb přes Rapier (stejný kód pro klienta i budoucí server).
 
-> Stav: **kroky 0–3** – společný základ, sdílený controller pěšáka, technická střelnice
-> s procedurálními materiály, **editor map** s testovacím režimem, historií a ukládáním.
-> Parametrické budovy, terénní štětce, 3D puška s rukama, Conquest a multiplayer přijdou
-> v dalších krocích (viz [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)).
+> Stav: kroky 0–9 v pilotním rozsahu – editor map s parametrickou stavebnicí a terénem, M4A1
+> s rukama a kolimátorem, lokální Conquest, autoritativní multiplayer s četami, chatem, rádiem
+> a spotováním. Co je hotové, rozpracované a neověřené: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
 
 ## Spuštění
 
@@ -30,6 +29,8 @@ se zachovanou kamerou, výběrem i historií.
 | `npm run build` | typová kontrola + produkční build do `dist/` |
 | `npm test` | automatické testy (pohyb, mapový formát, generátory) |
 | `npm run maps` | export referenčních map do `maps/*.json` |
+| `npm run server` | lokální herní server (výchozí `maps/street_reference.json`, port 8787) |
+| `npm run loadtest -- --bots 16 --seconds 60` | zátěžový test se 16 boty |
 | `npm run texsheet -- out.png` | náhled všech procedurálních textur (vývoj) |
 | `node scripts/editor-check.mjs <url> <dir>` | screenshoty editoru + kontrola úniků při 20 přepnutích (vyžaduje Playwright) |
 | `node scripts/editor-interact.mjs <url> <dir>` | interakce myší/klávesnicí v editoru |
@@ -64,6 +65,24 @@ Parametry URL: `?q=low|standard|high` vynutí profil kvality, `?dev` zapne dev p
   proto si důležité mapy exportujte. Chybný import nikdy nepřepíše otevřenou mapu.
 - **✓ Kontrola**: chyby a upozornění mapy (neplatný spawn, chybějící assety, validace).
 
+## Multiplayer
+
+```bash
+npm run server
+```
+
+V editoru klikněte na **🌐 Multiplayer**, zadejte `ws://<adresa>:8787` a jméno. Mapu posílá server
+(klient ji jen validuje); po návratu do editoru se obnoví vaše mapa. Dialog umožňuje simulovat RTT,
+jitter a ztráty. Server: `--map soubor.json --port 8787 --scenario sc_bases | --free`.
+
+| Akce | Klávesa |
+|---|---|
+| Chat všem / týmu / četě | J / K / L, Enter odeslat, Esc zrušit |
+| Rádiové kolo | držet Q, myší vybrat, kliknout = odeslat |
+| Rozkaz čety (velitel) | T, pak 1 útok / 2 obrana / 3 přesun |
+| Čety | Home nebo P |
+| Skóre | Tab |
+
 ## Ovládání ve hře
 
 | Akce | Klávesa |
@@ -74,7 +93,9 @@ Parametry URL: `?q=low|standard|high` vynutí profil kvality, `?dev` zapne dev p
 | Skok | Mezerník |
 | Dřep | levý Ctrl (držet; v nastavení lze přepínání) |
 | Leh | Z (fyzická klávesa vlevo dole – na české klávesnici popsaná **Y**) |
-| Střelba / míření / přebití | LMB / RMB / R – *zbraň je zatím placeholder bez střelby (krok 6–7)* |
+| Střelba / míření / přebití | LMB / RMB (přepínač) / R – přebíjet lze i za sprintu |
+| Režim střelby | 3 nebo B (auto/semi) |
+| Žebřík | E nastoupit, W/S lézt, Space pustit |
 | Menu, uvolnění myši | Esc |
 | Zpět do editoru | F5 (nebo z menu) |
 | Dev panel | F3 nebo klávesa pod Esc |
@@ -115,9 +136,20 @@ Klíčová myšlenka: každý objekt mapy generátor převede na seznam **dílů
 Ze stejných dílů vzniká render geometrie i kolize, takže nemohou nesouhlasit, a server je sestaví
 bez DOM.
 
+## Testovat v editoru
+
+Bez bodů a scénářů je to volný test od markeru (figuríny na střelnici jdou sestřelit). S body
+a scénáři dialog nabídne Conquest (scénář + tým): zabírání, tickety, respawn, výběr spawnu, zóny.
+
+## Prohlížeč zbraní
+
+`/viewer.html` – M4A1 a ruce: hip/ADS/boky, světlo, kvalita, FOV, animace, počty trojúhelníků a draw calls.
+
 ## Dokumenty
 
 - [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) – checklist kroků 0–9
 - [DECISIONS.md](DECISIONS.md) – pracovní volby a odchylky
 - [ASSET_CREDITS.md](ASSET_CREDITS.md) – původ assetů a licence knihoven
 - [docs/MAP_FORMAT.md](docs/MAP_FORMAT.md) – verzovaný mapový formát a ochranné meze
+- [docs/PERFORMANCE.md](docs/PERFORMANCE.md) – zátěžový test serveru, čekající měření klienta
+- [docs/weapons/M4A1.md](docs/weapons/M4A1.md) – referenční karta první zbraně
