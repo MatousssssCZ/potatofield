@@ -79,18 +79,31 @@ describe('logika zbraně', () => {
     expect(s.ws.reserve).toBe(0);
   });
 
-  it('zrušení reloadu sprintem v 25/60/90 % nemění munici', async () => {
+  it('reload pokračuje během sprintu a při změně postoje; munice se připíše jednou', async () => {
     for (const frac of [0.25, 0.6, 0.9]) {
       const s = new Shooter(await makeWorld());
       s.tick(30, { held: BTN.FIRE });
-      const before = [s.ws.mag, s.ws.reserve];
+      const total = s.ws.mag + s.ws.reserve;
       s.tick(1, { held: BTN.RELOAD });
       s.tick(Math.round(2.4 * 60 * frac), {});
       s.tick(20, { moveZ: 1, held: BTN.SPRINT });
-      expect(s.ws.action).not.toBe('reload');
-      s.tick(200, {});
-      expect([s.ws.mag, s.ws.reserve]).toEqual(before);
+      expect(s.sim.s.sprinting).toBe(true);
+      expect(s.ws.action === 'reload' || s.ws.mag === 30).toBe(true);
+      s.tick(200, { held: BTN.CROUCH });
+      expect(s.ws.mag).toBe(30);
+      expect(s.ws.mag + s.ws.reserve).toBe(total);
     }
+  });
+
+  it('R během sprintu zahájí reload a hráč dál sprintuje; během reloadu se nestřílí', async () => {
+    const s = new Shooter(await makeWorld());
+    s.tick(10, { held: BTN.FIRE });
+    s.tick(20, { moveZ: 1, held: BTN.SPRINT });
+    s.tick(1, { moveZ: 1, held: BTN.SPRINT | BTN.RELOAD });
+    expect(s.ws.action).toBe('reload');
+    s.tick(30, { moveZ: 1, held: BTN.SPRINT });
+    expect(s.sim.s.sprinting).toBe(true);
+    expect(s.tick(30, { held: BTN.FIRE })).toBe(0);
   });
 
   it('během sprintu nelze střílet; po sprintu nejdřív sprint-out 0,25 s', async () => {

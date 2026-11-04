@@ -39,7 +39,7 @@ export class WorldView {
     g.computeVertexNormals();
     g.computeBoundingSphere();
   }
-  private targets: Array<{ mesh: THREE.Object3D; base: THREE.Vector3; amp: number; speed: number; axis: THREE.Vector3 }> = [];
+  private targets: Array<{ id: string; mesh: THREE.Object3D; base: THREE.Vector3; amp: number; speed: number; axis: THREE.Vector3 }> = [];
 
   constructor(
     private mats: MaterialLibrary,
@@ -144,12 +144,21 @@ export class WorldView {
     ring2.position.z = -0.0185;
     fig.add(ring2);
     group.add(fig);
-    if (params.moving) {
-      this.targets.push({ mesh: fig, base: fig.position.clone(), amp: Number(params.amplitude) || 4, speed: Number(params.speed) || 2, axis: new THREE.Vector3(1, 0, 0) });
-    }
+    this.targets.push({ id: group.userData.objectId, mesh: fig, base: fig.position.clone(), amp: params.moving ? Number(params.amplitude) || 4 : 0, speed: params.moving ? Number(params.speed) || 2 : 0, axis: new THREE.Vector3(1, 0, 0) });
   }
 
   /** Deterministický pohyb terčů z času simulace. */
+  /** Figuríny ze simulace (poloha a sražení); prázdný seznam = výchozí stav (editor). */
+  updateDummies(list: Array<{ id: string; offset: number; down: boolean }>) {
+    const m = new Map(list.map((d) => [d.id, d]));
+    for (const t of this.targets) {
+      const d = m.get(t.id);
+      t.mesh.position.copy(t.base).addScaledVector(t.axis, d ? d.offset : 0);
+      const want = d?.down ? -1.45 : 0;
+      t.mesh.rotation.x += (want - t.mesh.rotation.x) * 0.25;
+    }
+  }
+
   update(simTime: number) {
     for (const t of this.targets) {
       const period = (4 * t.amp) / Math.max(0.1, t.speed);

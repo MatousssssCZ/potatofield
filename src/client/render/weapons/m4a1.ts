@@ -139,7 +139,8 @@ export function buildM4A1(segScale = 1): WeaponModel {
   const z0 = -0.005, z1 = -0.122;
   // Montáž: objímka lišty + sloupek + kroužky.
   metal.push(bevelBox(0.032, 0.012, 0.05, 0.002, C.optic, [0, 0.07, -0.06]));
-  metal.push(bevelBox(0.016, axisY - 0.08, 0.044, 0.002, C.optic, [0, (axisY + 0.076) / 2, -0.06]));
+  // Sloupek končí pod vnějším pláštěm tubusu (nesmí zasahovat do průhledu).
+  metal.push(bevelBox(0.016, axisY - 0.0195 - 0.074, 0.044, 0.002, C.optic, [0, (axisY - 0.0195 + 0.074) / 2, -0.06]));
   metal.push(bevelBox(0.006, 0.01, 0.03, 0.0015, C.metalDark, [0.018, 0.07, -0.06]));
   // Tubus: dutý (vnitřní tunel s tloušťkou stěny) + mírně rozšířené čelo.
   const tubeProf: Array<[number, number]> = [

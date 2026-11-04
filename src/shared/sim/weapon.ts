@@ -186,6 +186,7 @@ export function stepWeapon(
     else if (ws.mag >= w.magazine) ws.blockReason = 'reload: plný zásobník';
     else if (ws.reserve <= 0) ws.blockReason = 'reload: bez rezervy';
     else if (ps.ladder) ws.blockReason = 'reload: na žebříku';
+    else if (ws.action === 'sprintOut') ws.blockReason = 'reload: sprint-out';
     else {
       ws.reloadEmpty = ws.mag === 0;
       ws.action = 'reload';
@@ -195,12 +196,9 @@ export function stepWeapon(
     }
   }
 
-  // Sprint: přeruší reload (bez změny munice), vypne ADS; po něm sprint-out.
+  // Sprint: vypne ADS; přebíjení pokračuje (zadání „Pohyb vojáků“ kap. 10 – sprint-reload povolen).
+  // Po sprintu následuje sprint-out (jen když neběží jiná akce).
   if (ps.sprinting) {
-    if (ws.action === 'reload') {
-      ws.action = 'idle';
-      ws.blockReason = 'reload zrušen sprintem';
-    }
     ws.adsToggle = false;
     ws.wasSprinting = true;
   } else if (ws.wasSprinting) {

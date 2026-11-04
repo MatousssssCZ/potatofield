@@ -728,3 +728,177 @@ kbd {
     font-size: 14px;
   }
 }
+
+/* ---------- Herní HUD ---------- */
+.h-box {
+  position: absolute;
+  bottom: 22px;
+  font-family: var(--font);
+  color: var(--text);
+  text-shadow: 0 1px 2px #000;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.h-box b {
+  font-size: 30px;
+  font-weight: 700;
+}
+.h-box span {
+  font-size: 16px;
+  color: var(--dim);
+}
+.h-box small {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+}
+.h-ammo {
+  right: 28px;
+}
+.h-hp {
+  left: 110px;
+}
+.h-hit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  opacity: 0;
+  transition: opacity 0.08s;
+  background:
+    linear-gradient(45deg, transparent 45%, #fff 45%, #fff 55%, transparent 55%),
+    linear-gradient(-45deg, transparent 45%, #fff 45%, #fff 55%, transparent 55%);
+  -webkit-mask: radial-gradient(circle, transparent 5px, #000 6px);
+  mask: radial-gradient(circle, transparent 5px, #000 6px);
+}
+.h-top {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 18px;
+  font: 700 18px var(--font);
+  text-shadow: 0 1px 2px #000;
+}
+.h-top .t {
+  color: var(--text);
+  font-weight: 600;
+}
+.h-cps {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+}
+.h-cps .cp {
+  position: relative;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 3px 7px 6px;
+  font-size: 11px;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.h-cps .cp i {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+}
+.h-cps .cp u {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+}
+.h-cap {
+  position: absolute;
+  top: 28%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  font: 700 13px var(--font);
+  letter-spacing: 0.1em;
+  text-shadow: 0 1px 2px #000;
+}
+.h-cap .bar {
+  width: 220px;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  margin-top: 4px;
+}
+.h-cap .bar u {
+  display: block;
+  height: 100%;
+}
+.h-zone {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(150, 20, 10, 0.75);
+  padding: 8px 16px;
+  font: 700 16px var(--font);
+}
+.h-feed {
+  position: absolute;
+  right: 16px;
+  top: 14px;
+  font-size: 12px;
+  text-align: right;
+  text-shadow: 0 1px 2px #000;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.h-death,
+.h-end {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(20, 17, 13, 0.9);
+  border: 1px solid var(--line);
+  padding: 16px;
+  pointer-events: auto;
+  text-align: center;
+  max-width: calc(100vw - 32px);
+}
+.h-death h2,
+.h-end h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+}
+.h-death canvas {
+  display: block;
+  margin: 8px auto;
+  max-width: 100%;
+  cursor: pointer;
+}
+.h-death button,
+.h-end button {
+  font: 600 13px var(--font);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+  padding: 7px 14px;
+  margin: 3px;
+  cursor: pointer;
+}
+.h-death button.on {
+  border-color: var(--accent);
+  color: #ffe2a8;
+}
+.h-death button.primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.h-death button:disabled {
+  opacity: 0.4;
+}

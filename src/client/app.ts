@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { CAMERA, vFovFromH16x9 } from '../shared/config/camera';
 import { MOVEMENT, toDeg } from '../shared/config/movement';
+import { PF_RIFLE } from '../shared/config/weapon';
+import { spreadOf } from '../shared/sim/weapon';
 import type { MapDocument } from '../shared/map/schema';
 import { validateMap } from '../shared/map/validate';
 import { PhysicsWorld, initRapier } from '../shared/physics/world';
@@ -21,6 +23,8 @@ import { PostPipeline } from './render/post';
 import { QUALITY, type QualityProfile } from './render/quality';
 import { WorldView } from './render/worldView';
 import { PlaySession } from './runtime/session';
+import { GameAudio } from './runtime/audio';
+import type { Team } from '../shared/map/schema';
 import { buildControlsUI, buildSettingsUI, loadSettings, type Settings } from './ui/settings';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -56,6 +60,7 @@ export class App {
   /** Žebříky po objektech (pro simulaci lezení v testu). */
   ladders = new Map<string, LadderDef[]>();
   gameUi: GameUiState = { scenario: null };
+  readonly audio = new GameAudio();
   private colliderLines: THREE.LineSegments | null = null;
   private showColliders = false;
 
@@ -318,6 +323,21 @@ export class App {
       }
       spawn = safe;
     }
+    // Volba režimu: volný test od markeru, nebo Conquest (scénář + tým), má-li mapa body.
+    let mode: { conquest: boolean; scenarioId?: string; team: Team } = { conquest: false, team: 'teamA' };
+    const doc = this.ed.doc;
+    if (doc.controlPoints.length && doc.scenarios.length && !this.forceFreeTest) {
+      const b = document.createElement('div');
+      b.innerHTML = `<div class="prop"><span class="lbl">Scénář</span><select id="pm-sc">${doc.scenarios.map((x) => `<option value="${x.id}">${x.name.replace(/[<>&"]/g, '')}</option>`).join('')}</select></div><div class="prop"><span class="lbl">Tým</span><select id="pm-team"><option value="teamA">Tým A</option><option value="teamB">Tým B</option></select></div><div class="note">Conquest běží lokálně (bez botů): zabírání, tickety, respawn a zóny podle scénáře.</div>`;
+      const ch = await modal('Testovat', b, [
+        { id: 'cancel', label: 'Zrušit' },
+        { id: 'free', label: 'Volný test od markeru' },
+        { id: 'cq', label: 'Conquest', primary: true },
+      ]);
+      if (!ch || ch === 'cancel') return;
+      if (ch === 'cq') mode = { conquest: true, scenarioId: (b.querySelector('#pm-sc') as HTMLSelectElement).value, team: (b.querySelector('#pm-team') as HTMLSelectElement).value as Team };
+    }
+    this.audio.unlock();
     this.editorCam = this.editor.saveCamera();
     this.editor.detach();
     this.mode = 'play';
@@ -328,19 +348,31 @@ export class App {
     this.session = new PlaySession(
       $<HTMLCanvasElement>('#view'),
       this.camera,
+      this.scene,
       this.phys,
-      this.mats,
+      this.world,
       this.ed.doc,
       { position: spawn as [number, number, number], yaw },
+      [...this.ladders.values()].flat(),
+      this.audio,
+      this.quality,
       { sensitivity: s.sensitivity, invertY: s.invertY, crouchToggle: s.crouchToggle },
       { hFov: s.hFov, bob: s.bob, landingKick: s.landingKick },
       CAMERA.radiansPerCount,
+      mode,
     );
-    this.session.game.ctrl.ladders = [...this.ladders.values()].flat();
     const inp = this.session.input;
     inp.onDevKey = () => this.toggleDev();
     inp.onMenuKey = () => inp.releaseLock();
-    inp.onLockChange = (locked) => this.showPlayMenu(!locked);
+    inp.onLockChange = (locked) => {
+      // Mrtvý hráč vybírá spawn kurzorem → menu jen u živého hráče.
+      const alive = this.session?.game.driver.local()?.alive ?? true;
+      this.showPlayMenu(!locked && alive);
+      if (!locked && !alive) {
+        $('#hud').classList.remove('hidden');
+        this.session!.game.active = false;
+      }
+    };
     $('#menu-map').textContent = this.ed.doc.name;
     this.showPlayMenu(true);
     this.resize();
@@ -361,6 +393,8 @@ export class App {
     this.session?.input.requestLock();
   }
 
+  forceFreeTest = false;
+
   private showPlayMenu(show: boolean) {
     if (!this.session) return;
     this.session.game.active = !show;
@@ -371,6 +405,7 @@ export class App {
   exitPlay() {
     if (this.mode !== 'play' || !this.session) return;
     this.session.dispose();
+    this.audio.suspend();
     this.session = null;
     this.mode = 'editor';
     this.switches++;
@@ -698,7 +733,6 @@ export class App {
     this.renderer.info.reset();
     if (this.session) {
       this.session.update(dt);
-      this.world.update(this.session.game.simTime);
       this.updateHud();
     } else {
       this.editor.update(dt);
@@ -720,7 +754,9 @@ export class App {
   };
 
   private updateHud() {
-    const s = this.session!.game.state;
+    const me = this.session!.game.driver.local();
+    if (!me) return;
+    const s = me.state;
     const st = $('#stamina');
     st.classList.toggle('show', s.stamina < 99.5);
     st.classList.toggle('low', s.sprintLocked);
@@ -752,14 +788,22 @@ export class App {
       `draw ${info.render.calls}  tris ${(info.render.triangles / 1000).toFixed(0)}k  geo ${c.geometries}  tex ${c.textures}  scéna ${c.sceneObjects}  kolize ${c.colliders}  listenery ${c.listeners}  přepnutí ${this.switches}`,
     ];
     if (this.session) {
-      const g = this.session.game, s = g.state;
-      lines.push(
-        `pos ${s.pos.x.toFixed(2)} ${s.pos.y.toFixed(2)} ${s.pos.z.toFixed(2)}  yaw ${toDeg(s.yaw).toFixed(1)}°  pitch ${toDeg(s.pitch).toFixed(1)}°  tick ${s.tick}  zahozeno ${g.stats.droppedSteps}`,
-        `rychlost ${Math.hypot(s.vel.x, s.vel.z).toFixed(2)} m/s  vy ${s.vel.y.toFixed(2)}  grounded ${s.grounded}`,
-        `postoj ${s.stance} (výška ${s.height.toFixed(2)} m)  sprint ${s.sprinting}  výdrž ${s.stamina.toFixed(1)}${s.sprintLocked ? ' (vyčerpáno)' : ''}`,
-        `ADS ${s.adsProgress.toFixed(2)}  zbraň: placeholder (krok 6)  síť: offline`,
-        s.blocked.length ? `<span class="warn">blokace: ${s.blocked.join(' | ')}</span>` : 'blokace: –',
-      );
+      const g = this.session.game;
+      const me = g.driver.local();
+      if (me) {
+        const s = me.state, w = me.weapon;
+        const sp = spreadOf(PF_RIFLE, MOVEMENT, s, w, g.simTime);
+        const net = g.driver.netStats?.();
+        lines.push(
+          `pos ${s.pos.x.toFixed(2)} ${s.pos.y.toFixed(2)} ${s.pos.z.toFixed(2)}  yaw ${toDeg(s.yaw).toFixed(1)}°  pitch ${toDeg(s.pitch).toFixed(1)}°  tick ${s.tick}  zahozeno ${g.stats.droppedSteps}`,
+          `rychlost ${Math.hypot(s.vel.x, s.vel.z).toFixed(2)} m/s  vy ${s.vel.y.toFixed(2)}  grounded ${s.grounded}  žebřík ${s.ladder ?? '–'}  HP ${me.hp}`,
+          `postoj ${s.stance} (výška ${s.height.toFixed(2)} m)  sprint ${s.sprinting}  výdrž ${s.stamina.toFixed(1)}${s.sprintLocked ? ' (vyčerpáno)' : ''}`,
+          `zbraň M4A1 (pravidla PF-Rifle) ${w.mode}  akce ${w.action}  ${w.mag}/${w.reserve}  další výstřel ${Math.max(0, w.nextShotAt - g.simTime).toFixed(3)} s  ADS ${w.adsProgress.toFixed(2)}  překážka ${w.obstruction.toFixed(2)}`,
+          `rozptyl ${toDeg(sp.total).toFixed(2)}° = (základ ${sp.base.toFixed(2)} + pohyb ${sp.move.toFixed(2)}) × ADS ${sp.ads.toFixed(2)} + střelba ${sp.firing.toFixed(2)} + vzduch ${sp.air.toFixed(2)} + leh ${sp.prone.toFixed(2)} + dopad ${sp.landing.toFixed(2)}`,
+          `recoil ${toDeg(w.recoilPitch).toFixed(2)}° / ${toDeg(w.recoilYaw).toFixed(2)}°  síť: ${net ? `RTT ${net.rtt.toFixed(0)} ms  korekce ${net.corrections}  nepotvrzené ${net.pending}` : 'offline'}  vojáci ${g.soldiers.count}  zbraň ${g.fp.stats().triangles} tris`,
+          s.blocked.length || w.blockReason ? `<span class="warn">blokace: ${[...s.blocked, w.blockReason].filter(Boolean).join(' | ')}</span>` : 'blokace: –',
+        );
+      }
     } else {
       const p = this.camera.position;
       lines.push(`kamera ${p.x.toFixed(1)} ${p.y.toFixed(1)} ${p.z.toFixed(1)}  výběr ${[...this.editor.selection].slice(0, 4).join(', ')}`);

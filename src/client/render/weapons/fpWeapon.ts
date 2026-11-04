@@ -270,9 +270,8 @@ export class FPWeapon {
 
     // Sway jen kosmetický; v ADS výrazně tlumený (zarovnání mířidel).
     const k = 1 - Math.exp(-dt * 12);
-    const swayAmt = 1 - 0.85 * e;
-    this.swayX = THREE.MathUtils.lerp(this.swayX, THREE.MathUtils.clamp(lookDYaw * 3, -0.04, 0.04) * swayAmt, k);
-    this.swayY = THREE.MathUtils.lerp(this.swayY, THREE.MathUtils.clamp(lookDPitch * 3, -0.04, 0.04) * swayAmt, k);
+    this.swayX = THREE.MathUtils.lerp(this.swayX, THREE.MathUtils.clamp(lookDYaw * 3, -0.026, 0.026) * (1 - e), k);
+    this.swayY = THREE.MathUtils.lerp(this.swayY, THREE.MathUtils.clamp(lookDPitch * 3, -0.026, 0.026) * (1 - e), k);
     this.sprint = THREE.MathUtils.lerp(this.sprint, ps.sprinting ? 1 : 0, 1 - Math.exp(-dt * 9));
     // Stažení u zdi podle herní překážky (stejné pravidlo jako blokace hlavně).
     this.lower = THREE.MathUtils.lerp(this.lower, ws?.obstruction ?? 0, 1 - Math.exp(-dt * 10));
@@ -283,7 +282,7 @@ export class FPWeapon {
     // Kopnutí při výstřelu: pružina (impulsy se skládají, nerestartují animaci).
     if (ws && ws.shotSeq !== this.lastSeq) {
       if (this.lastSeq >= 0 && ws.shotSeq > this.lastSeq) {
-        this.kickV += 0.9 * (1 - 0.4 * e);
+        this.kickV += 9 * (1 - 0.3 * e);
         this.flashUntil = this.time + 0.045;
         this.flash.rotation.z = Math.random() * Math.PI;
         this.flash.scale.setScalar(0.85 + Math.random() * 0.4);
@@ -310,18 +309,25 @@ export class FPWeapon {
     this.mag.rotation.x = 0.4 * this.reloadVisual;
     this.placeHands(reloadT, empty);
 
-    // Prezentace: bob, sway, kopnutí, sprint, stažení, tasení, náklon při přebití.
+    // Prezentace (meze N ze zadání „Pohyb vojáků“, kap. 11): bob hip ≤ 8 mm svisle / 5 mm bokem,
+    // sprint ≤ 15 / 10 mm; sprintová póza ~8 cm níž, hlaveň dolů ~20°, rotace ≤ 10°;
+    // kopnutí 8–15 mm dozadu, pitch ≤ 1,5°. Akční póza přebití nahrazuje sprintovou.
     const pr = this.presentation;
-    const bobScale = 1 - 0.75 * e;
+    const sprintPose = this.sprint * (1 - Math.min(1, tilt * 1.5));
+    const bobScale = 1 - 0.9 * e;
+    const bobV = Math.min(ps.sprinting ? 0.015 : 0.008, bobAmp * 0.7) * bobScale;
+    const bobH = Math.min(ps.sprinting ? 0.01 : 0.005, bobAmp * 0.45) * bobScale;
+    const kickBack = THREE.MathUtils.clamp(this.kick, -0.2, 1) * 0.013;
+    const kickPitch = THREE.MathUtils.clamp(this.kick, -0.2, 1) * THREE.MathUtils.degToRad(1.4);
     pr.position.set(
-      this.swayX * 0.5 + Math.cos(bobPhase) * bobAmp * 1.4 * bobScale - this.sprint * 0.05 + tilt * 0.02,
-      this.swayY * 0.4 + Math.sin(bobPhase * 2) * bobAmp * 1.1 * bobScale - this.sprint * 0.05 - this.lower * 0.07 - (1 - this.equipT) * 0.35 - tilt * 0.03,
-      this.kick * 0.03 + this.sprint * 0.03 + this.lower * 0.12,
+      this.swayX * 0.1 + Math.cos(bobPhase) * bobH - sprintPose * 0.02 + tilt * 0.02,
+      this.swayY * 0.1 + Math.sin(bobPhase * 2) * bobV - sprintPose * 0.08 - this.lower * 0.07 - (1 - this.equipT) * 0.35 - tilt * 0.03,
+      kickBack + sprintPose * 0.02 + this.lower * 0.12,
     );
     pr.rotation.set(
-      -this.sprint * 0.32 + this.swayY + this.kick * 0.035 - this.lower * 0.55 + (1 - this.equipT) * 0.6 + tilt * 0.18,
-      this.sprint * 0.62 + this.swayX + tilt * 0.12,
-      this.sprint * 0.22 - tilt * 0.42,
+      -sprintPose * THREE.MathUtils.degToRad(20) + this.swayY * 0.6 + kickPitch - this.lower * 0.55 + (1 - this.equipT) * 0.6 + tilt * 0.18,
+      sprintPose * THREE.MathUtils.degToRad(10) + this.swayX * 0.6 + tilt * 0.12,
+      sprintPose * THREE.MathUtils.degToRad(8) - tilt * 0.42,
     );
     this.placeForearms();
 

@@ -22,8 +22,9 @@ for (const v of views) {
     const a = window.__pf; const d2r = Math.PI / 180;
     if (v.mode === 'play') {
       if (a.mode !== 'play') { a.ed.doc.testSpawn = { position: v.pos, rotation: [0, v.yaw * d2r, 0] }; await a.enterPlay(); }
-      const g = a.session.game; g.spawn(v.pos, v.yaw * d2r); g.state.pitch = (v.pitch ?? 0) * d2r;
-      if (v.stance) { g.state.stance = v.stance; g.state.height = { stand: 1.8, crouch: 1.2, prone: 0.5 }[v.stance]; g.state.proneToggle = v.stance === 'prone'; }
+      const g = a.session.game; const pl = g.driver.sim.players.get('local');
+      if (!v.keep) { pl.ctrl.place(pl.state, { x: v.pos[0], y: v.pos[1], z: v.pos[2] }, v.yaw * d2r); pl.state.pitch = (v.pitch ?? 0) * d2r; }
+      if (v.stance) { pl.state.stance = v.stance; pl.state.height = { stand: 1.8, crouch: 1.2, prone: 0.5 }[v.stance]; pl.state.proneToggle = v.stance === 'prone'; }
       document.querySelector('#menu').classList.add('hidden'); document.querySelector('#hud').classList.remove('hidden');
       a.session.game.active = false;
     } else {
