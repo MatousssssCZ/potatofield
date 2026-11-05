@@ -62,9 +62,24 @@ Viz git historie; 20 testů pohybu, editor s gizmy, historie, IndexedDB, export/
 - [x] Čety (6 členů, atomické přijetí, nástupnictví, zámek, předání s cooldownem), nasazení u velitele (pravidlo vstupu během smrti)
 - [x] Rádiové kolo Q (potvrzení klikem, cooldowny), ruční spot ověřený viditelností, kontakty jen vlastnímu týmu, TTL 6 s / 4 s
 - [x] Rozkazy čety T (útok/obrana/přesun, dokončení), minimapa, skóre
-- [ ] Medic/Support (léčení, oživení, munice) – vyžaduje classy a vybavení
-- [ ] Commander, UAV, scan, supply drop, infrastruktura, hlas, hlasování, artillery, perzistentní statistiky
+- [x] Medic: vyřazení 15 s a oživení na 50 HP (server, testy `tests/pilot.test.ts`); [ ] léčení, munice Support
+- [x] Commander (role, rezignace), rozkazy četám s ověřením serverem, UAV a sken s obnovou (`tests/command.test.ts`)
+- [ ] Supply drop (chybí systém munice), infrastruktura, hlas, hlasování, artillery, perzistentní statistiky
 
 ## Krok 9 – zátěž a prostředí
 - [x] 16 aktivních botů 60 s: tick 2,3 ms průměr / 3,8 ms p95 (rozpočet 16,7 ms) – `docs/PERFORMANCE.md`
 - [ ] Lidský playtest 16 hráčů; test 32/63 vzdálených postav v klientu
+
+## HUD / UI / UX (zadání HUD_UI_UX) a postavy (Postavy_Animace)
+- [x] Lokalizace cs/en přes klíče (`src/client/ui/strings.ts`), test úplnosti `tests/i18n.test.ts`
+- [x] Design tokeny, písmo Barlow Semi Condensed (OFL, lokálně), relativní týmové barvy, 3 varianty pro barvoslepé
+- [x] Hlavní menu: Hrát (doporučený server z `/info`), Servery (tabulka, filtry, detail, přidání, přímé připojení), Nastavení, Ovládání, O hře, Editor map; fáze připojení a chybové stavy
+- [x] Trénink: offline Conquest na referenční ulici s pilotními classami (bez botů)
+- [x] Nasazení: classa a výbava, taktická mapa se spawny, odpočet ze stavu autority, odmítnutí a ztráta spawnu vysvětleny
+- [x] HUD: minimapa + tickety + čas vpravo nahoře; kill feed / systém / chat vlevo nahoře; zdraví, výdrž, postoj, četa vlevo dole; silueta zbraně a munice vpravo dole; obsazování (Obsazujeme / Neutralizujeme / Sporný bod), identifikace nepřítele po 0,6 s jen při viditelnosti, výzva k oživení
+- [x] Vyřazení (čas ze serveru, vzdát pomoc podržením 1 s, volání medika), konec kola (vítěz, důvod, týmové tabulky)
+- [x] Pauza (Esc), Tab skóre (oba týmy, oživení, ping, posuvné pro 64), nastavení s kategoriemi, Použít/Zrušit/Výchozí, přemapování kláves s kontrolou konfliktů, verzované úložiště
+- [x] Četa a velitel jako obrazovky (pauza, záložky nasazení) se stavem Odesláno / Potvrzeno / Odmítnuto
+- [x] Náhledový režim `?preview=servers` s označenými ukázkovými daty; screenshoty `scripts/ui-shots.mjs` (`docs/screenshots/ui/`)
+- [~] Velká mapa (M) – taktická mapa je v nasazení a u velitele, samostatná obrazovka M chybí
+- [ ] Lidský test čitelnosti HUD a ovládání; měření FPS na i5-1335U

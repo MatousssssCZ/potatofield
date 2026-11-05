@@ -482,7 +482,7 @@ body.mode-menu #app {
   max-width: 520px;
 }
 .pf-wide {
-  max-width: 980px;
+  max-width: 1200px;
 }
 .pf-secondary {
   margin-top: 20px;
@@ -491,8 +491,26 @@ body.mode-menu #app {
 }
 .pf-servers {
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: minmax(0, 1fr) 300px;
   gap: 20px;
+}
+.pf-toolbar {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.pf-toolbar h2 {
+  margin: 0 12px 0 0;
+}
+.pf-check {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.pf-servers .pf-table td {
+  white-space: nowrap;
 }
 .pf-table-wrap {
   max-height: 52vh;
@@ -711,6 +729,11 @@ body.mode-menu #app {
   color: var(--pf-accent);
 }
 /* Chat a rádio sítě: pod kill feedem vlevo nahoře. */
+body.mode-play .tui-log div {
+  background: rgba(21, 27, 27, 0.55);
+  padding: 1px 8px;
+  align-self: flex-start;
+}
 body.mode-play .tui-log {
   top: calc(var(--pf-m) + 190px);
   bottom: auto;

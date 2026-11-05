@@ -101,9 +101,19 @@ Všechny číselné hodnoty jsou návrhy Potatofieldu (`proposed`), ne změřen�
 - Hitmarker (zásah) dostává jen střelec a oběť; chat/kontakty/čety se distribuují podle týmu a čety.
 - Referenční ulice obsahuje testovací Conquest data (5 bodů, 2 scénáře) jen pro síťový pilot.
 
+## Herní UI
+- DOM nad canvasem (žádný UI framework, žádná druhá 3D scéna). HUD se aktualizuje 20×/s, ne každý snímek.
+- Taktická mapa je jednou vykreslený podklad (výšky terénu + půdorysy objektů z 3D scény) sdílený nasazením, minimapou a velitelem.
+- Hlavní menu kryje scénu, proto se pod ním 3D vůbec nekreslí (úspora GPU).
+- Seznam serverů = uložené adresy + `GET /info` každého serveru; žádný master server, žádné smyšlené servery. Ping = doba HTTP dotazu.
+- Volání medika = rádiová zpráva „Potřebuji medika“ (nový typ zprávy nebyl potřeba).
+- Minimapa je orientovaná na sever (podle zadání), staré otáčivé minimapy týmového UI se nekreslí.
+- Silueta zbraně v HUD je boční průmět skutečného world modelu, ne ikona.
+
 ## Dočasné / placeholdery
 - Hawk Type 97 čeká na ověřenou referenci; ostatní modely mají rozměry jako umělecký odhad.
-- World model vojáka je jednoduchá figura bez skeletu (kolena/kyčle pózy ze stavu); 3P rig podle zadání pohybu vojáků zbývá.
+- Vojáci jsou vlastní skinned modely (20 kostí, procedurální animace, LOD); obličeje a výstroj jsou stylizované podle textu zadání, ne podle referenčních obrázků (nebyly přiloženy).
+- Odstřelovací pušky M24 / SVD nemají model ani optiku: classa Sniper je vidět, server nasazení s ní odmítne.
 - Ruce: póza levé ruky a prstů vyžaduje další ladění.
 
 ## Prostředí, kde vznikal kód

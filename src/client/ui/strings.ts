@@ -143,7 +143,7 @@ const cs = {
   'hud.revive': 'Podrž E – oživit {name}',
   'hud.reviving': 'Oživuji {name}…',
   'hud.lock': 'Klikni pro návrat do hry',
-  'hud.lockHint': 'Esc – menu · Tab – skóre · M – mapa',
+  'hud.lockHint': 'Esc – pauza · Tab – skóre · P – četa · C – velitel',
 
   'cap.capturing': 'Obsazujeme',
   'cap.neutralizing': 'Neutralizujeme',
@@ -445,7 +445,7 @@ const en: Record<StringKey, string> = {
   'hud.revive': 'Hold E – revive {name}',
   'hud.reviving': 'Reviving {name}…',
   'hud.lock': 'Click to return to the game',
-  'hud.lockHint': 'Esc – menu · Tab – score · M – map',
+  'hud.lockHint': 'Esc – pause · Tab – score · P – squad · C – commander',
 
   'cap.capturing': 'Capturing',
   'cap.neutralizing': 'Neutralizing',

@@ -19,9 +19,12 @@ npm install
 npm run dev
 ```
 
-Otevřete <http://localhost:5173>. Aplikace startuje v **editoru** (při prvním spuštění se šablonou
-střelnice). Tlačítko **▶ Testovat** nebo **F5** přepne do hry, F5 nebo „Zpět do editoru“ vrátí editor
-se zachovanou kamerou, výběrem i historií.
+Otevřete <http://localhost:5173>. Aplikace startuje v **hlavním menu** (čeština / angličtina):
+**Hrát** doporučí kompatibilní server s volným místem (údaje z jeho `GET /info`, žádný falešný
+seznam), **Servery** ukáže tabulku uložených adres, **Trénink** spustí offline Conquest na referenční
+ulici s pilotními classami. **Editor map** otevře editor; tlačítko **☰ Menu** v jeho liště vede zpět.
+V editoru **▶ Testovat** nebo **F5** přepne do hry, F5 vrátí editor se zachovanou kamerou, výběrem
+i historií.
 
 | Příkaz | Co dělá |
 |---|---|
@@ -36,7 +39,12 @@ se zachovanou kamerou, výběrem i historií.
 | `node scripts/editor-interact.mjs <url> <dir>` | interakce myší/klávesnicí v editoru |
 | `node scripts/persist-check.mjs <url> <dir>` | autosave, obnovení, chybný import, plné úložiště |
 
-Parametry URL: `?q=low|standard|high` vynutí profil kvality, `?dev` zapne dev panel hned po startu.
+Parametry URL: `?q=low|standard|high` vynutí profil kvality, `?dev` zapne dev panel hned po startu,
+`?editor` otevře rovnou editor, `?preview=servers` ukáže seznam serverů s **ukázkovými daty**
+(označeno pruhem „NÁHLED – smyšlená data“, nikam se nepřipojuje).
+
+Screenshoty UI se skutečným lokálním serverem: `node scripts/ui-shots.mjs 1920 1080 cs` (výstup
+`docs/screenshots/ui/`).
 
 ## Editor
 
@@ -71,23 +79,33 @@ Parametry URL: `?q=low|standard|high` vynutí profil kvality, `?dev` zapne dev p
 npm run server
 ```
 
-V editoru klikněte na **🌐 Multiplayer**, zadejte `ws://<adresa>:8787` a jméno. Mapu posílá server
-(klient ji jen validuje); po návratu do editoru se obnoví vaše mapa. Dialog umožňuje simulovat RTT,
-jitter a ztráty. Server: `--map soubor.json --port 8787 --scenario sc_bases | --free --factions usmc,mec`
-(frakce týmů A a B: usmc | mec | pla). Protokol v2.
+V hlavním menu **Hrát** nebo **Servery** → adresa `ws://<adresa>:8787`. Připojení ukazuje fáze
+(spojení, ověření verze, načtení mapy) a srozumitelné chyby (plný server, jiná verze, nedostupný
+server, vypršení času). Mapu posílá server (klient ji jen validuje). Server:
+`--map soubor.json --port 8787 --name "Název" --team-size 8 --ff --scenario sc_bases | --free`;
+`--no-pilot --factions usmc,pla` zpřístupní celý arzenál. Protokol v3; `GET /info` vrací název,
+mapu, hráče, kapacitu, pravidla a verzi.
 
-**Výbava:** po smrti / před nasazením se na obrazovce nasazení volí classa (Assault, Medic, Support,
-Engineer) frakce vašeho týmu; server ověří, že zbraň frakci patří. Ve volném testu lze zvolit kteroukoli
-z 12 zbraní (výchozí v Nastavení). Pravidla jsou fiktivní profily PF-* (N): puška, kulomet,
-pumpovací a samonabíjecí brokovnice.
+**Pilot (výchozí):** USMC × MEC, 8 proti 8, classy Assault / Medic / Support / Sniper, 100 HP bez
+regenerace. Zásah do 0 HP = **vyřazení** (15 s, lze oživit medikem – podržet E 1 s – na 50 HP, nebo
+vzdát pomoc podržením G). Sniper je viditelný, ale jeho puška zatím nemá model – server nasazení
+s ní odmítne a obrazovka to vysvětlí.
+
+**Nasazení:** taktická obrazovka – vlevo classa a výbava, vpravo mapa se spawny (klik vybere),
+dole Nasadit (nedostupné tlačítko říká proč). Odmítnutí serverem i ztráta spawnu se vysvětlí.
+
+**Velitel:** v pauze (Esc → Velitel, nebo C) se lze ucházet o roli; velitel posílá četám rozkazy
+klikem do mapy a používá UAV a sken s obnovou ze serveru. Každý příkaz má stav Odesláno →
+Potvrzeno / Odmítnuto podle odpovědi serveru. Shoz zásob chybí (hra nemá systém munice).
 
 | Akce | Klávesa |
 |---|---|
 | Chat všem / týmu / četě | J / K / L, Enter odeslat, Esc zrušit |
 | Rádiové kolo | držet Q, myší vybrat, kliknout = odeslat |
-| Rozkaz čety (velitel) | T, pak 1 útok / 2 obrana / 3 přesun |
-| Čety | Home nebo P |
-| Skóre | Tab |
+| Rozkaz čety (velitel čety) | T, pak 1 útok / 2 obrana / 3 přesun |
+| Čety | Home nebo P (otevře pauzu na záložce Četa) |
+| Velitel | C |
+| Skóre | Tab (držet; funguje i po smrti) |
 
 ## Ovládání ve hře
 
@@ -102,12 +120,15 @@ pumpovací a samonabíjecí brokovnice.
 | Střelba / míření / přebití | LMB / RMB (přepínač) / R – přebíjet lze i za sprintu |
 | Režim střelby | 3 nebo B (auto/semi) |
 | Žebřík | E nastoupit, W/S lézt, Space pustit |
-| Menu, uvolnění myši | Esc |
+| Pauza (Pokračovat / Nasazení / Nastavení / Ovládání / Odpojit) | Esc |
+| Oživit (medik) / vzdát pomoc (vyřazený) | držet E / držet G |
 | Zpět do editoru | F5 (nebo z menu) |
 | Dev panel | F3 nebo klávesa pod Esc |
 
 Klávesy se mapují podle fyzické polohy (`KeyboardEvent.code`), popisky v menu se ukazují podle
-aktuálního rozložení. Hra se standardně spouští na celou obrazovku s Keyboard Lock – jinak by
+aktuálního rozložení; v Nastavení → Ovládání lze akce přemapovat (konflikt kláves se ohlásí).
+Nastavení má kategorie Obraz / Zvuk / Ovládání / Rozhraní (velikost a průhlednost HUD, velikost
+textu, barvy pro barvoslepé, jazyk, síťová diagnostika) a tlačítka Použít / Zrušit / Výchozí. Hra se standardně spouští na celou obrazovku s Keyboard Lock – jinak by
 kombinace Ctrl+W (dřep + vpřed) zavřela kartu prohlížeče. Lze vypnout v Nastavení.
 
 ### Dev panel (F3)

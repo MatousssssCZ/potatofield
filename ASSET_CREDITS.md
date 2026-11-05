@@ -24,6 +24,7 @@ Zvuky, modely a textury třetích stran zatím **nejsou** použity.
 | n8ao | 2.0.1 | ISC | ambientní zastínění (profil Vysoká) |
 | postprocessing | 6.39.6 | Zlib | závislost n8ao |
 | ws | 8.21.3 | MIT | WebSocket server a testovací klienti |
+| @fontsource/barlow-semi-condensed | 5.3.0 | OFL-1.1 (písmo), MIT (balík) | písmo herního UI, servírované lokálně (žádný dotaz na Google Fonts) |
 
 Všechny umožňují úpravy, distribuci v browserové hře i komerční použití; texty licencí jsou
 v `node_modules/<balík>/LICENSE` a při distribuci buildu se přiloží.

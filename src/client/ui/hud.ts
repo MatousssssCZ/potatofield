@@ -392,7 +392,7 @@ export class Hud {
     cv.height = 70;
     const g = cv.getContext('2d')!;
     g.clearRect(0, 0, cv.width, cv.height);
-    const geo = worldWeapon(id, 'low').lods[1];
+    const geo = worldWeapon(id, 'low').lods[0];
     const p = geo.getAttribute('position') as THREE.BufferAttribute;
     geo.computeBoundingBox();
     const b = geo.boundingBox!;

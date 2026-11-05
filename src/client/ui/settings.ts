@@ -124,7 +124,6 @@ export const ACTION_KEY: Record<Action, StringKey> = {
 /** Pevné klávesy UI (nepřemapovatelné v pilotu) – pro přehled ovládání. */
 export const UI_KEYS: Array<[StringKey, string]> = [
   ['act.scoreboard', 'Tab'],
-  ['act.map', 'M'],
   ['act.squad', 'P / Home'],
   ['act.commander', 'C'],
   ['act.giveUp', 'G'],

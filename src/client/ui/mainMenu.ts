@@ -202,9 +202,9 @@ export class MainMenu {
         ),
       );
     } else detail.append(h('p', { class: 'pf-dim' }, t('servers.pick')));
-    return h('section', { class: 'pf-panel pf-wide pf-servers' },
+    return h('section', { class: 'pf-panel pf-wide' },
       h('div', { class: 'pf-toolbar' }, h('h2', {}, t('nav.servers')), chk('free', t('servers.filterFree')), chk('compatible', t('servers.filterCompat')), button(t('servers.refresh'), () => void this.refresh(), 'pf-btn')),
-      h('div', { class: 'pf-table-wrap' }, tb),
+      h('div', { class: 'pf-servers' }, h('div', {}, h('div', { class: 'pf-table-wrap' }, tb),
       h('div', { class: 'pf-row-inline' }, addr,
         button(t('servers.add'), () => {
           const a = addr.value.trim();
@@ -212,8 +212,8 @@ export class MainMenu {
           saveAddresses([...loadAddresses(), a]);
           void this.refresh();
         }, 'pf-btn'),
-        button(t('servers.direct'), () => void this.connect(addr.value.trim()), 'pf-btn primary')),
-      detail,
+        button(t('servers.direct'), () => void this.connect(addr.value.trim()), 'pf-btn primary'))),
+      detail),
     );
   }
 

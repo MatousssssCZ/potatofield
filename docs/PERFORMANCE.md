@@ -71,3 +71,9 @@ Původní zjištění (seřazeno podle dopadu na i5-1335U s iGPU):
 
 Draw calls ulice převyšují pracovní cíl 200 – další krok optimalizace je slučování statických
 objektů po materiálech mimo editor (instancing opakovaných dílů oken).
+
+### Herní UI (2026-11-05)
+- Hlavní menu: 3D scéna se pod ním nekreslí (0 draw calls, jen DOM).
+- HUD: DOM aktualizovaný 20×/s; minimapa = jeden `drawImage` předkresleného podkladu + značky. Silueta zbraně se kreslí jednou na zbraň.
+- Taktický podklad mapy: jednorázově při vstupu do hry (≤ 2048 × 2048 px, max 6 px/m), ~16 MB paměti plátna u velké mapy.
+- Neměřeno na cílovém zařízení (prostředí bez GPU).
