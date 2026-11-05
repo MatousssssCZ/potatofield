@@ -73,6 +73,11 @@ Screenshoty UI se skutečným lokálním serverem: `node scripts/ui-shots.mjs 19
   proto si důležité mapy exportujte. Chybný import nikdy nepřepíše otevřenou mapu.
 - **✓ Kontrola**: chyby a upozornění mapy (neplatný spawn, chybějící assety, validace).
 
+## Hraní v prohlížeči (nasazení)
+
+Web běží na GitHub Pages, herní server na Render – obojí zdarma. Postup a omezení:
+[docs/DEPLOY.md](docs/DEPLOY.md).
+
 ## Multiplayer
 
 ```bash

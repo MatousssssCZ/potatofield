@@ -149,7 +149,7 @@ export class MainMenu {
   private serversView() {
     const list = this.entries.filter((e) => (!this.filters.free || !full(e)) && (!this.filters.compatible || e.state !== 'ok' || compatible(e)));
     const cols: Column<ServerEntry>[] = [
-      { key: 'name', label: t('col.server'), value: (e) => e.info?.name ?? e.address, render: (e) => h('span', {}, e.info?.name ?? e.address, e.state === 'error' ? h('small', { class: 'pf-warn' }, ` ${t(`err.${e.error === 'timeout' ? 'timeout' : 'unreachable'}`)}`) : null, e.state === 'ok' && !compatible(e) ? h('small', { class: 'pf-warn' }, ` ${t('servers.incompatible')}`) : null) },
+      { key: 'name', label: t('col.server'), value: (e) => e.info?.name ?? e.address, render: (e) => h('span', {}, e.info?.name ?? e.address, e.state === 'error' ? h('small', { class: 'pf-warn' }, ` ${tErr(e.error ?? 'unreachable')}`) : null, e.state === 'ok' && !compatible(e) ? h('small', { class: 'pf-warn' }, ` ${t('servers.incompatible')}`) : null) },
       { key: 'map', label: t('col.map'), value: (e) => e.info?.map ?? null },
       { key: 'mode', label: t('col.mode'), value: (e) => (e.info ? (e.info.mode === 'conquest' ? 'Conquest' : t('mode.free')) : null) },
       { key: 'players', label: t('col.players'), num: true, value: (e) => (e.info ? e.info.players : null), render: (e) => (e.info ? `${e.info.players} / ${e.info.capacity}${full(e) ? ` · ${t('servers.full')}` : ''}` : '—') },
@@ -190,7 +190,7 @@ export class MainMenu {
               h('span', {}, t('detail.version')), h('b', {}, `${t('menu.protocol', { v: i.protocol })}${compatible(sel) ? '' : ` – ${t('servers.incompatible')}`}`),
               h('span', {}, t('servers.address')), h('b', {}, sel.address),
             )
-          : h('p', { class: 'pf-warn' }, t(sel.error === 'timeout' ? 'err.timeout' : 'err.unreachable')),
+          : h('p', { class: 'pf-warn' }, tErr(sel.error ?? 'unreachable')),
         h('div', { class: 'pf-row-inline' },
           button(t('servers.connect'), () => void this.connect(sel.address), 'pf-btn primary', { disabled: sel.state === 'ok' && (!compatible(sel) || full(sel)) }),
           button(t('servers.remove'), () => {

@@ -38,6 +38,7 @@ import { h } from './ui/kit';
 import { applyStatic, onLang, t } from './ui/i18n';
 import type { Footprint } from './ui/tactical';
 import { PROTOCOL_VERSION } from '../shared/net/protocol';
+import { insecureFromHttps } from './ui/servers';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
 const EDITOR_VFOV = 60;
@@ -394,6 +395,7 @@ export class App {
     try {
       const u = new URL(url);
       if (u.protocol !== 'ws:' && u.protocol !== 'wss:') return 'address';
+      if (insecureFromHttps(url)) return 'insecure';
       ws = new WebSocket(url);
     } catch {
       return 'address';
@@ -411,7 +413,8 @@ export class App {
         opened = true;
         onPhase('auth');
       }
-      if (performance.now() - t0 > 8000) {
+      // Bezplatný hosting uspává nečinný server – probuzení trvá až minutu (lokálně 8 s).
+      if (performance.now() - t0 > (/^wss?:\/\/(localhost|127\.)/.test(url) ? 8000 : 75000)) {
         driver.dispose();
         return 'timeout';
       }

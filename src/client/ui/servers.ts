@@ -29,15 +29,33 @@ export interface ServerEntry {
 
 const KEY = 'pf.servers';
 
+/**
+ * Výchozí server: z buildu (VITE_PF_SERVER, např. wss://potatofield.onrender.com), jinak
+ * lokální server na stejném počítači (vývoj: npm run dev + npm run server).
+ */
 export function defaultAddress() {
+  const fromBuild = (import.meta.env?.VITE_PF_SERVER as string | undefined)?.trim();
+  if (fromBuild) return fromBuild;
   const host = typeof location !== 'undefined' && location.hostname ? location.hostname : 'localhost';
   return `ws://${host}:8787`;
+}
+
+/** Stránka na HTTPS se smí připojit jen šifrovaně (wss://); ws:// jde jen na vlastní počítač. */
+export function insecureFromHttps(address: string) {
+  if (typeof location === 'undefined' || location.protocol !== 'https:') return false;
+  try {
+    const u = new URL(address);
+    return u.protocol === 'ws:' && !['localhost', '127.0.0.1', '[::1]'].includes(u.hostname);
+  } catch {
+    return false;
+  }
 }
 
 export function loadAddresses(): string[] {
   try {
     const v = JSON.parse(localStorage.getItem(KEY) ?? 'null');
-    if (Array.isArray(v) && v.every((x) => typeof x === 'string')) return v.length ? v : [defaultAddress()];
+    // Výchozí server z buildu je v seznamu vždy (uživatel si přidává další adresy).
+    if (Array.isArray(v) && v.every((x) => typeof x === 'string')) return [...new Set([defaultAddress(), ...v])];
   } catch {
     /* poškozená hodnota → výchozí */
   }
@@ -65,9 +83,10 @@ export function infoUrl(address: string): string | null {
   }
 }
 
-export async function fetchInfo(address: string, timeoutMs = 3000, signal?: AbortSignal): Promise<ServerEntry> {
+export async function fetchInfo(address: string, timeoutMs = 6000, signal?: AbortSignal): Promise<ServerEntry> {
   const url = infoUrl(address);
   if (!url) return { address, state: 'error', ping: null, error: 'address' };
+  if (insecureFromHttps(address)) return { address, state: 'error', ping: null, error: 'insecure' };
   const ctl = new AbortController();
   const tm = setTimeout(() => ctl.abort(), timeoutMs);
   signal?.addEventListener('abort', () => ctl.abort());

@@ -28,7 +28,7 @@ const cs = {
   'play.title': 'Rychlá hra',
   'play.join': 'Připojit',
   'play.none': 'Žádný dostupný server',
-  'play.noneHint': 'Nenašli jsme žádný kompatibilní server s volným místem. Zadej adresu serveru, zkus to znovu, nebo si zahraj trénink.',
+  'play.noneHint': 'Nenašli jsme žádný kompatibilní server s volným místem. Server na bezplatném hostingu se po nečinnosti probouzí až minutu – zkus to znovu, zadej jinou adresu, nebo si zahraj trénink.',
   'play.training': 'Trénink (offline)',
 
   'mode.conquest': 'Conquest',
@@ -82,6 +82,7 @@ const cs = {
   'err.closed': 'Spojení se serverem bylo ukončeno.',
   'err.cancelled': 'Zrušeno.',
   'err.map': 'Mapu serveru se nepodařilo načíst.',
+  'err.insecure': 'Stránka běží na HTTPS – server musí mít adresu wss:// (šifrované spojení).',
 
   'about.p1': 'Potatofield je pěchotní FPS v prohlížeči s vlastním editorem map. Všechny modely, textury a zvuky jsou vlastní nebo s otevřenou licencí.',
   'about.p2': 'Pilotní verze: USMC proti MEC, 8 proti 8, třídy Assault, Medic, Support a Sniper. Server je autoritativní – výsledek zásahu rozhoduje server.',
@@ -330,7 +331,7 @@ const en: Record<StringKey, string> = {
   'play.title': 'Quick play',
   'play.join': 'Join',
   'play.none': 'No server available',
-  'play.noneHint': 'No compatible server with a free slot was found. Enter a server address, retry, or play training.',
+  'play.noneHint': 'No compatible server with a free slot was found. A server on free hosting can take up to a minute to wake up after being idle – retry, enter another address, or play training.',
   'play.training': 'Training (offline)',
 
   'mode.conquest': 'Conquest',
@@ -384,6 +385,7 @@ const en: Record<StringKey, string> = {
   'err.closed': 'The connection to the server was closed.',
   'err.cancelled': 'Cancelled.',
   'err.map': 'Could not load the server map.',
+  'err.insecure': 'This page runs on HTTPS – the server address must be wss:// (encrypted).',
 
   'about.p1': 'Potatofield is a browser infantry FPS with its own map editor. All models, textures and sounds are original or openly licensed.',
   'about.p2': 'Pilot version: USMC vs MEC, 8 vs 8, Assault, Medic, Support and Sniper classes. The server is authoritative – it decides every hit.',

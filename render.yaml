@@ -1,0 +1,28 @@
+# Herní server na Render (Blueprint): Dashboard → New → Blueprint → vybrat tento repozitář.
+# Bezplatná instance po 15 min bez provozu usíná; první připojení ji probudí (až ~1 min).
+# Šifrování (wss://) zajišťuje Render; server naslouchá na portu z proměnné PORT.
+services:
+  - type: web
+    name: potatofield-server
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci --include=dev
+    startCommand: npm run server
+    healthCheckPath: /health
+    autoDeploy: true
+    # Nový build serveru jen při změně serveru, sdíleného kódu nebo map (ne při úpravách klienta).
+    buildFilter:
+      paths:
+        - server/**
+        - src/shared/**
+        - src/world/**
+        - maps/**
+        - package.json
+        - package-lock.json
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: PF_NAME
+        value: Potatofield – Render
+      # Volitelné: PF_TEAM_SIZE (8), PF_FF (1 = friendly fire), PF_MAP (cesta k mapě), PF_SCENARIO

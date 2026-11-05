@@ -140,9 +140,14 @@ export class GameServer {
   listen(port = this.opts.port ?? 8787): Promise<number> {
     return new Promise((resolve) => {
       this.http = createServer((req, res) => {
-        if (req.url?.split('?')[0] === '/info') {
+        const path = req.url?.split('?')[0];
+        if (path === '/info') {
           res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'access-control-allow-origin': '*', 'cache-control': 'no-store' });
           res.end(JSON.stringify(this.info()));
+        } else if (path === '/' || path === '/health') {
+          // Kontrola stavu pro hosting (Render health check) – bez herních dat.
+          res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8', 'access-control-allow-origin': '*', 'cache-control': 'no-store' });
+          res.end(`Potatofield server OK · protokol ${PROTOCOL_VERSION} · hráči ${this.clients.size}\n`);
         } else {
           res.writeHead(404, { 'access-control-allow-origin': '*' });
           res.end();
@@ -612,6 +617,13 @@ export class GameServer {
       clients: this.clients.size,
       queueMax: Math.max(0, ...[...this.clients.values()].map((c) => c.inputs.length)),
     };
+  }
+
+  /** Řízené ukončení (restart hostingu): klienti dostanou důvod místo prostého odpojení. */
+  async shutdown(reason: string) {
+    for (const c of this.clients.values()) this.send(c, { t: 'bye', reason });
+    await new Promise((r) => setTimeout(r, 200));
+    await this.close();
   }
 
   async close() {
