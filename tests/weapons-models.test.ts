@@ -31,9 +31,10 @@ function firstHit(m: WeaponModel, from: THREE.Vector3, to: THREE.Vector3) {
 describe('arzenál – pevné sestavy', () => {
   const ready = readyWeapons();
 
-  it('katalog má 12 zbraní, každá frakce 4 classy; kolimátor jen Assault', () => {
-    expect(WEAPON_DEFS).toHaveLength(12);
-    for (const f of ['usmc', 'mec', 'pla']) expect(new Set(WEAPON_DEFS.filter((w) => w.faction === f).map((w) => w.kit)).size).toBe(4);
+  it('katalog: 12 hotových zbraní + 2 čekající (Sniper); kolimátor jen Assault', () => {
+    expect(WEAPON_DEFS).toHaveLength(14);
+    expect(ready).toHaveLength(12);
+    expect(WEAPON_DEFS.filter((w) => !w.build).map((w) => w.id).sort()).toEqual(['m24', 'svd']);
     for (const d of ready) {
       const m = buildFirstPerson(d.id);
       expect(!!m.optic, d.id).toBe(d.kit === 'assault');

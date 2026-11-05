@@ -1,13 +1,13 @@
 import { MOVEMENT, type MovementConfig } from '../config/movement';
 import { PF_RIFLE, type WeaponConfig } from '../config/weapon';
-import { DEFAULT_FACTIONS, arsenalEntry, rulesOf, weaponFor, type Faction } from '../config/arsenal';
+import { DEFAULT_FACTIONS, PILOT, arsenalEntry, rulesOf, weaponFor, type Faction, type Kit } from '../config/arsenal';
 import type { MapDocument, SpawnPoint, Team, Zone } from '../map/schema';
 import type { V3 } from '../math';
 import type { PhysicsWorld } from '../physics/world';
 import type { LadderDef } from '../../world/parts';
 import { hitboxOf, stepProjectiles, type Hitbox, type ImpactEvent, type Projectile } from './ballistics';
 import { cpSpawnable, createConquest, insideCP, stepConquest, ticketForDeath, type ConquestEvent, type ConquestState } from './conquest';
-import { emptyInput, sanitizeInput, type InputFrame } from './input';
+import { BTN, emptyInput, sanitizeInput, type InputFrame } from './input';
 import { PlayerController, createPlayerState, type PlayerState } from './player';
 import { createWeaponState, stepWeapon, type WeaponState } from './weapon';
 
@@ -37,6 +37,14 @@ export interface SimPlayer {
   seed: number;
   /** Zbraň z arzenálu potvrzená serverem při spawnu (vzhled + pravidla). */
   weaponId: string;
+  /** Vyřazen (čeká na oživení): tělo leží, žádné akce; definitivní smrt po `downedUntil`. */
+  downed: boolean;
+  downedUntil: number;
+  downedBy: string | null;
+  /** Medik: koho právě oživuje a jak dlouho drží (s). */
+  reviveTarget: string | null;
+  reviveHeld: number;
+  revives: number;
 }
 
 export interface DummyDef {
@@ -56,7 +64,9 @@ export type SimEvent =
   | { type: 'shot'; key: string; owner: string; origin: V3; dir: V3; pellet?: number }
   | ({ type: 'impact' } & ImpactEvent)
   | { type: 'hit'; owner: string; target: string; damage: number; zone: string; hp: number }
-  | { type: 'death'; id: string; killer: string | null; cause: 'weapon' | 'zone' | 'fall'; lifeId: number }
+  | { type: 'death'; id: string; killer: string | null; cause: 'weapon' | 'zone' | 'fall' | 'giveup'; lifeId: number }
+  | { type: 'downed'; id: string; killer: string | null; lifeId: number }
+  | { type: 'revive'; id: string; by: string; lifeId: number }
   | { type: 'spawn'; id: string; lifeId: number; spawnId: string | null }
   | { type: 'dummyDown'; id: string }
   | ({ kind: 'conquest' } & ConquestEvent & { type2?: never });
@@ -70,6 +80,10 @@ export interface MatchOptions {
   freeRespawnDelay?: number;
   /** Frakce týmů pro kontrolu výbavy (výchozí USMC × MEC). Bez Conquestu je volná. */
   factions?: Record<Team, Faction>;
+  /** Povolené classy (pilot: Assault/Medic/Support/Sniper). Bez omezení = všechny. */
+  allowedKits?: Kit[];
+  /** Vyřazení s oknem pro oživení (výchozí zapnuto); false = okamžitá smrt. */
+  downed?: boolean;
 }
 
 /** Pohyb figuríny: konstantní rychlost tam a zpět (deterministicky z času). */
@@ -132,6 +146,8 @@ export class MatchSim {
   checkWeapon(team: Team, weaponId: string): string | null {
     const e = arsenalEntry(weaponId);
     if (!e) return 'neznámá zbraň';
+    if (e.available === false) return 'zbraň této classy zatím není hotová';
+    if (this.opts.allowedKits && !this.opts.allowedKits.includes(e.kit)) return 'classa není v tomto režimu povolena';
     if (this.conquest && e.faction !== this.factionOf(team)) return 'zbraň nepatří frakci týmu';
     return null;
   }
@@ -150,6 +166,12 @@ export class MatchSim {
       state,
       weapon: createWeaponState(rulesOf(weaponId), this.time, weaponId),
       weaponId,
+      downed: false,
+      downedUntil: 0,
+      downedBy: null,
+      reviveTarget: null,
+      reviveHeld: 0,
+      revives: 0,
       hp: 0,
       alive: false,
       lifeId: 0,
@@ -191,6 +213,7 @@ export class MatchSim {
     const p = this.players.get(id);
     if (!p) return 'neznámý hráč';
     if (p.alive) return 'hráč žije';
+    if (p.downed) return 'jsi vyřazen – čekej na oživení, nebo vzdej pomoc';
     if (weaponId) {
       const err = this.checkWeapon(p.team, weaponId);
       if (err) return err;
@@ -243,16 +266,71 @@ export class MatchSim {
     return self.ctrl.fits(this.cfg.stances.stand.height, 0, { ...pos, y: pos.y + 0.03 });
   }
 
-  kill(p: SimPlayer, killer: string | null, cause: 'weapon' | 'zone' | 'fall') {
+  /**
+   * Vyřazení zásahem: tělo zůstává, hráč je mimo boj po dobu okna pro oživení. Zabití se
+   * připíše hned (vyřazení je výsledek zásahu), smrt a ticket až při definitivní smrti.
+   */
+  down(p: SimPlayer, killer: string | null) {
+    if (!p.alive) return;
+    if (this.opts.downed === false) return this.kill(p, killer, 'weapon');
+    p.alive = false;
+    p.downed = true;
+    p.hp = 0;
+    p.downedUntil = this.time + PILOT.downedTime;
+    p.downedBy = killer;
+    p.state.vel = { x: 0, y: 0, z: 0 };
+    p.weapon.action = 'idle';
+    p.weapon.adsToggle = false;
+    p.weapon.adsProgress = 0;
+    p.zone = null;
+    if (killer && killer !== p.id) {
+      const k = this.players.get(killer);
+      if (k) k.kills++;
+    }
+    this.events.push({ type: 'downed', id: p.id, killer, lifeId: p.lifeId });
+  }
+
+  /** Vzdát pomoc (žádost vyřazeného hráče) – okamžitá definitivní smrt. */
+  giveUp(id: string): string | null {
+    const p = this.players.get(id);
+    if (!p?.downed) return 'nejsi vyřazen';
+    this.finalizeDowned(p, 'giveup');
+    return null;
+  }
+
+  private finalizeDowned(p: SimPlayer, cause: 'weapon' | 'giveup') {
+    p.downed = false;
+    p.alive = true; // kill() vyžaduje živého – dokončí smrt jedinou cestou (ticket jednou)
+    this.kill(p, p.downedBy, cause, true);
+  }
+
+  /** Oživení medikem: stejný život (lifeId), HP podle pravidel pilotu, pozice těla. */
+  private revive(v: SimPlayer, by: SimPlayer) {
+    v.downed = false;
+    v.alive = true;
+    v.hp = PILOT.reviveHp;
+    v.downedBy = null;
+    const pos = { ...v.state.pos };
+    v.ctrl.place(v.state, pos, v.state.yaw);
+    // Bezpečný postoj: dřep (při nízkém stropu leh).
+    if (!v.ctrl.fits(this.cfg.stances.stand.height, v.state.yaw, pos)) v.state.proneToggle = !v.ctrl.fits(this.cfg.stances.crouch.height, v.state.yaw, pos);
+    v.weapon.action = 'idle';
+    by.revives++;
+    this.events.push({ type: 'revive', id: v.id, by: by.id, lifeId: v.lifeId });
+  }
+
+  kill(p: SimPlayer, killer: string | null, cause: 'weapon' | 'zone' | 'fall' | 'giveup', fromDowned = false) {
     if (!p.alive) return;
     p.alive = false;
+    p.downed = false;
     p.hp = 0;
     p.deaths++;
     p.diedAt = this.time;
     p.respawnAt = this.time + (this.conquest?.respawnDelay ?? this.opts.freeRespawnDelay ?? 3);
     p.state.vel = { x: 0, y: 0, z: 0 };
     p.ctrl.place(p.state, { x: p.state.pos.x, y: -1000, z: p.state.pos.z }, p.state.yaw);
-    if (killer && killer !== p.id) {
+    // Zabití se připisuje při vyřazení; po vyřazení už ne podruhé.
+    if (!fromDowned && killer && killer !== p.id) {
       const k = this.players.get(killer);
       if (k) k.kills++;
     }
@@ -269,8 +347,25 @@ export class MatchSim {
       const raw = inputs.get(p.id);
       if (raw) p.lastInputTick = this.tick;
       // Timeout vstupu (> 0,25 s): server zruší držené akce (střelba, sprint).
-      const input = raw ? sanitizeInput(raw) : emptyInput(this.tick);
+      let input = raw ? sanitizeInput(raw) : emptyInput(this.tick);
+      if (p.downed && this.time >= p.downedUntil - 1e-9) this.finalizeDowned(p, 'weapon');
       if (!p.alive) continue;
+      // Oživení: medik drží E u vyřazeného spoluhráče (E se pak nepředá žebříku).
+      const target = this.reviveCandidate(p, input);
+      if (target) {
+        if (p.reviveTarget !== target.id) p.reviveHeld = 0;
+        p.reviveTarget = target.id;
+        p.reviveHeld += 1 / this.cfg.tickRate;
+        input = { ...input, held: input.held & ~BTN.USE, pressed: input.pressed & ~BTN.USE };
+        if (p.reviveHeld >= PILOT.reviveHold - 1e-9) {
+          this.revive(target, p);
+          p.reviveTarget = null;
+          p.reviveHeld = 0;
+        }
+      } else {
+        p.reviveTarget = null;
+        p.reviveHeld = 0;
+      }
       p.state.tick = this.tick;
       p.ctrl.step(p.state, input);
       if (p.state.pos.y < -50) {
@@ -319,7 +414,7 @@ export class MatchSim {
       if (!v || !v.alive) continue;
       v.hp = Math.max(0, v.hp - im.damage);
       this.events.push({ type: 'hit', owner: im.owner, target: v.id, damage: im.damage, zone: im.zone!, hp: v.hp });
-      if (v.hp <= 0) this.kill(v, im.owner, 'weapon');
+      if (v.hp <= 0) this.down(v, im.owner);
     }
     // Zakázané zóny: odpočet jen během pobytu, po návratu reset.
     if (this.conquest && !ended) {
@@ -357,10 +452,28 @@ export class MatchSim {
       p.alive = false;
       p.hp = 0;
       p.respawnAt = this.time;
-      p.kills = p.deaths = 0;
+      p.kills = p.deaths = p.revives = 0;
+      p.downed = false;
+      p.reviveTarget = null;
+      p.reviveHeld = 0;
       p.ctrl.place(p.state, { x: 0, y: -1000, z: 0 }, 0);
     }
     this.events = [];
+  }
+
+  /** Vyřazený spoluhráč v dosahu medika, který drží E (jinak null). */
+  private reviveCandidate(p: SimPlayer, input: InputFrame): SimPlayer | null {
+    if (!(input.held & BTN.USE) || arsenalEntry(p.weaponId)?.kit !== 'medic') return null;
+    let best: SimPlayer | null = null, bd: number = PILOT.reviveRange;
+    for (const o of this.players.values()) {
+      if (!o.downed || o.team !== p.team || o === p) continue;
+      const d = Math.hypot(o.state.pos.x - p.state.pos.x, o.state.pos.y - p.state.pos.y, o.state.pos.z - p.state.pos.z);
+      if (d <= bd) {
+        bd = d;
+        best = o;
+      }
+    }
+    return best;
   }
 
   dispose() {

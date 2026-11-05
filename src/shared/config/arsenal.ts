@@ -1,5 +1,5 @@
 import type { Team } from '../map/schema';
-import { PF_MG, PF_PUMP, PF_RIFLE, PF_SEMISHOT, type WeaponConfig } from './weapon';
+import { PF_MG, PF_PUMP, PF_RIFLE, PF_SEMISHOT, PF_SNIPER, type WeaponConfig } from './weapon';
 
 /**
  * Arzenál: 12 primárních zbraní ve třech frakcích a čtyřech classách (pevné sestavy).
@@ -7,7 +7,7 @@ import { PF_MG, PF_PUMP, PF_RIFLE, PF_SEMISHOT, type WeaponConfig } from './weap
  * Server ověřuje, že zvolená zbraň patří frakci hráčova týmu.
  */
 export type Faction = 'usmc' | 'mec' | 'pla';
-export type Kit = 'assault' | 'medic' | 'support' | 'engineer';
+export type Kit = 'assault' | 'medic' | 'support' | 'engineer' | 'sniper';
 
 export interface ArsenalEntry {
   id: string;
@@ -15,6 +15,8 @@ export interface ArsenalEntry {
   faction: Faction;
   kit: Kit;
   rules: WeaponConfig;
+  /** false = zbraň zatím nemá hotový model (classa je vidět, nasazení s ní server odmítne). */
+  available?: boolean;
 }
 
 export const ARSENAL: ArsenalEntry[] = [
@@ -30,11 +32,33 @@ export const ARSENAL: ArsenalEntry[] = [
   { id: 't81', name: 'Type 81', faction: 'pla', kit: 'medic', rules: PF_RIFLE },
   { id: 'qbb95', name: 'QBB-95', faction: 'pla', kit: 'support', rules: PF_MG },
   { id: 'hawk97', name: 'Hawk Type 97 (návrh)', faction: 'pla', kit: 'engineer', rules: PF_PUMP },
+  { id: 'm24', name: 'M24', faction: 'usmc', kit: 'sniper', rules: PF_SNIPER, available: false },
+  { id: 'svd', name: 'SVD', faction: 'mec', kit: 'sniper', rules: PF_SNIPER, available: false },
 ];
 
-export const KITS: Kit[] = ['assault', 'medic', 'support', 'engineer'];
+/**
+ * Pilot (Potatofield_Pilot_Platna_Rozhodnuti – podle shrnutí v zadáních UI a postav):
+ * USMC × MEC, 8 proti 8, classy Assault / Medic / Support / Sniper; Engineer a PLA mimo pilot
+ * (kód zůstává, výběr je skrytý a server je odmítne).
+ */
+export const PILOT = {
+  factions: ['usmc', 'mec'] as Faction[],
+  kits: ['assault', 'medic', 'support', 'sniper'] as Kit[],
+  teamSize: 8,
+  maxHp: 100,
+  /** Okno pro oživení po vyřazení (s) a HP po oživení. */
+  downedTime: 15,
+  reviveHp: 50,
+  /** Oživení: medik drží E u vyřazeného spoluhráče (s, m). Návrhové hodnoty (N). */
+  reviveHold: 1.0,
+  reviveRange: 1.6,
+  /** Vzdát pomoc: podržení klávesy (s) – jen UI, server přijme zprávu. */
+  giveUpHold: 1.0,
+} as const;
+
+export const KITS: Kit[] = ['assault', 'medic', 'support', 'engineer', 'sniper'];
 export const FACTION_LABEL: Record<Faction, string> = { usmc: 'USMC', mec: 'MEC', pla: 'PLA' };
-export const KIT_LABEL: Record<Kit, string> = { assault: 'Assault', medic: 'Medic', support: 'Support', engineer: 'Engineer' };
+export const KIT_LABEL: Record<Kit, string> = { assault: 'Assault', medic: 'Medic', support: 'Support', engineer: 'Engineer', sniper: 'Sniper' };
 
 /** Výchozí frakce týmů (mapa frakce zatím neurčuje; server je může změnit volbou). */
 export const DEFAULT_FACTIONS: Record<Team, Faction> = { teamA: 'usmc', teamB: 'mec' };
@@ -48,7 +72,11 @@ export function rulesOf(id: string | undefined | null): WeaponConfig {
 }
 
 export function weaponFor(faction: Faction, kit: Kit): ArsenalEntry {
-  return ARSENAL.find((w) => w.faction === faction && w.kit === kit)!;
+  return ARSENAL.find((w) => w.faction === faction && w.kit === kit) ?? ARSENAL.find((w) => w.faction === faction)!;
+}
+
+export function hasWeapon(faction: Faction, kit: Kit) {
+  return ARSENAL.some((w) => w.faction === faction && w.kit === kit);
 }
 
 export const WEAPON_IDS = ARSENAL.map((w) => w.id);

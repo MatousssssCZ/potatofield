@@ -146,7 +146,7 @@ export class NetDriver implements GameDriver {
       if (!this.state) return null;
     }
     const me = s!.me;
-    return { id: this.localId, name: 'Ty', team: me.team, state: this.state!, weapon: this.weapon!, hp: me.hp, alive: me.alive, respawnAt: me.respawnAt, zone: me.zone, kills: me.kills, deaths: me.deaths };
+    return { id: this.localId, name: 'Ty', team: me.team, state: this.state!, weapon: this.weapon!, hp: me.hp, alive: me.alive, respawnAt: me.respawnAt, zone: me.zone, kills: me.kills, deaths: me.deaths, life: me.alive ? 'alive' : me.downed ? 'downed' : 'dead', downedLeft: me.downedLeft, reviveProgress: me.reviveProgress, revives: me.revives };
   }
 
   /** Interpolace vzdálených hráčů v čase (serverTime − 100 ms). */
@@ -181,7 +181,7 @@ export class NetDriver implements GameDriver {
       w.actionStart = o.actionStart;
       w.actionEnd = o.actionEnd;
       w.shotSeq = o.shotSeq;
-      return { id: o.id, name: o.name, team: o.team, state: st, weapon: w, hp: 100, alive: o.alive, respawnAt: 0, zone: null, kills: 0, deaths: 0 };
+      return { id: o.id, name: o.name, team: o.team, state: st, weapon: w, hp: 100, alive: o.alive, respawnAt: 0, zone: null, kills: 0, deaths: 0, life: o.life, downedLeft: 0, reviveProgress: 0, revives: 0 };
     });
   }
 
@@ -207,6 +207,10 @@ export class NetDriver implements GameDriver {
     }
     return list;
   }
+  giveUp() {
+    this.net.send({ t: 'giveup' });
+  }
+
   faction(): Faction | null {
     const me = this.net.lastSnap?.me;
     return me && this.factions && this.net.welcome?.conquest ? this.factions[me.team] : null;

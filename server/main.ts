@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { parseMapJson } from '../src/shared/map/validate';
 import { GameServer } from './gameServer';
-import { FACTION_LABEL, type Faction } from '../src/shared/config/arsenal';
+import { FACTION_LABEL, PILOT, type Faction } from '../src/shared/config/arsenal';
 import { PROTOCOL_VERSION } from '../src/shared/net/protocol';
 
 const args = process.argv.slice(2);
@@ -23,7 +23,22 @@ if (![fa, fb].every((f) => f in FACTION_LABEL)) {
   console.error('Neplatné frakce (usmc | mec | pla).');
   process.exit(1);
 }
-const server = await GameServer.create(r.doc, { conquest, scenarioId: arg('scenario', r.doc.scenarios[0]?.id ?? ''), factions: { teamA: fa, teamB: fb }, log: (s) => console.log(s) });
+// Pilot (výchozí): USMC × MEC, 8 proti 8, classy Assault/Medic/Support/Sniper. --no-pilot zpřístupní celý arzenál.
+const pilot = !args.includes('--no-pilot');
+if (pilot && [fa, fb].some((f) => !PILOT.factions.includes(f))) {
+  console.error('Pilot hraje jen USMC × MEC (pro jiné frakce použijte --no-pilot).');
+  process.exit(1);
+}
+const server = await GameServer.create(r.doc, {
+  conquest,
+  scenarioId: arg('scenario', r.doc.scenarios[0]?.id ?? ''),
+  factions: { teamA: fa, teamB: fb },
+  name: arg('name', 'Potatofield'),
+  pilot,
+  teamSize: Number(arg('team-size', String(PILOT.teamSize))),
+  friendlyFire: args.includes('--ff'),
+  log: (s) => console.log(s),
+});
 await server.listen(Number(arg('port', '8787')));
 console.log(`režim: ${conquest ? 'Conquest' : 'volný test'} · protokol v${PROTOCOL_VERSION} · frakce ${FACTION_LABEL[fa]} × ${FACTION_LABEL[fb]} · tick 60 Hz · snapshot 30 Hz`);
 setInterval(() => {

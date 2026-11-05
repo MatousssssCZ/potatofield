@@ -201,3 +201,28 @@ export function reloadDuration(w: WeaponConfig, mag: number, reserve: number): {
   }
   return { time: empty ? w.reloadEmpty : w.reloadPartial, shells: 0 };
 }
+
+/**
+ * Fiktivní odstřelovací puška PF-Marksman (Sniper). Návrhové hodnoty (N). Zbraň zatím nemá
+ * hotový model ani zvětšující optiku – v pilotu je classa vidět, ale nasazení s ní server odmítne.
+ */
+export const PF_SNIPER: WeaponConfig = {
+  meta: { id: 'weapon.pf-sniper', version: 1, status: 'proposed' },
+  name: 'PF-Marksman',
+  modes: ['semi'],
+  fireInterval: 1.3,
+  magazine: 5,
+  reserve: 25,
+  reloadPartial: 3.2,
+  reloadEmpty: 3.8,
+  equipTime: 0.8,
+  sprintOutTime: 0.35,
+  damage: { near: 85, nearRange: 80, far: 70, farRange: 400 },
+  headMultiplier: 2.0,
+  limbMultiplier: 0.75,
+  projectileSpeed: 800,
+  projectileGravity: 9.81,
+  projectileLifetime: 2.5,
+  recoil: { pitchDeg: 2.6, yawDeg: 0.4, recoveryDelay: 0.35, recoveryDegPerSec: 6 },
+  spread: { ...PF_MG.spread, standDeg: 2.0, crouchDeg: 1.4, proneDeg: 0.8, adsMultiplier: 0.04, movementDeg: 2.5, perShotDeg: 0.4, firingMaxDeg: 1.0 },
+};

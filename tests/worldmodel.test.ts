@@ -36,7 +36,7 @@ describe('světové modely zbraní a LOD', () => {
     for (let i = 0; i < 63; i++) {
       const id = WEAPON_IDS[i % WEAPON_IDS.length];
       const st = createPlayerState(MOVEMENT, { x: (i % 9) * 3, y: 0, z: -5 - Math.floor(i / 9) * 22 }, 0);
-      list.push({ id: `p${i}`, name: `p${i}`, team: i % 2 ? 'teamA' : 'teamB', state: st, weapon: createWeaponState(rulesOf(id), 0, id), hp: 100, alive: true, respawnAt: 0, zone: null, kills: 0, deaths: 0 });
+      list.push({ id: `p${i}`, name: `p${i}`, team: i % 2 ? 'teamA' : 'teamB', state: st, weapon: createWeaponState(rulesOf(id), 0, id), hp: 100, alive: true, respawnAt: 0, zone: null, kills: 0, deaths: 0, life: 'alive', downedLeft: 0, reviveProgress: 0, revives: 0 });
     }
     pool.update(list, 1 / 60, 0, new THREE.Vector3(12, 1.6, 0));
     expect(pool.count).toBe(63);

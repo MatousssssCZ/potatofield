@@ -6,7 +6,7 @@ import { MatchSim, dummyOffset, type SimEvent } from '../../shared/sim/match';
 import { clonePlayerState, type PlayerState } from '../../shared/sim/player';
 import type { WeaponState } from '../../shared/sim/weapon';
 import type { LadderDef } from '../../world/parts';
-import type { Faction } from '../../shared/config/arsenal';
+import { PILOT, type Faction } from '../../shared/config/arsenal';
 
 /** Pohled prezentace na hráče (lokálního i vzdáleného). */
 export interface PlayerView {
@@ -21,6 +21,13 @@ export interface PlayerView {
   zone: { t: number; countdown: number } | null;
   kills: number;
   deaths: number;
+  /** Stav života (vyřazený = tělo leží, lze oživit). */
+  life: 'alive' | 'downed' | 'dead';
+  /** Vyřazení: zbývá z okna pro oživení (s). */
+  downedLeft: number;
+  /** Medik: průběh oživování 0–1. */
+  reviveProgress: number;
+  revives: number;
 }
 
 /**
@@ -42,6 +49,8 @@ export interface GameDriver {
   requestSpawn(spawnId: string | null, weaponId?: string | null): string | null;
   /** Frakce týmu lokálního hráče (výběr výbavy) – null = volný test, libovolná frakce. */
   faction(): Faction | null;
+  /** Vyřazený hráč vzdá pomoc (definitivní smrt; autorita ji potvrdí). */
+  giveUp(): void;
   dummies(): Array<{ id: string; offset: number; down: boolean }>;
   restart(): void;
   dispose(): void;
@@ -63,6 +72,10 @@ export class OfflineDriver implements GameDriver {
   }
   private weapon: string | null;
 
+  giveUp() {
+    this.sim.giveUp(this.localId);
+  }
+
   faction() {
     const p = this.sim.players.get(this.localId);
     return p && this.sim.conquest ? this.sim.factionOf(p.team) : null;
@@ -75,7 +88,14 @@ export class OfflineDriver implements GameDriver {
   private view(id: string): PlayerView | null {
     const p = this.sim.players.get(id);
     if (!p) return null;
-    return { id: p.id, name: p.name, team: p.team, state: p.state, weapon: p.weapon, hp: p.hp, alive: p.alive, respawnAt: p.respawnAt, zone: p.zone, kills: p.kills, deaths: p.deaths };
+    const t = this.sim.time;
+    return {
+      id: p.id, name: p.name, team: p.team, state: p.state, weapon: p.weapon, hp: p.hp, alive: p.alive, respawnAt: p.respawnAt, zone: p.zone, kills: p.kills, deaths: p.deaths,
+      life: p.alive ? 'alive' : p.downed ? 'downed' : 'dead',
+      downedLeft: p.downed ? Math.max(0, p.downedUntil - t) : 0,
+      reviveProgress: p.reviveTarget ? p.reviveHeld / PILOT.reviveHold : 0,
+      revives: p.revives,
+    };
   }
 
   local() {

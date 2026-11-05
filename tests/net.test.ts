@@ -169,6 +169,9 @@ describe('síť – autoritativní server a dva klienti', () => {
     const port = await start(false);
     const a = await connect(port, 'Alfa');
     const b = await connect(port, 'Bravo');
+    // Po připojení server nenasazuje sám – nasazení potvrzuje hráč.
+    a.send({ t: 'spawn', id: null });
+    b.send({ t: 'spawn', id: null });
     await run(40, () => {
       a.sendInput(input());
       b.sendInput(input());

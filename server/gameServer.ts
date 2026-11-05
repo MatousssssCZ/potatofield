@@ -1,10 +1,11 @@
+import { createServer, type Server as HttpServer } from 'node:http';
 import { WebSocketServer, type WebSocket } from 'ws';
 import type { MapDocument, Team } from '../src/shared/map/schema';
 import { validateMap } from '../src/shared/map/validate';
 import { PhysicsWorld } from '../src/shared/physics/world';
 import { NET, PROTOCOL_VERSION, RADIO_TEXT, encodeRemote, mapHash, parseClientMsg, type ClientMsg, type RemoteState, type RemoteTuple, type ServerMsg } from '../src/shared/net/protocol';
 import { TeamLayer } from '../src/shared/net/team';
-import type { Faction } from '../src/shared/config/arsenal';
+import { PILOT, type Faction } from '../src/shared/config/arsenal';
 import { MatchSim, type SimEvent, type SimPlayer } from '../src/shared/sim/match';
 import { emptyInput, sanitizeInput, type InputFrame } from '../src/shared/sim/input';
 import { eyePosition } from '../src/shared/sim/player';
@@ -22,6 +23,13 @@ export interface ServerOptions {
   scenarioId?: string;
   /** Frakce týmů (kontrola výbavy při spawnu). */
   factions?: Record<Team, Faction>;
+  /** Název serveru v seznamu serverů. */
+  name?: string;
+  /** Pilot: classy Assault/Medic/Support/Sniper, 8 proti 8 (výchozí zapnuto). */
+  pilot?: boolean;
+  /** Hráčů na tým (výchozí 8). */
+  teamSize?: number;
+  friendlyFire?: boolean;
   port?: number;
   /** Bez vlastního časovače (testy krokují ručně). */
   manualTick?: boolean;
@@ -78,7 +86,7 @@ export class GameServer {
     readonly phys: PhysicsWorld,
     readonly opts: ServerOptions,
   ) {
-    this.sim = new MatchSim(phys, doc, { conquest: opts.conquest, scenarioId: opts.scenarioId, factions: opts.factions });
+    this.sim = new MatchSim(phys, doc, { conquest: opts.conquest, scenarioId: opts.scenarioId, factions: opts.factions, friendlyFire: opts.friendlyFire ?? false, allowedKits: opts.pilot === false ? undefined : [...PILOT.kits] });
     const gen = generateMap(doc);
     this.sim.ladders = laddersForMap(gen);
     this.hash = mapHash(doc);
@@ -97,12 +105,54 @@ export class GameServer {
     return new GameServer(doc, phys, opts);
   }
 
+  get teamSize() {
+    return this.opts.teamSize ?? PILOT.teamSize;
+  }
+
+  /** Pravidla pro UI klienta (welcome i /info). */
+  rules() {
+    return {
+      name: this.opts.name ?? 'Potatofield',
+      pilot: this.opts.pilot !== false,
+      teamSize: this.teamSize,
+      friendlyFire: this.opts.friendlyFire ?? false,
+      kits: this.opts.pilot === false ? (['assault', 'medic', 'support', 'engineer', 'sniper'] as const).slice() : [...PILOT.kits],
+      respawnDelay: this.sim.conquest?.respawnDelay ?? 3,
+      downedTime: PILOT.downedTime,
+    };
+  }
+
+  /** Veřejné údaje pro seznam serverů (GET /info, CORS povolen; jen skutečné hodnoty). */
+  info() {
+    return {
+      ...this.rules(),
+      protocol: PROTOCOL_VERSION,
+      map: this.doc.name,
+      mode: this.sim.conquest ? 'conquest' : 'free',
+      players: this.sim.players.size,
+      capacity: this.teamSize * 2,
+      factions: { teamA: this.sim.factionOf('teamA'), teamB: this.sim.factionOf('teamB') },
+    };
+  }
+
+  private http: HttpServer | null = null;
+
   listen(port = this.opts.port ?? 8787): Promise<number> {
     return new Promise((resolve) => {
-      this.wss = new WebSocketServer({ port, maxPayload: NET.maxMessageBytes, perMessageDeflate: { threshold: 2048 } });
+      this.http = createServer((req, res) => {
+        if (req.url?.split('?')[0] === '/info') {
+          res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'access-control-allow-origin': '*', 'cache-control': 'no-store' });
+          res.end(JSON.stringify(this.info()));
+        } else {
+          res.writeHead(404, { 'access-control-allow-origin': '*' });
+          res.end();
+        }
+      });
+      this.wss = new WebSocketServer({ server: this.http, maxPayload: NET.maxMessageBytes, perMessageDeflate: { threshold: 2048 } });
+      this.http.listen(port);
       this.wss.on('connection', (ws) => this.onConnection(ws));
-      this.wss.on('listening', () => {
-        this.port = (this.wss!.address() as { port: number }).port;
+      this.http.on('listening', () => {
+        this.port = (this.http!.address() as { port: number }).port;
         this.log(`server naslouchá na ${this.port}, mapa ${this.doc.name} (${this.hash})`);
         if (!this.opts.manualTick) this.startLoop();
         resolve(this.port);
@@ -197,13 +247,18 @@ export class GameServer {
         return;
       }
       if (c.player) return;
+      if (this.sim.players.size >= this.teamSize * 2) {
+        this.send(c, { t: 'bye', reason: 'full' });
+        c.ws.close(1013, 'full');
+        return;
+      }
       c.name = m.name.replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 24) || c.id;
       const team = this.autoTeam();
       c.player = this.sim.addPlayer(c.id, team, c.name);
       this.team.addMember(c.id, c.name, team);
       // Připojení během zápasu: úplný aktuální stav (mapa, tým, body) hned ve welcome + snapshotu.
-      this.send(c, { t: 'welcome', v: PROTOCOL_VERSION, id: c.id, map: this.doc, mapHash: this.hash, generators: this.generators, tick: this.sim.tick, scenarioId: this.sim.conquest?.scenarioId ?? '', team, conquest: !!this.sim.conquest, factions: { teamA: this.sim.factionOf('teamA'), teamB: this.sim.factionOf('teamB') } });
-      if (!this.sim.conquest) this.sim.requestSpawn(c.id, null);
+      this.send(c, { t: 'welcome', v: PROTOCOL_VERSION, id: c.id, map: this.doc, mapHash: this.hash, generators: this.generators, tick: this.sim.tick, scenarioId: this.sim.conquest?.scenarioId ?? '', team, conquest: !!this.sim.conquest, factions: { teamA: this.sim.factionOf('teamA'), teamB: this.sim.factionOf('teamB') }, rules: this.rules() });
+      // Po připojení se hráč nenasazuje sám – nasazení potvrzuje (zadání UI, kap. 6).
       this.broadcastSystem(`${c.name} se připojil (${team === 'teamA' ? 'tým A' : 'tým B'}).`);
       this.sendSnapshot(c);
       return;
@@ -238,8 +293,14 @@ export class GameServer {
         }
         break;
       }
+      case 'giveup': {
+        const err = this.sim.giveUp(c.id);
+        if (err) this.reject(c, 'giveup', err);
+        break;
+      }
       case 'team': {
-        if (p.alive) return this.reject(c, 'team', 'tým lze změnit jen mrtvý / před nasazením');
+        if (p.alive || p.downed) return this.reject(c, 'team', 'tým lze změnit jen mrtvý / před nasazením');
+        if (m.team !== p.team && [...this.sim.players.values()].filter((o) => o.team === m.team).length >= this.teamSize) return this.reject(c, 'team', 'tým je plný');
         p.team = m.team;
         this.team.setTeam(c.id, m.team);
         break;
@@ -444,6 +505,7 @@ export class GameServer {
       ladder: s.ladder,
       squad: this.team.members.get(p.id)?.squad ?? null,
       weapon: p.weaponId,
+      life: p.alive ? 'alive' : p.downed ? 'downed' : 'dead',
     };
   }
 
@@ -461,7 +523,7 @@ export class GameServer {
       tick: this.sim.tick,
       time: this.sim.time,
       ack: c.lastSeq,
-      me: { state: { ...p.state, blocked: [] }, weapon: p.weapon, hp: p.hp, alive: p.alive, respawnAt: p.respawnAt, zone: p.zone, kills: p.kills, deaths: p.deaths, team: p.team, squad: mem?.squad ?? null, canSquadSpawn: canSquad },
+      me: { state: { ...p.state, blocked: [] }, weapon: p.weapon, hp: p.hp, alive: p.alive, respawnAt: p.respawnAt, zone: p.zone, kills: p.kills, deaths: p.deaths, team: p.team, squad: mem?.squad ?? null, canSquadSpawn: canSquad, downed: p.downed, downedLeft: p.downed ? r3(Math.max(0, p.downedUntil - this.sim.time)) : 0, reviveProgress: p.reviveTarget ? r3(p.reviveHeld / PILOT.reviveHold) : 0, revives: p.revives },
       others: [],
       o,
       cps: cq ? cq.cps.map((x) => ({ id: x.id, owner: x.owner, p: r3(x.p), activity: x.activity })) : null,
@@ -476,7 +538,7 @@ export class GameServer {
       contacts: this.team.contacts[p.team],
       spawns,
       // Skóre stačí 1×/s (šetří přenos); ostatní data každý snapshot.
-      scores: this.snapCount % NET.snapshotHz !== 1 ? [] : [...this.sim.players.values()].map((o) => ({ id: o.id, name: o.name, team: o.team, kills: o.kills, deaths: o.deaths, ping: this.clients.get(o.id)?.ping ?? 0, squad: o.team === p.team ? (this.team.members.get(o.id)?.squad ?? null) : null })),
+      scores: this.snapCount % NET.snapshotHz !== 1 ? [] : [...this.sim.players.values()].map((o) => ({ id: o.id, name: o.name, team: o.team, kills: o.kills, deaths: o.deaths, revives: o.revives, ping: this.clients.get(o.id)?.ping ?? 0, squad: o.team === p.team ? (this.team.members.get(o.id)?.squad ?? null) : null })),
     });
   }
 
@@ -501,6 +563,7 @@ export class GameServer {
     if (this.timer) clearInterval(this.timer);
     for (const c of this.clients.values()) c.ws.close();
     await new Promise<void>((r) => (this.wss ? this.wss.close(() => r()) : r()));
+    await new Promise<void>((r) => (this.http ? this.http.close(() => r()) : r()));
     this.sim.dispose();
     this.phys.free();
   }

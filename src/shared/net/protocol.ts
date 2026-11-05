@@ -4,14 +4,14 @@ import type { PlayerState } from '../sim/player';
 import type { WeaponState } from '../sim/weapon';
 import type { CPState } from '../sim/conquest';
 import type { SimEvent } from '../sim/match';
-import { WEAPON_IDS, type Faction } from '../config/arsenal';
+import { WEAPON_IDS, type Faction, type Kit } from '../config/arsenal';
 
 /**
  * Síťový protokol (JSON přes WebSocket). Klient posílá jen vstupy a žádosti;
  * server je autoritou pro pohyb, střelbu, poškození, spawny, body, tickety a týmové informace.
  */
-/** v2: výbava při spawnu (zbraň z arzenálu), zbraň vzdálených hráčů, frakce týmů. */
-export const PROTOCOL_VERSION = 2;
+/** v3: vyřazení a oživení (stav života, vzdát pomoc), pravidla serveru ve welcome, /info. */
+export const PROTOCOL_VERSION = 3;
 export const NET = {
   snapshotHz: 30,
   maxMessageBytes: 32 * 1024,
@@ -34,6 +34,7 @@ export type ClientMsg =
   | { t: 'hello'; v: number; name: string; mapHash?: string }
   | { t: 'input'; frames: InputFrame[] }
   | { t: 'spawn'; id: string | null; weapon?: string }
+  | { t: 'giveup' }
   | { t: 'team'; team: Team }
   | { t: 'chat'; ch: ChatChannel; text: string }
   | { t: 'radio'; id: RadioId }
@@ -66,6 +67,8 @@ export interface RemoteState {
   squad: string | null;
   /** Zbraň z arzenálu (world model a efekty). */
   weapon: string;
+  /** Stav života: živý, vyřazený (tělo leží, lze oživit), mrtvý. */
+  life: 'alive' | 'downed' | 'dead';
 }
 
 export interface SquadInfo {
@@ -108,6 +111,23 @@ export interface SelfState {
   team: Team;
   squad: string | null;
   canSquadSpawn: boolean;
+  /** Vyřazení: zbývající čas okna pro oživení (s), jinak 0. */
+  downed: boolean;
+  downedLeft: number;
+  /** Medik: průběh oživování 0–1 (0 = neoživuje). */
+  reviveProgress: number;
+  revives: number;
+}
+
+/** Pravidla serveru pro UI (čte je klient, nevymýšlí je). */
+export interface ServerRules {
+  name: string;
+  pilot: boolean;
+  teamSize: number;
+  friendlyFire: boolean;
+  kits: Kit[];
+  respawnDelay: number;
+  downedTime: number;
 }
 
 export type ServerMsg =
@@ -123,6 +143,7 @@ export type ServerMsg =
       team: Team;
       conquest: boolean;
       factions: Record<Team, Faction>;
+      rules: ServerRules;
     }
   | {
       t: 'snap';
@@ -143,7 +164,7 @@ export type ServerMsg =
       order: OrderInfo | null;
       contacts: ContactInfo[];
       spawns: string[];
-      scores: Array<{ id: string; name: string; team: Team; kills: number; deaths: number; ping: number; squad: string | null }>;
+      scores: Array<{ id: string; name: string; team: Team; kills: number; deaths: number; revives: number; ping: number; squad: string | null }>;
     }
   | { t: 'events'; list: SimEvent[] }
   | { t: 'chat'; id: string; from: string; name: string; ch: ChatChannel | 'system'; text: string; time: number }
@@ -189,6 +210,7 @@ export function parseClientMsg(raw: string): ClientMsg | null {
     case 'radio':
       return (RADIO_IDS as readonly string[]).includes(o.id as string) ? (o as ClientMsg) : null;
     case 'spot':
+    case 'giveup':
       return o as ClientMsg;
     case 'squad':
       return ['create', 'join', 'leave', 'lock', 'unlock', 'kick', 'promote'].includes(o.op as string) ? (o as ClientMsg) : null;
@@ -217,6 +239,7 @@ export const RADIO_TEXT: Record<RadioId, string> = {
 export type RemoteTuple = [string, string, 0 | 1, 0 | 1, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, string | null, string | null];
 const STANCES = ['stand', 'crouch', 'prone'] as const;
 const ACTIONS = ['equip', 'idle', 'reload', 'sprintOut'] as const;
+const LIFE = ['alive', 'downed', 'dead'] as const;
 
 export function encodeRemote(r: RemoteState): RemoteTuple {
   return [
@@ -224,7 +247,7 @@ export function encodeRemote(r: RemoteState): RemoteTuple {
     r.pos[0], r.pos[1], r.pos[2], r.vel[0], r.vel[1], r.vel[2],
     r.yaw, r.pitch, r.bodyYaw, r.height,
     STANCES.indexOf(r.stance), (r.grounded ? 1 : 0) | (r.sprinting ? 2 : 0), r.ads,
-    ACTIONS.indexOf(r.action), r.actionStart, r.actionEnd, r.shotSeq, Math.max(0, WEAPON_IDS.indexOf(r.weapon)), 0,
+    ACTIONS.indexOf(r.action), r.actionStart, r.actionEnd, r.shotSeq, Math.max(0, WEAPON_IDS.indexOf(r.weapon)), LIFE.indexOf(r.life),
     r.ladder, r.squad,
   ];
 }
@@ -236,6 +259,6 @@ export function decodeRemote(t: RemoteTuple): RemoteState {
     yaw: t[10], pitch: t[11], bodyYaw: t[12], height: t[13],
     stance: STANCES[t[14]] ?? 'stand', grounded: (t[15] & 1) !== 0, sprinting: (t[15] & 2) !== 0, ads: t[16],
     action: ACTIONS[t[17]] ?? 'idle', actionStart: t[18], actionEnd: t[19], shotSeq: t[20],
-    ladder: t[23], squad: t[24], weapon: WEAPON_IDS[t[21]] ?? 'm4a1',
+    ladder: t[23], squad: t[24], weapon: WEAPON_IDS[t[21]] ?? 'm4a1', life: LIFE[t[22]] ?? (t[3] === 1 ? 'alive' : 'dead'),
   };
 }

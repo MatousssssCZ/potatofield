@@ -166,8 +166,9 @@ describe('výbava potvrzená autoritou', () => {
     expect(m.players.get('x')!.weapon.weaponId).toBe('saiga');
   });
 
-  it('arzenál: 12 zbraní, každá frakce má 4 classy; pravidla podle classy', () => {
-    expect(ARSENAL).toHaveLength(12);
+  it('arzenál: pilot USMC × MEC má Assault/Medic/Support/Sniper; pravidla podle classy', () => {
+    expect(ARSENAL).toHaveLength(14);
+    for (const f of ['usmc', 'mec'] as const) for (const k of ['assault', 'medic', 'support', 'sniper'] as const) expect(ARSENAL.some((w) => w.faction === f && w.kit === k)).toBe(true);
     for (const f of ['usmc', 'mec', 'pla'] as const) for (const k of ['assault', 'medic', 'support', 'engineer'] as const) expect(weaponFor(f, k)).toBeTruthy();
     expect(rulesOf('pkm')).toBe(PF_MG);
     expect(rulesOf('saiga')).toBe(PF_SEMISHOT);
@@ -177,7 +178,7 @@ describe('výbava potvrzená autoritou', () => {
   it('protokol v2: spawn s neznámou zbraní se odmítne; zbraň vzdáleného hráče projde n-ticí', () => {
     expect(parseClientMsg(JSON.stringify({ t: 'spawn', id: null, weapon: 'xyz' }))).toBeNull();
     expect(parseClientMsg(JSON.stringify({ t: 'spawn', id: 'sa', weapon: 'pkm' }))).not.toBeNull();
-    const r: RemoteState = { id: 'a', name: 'A', team: 'teamB', alive: true, pos: [1, 2, 3], vel: [0, 0, 0], yaw: 0, pitch: 0, bodyYaw: 0, height: 1.8, stance: 'stand', grounded: true, sprinting: false, ads: 0, action: 'reload', actionStart: 1, actionEnd: 2, shotSeq: 3, ladder: null, squad: null, weapon: 'saiga' };
+    const r: RemoteState = { id: 'a', name: 'A', team: 'teamB', alive: true, pos: [1, 2, 3], vel: [0, 0, 0], yaw: 0, pitch: 0, bodyYaw: 0, height: 1.8, stance: 'stand', grounded: true, sprinting: false, ads: 0, action: 'reload', actionStart: 1, actionEnd: 2, shotSeq: 3, ladder: null, squad: null, weapon: 'saiga', life: 'alive' };
     expect(decodeRemote(encodeRemote(r)).weapon).toBe('saiga');
   });
 });
