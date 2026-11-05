@@ -12,11 +12,11 @@ export function buildOptic(axisY: number, z0: number, z1: number, S: (n: number)
   const prof: Array<[number, number]> = [
     [0.0155, -z0], [0.0195, -z0], [0.0195, -z0 + 0.004], [0.0188, -z0 + 0.006], [0.0188, -z1 - 0.012], [0.021, -z1 - 0.006], [0.021, -z1], [0.017, -z1], [0.017, -z1 - 0.008], [0.0155, -z1 - 0.01], [0.0155, -z0],
   ];
-  metal.push(lathe(fwd(prof), S(28), PAL.optic, 0, axisY));
+  metal.push(lathe(fwd(prof), S(28), PAL.optic, 0, axisY, true));
   const len = z0 - z1;
   for (const f of [0.3, 0.66]) {
     const zr = z0 - len * f;
-    metal.push(lathe(fwd([[0.019, -zr - 0.006], [0.0215, -zr - 0.005], [0.0215, -zr + 0.005], [0.019, -zr + 0.006]]), S(24), PAL.optic, 0, axisY));
+    metal.push(lathe(fwd([[0.019, -zr - 0.006], [0.0215, -zr - 0.005], [0.0215, -zr + 0.005], [0.019, -zr + 0.006]]), S(24), PAL.optic, 0, axisY, true));
   }
   const zt = (z0 + z1) / 2;
   const turret = (): THREE.BufferGeometry => lathe([[0, 0], [0.008, 0], [0.008, 0.012], [0.006, 0.014], [0, 0.014]], S(14), PAL.optic);

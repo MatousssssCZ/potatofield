@@ -28,10 +28,11 @@ medián FPS, p95 snímku, draw calls a trojúhelníky (vše v dev panelu F3).
 Změřené vlastnosti scény (počty, ne FPS):
 | Položka | Hodnota |
 |---|---|
-| M4A1 + ruce (lokální sestava) | 14 282 trojúhelníků, ~9 draw calls, 4 neprůhledné materiály + optika |
-| Zbraň / zbraň + obě ruce (`scripts/weapon-report.ts`) | M4A1 9 492 / 14 724 · M16A2 10 108 / 15 060 · AK-101 7 108 / 12 340 · AKM 4 552 / 9 504 · QBZ-95 4 984 / 10 216 · Type 81 4 996 / 9 948 · M249 6 144 / 11 376 · PKM 5 360 / 10 592 · QBB-95 5 056 / 10 288 · R870 2 288 / 7 520 · Saiga-12 5 088 / 10 320 · Hawk 97 2 976 / 8 208 |
-| World model zbraně LOD0 / LOD1 / LOD2 | 1 944–6 012 / 216–396 / 72–120 trojúhelníků (orientační cíl LOD0 3 000 překračuje 9 zbraní) |
-| 63 vzdálených postav (test `worldmodel.test.ts`) | LOD 25 / 18 / 20, ~177 tis. viditelných trojúhelníků; ~12 draw calls na postavu (tělo bez instancingu) – další optimalizace |
+| M4A1 + ruce (lokální sestava) | 8 716 trojúhelníků (zbraň 3 484), ~10 draw calls, 4 neprůhledné materiály + optika |
+| Rozpočet zbraní (zadání autora) | vlastní pohled 3 000–3 500 · u ostatních hráčů 1 000–1 300 · vzdálená varianta 200–300 trojúhelníků |
+| Zbraň v první osobě (bez rukou) | 3 418–3 498 u všech 12 zbraní (`scripts/weapon-report.ts`); zbraň + obě ruce 8,4–8,7 tis. |
+| Zbraň u ostatních hráčů LOD0 / LOD1 / obrys | 1 040–1 298 / 264–300 / 36–60; přepnutí 25 m a 120 m s hysterezí 2 m |
+| 63 vzdálených postav (test `worldmodel.test.ts`) | ~76 tis. viditelných trojúhelníků; ~12 draw calls na postavu (tělo bez instancingu) – další optimalizace |
 | Referenční ulice z očí (Standard) | ~230–250 draw calls, ~110 tis. trojúhelníků |
 | Střelnice (Standard) | ~230 draw calls, ~40 tis. trojúhelníků |
 

@@ -53,7 +53,7 @@ function build95(variant: 'qbz95' | 'qbb95', segScale: number): WeaponModel {
   // U QBZ-95 jsou mechanická mířidla sklopená do rukojeti (nesmí zasahovat do průhledu kolimátoru).
   const zr = 0.108, zf = -0.094;
   if (irons) {
-    metal.push(lathe([[0.0028, zr - 0.002], [0.0068, zr - 0.002], [0.0068, zr + 0.002], [0.0028, zr + 0.002], [0.0028, zr - 0.002]], S(18), C.metalDark, 0, IRON_Y));
+    metal.push(lathe([[0.0028, zr - 0.002], [0.0068, zr - 0.002], [0.0068, zr + 0.002], [0.0028, zr + 0.002], [0.0028, zr - 0.002]], S(18), C.metalDark, 0, IRON_Y, true));
     metal.push(bevelBox(0.01, 0.006, 0.01, 0.0015, C.metalDark, [0, HANDLE_TOP + 0.002, zr]));
     for (const sx of [-1, 1]) {
       metal.push(bevelBox(0.0025, 0.018, 0.012, 0.0006, C.metalDark, [sx * 0.009, HANDLE_TOP + 0.009, zr]));

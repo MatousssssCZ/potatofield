@@ -26,7 +26,7 @@ Viz git historie; 20 testů pohybu, editor s gizmy, historie, IndexedDB, export/
 - [ ] Explicitní změna velikosti existujícího plátna (v pilotu blokováno – velikost se volí u nové mapy)
 
 ## Krok 6 – 3D zbraň a dotažená ulice
-- [x] M4A1 z profilovaných dílů, kolimátor s tečkou ze směru (jen průhledem), 14,3 tis. trojúhelníků, ~9 draw calls
+- [x] M4A1 z profilovaných dílů, kolimátor s tečkou ze směru (jen průhledem), 3 484 trojúhelníků zbraně (s rukama 8,7 tis.), ~10 draw calls
 - [x] Skinned ruce (USMC Assault), úchopy, ADS přes opticEye, sprint/přebití/výstřel/tasení/stažení u zdi
 - [x] Logika zbraně (kadence, semi/auto, reload commit, priority, recoil vs. rozptyl, blokace hlavně) – testy
 - [x] Projektily s gravitací, hitboxy podle postoje, efekty zásahů v poolu, procedurální zvuk
@@ -40,7 +40,9 @@ Viz git historie; 20 testů pohybu, editor s gizmy, historie, IndexedDB, export/
 - [x] Krok 7 grafického zadání – Engineer: Remington 870, Saiga-12 (rodina AK), pumpa jako pohyblivý díl, nabíjení po jednom s viditelným nábojem jen ve fázi vkládání, procedurální zvuky pumpy a náboje
 - [~] Hawk Type 97: **blokováno k ověření** – reference nebyla dostupná; model je označený neověřený návrh (viz docs/weapons/Hawk97.md)
 - [x] Krok 8 – world modely všech 12 zbraní ve 3P podle výbavy, LOD0/1/2 (siluety z řezů), hystereze přepnutí, sdílená mezipaměť; test 63 postav (LOD 25/18/20)
-- [~] LOD0 má 1,9–6 tis. trojúhelníků (orientační cíl 3 tis.); postava vzdáleného hráče stále ~12 draw calls (instancing zbývá)
+- [x] Rozpočty autora: zbraň v první osobě 3 418–3 498 trojúhelníků, u ostatních hráčů 1 040–1 298, vzdálená varianta 264–300 – testy pro všech 12 zbraní; mířidla a near plane ověřené na zjednodušené geometrii
+- [ ] Pistole (rozpočet 1 500–2 000) – pistole zatím nejsou součástí arzenálu
+- [~] Postava vzdáleného hráče stále ~12 draw calls (instancing zbývá)
 - [~] 12 profilů rukou/rukávů existuje (rukavice, holé ruce s vyhrnutým rukávem, bezprsté), ruce potřebují doladit pózy
 - [ ] Výkonové měření klienta na i5-1335U
 

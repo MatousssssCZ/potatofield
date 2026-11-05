@@ -5,6 +5,8 @@ import { buildQBB95, buildQBZ95 } from './bullpup';
 import { buildM249, buildPKM } from './belt';
 import { buildHawk97, buildR870 } from './shotgun';
 import type { WeaponModel } from './types';
+import { BUDGET_TABLE } from './budgetTable';
+import { FULL_DETAIL, withDetail } from './meshkit';
 
 export type { Faction, Kit };
 export { FACTION_LABEL, KIT_LABEL };
@@ -50,6 +52,20 @@ export const WEAPON_DEFS: WeaponDef[] = ARSENAL.map((a) => ({
 export function weaponDef(id: string): WeaponDef {
   const d = WEAPON_DEFS.find((w) => w.id === id && w.build);
   return d ?? WEAPON_DEFS[0];
+}
+
+/**
+ * Model pro vlastní pohled v rozpočtu 3 000–3 500 trojúhelníků (bez rukou) a pro ostatní hráče
+ * v rozpočtu 1 000–1 300. Stupeň detailu je předpočítaný (scripts/weapon-budget.ts).
+ */
+export function buildFirstPerson(id: string): WeaponModel {
+  const d = weaponDef(id);
+  return withDetail(BUDGET_TABLE[d.id]?.fp ?? FULL_DETAIL, () => d.build!(1));
+}
+
+export function buildWorldLod0(id: string): WeaponModel {
+  const d = weaponDef(id);
+  return withDetail(BUDGET_TABLE[d.id]?.world ?? FULL_DETAIL, () => d.build!(1));
 }
 
 export function readyWeapons() {

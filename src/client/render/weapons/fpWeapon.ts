@@ -5,7 +5,7 @@ import type { WeaponConfig } from '../../../shared/config/weapon';
 import { rulesOf } from '../../../shared/config/arsenal';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { WeaponModel } from './types';
-import { weaponDef } from './catalog';
+import { buildFirstPerson, weaponDef } from './catalog';
 import { HAND_LOOKS, Hand, POSES, buildHandGeometry, makeCamoTexture, type HandGeometry } from './hands';
 
 /**
@@ -122,7 +122,8 @@ export class FPWeapon {
   constructor(weaponId = 'm4a1', lookId: string | null = null, quality: 'low' | 'standard' | 'high' = 'standard') {
     const seg = quality === 'low' ? 0.6 : quality === 'high' ? 1.25 : 1;
     const def = weaponDef(weaponId);
-    this.model = def.build!(seg);
+    // Rozpočet zbraně v první osobě (3 000–3 500 trojúhelníků) platí pro všechny kvality.
+    this.model = buildFirstPerson(def.id);
     this.rules = rulesOf(def.id);
     lookId = lookId ?? def.hands;
     const grain = grainTexture();

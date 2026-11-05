@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { WEAPON_DEFS, readyWeapons } from '../src/client/render/weapons/catalog';
+import { WEAPON_DEFS, buildFirstPerson, readyWeapons } from '../src/client/render/weapons/catalog';
 import { HAND_LOOKS, buildHandGeometry } from '../src/client/render/weapons/hands';
 import type { WeaponModel } from '../src/client/render/weapons/types';
 
@@ -35,16 +35,24 @@ describe('arzenál – pevné sestavy', () => {
     expect(WEAPON_DEFS).toHaveLength(12);
     for (const f of ['usmc', 'mec', 'pla']) expect(new Set(WEAPON_DEFS.filter((w) => w.faction === f).map((w) => w.kit)).size).toBe(4);
     for (const d of ready) {
-      const m = d.build!(1);
+      const m = buildFirstPerson(d.id);
       expect(!!m.optic, d.id).toBe(d.kit === 'assault');
       expect(m.sight).toBe(d.kit === 'assault' ? 'optic' : 'iron');
       expect(HAND_LOOKS[d.hands], d.hands).toBeTruthy();
     }
   });
 
+  it('rozpočet zbraně v první osobě: 3 000–3 500 trojúhelníků (bez rukou)', () => {
+    for (const d of ready) {
+      const t = buildFirstPerson(d.id).triangles;
+      expect(t, d.id).toBeGreaterThanOrEqual(3000);
+      expect(t, d.id).toBeLessThanOrEqual(3500);
+    }
+  });
+
   it('rozpočet: zbraň + obě ruce ≤ 20 000 trojúhelníků', () => {
     for (const d of ready) {
-      const m = d.build!(1);
+      const m = buildFirstPerson(d.id);
       const hg = buildHandGeometry(HAND_LOOKS[d.hands], 1);
       let hands = 0;
       for (const g of Object.values(hg).filter((x): x is THREE.BufferGeometry => x instanceof THREE.BufferGeometry)) hands += (g.index ? g.index.count : g.getAttribute('position').count) / 3;
@@ -59,7 +67,7 @@ describe('arzenál – pevné sestavy', () => {
 
   it('mířidla: oko, hledí a muška leží v jedné ose; ústí je před muškou', () => {
     for (const d of ready) {
-      const { points: P } = d.build!(1);
+      const { points: P } = buildFirstPerson(d.id);
       expect(P.sightRear.x).toBeCloseTo(0, 6);
       expect(P.sightFront.x).toBeCloseTo(0, 6);
       expect(P.sightFront.y, d.id).toBeCloseTo(P.sightRear.y, 5);
@@ -72,7 +80,7 @@ describe('arzenál – pevné sestavy', () => {
 
   it('mechanická mířidla: paprsek z oka projde skutečným otvorem/výřezem hledí a narazí až na mušku', () => {
     for (const d of ready.filter((w) => w.kit !== 'assault')) {
-      const m = d.build!(1);
+      const m = buildFirstPerson(d.id);
       const P = m.points;
       // Míří těsně pod vrchol mušky – musí projít hledím (v otvoru není neprůhledný disk).
       const target = P.sightFront.clone().add(new THREE.Vector3(0, -0.0012, 0));
@@ -84,7 +92,7 @@ describe('arzenál – pevné sestavy', () => {
 
   it('kolimátor: osa průhledu je volná (tubus, montáž ani muška nezakrývají střed)', () => {
     for (const d of ready.filter((w) => w.kit === 'assault')) {
-      const m = d.build!(1);
+      const m = buildFirstPerson(d.id);
       const P = m.points;
       for (const [dx, dy] of [[0, 0], [0.006, 0], [-0.006, 0], [0, 0.006], [0, -0.006]]) {
         const from = P.opticEye.clone().add(new THREE.Vector3(dx, dy, 0));
@@ -96,7 +104,7 @@ describe('arzenál – pevné sestavy', () => {
 
   it('near plane (0,03 m) v ADS neodřezává mířidla ani tělo před okem', () => {
     for (const d of ready) {
-      const m = d.build!(1);
+      const m = buildFirstPerson(d.id);
       const eye = m.points.opticEye;
       let close = 0;
       for (const g of [m.static.metal, m.static.polymer]) {
@@ -112,7 +120,7 @@ describe('arzenál – pevné sestavy', () => {
 
   it('pásové zbraně: víko na závěsu kryje lůžko s pásem, schránka je na straně podávání', () => {
     for (const id of ['m249', 'pkm']) {
-      const m = WEAPON_DEFS.find((w) => w.id === id)!.build!(1);
+      const m = buildFirstPerson(id);
       expect(m.reloadStyle).toBe('belt');
       const P = m.points;
       const fc = m.moving.feedCover!;
@@ -124,14 +132,14 @@ describe('arzenál – pevné sestavy', () => {
       expect(P.feedEntry!.y).toBeLessThan(b.max.y);
       expect(Math.sign(m.magSide)).toBe(id === 'm249' ? -1 : 1);
     }
-    const qbb = WEAPON_DEFS.find((w) => w.id === 'qbb95')!.build!(1);
+    const qbb = buildFirstPerson('qbb95');
     expect(qbb.reloadStyle).toBe('magazine');
     expect(qbb.optic).toBeUndefined();
   });
 
   it('siluety: M16A2 je viditelně delší než M4A1, bullpup nejkratší', () => {
     const len = (id: string) => {
-      const m = WEAPON_DEFS.find((w) => w.id === id)!.build!(1);
+      const m = buildFirstPerson(id);
       const b = new THREE.Box3().setFromBufferAttribute(m.static.polymer.getAttribute('position') as THREE.BufferAttribute);
       b.union(new THREE.Box3().setFromBufferAttribute(m.static.metal.getAttribute('position') as THREE.BufferAttribute));
       return b.max.z - b.min.z;

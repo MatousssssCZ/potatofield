@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { weaponDef } from './catalog';
+import { buildWorldLod0 } from './catalog';
+import { WEAPON_BUDGET } from './budget';
 
 /**
- * Světové modely zbraní pro vzdálené postavy: stejný generátor jako v první osobě
+ * Světové modely zbraní pro vzdálené postavy: stejný generátor jako v první osobě v rozpočtu
  * v nižším rozlišení oblouků (LOD0) a dvě odvozené siluety (LOD1 z řezů podél hlavně,
  * LOD2 z obalových kvádrů dílů). Bez rukou, bez skla a tečky kolimátoru.
  */
@@ -64,7 +65,8 @@ export function worldWeapon(id: string, quality: 'low' | 'standard' | 'high'): W
   const key = `${id}:${quality}`;
   const hit = cache.get(key);
   if (hit) return hit;
-  const m = weaponDef(id).build!(quality === 'high' ? 0.5 : 0.35);
+  void quality; // rozpočet world modelu je pevný (1 000–1 300 / 200–300 trojúhelníků)
+  const m = buildWorldLod0(id);
   // Díly v klidové poloze (pohyblivé díly posunuté na svůj pivot). Volný náboj brokovnice se nezobrazuje.
   const parts: THREE.BufferGeometry[] = [m.static.metal, m.static.polymer];
   const mv = m.moving;
@@ -81,8 +83,18 @@ export function worldWeapon(id: string, quality: 'low' | 'standard' | 'high'): W
   for (const p of [mv.magazine, mv.chargingHandle, mv.feedCover, mv.pump]) p?.geometry.dispose();
   m.optic?.glass.dispose();
   const lod0 = mergeGeometries(parts, false)!;
-  const lod1 = mergeGeometries(parts.flatMap((g) => slices(g, 9)), false)!;
-  const lod2 = mergeGeometries(parts.flatMap((g) => slices(g, 2)), false)!;
+  // Vzdálená varianta: nejvíc řezů, které se vejdou do 200–300 trojúhelníků.
+  let lod1: THREE.BufferGeometry | null = null;
+  for (let n = 16; n >= 1; n--) {
+    const g = mergeGeometries(parts.flatMap((p) => slices(p, n)), false)!;
+    if (tri(g) <= WEAPON_BUDGET.worldFar.max) {
+      lod1 = g;
+      break;
+    }
+    g.dispose();
+  }
+  lod1 ??= mergeGeometries(parts.flatMap((p) => slices(p, 1)), false)!;
+  const lod2 = mergeGeometries(parts.flatMap((g) => slices(g, 1)), false)!;
   for (const g of parts) g.dispose();
   for (const g of [lod0, lod1, lod2]) g.computeBoundingSphere();
   const w: WorldWeapon = { lods: [lod0, lod1, lod2], triangles: [tri(lod0), tri(lod1), tri(lod2)], muzzle: m.points.muzzle.clone() };
@@ -90,8 +102,8 @@ export function worldWeapon(id: string, quality: 'low' | 'standard' | 'high'): W
   return w;
 }
 
-/** Vzdálenosti přepnutí LOD (m) – podle velikosti na obrazovce při běžném FOV. */
-export const WORLD_LOD = [22, 60] as const;
+/** Přepnutí LOD (m): do 25 m model 1 000–1 300 trojúhelníků, do 120 m vzdálená varianta 200–300, dál jen obrys. */
+export const WORLD_LOD = [25, 120] as const;
 
 export function disposeWorldWeapons() {
   for (const w of cache.values()) for (const g of w.lods) g.dispose();

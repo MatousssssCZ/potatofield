@@ -1,9 +1,9 @@
 // Vývojový nástroj: počty trojúhelníků, délky a geometrie mířidel hotových zbraní (npx tsx scripts/weapon-report.ts).
 import * as THREE from 'three';
-import { readyWeapons } from '../src/client/render/weapons/catalog';
+import { buildFirstPerson, readyWeapons } from '../src/client/render/weapons/catalog';
 import { HAND_LOOKS, buildHandGeometry } from '../src/client/render/weapons/hands';
 for (const d of readyWeapons()) {
-  const m = d.build!(1);
+  const m = buildFirstPerson(d.id);
   const hg = buildHandGeometry(HAND_LOOKS[d.hands], 1);
   let h = 0;
   for (const g of Object.values(hg)) if (g instanceof THREE.BufferGeometry) h += (g.index ? g.index.count : g.getAttribute('position').count) / 3;

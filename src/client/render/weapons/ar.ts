@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { bevelBox, crossProfile, curvedMag, fwd, lathe, merge, plainBox, sideProfile, transform, type P2 } from './meshkit';
+import { bevelBox, crossProfile, curvedMag, detail, fwd, lathe, merge, plainBox, sideProfile, transform, type P2 } from './meshkit';
 import { buildOptic } from './optic';
 import { PAL as C, hipFromGrip, triCount, type WeaponModel, type WeaponPoints } from './types';
 
@@ -76,7 +76,11 @@ function birdcage(metal: THREE.BufferGeometry[], z0: number, S: Seg) {
 /** Žebrované kulaté předpažbí mezi z0 a z1 (kladně dopředu). */
 function ribbedHandguard(z0: number, z1: number, r: number, S: Seg) {
   const hg: Array<[number, number]> = [[r - 0.003, z0]];
-  for (let z = z0 + 0.003; z < z1 - 0.006; z += 0.012) hg.push([r, z], [r, z + 0.009], [r - 0.0011, z + 0.0095], [r - 0.0011, z + 0.0115]);
+  // Nižší detail: méně žeber (a bez žeber u world modelu) – žebra jsou drahá v rotačním tělese.
+  const D = detail();
+  if (D.minPart > 0) hg.push([r, z0 + 0.003]);
+  else if (D.bevelSegments <= 1) for (let z = z0 + 0.003; z < z1 - 0.006; z += 0.018) hg.push([r, z], [r, z + 0.013], [r - 0.0011, z + 0.015]);
+  else for (let z = z0 + 0.003; z < z1 - 0.006; z += 0.012) hg.push([r, z], [r, z + 0.009], [r - 0.0011, z + 0.0095], [r - 0.0011, z + 0.0115]);
   hg.push([r, z1 - 0.004], [r - 0.0025, z1]);
   const g = lathe(fwd(hg), S(24), C.polymer, 0, 0);
   g.applyMatrix4(new THREE.Matrix4().makeScale(1, 1.1, 1));
@@ -147,7 +151,8 @@ export function buildM4A1(segScale = 1): WeaponModel {
   arUpper(metal, S);
   // Horní lišta (Picatinny) s příčnými žebry.
   metal.push(crossProfile([[-0.0105, 0.054], [0.0105, 0.054], [0.0105, 0.058], [0.0085, 0.061], [0.0105, 0.064], [-0.0105, 0.064], [-0.0085, 0.061], [-0.0105, 0.058]], 0.086, -0.166, 0.0006, C.metal));
-  for (let z = 0.078; z > -0.16; z -= 0.01) metal.push(plainBox(0.022, 0.0035, 0.0045, C.metalDark, [0, 0.0645, z]));
+  const teeth = detail().minPart > 0 ? 0 : detail().bevelSegments === 0 ? 0.02 : 0.01;
+  if (teeth) for (let z = 0.078; z > -0.16; z -= teeth) metal.push(plainBox(0.022, 0.0035, 0.0045, C.metalDark, [0, 0.0645, z]));
   arLower(metal, poly, S);
 
   // Trubka nárazníku, matice, teleskopická pažba (pevná poloha).
@@ -202,7 +207,7 @@ export function buildM16A2(segScale = 1): WeaponModel {
   metal.push(plainBox(0.006, 0.0015, 0.13, C.metalDark, [0, 0.0805, -0.05]));
   // Hledí: kruhová clona se skutečným otvorem, ochranná křidélka, buben stranové opravy vpravo.
   const zA = 0.052;
-  metal.push(lathe([[0.0029, zA - 0.002], [0.0075, zA - 0.002], [0.0075, zA + 0.002], [0.0029, zA + 0.002], [0.0029, zA - 0.002]], S(20), C.metalDark, 0, SY));
+  metal.push(lathe([[0.0029, zA - 0.002], [0.0075, zA - 0.002], [0.0075, zA + 0.002], [0.0029, zA + 0.002], [0.0029, zA - 0.002]], S(20), C.metalDark, 0, SY, true));
   metal.push(bevelBox(0.012, 0.008, 0.012, 0.0015, C.metal, [0, 0.0815, zA]));
   for (const sx of [-1, 1]) metal.push(sideProfile([[zA + 0.012, 0.079], [zA + 0.01, 0.1], [zA + 0.004, 0.102], [zA - 0.008, 0.096], [zA - 0.01, 0.079]], 0.003, 0.0008, C.metal, sx * 0.0095));
   metal.push(transform(lathe([[0, 0], [0.0075, 0], [0.0075, 0.006], [0.006, 0.007], [0, 0.007]], S(14), C.metalDark), [0.011, 0.0845, zA], [0, Math.PI / 2, 0]));

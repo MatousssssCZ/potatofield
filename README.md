@@ -149,7 +149,7 @@ a scénáři dialog nabídne Conquest (scénář + tým): zabírání, tickety, 
 
 ## Prohlížeč zbraní
 
-`/viewer.html` – všech 12 zbraní (Hawk Type 97 jako neověřený návrh) s rukama podle frakce a classy: hip/ADS/boky, světlo, kvalita, FOV, animace přebití, počty trojúhelníků a draw calls (`?w=akm` vybere zbraň). Vzhled zbraně do testu se volí v Nastavení; pravidla střelby jsou pro všechny stejná (PF-Rifle). `npx tsx scripts/weapon-report.ts` vypíše rozpočty.
+`/viewer.html` – všech 12 zbraní (Hawk Type 97 jako neověřený návrh) s rukama podle frakce a classy: hip/ADS/boky, světlo, kvalita, FOV, animace přebití, počty trojúhelníků a draw calls (`?w=akm` vybere zbraň). Výchozí zbraň volného testu se volí v Nastavení. Rozpočty trojúhelníků: vlastní pohled 3 000–3 500, ostatní hráči 1 000–1 300, vzdálená varianta 200–300 – `npx tsx scripts/weapon-report.ts` je vypíše, `npx tsx scripts/weapon-budget.ts --write` po změně generátoru přepočítá stupně detailu.
 
 ## Dokumenty
 

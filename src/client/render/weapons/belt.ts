@@ -67,7 +67,7 @@ export function buildM249(segScale = 1): WeaponModel {
   metal.push(bevelBox(0.016, 0.03, 0.05, 0.002, C.metal, [-0.032, -0.03, -0.055]));
   // Hledí vzadu na pouzdře: clona s otvorem, sloupek a křidélka.
   const zA = 0.112;
-  metal.push(lathe([[0.003, zA - 0.002], [0.0075, zA - 0.002], [0.0075, zA + 0.002], [0.003, zA + 0.002], [0.003, zA - 0.002]], S(18), C.metalDark, 0, SY));
+  metal.push(lathe([[0.003, zA - 0.002], [0.0075, zA - 0.002], [0.0075, zA + 0.002], [0.003, zA + 0.002], [0.003, zA - 0.002]], S(18), C.metalDark, 0, SY, true));
   metal.push(bevelBox(0.014, SY - 0.0075 - 0.03, 0.006, 0.0012, C.metal, [0, (SY - 0.0075 + 0.03) / 2, zA]));
   for (const sx of [-1, 1]) metal.push(bevelBox(0.003, 0.05, 0.016, 0.0008, C.metal, [sx * 0.0105, 0.055, zA]));
 
