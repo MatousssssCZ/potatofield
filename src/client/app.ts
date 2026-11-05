@@ -37,9 +37,11 @@ import { PILOT } from '../shared/config/arsenal';
 import { h } from './ui/kit';
 import { applyStatic, onLang, t } from './ui/i18n';
 import type { Footprint } from './ui/tactical';
+import { PROTOCOL_VERSION } from '../shared/net/protocol';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
 const EDITOR_VFOV = 60;
+const PREVIEW = new URLSearchParams(location.search).get('preview');
 
 /**
  * Aplikace: jeden renderer, jedna scéna, jedna kamera. Režim editoru a testovací
@@ -99,6 +101,24 @@ export class App {
     }
     $('#dev').classList.toggle('hidden', !(this.devOn || s.showFps));
     if (reload) void this.saver.flush().then(() => location.reload());
+  }
+
+  /**
+   * Náhledový režim (?preview=servers): ukázková data pro vzhled obrazovek, zřetelně označená
+   * pruhem „NÁHLED – smyšlená data“. Nikdy se nepřipojuje k serveru.
+   */
+  private startPreview(kind: string) {
+    document.body.append(h('div', { class: 'pf-preview-flag' }, t('preview.badge')));
+    if (kind === 'servers' || kind === 'menu') {
+      const info = (name: string, players: number, ff: boolean, protocol = PROTOCOL_VERSION) => ({ name, map: 'Referenční ulice', mode: 'conquest' as const, players, capacity: 16, friendlyFire: ff, protocol, pilot: true, teamSize: 8, kits: PILOT.kits, factions: { teamA: 'usmc', teamB: 'mec' } });
+      this.menu?.setPreviewEntries([
+        { address: 'ws://ukazka-1:8787', state: 'ok', info: info('Ukázkový server 1', 11, false), ping: 34 },
+        { address: 'ws://ukazka-2:8787', state: 'ok', info: info('Ukázkový server 2', 16, true), ping: 58 },
+        { address: 'ws://ukazka-3:8787', state: 'ok', info: info('Ukázkový server (stará verze)', 4, false, PROTOCOL_VERSION - 1), ping: 80 },
+        { address: 'ws://ukazka-4:8787', state: 'error', ping: null, error: 'timeout' },
+      ]);
+      if (kind === 'servers') this.menu?.show('servers');
+    }
   }
 
   openEditor() {
@@ -187,7 +207,9 @@ export class App {
       training: () => void this.training(),
       settingsView: () => this.settingsView.open(),
       controlsView: () => controlsView(this.settings),
+      preview: !!PREVIEW,
     });
+    if (PREVIEW) this.startPreview(PREVIEW);
     if (new URLSearchParams(location.search).has('editor')) this.openEditor();
     requestAnimationFrame(this.loop);
     (window as unknown as Record<string, unknown>).__pf = this;
@@ -960,6 +982,11 @@ export class App {
   private loop = (now: number) => {
     const dt = Math.min(0.25, (now - this.last) / 1000);
     this.last = now;
+    // Hlavní menu je neprůhledné: 3D scéna se pod ním nekreslí (žádná práce GPU navíc).
+    if (!this.session && this.menu?.visible) {
+      requestAnimationFrame(this.loop);
+      return;
+    }
     this.renderer.info.reset();
     if (this.session) {
       this.session.update(dt);

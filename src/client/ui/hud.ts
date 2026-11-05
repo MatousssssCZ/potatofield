@@ -190,7 +190,7 @@ export class Hud {
     const center: Node[] = [];
     if (me && alive && c.cq) {
       const here = c.cq.cps.find((p) => Math.hypot(p.pos[0] - me.state.pos.x, p.pos[2] - me.state.pos.z) <= p.radius && me.state.pos.y >= p.pos[1] - 0.5 && me.state.pos.y <= p.pos[1] + p.height);
-      if (here) {
+      if (here && here.capturable) {
         const enemy = c.team === 'teamA' ? 'teamB' : 'teamA';
         const st = !here.capturable
           ? t('cap.locked')
@@ -396,8 +396,12 @@ export class Hud {
     const p = geo.getAttribute('position') as THREE.BufferAttribute;
     geo.computeBoundingBox();
     const b = geo.boundingBox!;
-    const sc = Math.min((cv.width - 8) / (b.max.z - b.min.z), (cv.height - 8) / (b.max.y - b.min.y));
-    const X = (z: number) => cv.width - 4 - (z - b.min.z) * sc;
+    // Hlaveň leží v nejdelší vodorovné ose modelu; průmět z boku, ústí vlevo.
+    const alongX = b.max.x - b.min.x > b.max.z - b.min.z;
+    const lo = alongX ? b.min.x : b.min.z, len = alongX ? b.max.x - b.min.x : b.max.z - b.min.z;
+    const sc = Math.min((cv.width - 8) / len, (cv.height - 8) / (b.max.y - b.min.y));
+    const X = (v: number) => cv.width - 4 - (v - lo) * sc;
+    const A = (i: number) => (alongX ? p.getX(i) : p.getZ(i));
     const Y = (y: number) => cv.height - 4 - (y - b.min.y) * sc;
     g.fillStyle = 'rgba(229,231,216,0.85)';
     const idx = geo.index;
@@ -405,9 +409,9 @@ export class Hud {
     for (let i = 0; i < n; i += 3) {
       const a = idx ? idx.getX(i) : i, b2 = idx ? idx.getX(i + 1) : i + 1, c2 = idx ? idx.getX(i + 2) : i + 2;
       g.beginPath();
-      g.moveTo(X(p.getZ(a)), Y(p.getY(a)));
-      g.lineTo(X(p.getZ(b2)), Y(p.getY(b2)));
-      g.lineTo(X(p.getZ(c2)), Y(p.getY(c2)));
+      g.moveTo(X(A(a)), Y(p.getY(a)));
+      g.lineTo(X(A(b2)), Y(p.getY(b2)));
+      g.lineTo(X(A(c2)), Y(p.getY(c2)));
       g.closePath();
       g.fill();
     }

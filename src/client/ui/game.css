@@ -385,7 +385,7 @@ body.mode-menu #app {
     radial-gradient(ellipse at 75% 40%, #3a463d 0%, #232c29 45%, #151b1b 80%);
   pointer-events: none;
 }
-.pf-menu > * {
+.pf-menu > :not(.pf-menu-bg) {
   position: relative;
 }
 .pf-topbar,

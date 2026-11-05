@@ -26,11 +26,12 @@ export class TacticalMap {
   /** px podkladu na metr. */
   readonly ppm: number;
 
-  constructor(doc: MapDocument, footprints: Footprint[], size = 1024) {
+  constructor(doc: MapDocument, footprints: Footprint[], size = 2048) {
     const t = doc.terrain;
     const w = (t.samplesX - 1) * t.spacing, d = (t.samplesZ - 1) * t.spacing;
     this.bounds = { x0: t.origin[0], z0: t.origin[1], x1: t.origin[0] + w, z1: t.origin[1] + d };
-    this.ppm = size / Math.max(w, d);
+    // Hustota podkladu: max 6 px/m (malé mapy ostré i při přiblížení), strana max `size` px.
+    this.ppm = Math.min(6, size / Math.max(w, d));
     const c = document.createElement('canvas');
     c.width = Math.round(w * this.ppm);
     c.height = Math.round(d * this.ppm);
@@ -39,9 +40,11 @@ export class TacticalMap {
     // Terén: výška a sklon (stínování ze severozápadu), jemná mřížka po 50 m.
     const img = g.createImageData(c.width, c.height);
     const hAt = (x: number, z: number) => {
-      const fx = Math.min(t.samplesX - 1, Math.max(0, (x - t.origin[0]) / t.spacing));
-      const fz = Math.min(t.samplesZ - 1, Math.max(0, (z - t.origin[1]) / t.spacing));
-      return t.heights[Math.round(fz) * t.samplesX + Math.round(fx)] ?? 0;
+      const fx = Math.min(t.samplesX - 1.001, Math.max(0, (x - t.origin[0]) / t.spacing));
+      const fz = Math.min(t.samplesZ - 1.001, Math.max(0, (z - t.origin[1]) / t.spacing));
+      const x0 = Math.floor(fx), z0 = Math.floor(fz), ax = fx - x0, az = fz - z0;
+      const H = (i: number, j: number) => t.heights[j * t.samplesX + i] ?? 0;
+      return (H(x0, z0) * (1 - ax) + H(x0 + 1, z0) * ax) * (1 - az) + (H(x0, z0 + 1) * (1 - ax) + H(x0 + 1, z0 + 1) * ax) * az;
     };
     let hMin = Infinity, hMax = -Infinity;
     for (const v of t.heights) {
