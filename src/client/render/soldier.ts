@@ -1,108 +1,95 @@
 import * as THREE from 'three';
-import { MOVEMENT } from '../../shared/config/movement';
 import type { PlayerView } from '../runtime/driver';
+import { arsenalEntry } from '../../shared/config/arsenal';
 import { WORLD_LOD, worldWeapon } from './weapons/worldModel';
+import { createSkeleton, type BoneName } from './soldier/rig';
+import { makeUniformAtlas, soldierGeometry, type SoldierFaction, type SoldierVariant } from './soldier/body';
+import { SoldierAnimator, type AnimInput } from './soldier/animator';
 
 /**
- * Vzdálený voják (world model): jednoduchá postava se dvěma týmovými variantami
- * a světovým modelem pušky. Póza z výšky těla (stejný průběh jako hitbox), nohy podle rychlosti.
- * Lokální ruce se na cizí postavě nikdy nezobrazují.
+ * Vzdálení vojáci (world model): skinned tělo podle frakce a role (factionId + classId z výbavy),
+ * vlastní kostra a animační stav každého vojáka, sdílená geometrie, atlas a materiály.
+ * Draw calls na vojáka: tělo 2 (uniforma + výstroj) + zbraň 1. Lokální ruce se na cizí
+ * postavě nikdy nezobrazují; herní hitboxy určuje server, LOD je nemění.
  */
-const UNIFORM = { teamA: { cloth: '#b59e7a', vest: '#8c7b5c', helmet: '#a08b67' }, teamB: { cloth: '#5d6446', vest: '#4a5038', helmet: '#525a3e' } };
+const LOD_DIST = [18, 55] as const;
+const LOD_HZ = [0, 20, 10];
+/** Jak dlouho zůstane tělo padlého na místě (s) – konfigurovatelné podle výkonu. */
+export const CORPSE_TIME = 10;
+
+export function soldierLook(weaponId: string, team: 'teamA' | 'teamB'): { faction: SoldierFaction; variant: SoldierVariant } {
+  const e = arsenalEntry(weaponId);
+  const faction: SoldierFaction = e?.faction === 'usmc' ? 'usmc' : e?.faction === 'mec' ? 'mec' : team === 'teamA' ? 'usmc' : 'mec';
+  const variant: SoldierVariant = e?.kit === 'assault' || e?.kit === 'medic' || e?.kit === 'sniper' ? e.kit : 'base';
+  return { faction, variant };
+}
 
 interface Soldier {
   id: string;
-  root: THREE.Group;
-  body: THREE.Group;
-  legL: THREE.Object3D;
-  legR: THREE.Object3D;
-  armL: THREE.Object3D;
-  armR: THREE.Object3D;
-  rifle: THREE.Mesh;
+  group: THREE.Group;
+  mesh: THREE.SkinnedMesh;
+  bones: Record<BoneName, THREE.Bone>;
+  anim: SoldierAnimator;
+  weapon: THREE.Mesh;
   weaponId: string;
+  look: string;
   lod: number;
+  wlod: number;
+  acc: number;
   flash: THREE.Mesh;
   flashUntil: number;
-  phase: number;
+  lastAlive: THREE.Vector3;
+  diedAt: number;
+  life: PlayerView['life'];
   seen: boolean;
 }
 
 export class SoldierPool {
   readonly root = new THREE.Group();
   private soldiers = new Map<string, Soldier>();
-  private mats: Record<'teamA' | 'teamB', { cloth: THREE.Material; vest: THREE.Material; helmet: THREE.Material }>;
-  private skin = new THREE.MeshStandardMaterial({ color: '#b78a6a', roughness: 0.7 });
-  private gear = new THREE.MeshStandardMaterial({ color: '#2b2a27', roughness: 0.8 });
-  private quality: 'low' | 'standard' | 'high';
-  /** Statistika posledního snímku (počet postav podle LOD zbraně). */
-  lodCounts = [0, 0, 0];
+  private bodyMats: Record<SoldierFaction, THREE.MeshStandardMaterial>;
+  private gearMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.86, metalness: 0 });
   private rifleMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, metalness: 0.3 });
   private flashMat = new THREE.MeshBasicMaterial({ color: '#ffd28a', transparent: true, opacity: 0.9, toneMapped: false, depthWrite: false });
-  private geo: Record<string, THREE.BufferGeometry> = {};
+  private flashGeo = new THREE.SphereGeometry(0.06, 6, 6);
+  private atlases: THREE.Texture[] = [];
   private time = 0;
+  private frustum = new THREE.Frustum();
+  /** Statistika (počty podle LOD těla a viditelné postavy). */
+  lodCounts = [0, 0, 0];
+  visibleCount = 0;
+  /** Náhledová scéna: vynucený LOD těla (−1 = podle vzdálenosti). */
+  forceLod = -1;
 
-  constructor(quality: 'low' | 'standard' | 'high') {
-    const mk = (c: string) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.9 });
-    this.mats = {
-      teamA: { cloth: mk(UNIFORM.teamA.cloth), vest: mk(UNIFORM.teamA.vest), helmet: mk(UNIFORM.teamA.helmet) },
-      teamB: { cloth: mk(UNIFORM.teamB.cloth), vest: mk(UNIFORM.teamB.vest), helmet: mk(UNIFORM.teamB.helmet) },
+  constructor(private quality: 'low' | 'standard' | 'high') {
+    const mk = (f: SoldierFaction) => {
+      const t = makeUniformAtlas(f);
+      this.atlases.push(t);
+      return new THREE.MeshStandardMaterial({ map: t, vertexColors: true, roughness: 0.92, metalness: 0 });
     };
-    // Světové modely zbraní: sdílená mezipaměť podle zbraně a kvality (LOD0–2), jeden mesh na postavu.
-    this.quality = quality;
-    const seg = quality === 'low' ? 6 : 10;
-    this.geo = {
-      torso: new THREE.BoxGeometry(0.42, 0.55, 0.24),
-      vest: new THREE.BoxGeometry(0.46, 0.4, 0.3),
-      head: new THREE.SphereGeometry(0.11, seg, seg),
-      helmet: new THREE.SphereGeometry(0.135, seg, seg, 0, Math.PI * 2, 0, Math.PI / 1.8),
-      limb: new THREE.CapsuleGeometry(0.065, 0.36, 2, seg).translate(0, -0.24, 0),
-      leg: new THREE.CapsuleGeometry(0.08, 0.66, 2, seg).translate(0, -0.42, 0),
-      boot: new THREE.BoxGeometry(0.12, 0.1, 0.26).translate(0, -0.84, -0.04),
-      flash: new THREE.SphereGeometry(0.06, 6, 6),
-    };
+    this.bodyMats = { usmc: mk('usmc'), mec: mk('mec') };
     this.root.name = 'soldiers';
   }
 
-  private create(id: string, team: 'teamA' | 'teamB'): Soldier {
-    const m = this.mats[team];
-    const root = new THREE.Group();
-    const body = new THREE.Group();
-    root.add(body);
-    const mesh = (g: THREE.BufferGeometry, mat: THREE.Material, pos: [number, number, number]) => {
-      const x = new THREE.Mesh(g, mat);
-      x.position.set(...pos);
-      x.castShadow = true;
-      return x;
-    };
-    // Kostra v klidu: pánev v 0,95 m, trup nad ní (body = pánev).
-    body.position.y = 0.95;
-    body.add(mesh(this.geo.torso, m.cloth, [0, 0.3, 0]), mesh(this.geo.vest, m.vest, [0, 0.33, 0]), mesh(this.geo.head, this.skin, [0, 0.72, -0.01]), mesh(this.geo.helmet, m.helmet, [0, 0.75, 0]));
-    const legL = new THREE.Object3D(), legR = new THREE.Object3D();
-    legL.position.set(-0.11, 0, 0);
-    legR.position.set(0.11, 0, 0);
-    for (const l of [legL, legR]) {
-      l.add(mesh(this.geo.leg, m.cloth, [0, 0, 0]), mesh(this.geo.boot, this.gear, [0, 0, 0]));
-      body.add(l);
-    }
-    const armL = new THREE.Object3D(), armR = new THREE.Object3D();
-    armL.position.set(-0.25, 0.52, 0);
-    armR.position.set(0.25, 0.52, 0);
-    armL.add(mesh(this.geo.limb, m.cloth, [0, 0, 0]));
-    armR.add(mesh(this.geo.limb, m.cloth, [0, 0, 0]));
-    armL.rotation.set(-1.2, 0, 0.5);
-    armR.rotation.set(-0.9, 0, -0.2);
-    body.add(armL, armR);
+  private create(id: string): Soldier {
+    const { bones, byName, skeleton } = createSkeleton();
+    const group = new THREE.Group();
+    const mesh = new THREE.SkinnedMesh(soldierGeometry('usmc', 'base', 0), [this.bodyMats.usmc, this.gearMat]);
+    mesh.frustumCulled = false; // ořez řeší pool podle polohy vojáka (skinned obal se nepočítá)
+    mesh.castShadow = true;
+    mesh.add(bones[0]);
+    mesh.bind(skeleton, new THREE.Matrix4());
+    group.add(mesh);
     const ww = worldWeapon('m4a1', this.quality);
-    const rifle = new THREE.Mesh(ww.lods[0], this.rifleMat);
-    rifle.castShadow = true;
-    rifle.position.set(0.14, 0.42, -0.25);
-    body.add(rifle);
-    const flash = new THREE.Mesh(this.geo.flash, this.flashMat);
+    const weapon = new THREE.Mesh(ww.lods[0], this.rifleMat);
+    weapon.castShadow = true;
+    weapon.frustumCulled = false;
+    const flash = new THREE.Mesh(this.flashGeo, this.flashMat);
     flash.position.copy(ww.muzzle);
     flash.visible = false;
-    rifle.add(flash);
-    this.root.add(root);
-    const s: Soldier = { id, root, body, legL, legR, armL, armR, rifle, weaponId: 'm4a1', lod: 0, flash, flashUntil: 0, phase: 0, seen: true };
+    weapon.add(flash);
+    this.root.add(group, weapon);
+    const s: Soldier = { id, group, mesh, bones: byName, anim: new SoldierAnimator(byName), weapon, weaponId: '', look: '', lod: -1, wlod: -1, acc: 1, flash, flashUntil: 0, lastAlive: new THREE.Vector3(), diedAt: -1, life: 'alive', seen: true };
     this.soldiers.set(id, s);
     return s;
   }
@@ -112,57 +99,101 @@ export class SoldierPool {
     if (s) s.flashUntil = this.time + 0.05;
   }
 
-  update(list: PlayerView[], dt: number, _simTime: number, eye?: THREE.Vector3) {
+  /**
+   * Snímek: výběr vzhledu a LOD (hystereze), ořez, animace (vzdálené LOD v nižší frekvenci).
+   * `simTime` = čas simulace (časy akcí ze serveru), `camera` = ořez a vzdálenost.
+   */
+  update(list: PlayerView[], dt: number, simTime: number, eye?: THREE.Vector3, camera?: THREE.Camera) {
     this.time += dt;
     this.lodCounts = [0, 0, 0];
+    this.visibleCount = 0;
     for (const s of this.soldiers.values()) s.seen = false;
-    const st = MOVEMENT.stances;
+    if (camera) {
+      camera.updateMatrixWorld();
+      this.frustum.setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+    }
     for (const p of list) {
       let s = this.soldiers.get(p.id);
-      if (!s) s = this.create(p.id, p.team);
+      if (!s) s = this.create(p.id);
       s.seen = true;
-      s.root.visible = p.alive;
-      if (!p.alive) continue;
-      const ps = p.state;
-      s.root.position.set(ps.pos.x, ps.pos.y, ps.pos.z);
-      // Postoj: stejná výška těla jako collider a hitbox.
-      const prone = ps.height <= st.prone.height + 0.05;
-      const crouchK = THREE.MathUtils.clamp((st.stand.height - ps.height) / (st.stand.height - st.crouch.height), 0, 1);
-      s.root.rotation.set(0, prone ? ps.bodyYaw : ps.yaw, 0);
-      if (prone) {
-        s.body.position.set(0, 0.25, 0);
-        s.body.rotation.set(-Math.PI / 2 + 0.05, 0, 0);
-      } else {
-        s.body.position.set(0, 0.95 - crouchK * 0.45, 0);
-        s.body.rotation.set(-crouchK * 0.25 + ps.pitch * 0.25, 0, 0);
-      }
-      const speed = Math.hypot(ps.vel.x, ps.vel.z);
-      s.phase += dt * speed * 2.6;
-      const swing = Math.min(1, speed / 4) * 0.55 * Math.sin(s.phase);
-      s.legL.rotation.x = swing + crouchK * 1.0;
-      s.legR.rotation.x = -swing + crouchK * 1.0;
-      s.rifle.rotation.x = ps.pitch * 0.8;
-      s.flash.visible = this.time < s.flashUntil;
-      // Zbraň podle výbavy a LOD podle vzdálenosti od kamery (bez nápadného přeskakování: hystereze 2 m).
-      const d = eye ? s.root.position.distanceTo(eye) : 0;
-      let lod = s.lod;
-      if (d < WORLD_LOD[0] - 2) lod = 0;
-      else if (d > WORLD_LOD[1] + 2) lod = 2;
-      else if (d > WORLD_LOD[0] + 2 && d < WORLD_LOD[1] - 2) lod = 1;
+      // Životní stav a tělo padlého (server přesune mrtvého pod mapu – tělo zůstane na místě smrti).
+      if (p.life === 'alive' || p.life === 'downed') s.lastAlive.set(p.state.pos.x, p.state.pos.y, p.state.pos.z);
+      if (p.life === 'dead' && s.life !== 'dead') s.diedAt = this.time;
+      if (p.life !== 'dead') s.diedAt = -1;
+      s.life = p.life;
+      const corpse = p.life === 'dead' && s.diedAt >= 0 && this.time - s.diedAt < CORPSE_TIME && s.lastAlive.lengthSq() > 0;
+      const show = p.life !== 'dead' || corpse;
+      const pos = s.lastAlive;
+      const sphere = new THREE.Sphere(pos.clone().add(new THREE.Vector3(0, 0.9, 0)), 1.3);
+      const inView = !camera || this.frustum.intersectsSphere(sphere);
+      s.group.visible = show && inView;
+      s.weapon.visible = s.group.visible;
+      if (!s.group.visible) continue;
+      this.visibleCount++;
+      const d = eye ? pos.distanceTo(eye) : 0;
+      // LOD těla s hysterezí 2 m.
+      let lod = s.lod < 0 ? (d < LOD_DIST[0] ? 0 : d < LOD_DIST[1] ? 1 : 2) : s.lod;
+      if (d < LOD_DIST[0] - 2) lod = 0;
+      else if (d > LOD_DIST[1] + 2) lod = 2;
+      else if (d > LOD_DIST[0] + 2 && d < LOD_DIST[1] - 2) lod = 1;
+      if (this.forceLod >= 0) lod = this.forceLod;
       const wid = p.weapon.weaponId || 'm4a1';
-      if (wid !== s.weaponId || lod !== s.lod) {
-        const ww = worldWeapon(wid, this.quality);
-        s.rifle.geometry = ww.lods[lod];
-        s.flash.position.copy(ww.muzzle);
-        s.weaponId = wid;
+      const lk = soldierLook(wid, p.team);
+      const key = `${lk.faction}:${lk.variant}`;
+      if (key !== s.look || lod !== s.lod) {
+        s.mesh.geometry = soldierGeometry(lk.faction, lk.variant, lod);
+        s.mesh.material = [this.bodyMats[lk.faction], this.gearMat];
+        s.mesh.castShadow = lod < 2;
+        s.look = key;
         s.lod = lod;
       }
-      s.rifle.castShadow = lod < 2;
+      let wl = s.wlod;
+      if (d < WORLD_LOD[0] - 2) wl = 0;
+      else if (d > WORLD_LOD[1] + 2) wl = 2;
+      else if (wl < 0 || (d > WORLD_LOD[0] + 2 && d < WORLD_LOD[1] - 2)) wl = 1;
+      const ww = worldWeapon(wid, this.quality);
+      if (wid !== s.weaponId || wl !== s.wlod) {
+        s.weapon.geometry = ww.lods[wl];
+        s.flash.position.copy(ww.muzzle);
+        s.weaponId = wid;
+        s.wlod = wl;
+      }
+      s.weapon.castShadow = wl < 2;
       this.lodCounts[lod]++;
+      // Vzdálené LOD: kostra 20 / 10 Hz (stav akcí se dál odvozuje z hodin simulace).
+      s.acc += dt;
+      const hz = LOD_HZ[lod];
+      if (hz && s.acc < 1 / hz) continue;
+      const step = s.acc;
+      s.acc = 0;
+      s.group.position.copy(pos);
+      const ps = p.state;
+      const inp: AnimInput = {
+        pos,
+        vel: new THREE.Vector3(ps.vel.x, ps.vel.y, ps.vel.z),
+        yaw: ps.yaw,
+        pitch: ps.pitch,
+        bodyYaw: ps.bodyYaw,
+        height: ps.height,
+        grounded: ps.grounded,
+        sprinting: ps.sprinting,
+        ads: p.weapon.adsProgress,
+        action: p.weapon.action,
+        actionStart: p.weapon.actionStart,
+        actionEnd: p.weapon.actionEnd,
+        shotSeq: p.weapon.shotSeq,
+        life: p.life,
+        lastLandAt: ps.lastLandAt,
+        seed: hashId(p.id),
+      };
+      s.anim.update(inp, simTime, step, s.group, s.weapon, ww);
+      s.flash.visible = this.time < s.flashUntil;
     }
     for (const [id, s] of this.soldiers) {
       if (!s.seen) {
-        s.root.removeFromParent();
+        s.group.removeFromParent();
+        s.weapon.removeFromParent();
+        s.mesh.skeleton.dispose();
         this.soldiers.delete(id);
       }
     }
@@ -173,13 +204,17 @@ export class SoldierPool {
   }
 
   dispose() {
-    for (const g of Object.values(this.geo)) g.dispose();
-    for (const t of Object.values(this.mats)) for (const m of Object.values(t)) m.dispose();
-    this.skin.dispose();
-    this.gear.dispose();
-    this.rifleMat.dispose();
-    this.flashMat.dispose();
+    for (const s of this.soldiers.values()) s.mesh.skeleton.dispose();
+    for (const m of [...Object.values(this.bodyMats), this.gearMat, this.rifleMat, this.flashMat]) m.dispose();
+    for (const t of this.atlases) t.dispose();
+    this.flashGeo.dispose();
     this.root.removeFromParent();
     this.soldiers.clear();
   }
+}
+
+function hashId(s: string) {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  return h >>> 0;
 }

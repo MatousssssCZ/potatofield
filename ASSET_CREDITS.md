@@ -10,7 +10,7 @@
 | M4A1, ruce, kolimátor, záblesk, nábojnice | `src/client/render/weapons/*` | vlastní programové modely; reference jen jako předloha proporcí |
 | Kamufláže rukávů | `makeCamoTexture()` | vlastní vzory (ne kopie BF2) |
 | Zvuky (výstřel, dopady, hitmarker) | `src/client/runtime/audio.ts` | syntetizované za běhu (WebAudio), žádné nahrávky |
-| World model vojáka | `src/client/render/soldier.ts` | vlastní |
+| Vojáci USMC / MEC (tělo, výstroj rolí, kostra, atlas uniforem, animace) | `src/client/render/soldier/*` | vlastní programový model a procedurální animace; obrazové reference sloužily jen jako popis siluety (nevloženy do textur) |
 | Gradient okolního světla, obloha | gradient vlastní; obloha = `Sky` z příkladů Three.js (MIT) | |
 
 Zvuky, modely a textury třetích stran zatím **nejsou** použity.

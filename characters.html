@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Náhled vojáků</title>
+    <style>
+      :root { --bg: #6f716f; --panel: rgba(21, 27, 27, 0.9); --text: #e5e7d8; --dim: #adb5a4; --line: rgba(229, 231, 216, 0.16); --accent: #d8c66a; }
+      html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font: 12px 'Segoe UI', Arial, sans-serif; }
+      canvas { display: block; width: 100%; height: 100%; }
+      #ui { position: fixed; left: 8px; top: 8px; background: var(--panel); border: 1px solid var(--line); padding: 10px; width: 270px; max-height: calc(100vh - 36px); overflow: auto; }
+      #ui h3 { margin: 0 0 4px; font-size: 13px; letter-spacing: 0.1em; }
+      .badge { display: inline-block; color: #151b1b; background: var(--accent); padding: 1px 6px; font-weight: 700; font-size: 10px; letter-spacing: 0.08em; margin-bottom: 6px; }
+      #ui label { display: flex; justify-content: space-between; gap: 6px; margin: 4px 0; align-items: center; }
+      #ui select, #ui button, #ui input[type=range] { background: #26302d; color: var(--text); border: 1px solid var(--line); padding: 3px 6px; font: inherit; }
+      #ui input[type=range] { width: 120px; padding: 0; }
+      #ui button { margin: 2px 2px 0 0; cursor: pointer; }
+      #ui button:focus-visible, #ui select:focus-visible { outline: 2px solid var(--accent); }
+      #stats { white-space: pre; font: 11px ui-monospace, Consolas, monospace; color: #cfe6bf; margin-top: 8px; }
+      .note { color: var(--dim); margin-top: 6px; line-height: 1.4; }
+      @media (max-width: 600px) { #ui { width: calc(100vw - 40px); } }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <div id="ui">
+      <h3>NÁHLED VOJÁKŮ</h3>
+      <div class="badge">VÝVOJOVÁ SCÉNA</div>
+      <label>Role <select id="role"><option value="base">Základ (Support)</option><option value="assault">Assault</option><option value="medic">Medic</option><option value="sniper">Sniper</option></select></label>
+      <label>Postoj <select id="stance"><option value="1.8">Stoj</option><option value="1.2">Dřep</option><option value="0.5">Leh</option></select></label>
+      <label>Pohyb <select id="move"><option value="0">Stát</option><option value="f">Vpřed</option><option value="b">Vzad</option><option value="l">Vlevo</option><option value="r">Vpravo</option><option value="fl">Diagonála</option><option value="s">Sprint</option></select></label>
+      <label>Zamíření yaw <input id="yaw" type="range" min="-180" max="180" value="0" /></label>
+      <label>Zamíření pitch <input id="pitch" type="range" min="-70" max="70" value="0" /></label>
+      <label>ADS <input id="ads" type="checkbox" /></label>
+      <label>Kamera <select id="cam"><option value="front">Zepředu</option><option value="side">Zboku</option><option value="back">Zezadu</option><option value="orbit">Otáčet</option><option value="far">15 m</option></select></label>
+      <label>LOD <select id="lod"><option value="-1">Podle vzdálenosti</option><option value="0">LOD0</option><option value="1">LOD1</option><option value="2">LOD2</option></select></label>
+      <label>Hitboxy <input id="hb" type="checkbox" /></label>
+      <label>Světlo <select id="light"><option value="day">Neutrální den</option><option value="side">Ostré boční</option><option value="dark">Tmavší interiér</option></select></label>
+      <div>
+        <button id="fire">Výstřel</button><button id="burst">Dávka</button><button id="reload">Přebití</button><button id="reloadE">Prázdné</button><button id="cancel">Zrušit</button>
+      </div>
+      <div><button id="down">Vyřadit</button><button id="revive">Oživit</button><button id="die">Smrt</button><button id="alive">Nový život</button><button id="jump">Skok</button></div>
+      <div><button id="play">Playlist</button><button id="b16">16</button><button id="b32">32</button><button id="b64">64</button><button id="fpU">Vlastní pohled USMC</button><button id="fpM">Vlastní pohled MEC</button></div>
+      <div id="stats"></div>
+      <div class="note">Náhled – nejde o hru ani síťový test. Zátěž 16/32/64 je čistě klientský render benchmark.</div>
+    </div>
+    <script type="module" src="/src/client/charViewer.ts"></script>
+  </body>
+</html>

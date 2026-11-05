@@ -45,16 +45,19 @@ describe('světové modely zbraní a LOD', () => {
     expect(pool.lodCounts[2]).toBeGreaterThan(0);
     // Geometrie zbraní je sdílená: nejvýš 12 zbraní × 3 LOD různých geometrií.
     const geos = new Set<THREE.BufferGeometry>();
+    const bodies = new Set<THREE.BufferGeometry>();
     let tris = 0;
     pool.root.traverse((o) => {
       const m = o as THREE.Mesh;
       if (m.isMesh && m.visible) {
         const g = m.geometry as THREE.BufferGeometry;
         tris += (g.index ? g.index.count : g.getAttribute('position').count) / 3;
-        if (m.material && (m.geometry.getAttribute('color'))) geos.add(g);
+        if (m.material && m.geometry.getAttribute('color')) (m instanceof THREE.SkinnedMesh ? bodies : geos).add(g);
       }
     });
     expect(geos.size).toBeLessThanOrEqual(36);
+    // Těla: nejvýš 2 frakce × 4 vzhledy × 3 LOD sdílených geometrií.
+    expect(bodies.size).toBeLessThanOrEqual(24);
     console.log(`63 postav: LOD ${pool.lodCounts.join('/')}, viditelné trojúhelníky ${Math.round(tris)}`);
     pool.dispose();
   });

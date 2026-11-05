@@ -12,6 +12,12 @@ export interface WorldWeapon {
   lods: [THREE.BufferGeometry, THREE.BufferGeometry, THREE.BufferGeometry];
   triangles: [number, number, number];
   muzzle: THREE.Vector3;
+  /** Úchopy pro IK paží vzdáleného vojáka a šachta pro přebití (prostor zbraně). */
+  gripRight: THREE.Vector3;
+  gripLeft: THREE.Vector3;
+  magazineSocket: THREE.Vector3;
+  /** Zadní konec pažby (z) – opření o rameno. */
+  stockZ: number;
 }
 
 const tri = (g: THREE.BufferGeometry) => (g.index ? g.index.count : g.getAttribute('position').count) / 3;
@@ -97,7 +103,16 @@ export function worldWeapon(id: string, quality: 'low' | 'standard' | 'high'): W
   const lod2 = mergeGeometries(parts.flatMap((g) => slices(g, 1)), false)!;
   for (const g of parts) g.dispose();
   for (const g of [lod0, lod1, lod2]) g.computeBoundingSphere();
-  const w: WorldWeapon = { lods: [lod0, lod1, lod2], triangles: [tri(lod0), tri(lod1), tri(lod2)], muzzle: m.points.muzzle.clone() };
+  lod0.computeBoundingBox();
+  const w: WorldWeapon = {
+    lods: [lod0, lod1, lod2],
+    triangles: [tri(lod0), tri(lod1), tri(lod2)],
+    muzzle: m.points.muzzle.clone(),
+    gripRight: m.points.gripRight.clone(),
+    gripLeft: (m.points.pumpGrip ?? m.points.gripLeft).clone(),
+    magazineSocket: m.points.magazineSocket.clone(),
+    stockZ: lod0.boundingBox!.max.z,
+  };
   cache.set(key, w);
   return w;
 }

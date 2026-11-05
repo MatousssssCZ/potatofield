@@ -27,6 +27,8 @@ export const HAND_LOOKS: Record<string, HandLook> = {
   mecAssault: { id: 'mecAssault', glove: '#1e1e1e', gloveDark: '#141414', fingerless: false, bare: false, skin: '#a8775a', sleeve: 'mecDesert', rolledSleeve: false },
   mecSupport: { id: 'mecSupport', glove: '#6b5038', gloveDark: '#4f3a28', fingerless: true, bare: false, skin: '#9c6c50', sleeve: 'mecDesert', rolledSleeve: false },
   plaAssault: { id: 'plaAssault', glove: '#4f5a3c', gloveDark: '#39422b', fingerless: false, bare: false, skin: '#d1a582', sleeve: 'plaGreen', rolledSleeve: false },
+  usmcSniper: { id: 'usmcSniper', glove: '#6f6448', gloveDark: '#57503a', fingerless: false, bare: false, skin: '#c49a7c', sleeve: 'usmcDesert', rolledSleeve: false },
+  mecSniper: { id: 'mecSniper', glove: '#2e2c27', gloveDark: '#1f1e1b', fingerless: false, bare: false, skin: '#a37656', sleeve: 'mecDesert', rolledSleeve: false },
   mecMedic: { id: 'mecMedic', glove: '#a8775a', gloveDark: '#8a5f45', fingerless: false, bare: true, skin: '#a8775a', sleeve: 'mecDesert', rolledSleeve: true },
   mecEngineer: { id: 'mecEngineer', glove: '#6e6658', gloveDark: '#544d41', fingerless: false, bare: false, skin: '#b07e5e', sleeve: 'mecDesert', rolledSleeve: false },
   plaMedic: { id: 'plaMedic', glove: '#d1a582', gloveDark: '#b38966', fingerless: false, bare: true, skin: '#d1a582', sleeve: 'plaGreen', rolledSleeve: true },
@@ -234,7 +236,7 @@ export function makeCamoTexture(kind: HandLook['sleeve']): THREE.CanvasTexture {
   let s = 1234 + kind.length * 77;
   const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
   const pal =
-    kind === 'usmcDesert' ? ['#b9a37f', '#9d8462', '#c9b694', '#7e6a4f'] : kind === 'mecDesert' ? ['#c7b18a', '#a68a62', '#8a6f4e', '#d6c7a6'] : ['#5c6447', '#495238', '#757a59', '#3a3f2c'];
+    kind === 'usmcDesert' ? ['#b9a37f', '#9d8462', '#c9b694', '#7e6a4f'] : kind === 'mecDesert' ? ['#6b5440', '#5b4636', '#7a634b', '#64503c'] /* hnědá košile MEC (shodně s world modelem) */ : ['#5c6447', '#495238', '#757a59', '#3a3f2c'];
   g.fillStyle = pal[0];
   g.fillRect(0, 0, 256, 256);
   if (kind === 'usmcDesert') {

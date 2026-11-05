@@ -118,7 +118,7 @@ export class Game {
     }
     this.processEvents();
     this.world.updateDummies(this.driver.dummies());
-    this.soldiers.update(this.driver.remotes(), frameDt, this.simTime, this.camera.position);
+    this.soldiers.update(this.driver.remotes(), frameDt, this.simTime, this.camera.position, this.camera);
     this.updateCamera(frameDt, this.acc / dt);
     this.effects.update(frameDt);
     this.hudT += frameDt;
