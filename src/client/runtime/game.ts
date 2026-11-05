@@ -2,7 +2,11 @@ import * as THREE from 'three';
 import { CAMERA, adsVFov, vFovFromH16x9 } from '../../shared/config/camera';
 import { MOVEMENT, type MovementConfig } from '../../shared/config/movement';
 import { PF_MG } from '../../shared/config/weapon';
-import { rulesOf } from '../../shared/config/arsenal';
+import { PILOT, arsenalEntry, rulesOf, type Kit } from '../../shared/config/arsenal';
+import type { PhysicsWorld } from '../../shared/physics/world';
+import { TacticalMap, type Footprint } from '../ui/tactical';
+import { t } from '../ui/i18n';
+import type { NetDriver } from './netDriver';
 import type { MapDocument } from '../../shared/map/schema';
 import { clamp, lerp } from '../../shared/math';
 import { BTN } from '../../shared/sim/input';
@@ -24,6 +28,8 @@ export interface GameSettings {
   landingKick: boolean;
   /** Vzhled zbraně (pravidla střelby zůstávají PF-Rifle). */
   weapon?: string;
+  /** Násobek citlivosti při míření. */
+  adsSens?: number;
 }
 
 /**
@@ -52,6 +58,14 @@ export class Game {
   private lastEye = new THREE.Vector3();
   onDeath: () => void = () => {};
   onSpawned: () => void = () => {};
+  onLeave: () => void = () => {};
+  /** Fyzika pro viditelnost (identifikace nepřítele ne přes zeď). */
+  phys: PhysicsWorld | null = null;
+  /** Taktická mapa (podklad z půdorysů objektů; jednou na hru). */
+  map: TacticalMap | null = null;
+  private identT = 0;
+  private identId: string | null = null;
+  private callMedicAt = -10;
 
   constructor(
     private camera: THREE.PerspectiveCamera,
@@ -74,10 +88,94 @@ export class Game {
     this.hud.reset();
     this.hud.onSpawn = (id, weaponId) => {
       const err = this.driver.requestSpawn(id, weaponId);
-      if (err) this.hud.feed(`Spawn odmítnut: ${err}`, this.now);
-      else this.onSpawned();
+      if (!err) this.onSpawned();
+      return err;
     };
     this.hud.onRestart = () => this.driver.restart();
+    this.hud.onGiveUp = () => this.driver.giveUp();
+    this.hud.onLeave = () => this.onLeave();
+    this.hud.onCallMedic = () => {
+      // Volání medika = rádiová zpráva (jen síť; offline nejsou spoluhráči). Omezeno na 1× za 5 s.
+      if (this.now - this.callMedicAt < 5) return;
+      this.callMedicAt = this.now;
+      const nd = this.net;
+      if (nd) nd.net.send({ t: 'radio', id: 'medic' });
+      this.hud.system(t('downed.called'), this.now);
+    };
+    const nd = this.net;
+    if (nd) {
+      const prev = nd.onReject;
+      nd.onReject = (what, reason) => {
+        prev(what, reason);
+        if (what === 'spawn') {
+          this.input.releaseLock();
+          this.hud.deploy.reject(reason);
+        }
+      };
+    }
+  }
+
+  private get net(): NetDriver | null {
+    return this.driver.mode === 'network' ? (this.driver as unknown as NetDriver) : null;
+  }
+
+  /** Taktická mapa z půdorysů viditelných objektů (sdílí nasazení, minimapa, velitel). */
+  buildMap(footprints: Footprint[]) {
+    this.map = new TacticalMap(this.doc, footprints);
+  }
+
+  private kits(): Kit[] {
+    const r = this.net?.net.welcome?.rules;
+    if (r) return r.kits;
+    return this.driver.conquest() ? PILOT.kits : PILOT.kits;
+  }
+
+  /** Kontextová interakce: medik u vyřazeného spoluhráče. */
+  private interaction() {
+    const me = this.driver.local();
+    if (!me?.alive || arsenalEntry(me.weapon.weaponId)?.kit !== 'medic') return null;
+    let best: { name: string; d: number } | null = null;
+    for (const r of this.driver.remotes()) {
+      if (r.team !== me.team || r.life !== 'downed') continue;
+      const d = Math.hypot(r.state.pos.x - me.state.pos.x, r.state.pos.y - me.state.pos.y, r.state.pos.z - me.state.pos.z);
+      if (d <= PILOT.reviveRange && (!best || d < best.d)) best = { name: r.name, d };
+    }
+    if (!best) return null;
+    return { text: me.reviveProgress > 0 ? t('hud.reviving', { name: best.name }) : t('hud.revive', { name: best.name }), progress: me.reviveProgress };
+  }
+
+  /** Identifikace nepřítele: po 0,6 s souvislého zamíření, jen při přímé viditelnosti. */
+  private identify(dt: number): string | null {
+    const me = this.driver.local();
+    if (!me?.alive) {
+      this.identId = null;
+      return null;
+    }
+    const eye = this.camera.position;
+    const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
+    let best: { id: string; name: string; d: number } | null = null;
+    for (const r of this.driver.remotes()) {
+      if (!r.alive || r.team === me.team) continue;
+      const c = new THREE.Vector3(r.state.pos.x, r.state.pos.y + r.state.height * 0.6, r.state.pos.z).sub(eye);
+      const d = c.length();
+      if (d > 120 || d < 0.5) continue;
+      const along = c.dot(fwd);
+      if (along <= 0) continue;
+      const off = Math.sqrt(Math.max(0, d * d - along * along));
+      if (off > 0.5 + d * 0.01) continue;
+      if (this.phys) {
+        const hit = this.phys.castRay({ x: eye.x, y: eye.y, z: eye.z }, { x: c.x / d, y: c.y / d, z: c.z / d }, d - 0.6);
+        if (hit) continue;
+      }
+      if (!best || d < best.d) best = { id: r.id, name: r.name, d };
+    }
+    if (!best || best.id !== this.identId) {
+      this.identId = best?.id ?? null;
+      this.identT = 0;
+      return null;
+    }
+    this.identT += dt;
+    return this.identT >= 0.6 ? best.name : null;
   }
 
   /** Zbraň v první osobě podle výbavy (přestaví se, když server potvrdí jinou zbraň). */
@@ -123,12 +221,35 @@ export class Game {
     this.effects.update(frameDt);
     this.hudT += frameDt;
     if (this.hudT > 0.05) {
+      const hdt = this.hudT;
       this.hudT = 0;
       const me = this.driver.local();
-      this.hud.faction = this.driver.faction();
-      this.hud.update(this.now, me, this.driver.conquest(), this.doc, this.simTime, me && !me.alive ? this.driver.spawnOptions() : []);
+      const nd = this.net;
+      this.hud.update({
+        now: this.now,
+        me,
+        team: me?.team ?? 'teamA',
+        cq: this.driver.conquest(),
+        doc: this.doc,
+        simTime: this.simTime,
+        spawns: me && !me.alive ? this.driver.spawnOptions() : [],
+        faction: this.driver.faction(),
+        kits: this.kits(),
+        remotes: this.driver.remotes(),
+        map: this.map,
+        squads: nd?.squads ?? [],
+        contacts: nd?.contacts ?? [],
+        order: nd?.order ?? null,
+        interaction: this.interaction(),
+        identified: this.identify(hdt),
+        extraTabs: this.extraTabs,
+        network: !!nd,
+      });
     }
   }
+
+  /** Doplňkové záložky nasazení (četa, velitel) – nastavuje aplikace. */
+  extraTabs: Array<{ id: string; label: string; view: () => HTMLElement }> = [];
 
   private processEvents() {
     const me = this.driver.local();
@@ -158,8 +279,9 @@ export class Game {
           this.audio.hitmarker();
         }
       } else if (e.type === 'death') {
-        const victim = e.id === this.driver.localId ? 'Ty' : e.id;
-        const killer = e.killer ? (e.killer === this.driver.localId ? 'Ty' : e.killer) : e.cause === 'zone' ? 'zóna' : 'pád';
+        const nm = (id: string) => (id === this.driver.localId ? t('common.you') : (this.driver.remotes().find((r) => r.id === id)?.name ?? id));
+        const victim = nm(e.id);
+        const killer = e.killer ? nm(e.killer) : e.cause === 'zone' ? '⚠' : '↓';
         this.hud.feed(`${killer} ✕ ${victim}`, this.now);
         if (e.id === this.driver.localId) {
           this.input.clear();
@@ -169,8 +291,9 @@ export class Game {
         if (me) this.hud.feed('Figurína zasažena ✕', this.now);
       } else if ('kind' in e && e.kind === 'conquest') {
         const ce = e as unknown as { type: string; cp?: string; by?: string; winner?: string };
-        if (ce.type === 'captured') this.hud.feed(`Bod ${this.cpName(ce.cp!)} zabral ${ce.by === 'teamA' ? 'tým A' : 'tým B'}`, this.now);
-        if (ce.type === 'neutralized') this.hud.feed(`Bod ${this.cpName(ce.cp!)} neutralizován`, this.now);
+        const mine = ce.by === this.driver.local()?.team;
+        if (ce.type === 'captured') this.hud.system(t(mine ? 'sys.captured' : 'sys.lost', { cp: this.cpName(ce.cp!) }), this.now);
+        if (ce.type === 'neutralized') this.hud.system(t('sys.neutral', { cp: this.cpName(ce.cp!) }), this.now);
       }
     }
   }
@@ -238,7 +361,7 @@ export class Game {
       cam.fov = vfov;
       cam.updateProjectionMatrix();
     }
-    this.input.adsSensScale = lerp(1, CAMERA.adsSensitivity, ads);
+    this.input.adsSensScale = lerp(1, CAMERA.adsSensitivity * (this.settings.adsSens ?? 1), ads);
     // Dynamický zaměřovač z rozptylu (v ADS skrytý).
     const spread = spreadOf(rulesOf(w.weaponId), this.cfg, s, w, this.simTime).total;
     const h = this.camera.userData.viewportHeight ?? window.innerHeight;
@@ -252,6 +375,7 @@ export class Game {
     this.fp.dispose();
     this.effects.dispose();
     this.soldiers.dispose();
+    this.hud.dispose();
     this.driver.dispose();
     this.world.updateDummies([]);
     void this.scene;

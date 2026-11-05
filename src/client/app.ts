@@ -29,7 +29,14 @@ import { TeamUi } from './ui/teamUi';
 import type { WsLike } from '../shared/net/client';
 import type { GameDriver } from './runtime/driver';
 import type { Team } from '../shared/map/schema';
-import { buildControlsUI, buildSettingsUI, loadSettings, type Settings } from './ui/settings';
+import { SettingsView, applyUiSettings, bindingsOf, controlsView, loadSettings, saveSettings, type Settings } from './ui/settings';
+import { MainMenu, type Phase } from './ui/mainMenu';
+import { PauseMenu } from './ui/pause';
+import { TeamScreens, scoreboard } from './ui/teamScreens';
+import { PILOT } from '../shared/config/arsenal';
+import { h } from './ui/kit';
+import { applyStatic, onLang, t } from './ui/i18n';
+import type { Footprint } from './ui/tactical';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
 const EDITOR_VFOV = 60;
@@ -66,6 +73,56 @@ export class App {
   gameUi: GameUiState = { scenario: null };
   readonly audio = new GameAudio();
   private colliderLines: THREE.LineSegments | null = null;
+  menu: MainMenu | null = null;
+  pause: PauseMenu | null = null;
+  private sbEl: HTMLElement | null = null;
+  private sbT = 0;
+  /** Kam se vrátit po hře: hlavní menu (trénink, server) nebo editor (test mapy). */
+  private returnTo: 'menu' | 'editor' = 'editor';
+  readonly settingsView = new SettingsView(
+    () => this.settings,
+    (s, reload) => this.applySettings(s, reload),
+  );
+
+  /** Potvrzené nastavení: uložit a promítnout do běžící hry i UI. */
+  applySettings(s: Settings, reload = false) {
+    this.settings = s;
+    saveSettings(s);
+    applyUiSettings(s);
+    this.audio.setVolume(s.volume);
+    const g = this.session?.game;
+    if (g) g.settings = { hFov: s.hFov, bob: s.bob, landingKick: s.landingKick, weapon: s.weapon, adsSens: s.adsSens };
+    const i = this.session?.input;
+    if (i) {
+      i.settings = { sensitivity: s.sensitivity, invertY: s.invertY, crouchToggle: s.crouchToggle };
+      i.bindings = bindingsOf(s);
+    }
+    $('#dev').classList.toggle('hidden', !(this.devOn || s.showFps));
+    if (reload) void this.saver.flush().then(() => location.reload());
+  }
+
+  openEditor() {
+    this.menu?.hide();
+    document.body.classList.remove('mode-menu');
+    this.resize();
+  }
+
+  showMenu() {
+    document.body.classList.add('mode-menu');
+    this.menu?.show('play');
+  }
+
+  /** Trénink: offline Conquest na šabloně ulice s pilotními classami (bez botů). */
+  async training() {
+    await this.saver.flush();
+    this.editorDocBeforeNet = this.ed.doc;
+    const d = this.streetTemplate();
+    this.openDoc(d, false);
+    this.menu?.hide();
+    document.body.classList.remove('mode-menu');
+    this.returnTo = 'menu';
+    await this.enterPlay(undefined, { conquest: true, scenarioId: d.scenarios[0]?.id, team: 'teamA', kits: PILOT.kits });
+  }
   private showColliders = false;
 
   async init() {
@@ -124,6 +181,14 @@ export class App {
     r.compile(this.scene, this.camera);
     progress(1, 'Hotovo');
     $('#loading').classList.add('hidden');
+    this.menu = new MainMenu({
+      connect: (a, n, ph, sig) => this.connectDriver(a, n, { latencyMs: 0, jitterMs: 0, lossPct: 0 }, ph, sig),
+      openEditor: () => this.openEditor(),
+      training: () => void this.training(),
+      settingsView: () => this.settingsView.open(),
+      controlsView: () => controlsView(this.settings),
+    });
+    if (new URLSearchParams(location.search).has('editor')) this.openEditor();
     requestAnimationFrame(this.loop);
     (window as unknown as Record<string, unknown>).__pf = this;
   }
@@ -302,57 +367,68 @@ export class App {
   private editorDocBeforeNet: MapDocument | null = null;
 
   /** Připojení k autoritativnímu serveru: mapa přijde ze serveru (klient ji neposílá jako pravdu). */
-  async joinServer() {
-    const b = document.createElement('div');
-    const host = location.hostname || 'localhost';
-    b.innerHTML = `<div class="prop"><span class="lbl">Server</span><input id="mp-url" type="text" value="ws://${host}:8787"></div>
-      <div class="prop"><span class="lbl">Jméno</span><input id="mp-name" type="text" maxlength="24" value="Vojín"></div>
-      <div class="prop"><span class="lbl">Simulace RTT<small>ms (test)</small></span><input id="mp-lag" type="number" value="0" min="0" max="500"></div>
-      <div class="prop"><span class="lbl">Jitter / ztráty<small>ms / %</small></span><div class="vec" style="grid-template-columns:1fr 1fr"><input id="mp-jit" type="number" value="0" min="0" max="100"><input id="mp-loss" type="number" value="0" min="0" max="20"></div></div>
-      <div class="note">Server spustíte příkazem <code>npm run server</code>. Ovládání v síťové hře: J/K/L chat, Q rádio, T rozkaz čety, Home/P čety, Tab skóre.</div>`;
-    const ch = await modal('Multiplayer', b, [
-      { id: 'cancel', label: 'Zrušit' },
-      { id: 'ok', label: 'Připojit', primary: true },
-    ]);
-    if (ch !== 'ok') return;
-    const url = (b.querySelector('#mp-url') as HTMLInputElement).value.trim();
-    const name = (b.querySelector('#mp-name') as HTMLInputElement).value.trim() || 'Vojín';
-    const lag = Number((b.querySelector('#mp-lag') as HTMLInputElement).value) || 0;
-    const cond = { latencyMs: lag / 2, jitterMs: Number((b.querySelector('#mp-jit') as HTMLInputElement).value) || 0, lossPct: Number((b.querySelector('#mp-loss') as HTMLInputElement).value) || 0 };
-    await this.connectTo(url, name, cond);
-  }
-
-  async connectTo(url: string, name: string, cond = { latencyMs: 0, jitterMs: 0, lossPct: 0 }) {
+  async connectDriver(url: string, name: string, cond: { latencyMs: number; jitterMs: number; lossPct: number }, onPhase: (p: Phase) => void = () => {}, signal?: AbortSignal): Promise<string | null> {
     let ws: WebSocket;
     try {
+      const u = new URL(url);
+      if (u.protocol !== 'ws:' && u.protocol !== 'wss:') return 'address';
       ws = new WebSocket(url);
-    } catch (e) {
-      toast(`Neplatná adresa: ${(e as Error).message}`, 'warn');
-      return;
+    } catch {
+      return 'address';
     }
     const driver = new NetDriver(ws as unknown as WsLike, name, cond);
-    toast('Připojuji…');
-    for (let i = 0; i < 100 && !driver.net.welcome && !driver.net.closed; i++) await new Promise((r) => setTimeout(r, 50));
+    onPhase('connecting');
+    const t0 = performance.now();
+    let opened = false;
+    while (!driver.net.welcome && !driver.net.closed) {
+      if (signal?.aborted) {
+        driver.dispose();
+        return 'cancelled';
+      }
+      if (!opened && ws.readyState === WebSocket.OPEN) {
+        opened = true;
+        onPhase('auth');
+      }
+      if (performance.now() - t0 > 8000) {
+        driver.dispose();
+        return 'timeout';
+      }
+      await new Promise((r) => setTimeout(r, 50));
+    }
     const w = driver.net.welcome;
     if (!w) {
+      const reason = driver.net.closeReason;
       driver.dispose();
-      await modal('Připojení selhalo', driver.net.closeReason || 'Server neodpověděl. Běží npm run server a je adresa správná?', [{ id: 'ok', label: 'Zavřít', primary: true }]);
-      return;
+      if (reason === 'full') return 'full';
+      if (/protokol|protocol|verze/i.test(reason)) return 'version';
+      return reason || (opened ? 'closed' : 'unreachable');
     }
+    onPhase('loading');
     const v = validateMap(JSON.parse(JSON.stringify(w.map)));
     if (!v.ok) {
       driver.dispose();
-      await modal('Mapa serveru je neplatná', issuesList(v.issues), [{ id: 'ok', label: 'Zavřít', primary: true }]);
-      return;
+      return 'map';
     }
     await this.saver.flush();
+    if (this.mode === 'play') this.exitPlay(true);
     this.editorDocBeforeNet = this.ed.doc;
     this.openDoc(w.map, false);
     driver.attachWorld(this.phys, [...this.ladders.values()].flat());
+    onPhase('ready');
+    document.body.classList.remove('mode-menu');
+    this.returnTo = 'menu';
     await this.enterPlay(driver);
+    return null;
   }
 
-  async enterPlay(netDriver?: GameDriver) {
+  /** Přímé připojení (testy, konzole): chyba se ukáže dialogem. */
+  async connectTo(url: string, name: string, cond = { latencyMs: 0, jitterMs: 0, lossPct: 0 }) {
+    const err = await this.connectDriver(url, name, cond);
+    if (err) await modal(t('connect.failed'), document.createTextNode(err), [{ id: 'ok', label: t('common.close'), primary: true }]);
+    else this.menu?.hide();
+  }
+
+  async enterPlay(netDriver?: GameDriver, preset?: { conquest: boolean; scenarioId?: string; team: Team; kits?: typeof PILOT.kits }) {
     if (this.mode === 'play' || this.editor.stroking) return;
     if (this.editor.terrainMode) this.editor.setTerrainMode(false);
     const v = validateMap(JSON.parse(JSON.stringify(this.ed.doc)));
@@ -383,9 +459,9 @@ export class App {
       spawn = safe;
     }
     // Volba režimu: volný test od markeru, nebo Conquest (scénář + tým), má-li mapa body.
-    let mode: { conquest: boolean; scenarioId?: string; team: Team } = { conquest: false, team: 'teamA' };
+    let mode: { conquest: boolean; scenarioId?: string; team: Team; kits?: typeof PILOT.kits } = preset ?? { conquest: false, team: 'teamA' };
     const doc = this.ed.doc;
-    if (doc.controlPoints.length && doc.scenarios.length && !this.forceFreeTest && !netDriver) {
+    if (!preset && doc.controlPoints.length && doc.scenarios.length && !this.forceFreeTest && !netDriver) {
       const b = document.createElement('div');
       b.innerHTML = `<div class="prop"><span class="lbl">Scénář</span><select id="pm-sc">${doc.scenarios.map((x) => `<option value="${x.id}">${x.name.replace(/[<>&"]/g, '')}</option>`).join('')}</select></div><div class="prop"><span class="lbl">Tým</span><select id="pm-team"><option value="teamA">Tým A</option><option value="teamB">Tým B</option></select></div><div class="note">Conquest běží lokálně (bez botů): zabírání, tickety, respawn a zóny podle scénáře.</div>`;
       const ch = await modal('Testovat', b, [
@@ -396,6 +472,7 @@ export class App {
       if (!ch || ch === 'cancel') return;
       if (ch === 'cq') mode = { conquest: true, scenarioId: (b.querySelector('#pm-sc') as HTMLSelectElement).value, team: (b.querySelector('#pm-team') as HTMLSelectElement).value as Team };
     }
+    if (!netDriver && !preset) this.returnTo = 'editor';
     this.audio.unlock();
     this.editorCam = this.editor.saveCamera();
     this.editor.detach();
@@ -417,25 +494,59 @@ export class App {
       this.audio,
       this.quality,
       { sensitivity: s.sensitivity, invertY: s.invertY, crouchToggle: s.crouchToggle },
-      { hFov: s.hFov, bob: s.bob, landingKick: s.landingKick, weapon: s.weapon },
+      { hFov: s.hFov, bob: s.bob, landingKick: s.landingKick, weapon: s.weapon, adsSens: s.adsSens },
       CAMERA.radiansPerCount,
       { ...mode, driver: netDriver },
     );
-    if (netDriver instanceof NetDriver) this.teamUi = new TeamUi(netDriver, this.session.input, this.ed.doc);
+    const game = this.session.game;
+    game.buildMap(this.footprints());
+    game.onLeave = () => this.exitPlay();
     const inp = this.session.input;
+    inp.bindings = bindingsOf(s);
+    const net = netDriver instanceof NetDriver ? netDriver : null;
+    if (net) {
+      this.teamUi = new TeamUi(net, inp, this.ed.doc);
+      const ts = new TeamScreens(net, () => game.map);
+      game.extraTabs = [
+        { id: 'squad', label: t('pause.squad'), view: () => ts.squadView() },
+        { id: 'commander', label: t('pause.commander'), view: () => (game.driver.local() ? ts.commanderView(game.driver.local()!, game.driver.remotes(), game.driver.conquest()) : h('div')) },
+      ];
+    }
+    const teamKey = inp.onUiKey;
+    inp.onUiKey = (code, down) => {
+      if (teamKey(code, down)) return true;
+      if (!down) return false;
+      if (net && (code === 'KeyP' || code === 'Home')) return this.openPause('squad'), true;
+      if (net && code === 'KeyC') return this.openPause('commander'), true;
+      return false;
+    };
+    this.pause = new PauseMenu({
+      resume: () => void this.lockPointer(),
+      deploy: () => {
+        // Nasazení za živa: změna výbavy platí pro příští nasazení (obrazovka to vysvětluje).
+        this.pause?.show(false);
+        game.hud.deploy.show(true);
+      },
+      leave: () => this.exitPlay(),
+      settings: () => this.settingsView.open(),
+      controls: () => controlsView(this.settings),
+      extra: game.extraTabs,
+      network: !!net,
+      mapName: this.ed.doc.name,
+    });
     inp.onDevKey = () => this.toggleDev();
     inp.onMenuKey = () => inp.releaseLock();
     inp.onLockChange = (locked) => {
-      // Mrtvý hráč vybírá spawn kurzorem → menu jen u živého hráče.
-      const alive = this.session?.game.driver.local()?.alive ?? true;
-      this.showPlayMenu(!locked && alive);
-      if (!locked && !alive) {
-        $('#hud').classList.remove('hidden');
-        this.session!.game.active = false;
-      }
+      // Mrtvý / vyřazený hráč pracuje s kurzorem (nasazení, vzdání pomoci) → pauza jen u živého hráče.
+      const me = this.session?.game.driver.local();
+      const alive = me?.alive ?? true;
+      if (locked) this.pause?.show(false);
+      else if (alive && !game.hud.deploy.visible) this.pause?.show(true);
+      game.active = locked;
+      $('#hud').classList.remove('hidden');
     };
-    $('#menu-map').textContent = this.ed.doc.name;
-    this.showPlayMenu(true);
+    $('#hud').classList.remove('hidden');
+    game.active = false;
     this.resize();
     await this.lockPointer();
   }
@@ -456,17 +567,72 @@ export class App {
 
   forceFreeTest = false;
 
-  private showPlayMenu(show: boolean) {
-    if (!this.session) return;
-    this.session.game.active = !show;
-    $('#menu').classList.toggle('hidden', !show);
-    $('#hud').classList.toggle('hidden', show);
+  private openPause(section: string | null) {
+    this.session?.input.releaseLock();
+    this.pause?.show(true, section);
   }
 
-  exitPlay() {
+  /** Půdorysy viditelných objektů pro taktickou mapu (jednou na hru). */
+  private footprints(): Footprint[] {
+    const out: Footprint[] = [];
+    const box = new THREE.Box3();
+    for (const o of this.ed.doc.objects) {
+      if (o.gameHidden) continue;
+      const g = this.world.objects.get(o.id);
+      if (!g) continue;
+      box.setFromObject(g);
+      if (box.isEmpty()) continue;
+      const hgt = box.max.y - box.min.y;
+      if (hgt < 0.4) continue;
+      out.push({ x0: box.min.x, z0: box.min.z, x1: box.max.x, z1: box.max.z, h: hgt });
+    }
+    return out;
+  }
+
+  /** Tab: tabulka skóre (drží se; funguje živý i mrtvý). */
+  private scoreKey = (e: KeyboardEvent) => {
+    if (e.code !== 'Tab' || !this.session) return;
+    e.preventDefault();
+    if (e.type === 'keydown' && !e.repeat) {
+      this.sbEl ??= document.body.appendChild(h('div', { id: 'pf-scoreboard', class: 'pf-screen pf-scoreboard' }));
+      this.sbT = 1;
+    } else if (e.type === 'keyup') {
+      this.sbEl?.remove();
+      this.sbEl = null;
+    }
+  };
+
+  private renderScoreboard(dt: number) {
+    if (!this.sbEl || !this.session) return;
+    this.sbT += dt;
+    if (this.sbT < 0.25) return;
+    this.sbT = 0;
+    const g = this.session.game, d = g.driver, me = d.local();
+    this.sbEl.replaceChildren(h('h2', {}, t('score.title')), scoreboard({ me, remotes: d.remotes(), team: me?.team ?? 'teamA', cq: d.conquest(), net: d instanceof NetDriver ? d : null }));
+  }
+
+  /** Esc bez zamčené myši: zavřít pauzu (návrat do hry), případně ji otevřít. */
+  private playKey = (e: KeyboardEvent) => {
+    if (e.code !== 'Escape' || !this.session || this.session.input.locked) return;
+    if (!$('#modal').classList.contains('hidden') || document.querySelector('.pf-dialog')) return;
+    const g = this.session.game;
+    if (this.pause?.visible) {
+      if (g.driver.local()?.alive) void this.lockPointer();
+      else this.pause.show(false);
+    } else if (g.hud.deploy.visible && g.driver.local()?.alive) {
+      g.hud.deploy.show(false);
+      void this.lockPointer();
+    } else this.pause?.show(true);
+  };
+
+  exitPlay(toEditor = false) {
     if (this.mode !== 'play' || !this.session) return;
     this.teamUi?.dispose();
     this.teamUi = null;
+    this.pause?.dispose();
+    this.pause = null;
+    this.sbEl?.remove();
+    this.sbEl = null;
     this.session.dispose();
     this.audio.suspend();
     this.session = null;
@@ -478,10 +644,7 @@ export class App {
       void document.exitFullscreen().catch(() => {});
     }
     document.body.classList.replace('mode-play', 'mode-editor');
-    $('#menu').classList.add('hidden');
     $('#hud').classList.add('hidden');
-    $('#settings').classList.add('hidden');
-    $('#controls').classList.add('hidden');
     this.world.setMode('editor');
     this.env.shadowRate = 0;
     this.world.update(0);
@@ -496,6 +659,7 @@ export class App {
       this.editorDocBeforeNet = null;
       this.openDoc(d, false);
     }
+    if (this.returnTo === 'menu' && !toEditor) this.showMenu();
   }
 
   private toggleDev() {
@@ -531,13 +695,13 @@ export class App {
       this.world.slopeDebug.value = this.world.slopeDebug.value ? 0 : 1;
       $('#tb-vis-slope').classList.toggle('on', !!this.world.slopeDebug.value);
     });
-    buildSettingsUI(this.settings, () => {
-      const g = this.session?.game;
-      if (g) g.settings = { hFov: this.settings.hFov, bob: this.settings.bob, landingKick: this.settings.landingKick, weapon: this.settings.weapon };
-      const i = this.session?.input;
-      if (i) i.settings = { sensitivity: this.settings.sensitivity, invertY: this.settings.invertY, crouchToggle: this.settings.crouchToggle };
-    });
-    buildControlsUI();
+    applyUiSettings(this.settings);
+    this.audio.volume = this.settings.volume;
+    applyStatic();
+    onLang(() => applyStatic());
+    window.addEventListener('keydown', this.scoreKey, true);
+    window.addEventListener('keyup', this.scoreKey, true);
+    window.addEventListener('keydown', this.playKey);
     $('#dev').classList.toggle('hidden', !this.devOn);
 
     // Globální klávesy aplikace (F5 přepíná režim jen uvnitř aplikace).
@@ -560,11 +724,7 @@ export class App {
     });
 
     $('#tb-play').addEventListener('click', () => void this.enterPlay());
-    $('#tb-net').addEventListener('click', () => void this.joinServer());
-    $('#btn-resume').addEventListener('click', () => void this.lockPointer());
-    $('#btn-editor').addEventListener('click', () => this.exitPlay());
-    $('#btn-settings').addEventListener('click', () => $('#settings').classList.toggle('hidden'));
-    $('#btn-controls').addEventListener('click', () => $('#controls').classList.toggle('hidden'));
+    $('#tb-net').addEventListener('click', () => this.showMenu());
     $('#tb-undo').addEventListener('click', () => this.editor.undo());
     $('#tb-redo').addEventListener('click', () => this.editor.redo());
     for (const b of document.querySelectorAll<HTMLButtonElement>('.tool')) {
@@ -804,7 +964,7 @@ export class App {
     if (this.session) {
       this.session.update(dt);
       if (this.teamUi) this.teamUi.update(this.session.game.driver.local(), this.session.game.driver.remotes());
-      this.updateHud();
+      this.renderScoreboard(dt);
     } else {
       this.editor.update(dt);
       if (this.uiDirty) {
@@ -823,17 +983,6 @@ export class App {
     }
     requestAnimationFrame(this.loop);
   };
-
-  private updateHud() {
-    const me = this.session!.game.driver.local();
-    if (!me) return;
-    const s = me.state;
-    const st = $('#stamina');
-    st.classList.toggle('show', s.stamina < 99.5);
-    st.classList.toggle('low', s.sprintLocked);
-    $('#stamina .fill').style.width = `${s.stamina}%`;
-    $('#stance').textContent = s.stance === 'stand' ? 'STOJ' : s.stance === 'crouch' ? 'DŘEP' : 'LEH';
-  }
 
   /** Počty pro kontrolu úniků při přepínání (entity, listenery, prostředky). */
   counts() {

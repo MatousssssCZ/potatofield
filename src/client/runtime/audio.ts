@@ -8,6 +8,11 @@ export class GameAudio {
   private noise: AudioBuffer | null = null;
   volume = 0.6;
 
+  setVolume(v: number) {
+    this.volume = v;
+    if (this.master) this.master.gain.value = v;
+  }
+
   /** Zavolat z obsluhy kliknutí/klávesy. */
   unlock() {
     if (this.ctx) {

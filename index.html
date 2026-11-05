@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Potatofield</title>
     <link rel="stylesheet" href="/src/client/ui/style.css" />
+    <link rel="stylesheet" href="/src/client/ui/game.css" />
   </head>
-  <body class="mode-editor">
+  <body class="mode-editor mode-menu">
     <div id="app">
       <header id="toolbar">
         <div class="tb-group">
@@ -30,7 +31,7 @@
           <button id="tb-vis-slope" title="Zvýraznit svahy nad 45°">Svahy</button>
         </div>
         <div class="tb-group">
-          <button id="tb-net" title="Připojit k serveru">🌐 Multiplayer</button>
+          <button id="tb-net" title="Hlavní menu: hrát, servery, nastavení">☰ Menu</button>
           <button id="tb-play" class="primary" title="Testovat (F5)">▶ Testovat <kbd>F5</kbd></button>
         </div>
       </header>
@@ -52,8 +53,6 @@
         <button class="expand hidden" data-expand="right" title="Rozbalit vlastnosti">«</button>
         <div id="hud" class="hidden">
           <div id="crosshair"><i class="t"></i><i class="b"></i><i class="l"></i><i class="r"></i></div>
-          <div id="stamina"><div class="bar"><div class="fill"></div></div></div>
-          <div id="stance"></div>
         </div>
         <div id="dev" class="hidden"></div>
         <div id="toasts"></div>
@@ -83,20 +82,6 @@
       <div class="sub">editor map a pěchotní konflikt</div>
       <div class="progress"><div class="fill"></div></div>
       <div class="status">Načítám…</div>
-    </div>
-
-    <div id="menu" class="hidden">
-      <div class="panel-menu">
-        <div class="brand">POTATOFIELD</div>
-        <div class="sub" id="menu-map"></div>
-        <button id="btn-resume" class="primary">Pokračovat</button>
-        <button id="btn-editor">Zpět do editoru <kbd>F5</kbd></button>
-        <button id="btn-settings">Nastavení</button>
-        <button id="btn-controls">Ovládání</button>
-        <div id="settings" class="hidden sect"></div>
-        <div id="controls" class="hidden sect"></div>
-        <div class="hint">Esc uvolní myš a otevře menu • F3 dev panel</div>
-      </div>
     </div>
 
     <div id="modal" class="hidden"><div class="modal-box"><h3></h3><div class="modal-body"></div><div class="modal-buttons"></div></div></div>

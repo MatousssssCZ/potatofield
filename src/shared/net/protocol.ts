@@ -23,6 +23,8 @@ export const NET = {
   radio: { globalCooldown: 1, sameCooldown: 5 },
   spot: { cooldown: 1, range: 200, coneDeg: 1.5, ttl: 6, suspectTtl: 4, maxSuspectPerPlayer: 3 },
   squad: { maxMembers: 6, maxPerTeam: 9, leaderTransferCooldown: 20 },
+  /** Commander: UAV (dosah, trvání, obnova) a scan (obnova, platnost kontaktů). Návrhové hodnoty (N). */
+  command: { uavRadius: 60, uavDuration: 20, uavCooldown: 90, uavRefresh: 1, scanCooldown: 60, scanTtl: 4 },
 } as const;
 
 export type ChatChannel = 'all' | 'team' | 'squad';
@@ -35,12 +37,14 @@ export type ClientMsg =
   | { t: 'input'; frames: InputFrame[] }
   | { t: 'spawn'; id: string | null; weapon?: string }
   | { t: 'giveup' }
+  | { t: 'command'; op: 'apply' | 'resign' }
+  | { t: 'ability'; kind: 'uav' | 'scan'; pos?: [number, number, number] }
   | { t: 'team'; team: Team }
   | { t: 'chat'; ch: ChatChannel; text: string }
   | { t: 'radio'; id: RadioId }
   | { t: 'spot' }
   | { t: 'squad'; op: 'create' | 'join' | 'leave' | 'lock' | 'unlock' | 'kick' | 'promote'; squad?: string; target?: string }
-  | { t: 'order'; kind: OrderKind; cp?: string; pos?: [number, number, number] }
+  | { t: 'order'; kind: OrderKind; cp?: string; pos?: [number, number, number]; squad?: string }
   | { t: 'ping'; c: number };
 
 /** Kompaktní stav vzdáleného hráče (interpolovaný na klientovi). */
@@ -97,6 +101,14 @@ export interface ContactInfo {
   pos: [number, number, number];
   expires: number;
   source: string;
+}
+
+/** Velení týmu (jen vlastní tým; nepřítel nedostane nic). */
+export interface CommandInfo {
+  commander: string | null;
+  uavReadyAt: number;
+  scanReadyAt: number;
+  uav: { pos: [number, number, number]; until: number } | null;
 }
 
 export interface SelfState {
@@ -163,6 +175,7 @@ export type ServerMsg =
       squads: SquadInfo[];
       order: OrderInfo | null;
       contacts: ContactInfo[];
+      command: CommandInfo;
       spawns: string[];
       scores: Array<{ id: string; name: string; team: Team; kills: number; deaths: number; revives: number; ping: number; squad: string | null }>;
     }
@@ -170,6 +183,7 @@ export type ServerMsg =
   | { t: 'chat'; id: string; from: string; name: string; ch: ChatChannel | 'system'; text: string; time: number }
   | { t: 'radio'; id: string; from: string; name: string; radio: RadioId; pos: [number, number, number] | null; time: number }
   | { t: 'reject'; what: string; reason: string }
+  | { t: 'ack'; what: string; detail?: string }
   | { t: 'pong'; c: number; s: number }
   | { t: 'bye'; reason: string };
 
@@ -215,7 +229,11 @@ export function parseClientMsg(raw: string): ClientMsg | null {
     case 'squad':
       return ['create', 'join', 'leave', 'lock', 'unlock', 'kick', 'promote'].includes(o.op as string) ? (o as ClientMsg) : null;
     case 'order':
-      return ['attack', 'defend', 'move'].includes(o.kind as string) ? (o as ClientMsg) : null;
+      return ['attack', 'defend', 'move'].includes(o.kind as string) && (o.squad === undefined || typeof o.squad === 'string') ? (o as ClientMsg) : null;
+    case 'command':
+      return o.op === 'apply' || o.op === 'resign' ? (o as ClientMsg) : null;
+    case 'ability':
+      return (o.kind === 'uav' || o.kind === 'scan') && (o.pos === undefined || (Array.isArray(o.pos) && o.pos.length === 3 && o.pos.every((v) => typeof v === 'number' && Number.isFinite(v)))) ? (o as ClientMsg) : null;
     case 'ping':
       return typeof o.c === 'number' ? (o as ClientMsg) : null;
   }

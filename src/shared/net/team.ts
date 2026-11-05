@@ -28,12 +28,56 @@ export class TeamLayer {
   readonly contacts: Record<Team, ContactInfo[]> = { teamA: [], teamB: [] };
   private seq = 0;
   private lastLeaderChange = new Map<string, number>();
+  /** Commander týmu (jeden z hráčů týmu, ne pátá classa) a stav schopností. */
+  readonly command: Record<Team, { commander: string | null; uavReadyAt: number; scanReadyAt: number; uav: { pos: [number, number, number]; until: number } | null }> = {
+    teamA: { commander: null, uavReadyAt: 0, scanReadyAt: 0, uav: null },
+    teamB: { commander: null, uavReadyAt: 0, scanReadyAt: 0, uav: null },
+  };
+
+  // ---------------- commander ----------------
+
+  applyCommander(id: string): string | null {
+    const m = this.members.get(id);
+    if (!m) return 'neznámý hráč';
+    const c = this.command[m.team];
+    if (c.commander === id) return null;
+    if (c.commander) return 'místo commandera je obsazené';
+    c.commander = id;
+    return null;
+  }
+
+  resignCommander(id: string) {
+    for (const t of ['teamA', 'teamB'] as Team[]) if (this.command[t].commander === id) this.command[t].commander = null;
+  }
+
+  isCommander(id: string) {
+    const m = this.members.get(id);
+    return !!m && this.command[m.team].commander === id;
+  }
+
+  /** Schopnost commandera: vrací důvod odmítnutí nebo null (efekt řeší server). */
+  useAbility(id: string, kind: 'uav' | 'scan', now: number, pos?: [number, number, number]): string | null {
+    const m = this.members.get(id);
+    if (!m || !this.isCommander(id)) return 'jen commander týmu';
+    const c = this.command[m.team];
+    if (kind === 'uav') {
+      if (!pos) return 'UAV: chybí cíl';
+      if (now < c.uavReadyAt) return `UAV: obnova ${Math.ceil(c.uavReadyAt - now)} s`;
+      c.uav = { pos, until: now + NET.command.uavDuration };
+      c.uavReadyAt = now + NET.command.uavCooldown;
+    } else {
+      if (now < c.scanReadyAt) return `scan: obnova ${Math.ceil(c.scanReadyAt - now)} s`;
+      c.scanReadyAt = now + NET.command.scanCooldown;
+    }
+    return null;
+  }
 
   addMember(id: string, name: string, team: Team) {
     this.members.set(id, { id, name, team, squad: null, joinedWhileDead: false, chatTimes: [], radioAt: -1e9, radioSame: new Map(), spotAt: -1e9, suspects: [] });
   }
 
   removeMember(id: string) {
+    this.resignCommander(id);
     this.leaveSquad(id);
     this.members.delete(id);
   }
@@ -42,6 +86,7 @@ export class TeamLayer {
     const m = this.members.get(id);
     if (!m) return;
     this.leaveSquad(id); // změna týmu zruší členství a oprávnění ve staré četě
+    this.resignCommander(id);
     m.team = team;
   }
 
@@ -125,11 +170,18 @@ export class TeamLayer {
 
   // ---------------- rozkazy ----------------
 
-  issueOrder(id: string, kind: OrderKind, target: { cp?: string; pos: [number, number, number] }, now: number): string | null {
+  issueOrder(id: string, kind: OrderKind, target: { cp?: string; pos: [number, number, number] }, now: number, squadId?: string): string | null {
     const m = this.members.get(id);
-    const s = m?.squad ? this.squads.get(m.squad) : undefined;
-    if (!m || !s) return 'nejste v četě';
-    if (s.leader !== id) return 'rozkaz vydává jen velitel čety';
+    let s = m?.squad ? this.squads.get(m.squad) : undefined;
+    if (squadId) {
+      // Commander rozkazuje libovolné četě vlastního týmu; jiný hráč jen své četě jako velitel.
+      const t = this.squads.get(squadId);
+      if (!m || !t || t.team !== m.team) return 'neznámá četa';
+      if (!this.isCommander(id) && !(t.leader === id)) return 'rozkaz cizí četě vydává jen commander';
+      s = t;
+    } else if (!m || !s) return 'nejste v četě';
+    else if (s.leader !== id) return 'rozkaz vydává jen velitel čety';
+    if (!s) return 'nejste v četě';
     for (const o of this.orders.values()) if (o.squad === s.id && o.status === 'active') o.status = 'superseded';
     const o: OrderInfo = { id: this.nextId('ord'), squad: s.id, kind, target, status: 'active', author: id, time: now };
     for (const [k, x] of this.orders) if (x.squad === s.id) this.orders.delete(k);

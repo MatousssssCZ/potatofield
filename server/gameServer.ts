@@ -228,8 +228,39 @@ export class GameServer {
     this.send(c, { t: 'reject', what, reason });
   }
 
-  private broadcastSystem(text: string) {
-    for (const c of this.clients.values()) this.send(c, { t: 'chat', id: `sys${++this.seq}`, from: 'system', name: 'Server', ch: 'system', text, time: this.sim.time });
+  /** Scan commandera: jednorázový snímek poloh všech živých nepřátel (jen vlastnímu týmu). */
+  private scan(team: Team) {
+    const now = this.sim.time;
+    for (const o of this.sim.players.values()) {
+      if (!o.alive || o.team === team) continue;
+      this.team.addContact(team, { kind: 'confirmed', pos: [r3(o.state.pos.x), r3(o.state.pos.y), r3(o.state.pos.z)], expires: now + NET.command.scanTtl, source: 'scan' }, `scan:${o.id}`);
+    }
+  }
+
+  private uavAcc = 0;
+  /** UAV: po dobu trvání obnovuje kontakty nepřátel v dosahu (jen vlastnímu týmu). */
+  private commandTick() {
+    this.uavAcc += 1 / 60;
+    if (this.uavAcc < NET.command.uavRefresh) return;
+    this.uavAcc = 0;
+    const now = this.sim.time;
+    for (const team of ['teamA', 'teamB'] as Team[]) {
+      const u = this.team.command[team].uav;
+      if (!u) continue;
+      if (now >= u.until) {
+        this.team.command[team].uav = null;
+        continue;
+      }
+      for (const o of this.sim.players.values()) {
+        if (!o.alive || o.team === team) continue;
+        if (Math.hypot(o.state.pos.x - u.pos[0], o.state.pos.z - u.pos[2]) > NET.command.uavRadius) continue;
+        this.team.addContact(team, { kind: 'confirmed', pos: [r3(o.state.pos.x), r3(o.state.pos.y), r3(o.state.pos.z)], expires: now + NET.command.uavRefresh * 1.6, source: 'uav' }, `uav:${o.id}`);
+      }
+    }
+  }
+
+  private broadcastSystem(text: string, team?: Team) {
+    for (const c of this.clients.values()) if (!team || c.player?.team === team) this.send(c, { t: 'chat', id: `sys${++this.seq}`, from: 'system', name: 'Server', ch: 'system', text, time: this.sim.time });
   }
 
   private autoTeam(): Team {
@@ -346,8 +377,30 @@ export class GameServer {
           if (cp) target = { cp: cp.id, pos: [...cp.position] as [number, number, number] };
         } else if (m.pos && m.pos.every((v) => Number.isFinite(v) && Math.abs(v) < 5000)) target = { pos: m.pos };
         if (!target) return this.reject(c, 'order', 'neplatný cíl');
-        const err = this.team.issueOrder(c.id, m.kind, target, now);
+        const err = this.team.issueOrder(c.id, m.kind, target, now, m.squad);
         if (err) this.reject(c, 'order', err);
+        else this.send(c, { t: 'ack', what: 'order' });
+        break;
+      }
+      case 'command': {
+        if (m.op === 'resign') {
+          this.team.resignCommander(c.id);
+          this.send(c, { t: 'ack', what: 'command' });
+          break;
+        }
+        const err = this.team.applyCommander(c.id);
+        if (err) this.reject(c, 'command', err);
+        else {
+          this.send(c, { t: 'ack', what: 'command' });
+          this.broadcastSystem(`${c.name} je commanderem týmu.`, p.team);
+        }
+        break;
+      }
+      case 'ability': {
+        const err = this.team.useAbility(c.id, m.kind, now, m.pos);
+        if (err) return this.reject(c, 'ability', err);
+        if (m.kind === 'scan') this.scan(p.team);
+        this.send(c, { t: 'ack', what: 'ability', detail: m.kind });
         break;
       }
       case 'ping':
@@ -450,6 +503,7 @@ export class GameServer {
     this.sim.events = [];
     if (events.length) this.distributeEvents(events);
     this.team.expireContacts(this.sim.time);
+    this.commandTick();
     if (this.sim.conquest) {
       const cq = this.sim.conquest;
       this.team.updateOrders((id) => cq.cps.find((x) => x.id === id)?.owner, (id) => {
@@ -536,6 +590,7 @@ export class GameServer {
       squads: this.team.squadsFor(p.team),
       order: this.team.orderFor(mem?.squad ?? null),
       contacts: this.team.contacts[p.team],
+      command: { ...this.team.command[p.team], uav: this.team.command[p.team].uav },
       spawns,
       // Skóre stačí 1×/s (šetří přenos); ostatní data každý snapshot.
       scores: this.snapCount % NET.snapshotHz !== 1 ? [] : [...this.sim.players.values()].map((o) => ({ id: o.id, name: o.name, team: o.team, kills: o.kills, deaths: o.deaths, revives: o.revives, ping: this.clients.get(o.id)?.ping ?? 0, squad: o.team === p.team ? (this.team.members.get(o.id)?.squad ?? null) : null })),

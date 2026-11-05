@@ -1,5 +1,6 @@
 import type * as THREE from 'three';
 import type { MapDocument, Team } from '../../shared/map/schema';
+import type { Kit } from '../../shared/config/arsenal';
 import type { PhysicsWorld } from '../../shared/physics/world';
 import type { LadderDef } from '../../world/parts';
 import type { QualityProfile } from '../render/quality';
@@ -13,6 +14,8 @@ export interface SessionOptions {
   conquest: boolean;
   scenarioId?: string;
   team: Team;
+  /** Povolené classy (trénink: pilot). */
+  kits?: Kit[];
   /** Hotový driver (síť); jinak offline. */
   driver?: GameDriver;
 }
@@ -50,11 +53,12 @@ export class PlaySession {
     this.input.radPerCount = radPerCount;
     this.input.settings = { ...inputSettings };
     this.input.attach();
-    const driver = opts.driver ?? new OfflineDriver(phys, this.runtimeDoc, { conquest: opts.conquest, scenarioId: opts.scenarioId, team: opts.team, weapon: gameSettings.weapon }, ladders);
+    const driver = opts.driver ?? new OfflineDriver(phys, this.runtimeDoc, { conquest: opts.conquest, scenarioId: opts.scenarioId, team: opts.team, weapon: gameSettings.weapon, kits: opts.kits }, ladders);
     this.game = new Game(camera, this.input, driver, world, scene, this.runtimeDoc, audio, quality, gameSettings.weapon);
     this.game.settings = { ...gameSettings };
     this.game.onDeath = () => this.input.releaseLock();
     this.game.onSpawned = () => this.input.requestLock();
+    this.game.phys = phys;
   }
 
   update(dt: number) {

@@ -1,33 +1,64 @@
 import { CAMERA } from '../../shared/config/camera';
 import { QUALITY, detectQuality, type QualityProfile } from '../render/quality';
-import { FACTION_LABEL, KIT_LABEL, readyWeapons } from '../render/weapons/catalog';
-import { ACTION_LABELS, DEFAULT_BINDINGS, InputSystem, type Action } from '../runtime/input';
+import { DEFAULT_BINDINGS, InputSystem, type Action } from '../runtime/input';
+import { lang, setLang, t, type Lang, type StringKey } from './i18n';
+import { button, h, settingRow, tabs } from './kit';
 
-/** Nastavení hráče (per-viewer pohodlí v localStorage; vše funguje i bez něj). */
+/**
+ * Nastavení hráče (per-viewer pohodlí v localStorage, verzované; vše funguje i bez úložiště).
+ * Obrazovka nastavení pracuje s pracovní kopií: Použít / Zrušit / Výchozí.
+ */
+export type Colorblind = 'none' | 'deutan' | 'protan' | 'tritan';
+
 export interface Settings {
+  version: number;
   quality: QualityProfile['id'];
   /** Kvalitu zvolil hráč (jinak se doporučí podle grafiky zařízení). */
   qualityChosen?: boolean;
   hFov: number;
   sensitivity: number;
+  /** Násobek citlivosti při míření (vůči výchozímu poměru kamery). */
+  adsSens: number;
   invertY: boolean;
   bob: number;
   landingKick: boolean;
   crouchToggle: boolean;
   fullscreen: boolean;
-  /** Vzhled zbraně v testu (jen vizuál – pravidla střelby jsou pro všechny PF-Rifle). */
+  volume: number;
+  hudScale: number;
+  hudOpacity: number;
+  textSize: 's' | 'm' | 'l';
+  colorblind: Colorblind;
+  netDiag: boolean;
+  showFps: boolean;
+  /** Vlastní klávesy (jen změněné akce). */
+  bindings: Partial<Record<Action, string[]>>;
+  /** Vzhled zbraně ve volném testu editoru (výbavu jinak určuje nasazení). */
   weapon: string;
+  lang?: Lang;
 }
 
+export const SETTINGS_VERSION = 2;
+
 export const DEFAULT_SETTINGS: Settings = {
+  version: SETTINGS_VERSION,
   quality: 'standard',
   hFov: CAMERA.hFovDeg16x9,
   sensitivity: 2.5,
+  adsSens: 1,
   invertY: false,
   bob: 1,
   landingKick: true,
   crouchToggle: false,
   fullscreen: true,
+  volume: 0.6,
+  hudScale: 1,
+  hudOpacity: 1,
+  textSize: 'm',
+  colorblind: 'none',
+  netDiag: false,
+  showFps: false,
+  bindings: {},
   weapon: 'm4a1',
 };
 
@@ -35,14 +66,17 @@ export const DEFAULT_SETTINGS: Settings = {
 export const DETECTED = typeof document !== 'undefined' ? detectQuality() : { id: 'standard' as const, gpu: '' };
 
 export function loadSettings(): Settings {
-  let s: Settings = { ...DEFAULT_SETTINGS };
+  let s: Settings = structuredClone(DEFAULT_SETTINGS);
   try {
     const raw = localStorage.getItem('pf.settings');
-    if (raw) s = { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
+    if (raw) {
+      const v = JSON.parse(raw);
+      // Migrace: starší verze nemají nová pole – doplní se výchozí, známá pole zůstanou.
+      if (v && typeof v === 'object') s = { ...s, ...v, version: SETTINGS_VERSION, bindings: { ...(v.bindings ?? {}) } };
+    }
   } catch {
-    /* bez úložiště */
+    /* bez úložiště nebo poškozená hodnota → výchozí */
   }
-  // Dokud hráč kvalitu sám nezvolí, platí doporučení podle grafiky (dřív výchozí Vysoká).
   if (!s.qualityChosen) s.quality = DETECTED.id;
   return s;
 }
@@ -55,120 +89,234 @@ export function saveSettings(s: Settings) {
   }
 }
 
-/** Sestaví panel nastavení (jednou při startu). Změny se propisují přes `onChange`. */
-export function buildSettingsUI(s: Settings, onChange: () => void) {
-  const root = document.getElementById('settings')!;
-  root.replaceChildren();
-  const slider = (label: string, key: keyof Settings, min: number, max: number, step: number, fmt: (v: number) => string) => {
-    const l = document.createElement('label');
-    const sp = document.createElement('span');
-    sp.textContent = label;
-    const inp = document.createElement('input');
-    inp.type = 'range';
-    inp.min = String(min);
-    inp.max = String(max);
-    inp.step = String(step);
-    inp.value = String(s[key]);
-    const val = document.createElement('span');
-    val.className = 'val';
-    val.textContent = fmt(Number(inp.value));
-    inp.addEventListener('input', () => {
-      (s[key] as number) = Number(inp.value);
-      val.textContent = fmt(Number(inp.value));
-      saveSettings(s);
-      onChange();
-    });
-    l.append(sp, inp, val);
-    root.appendChild(l);
-  };
-  const check = (label: string, key: keyof Settings) => {
-    const l = document.createElement('label');
-    l.className = 'check';
-    const sp = document.createElement('span');
-    sp.textContent = label;
-    const inp = document.createElement('input');
-    inp.type = 'checkbox';
-    inp.checked = Boolean(s[key]);
-    inp.addEventListener('change', () => {
-      (s[key] as boolean) = inp.checked;
-      saveSettings(s);
-      onChange();
-    });
-    l.append(sp, inp);
-    root.appendChild(l);
-  };
-  const ql = document.createElement('label');
-  const qs = document.createElement('span');
-  qs.textContent = 'Kvalita grafiky';
-  const sel = document.createElement('select');
-  for (const q of Object.values(QUALITY)) {
-    const o = document.createElement('option');
-    o.value = q.id;
-    o.textContent = q.label;
-    sel.appendChild(o);
-  }
-  sel.value = s.quality;
-  sel.addEventListener('change', () => {
-    s.quality = sel.value as QualityProfile['id'];
-    s.qualityChosen = true;
-    saveSettings(s);
-    location.reload();
-  });
-  ql.append(qs, sel);
-  root.appendChild(ql);
-  const rec = document.createElement('div');
-  rec.className = 'note';
-  rec.textContent = `Doporučeno pro tento počítač: ${QUALITY[DETECTED.id].label}${DETECTED.gpu ? ` (${DETECTED.gpu.slice(0, 60)})` : ''}.`;
-  root.appendChild(rec);
-  const wl = document.createElement('label');
-  const wsp = document.createElement('span');
-  wsp.textContent = 'Zbraň (vzhled)';
-  const wsel = document.createElement('select');
-  for (const w of readyWeapons()) {
-    const o = document.createElement('option');
-    o.value = w.id;
-    o.textContent = `${FACTION_LABEL[w.faction]} ${KIT_LABEL[w.kit]} – ${w.name}`;
-    wsel.appendChild(o);
-  }
-  wsel.value = readyWeapons().some((w) => w.id === s.weapon) ? s.weapon : 'm4a1';
-  wsel.addEventListener('change', () => {
-    s.weapon = wsel.value;
-    saveSettings(s);
-    onChange();
-  });
-  wl.append(wsp, wsel);
-  root.appendChild(wl);
-  slider('FOV (horizontální, 16:9)', 'hFov', CAMERA.hFovMinDeg, CAMERA.hFovMaxDeg, 1, (v) => `${v}°`);
-  slider('Citlivost myši', 'sensitivity', 0.2, 8, 0.05, (v) => v.toFixed(2));
-  slider('Pohupování kamery', 'bob', 0, 1, 0.05, (v) => `${Math.round(v * 100)} %`);
-  check('Invertovat osu Y', 'invertY');
-  check('Dřep přepínáním (toggle)', 'crouchToggle');
-  check('Kick kamery při dopadu', 'landingKick');
-  check('Celá obrazovka (chrání Ctrl+W)', 'fullscreen');
-  const note = document.createElement('div');
-  note.className = 'note';
-  note.textContent = 'Změna kvality znovu načte stránku (mapa je uložená). Kvalita mění jen vzhled, nikoli kolize, mlhu ani kryty. Vzhled zbraně se projeví při dalším spuštění testu.';
-  root.appendChild(note);
+export function bindingsOf(s: Settings): Record<Action, string[]> {
+  const b = structuredClone(DEFAULT_BINDINGS);
+  for (const [k, v] of Object.entries(s.bindings)) if (Array.isArray(v) && v.length) b[k as Action] = v;
+  return b;
 }
 
-export function buildControlsUI() {
-  const root = document.getElementById('controls')!;
-  root.replaceChildren();
-  const labeler = new InputSystem(document.body);
-  const t = document.createElement('table');
-  for (const [a, label] of Object.entries(ACTION_LABELS)) {
-    const tr = document.createElement('tr');
-    const td1 = document.createElement('td');
-    td1.textContent = label;
-    const td2 = document.createElement('td');
-    td2.className = 'k';
-    td2.textContent = DEFAULT_BINDINGS[a as Action].map((c) => labeler.keyLabel(c)).join(', ');
-    tr.append(td1, td2);
-    t.appendChild(tr);
+/** Rozhraní: velikost/průhlednost HUD, text, barvy pro barvoslepé, jazyk – CSS proměnné na <html>. */
+export function applyUiSettings(s: Settings) {
+  const r = document.documentElement;
+  r.style.setProperty('--pf-hud-scale', String(s.hudScale));
+  r.style.setProperty('--pf-hud-opacity', String(s.hudOpacity));
+  r.dataset.text = s.textSize;
+  r.dataset.cb = s.colorblind;
+}
+
+export const ACTION_KEY: Record<Action, StringKey> = {
+  FORWARD: 'act.forward',
+  BACK: 'act.back',
+  LEFT: 'act.left',
+  RIGHT: 'act.right',
+  SPRINT: 'act.sprint',
+  JUMP: 'act.jump',
+  CROUCH: 'act.crouch',
+  PRONE: 'act.prone',
+  FIRE: 'act.fire',
+  ADS: 'act.aim',
+  RELOAD: 'act.reload',
+  SLOT3: 'act.slot3',
+  MODE: 'act.fireMode',
+  USE: 'act.use',
+};
+
+/** Pevné klávesy UI (nepřemapovatelné v pilotu) – pro přehled ovládání. */
+export const UI_KEYS: Array<[StringKey, string]> = [
+  ['act.scoreboard', 'Tab'],
+  ['act.map', 'M'],
+  ['act.squad', 'P / Home'],
+  ['act.commander', 'C'],
+  ['act.giveUp', 'G'],
+  ['act.chat', 'J / K / L'],
+  ['act.radio', 'Q'],
+  ['act.order', 'T'],
+];
+
+let labeler: InputSystem | null = null;
+export function keyLabel(code: string) {
+  labeler ??= new InputSystem(document.body);
+  return labeler.keyLabel(code);
+}
+
+type Cat = 'video' | 'audio' | 'controls' | 'ui';
+
+/**
+ * Obrazovka nastavení (pro hlavní menu i pauzu). `apply` dostane potvrzenou kopii;
+ * `reload` = změna vyžaduje znovunačtení (kvalita).
+ */
+export class SettingsView {
+  readonly root = h('div', { class: 'pf-settings' });
+  private work: Settings;
+  private cat: Cat = 'video';
+  private note = '';
+  private rebinding: Action | null = null;
+
+  constructor(
+    private current: () => Settings,
+    private apply: (s: Settings, needsReload: boolean) => void,
+    private onClose?: () => void,
+  ) {
+    this.work = structuredClone(current());
+    this.render();
   }
-  root.appendChild(t);
-  const note = document.createElement('div');
-  note.className = 'note';
-  note.textContent = 'Klávesy se mapují podle fyzické polohy; popisek odpovídá vašemu rozložení (Z = „Y“ na české klávesnici).';
-  root.appendChild(note);
+
+  /** Znovu načíst pracovní kopii (otevření obrazovky). */
+  open() {
+    this.work = structuredClone(this.current());
+    this.note = '';
+    this.render();
+    return this.root;
+  }
+
+  private get dirty() {
+    return JSON.stringify(this.work) !== JSON.stringify(this.current());
+  }
+
+  private render() {
+    const w = this.work;
+    const slider = (key: keyof Settings, min: number, max: number, step: number, fmt: (v: number) => string) => {
+      const val = h('span', { class: 'pf-val tnum' }, fmt(w[key] as number));
+      const inp = h('input', { type: 'range', min, max, step, value: w[key] as number }) as HTMLInputElement;
+      inp.addEventListener('input', () => {
+        (w[key] as number) = Number(inp.value);
+        val.textContent = fmt(Number(inp.value));
+        this.renderFooter();
+      });
+      return h('div', { class: 'pf-slider' }, inp, val);
+    };
+    const check = (key: keyof Settings) => {
+      const inp = h('input', { type: 'checkbox' }) as HTMLInputElement;
+      inp.checked = Boolean(w[key]);
+      inp.addEventListener('change', () => {
+        (w[key] as boolean) = inp.checked;
+        this.renderFooter();
+      });
+      return inp;
+    };
+    const select = <T extends string>(value: T, opts: Array<[T, string]>, set: (v: T) => void) => {
+      const s = h('select', {}, ...opts.map(([v, l]) => h('option', { value: v }, l))) as HTMLSelectElement;
+      s.value = value;
+      s.addEventListener('change', () => {
+        set(s.value as T);
+        this.renderFooter();
+      });
+      return s;
+    };
+    const pct = (v: number) => `${Math.round(v * 100)} %`;
+    let body: HTMLElement;
+    if (this.cat === 'video') {
+      const qn = (id: QualityProfile['id']) => t(`set.quality.${id}` as StringKey);
+      body = h('div', { class: 'pf-set-body' },
+        settingRow(t('set.quality'), select(w.quality, Object.values(QUALITY).map((q) => [q.id, qn(q.id)] as [QualityProfile['id'], string]), (v) => {
+          w.quality = v;
+          w.qualityChosen = true;
+        }), t('set.detected', { q: qn(DETECTED.id) })),
+        settingRow(t('set.fov'), slider('hFov', CAMERA.hFovMinDeg, CAMERA.hFovMaxDeg, 1, (v) => `${v}°`)),
+        settingRow(t('set.bob'), slider('bob', 0, 1, 0.05, pct)),
+        settingRow(t('set.landingKick'), check('landingKick')),
+        settingRow(t('set.fullscreen'), check('fullscreen')),
+        settingRow(t('set.fps'), check('showFps')),
+      );
+    } else if (this.cat === 'audio') {
+      body = h('div', { class: 'pf-set-body' }, settingRow(t('set.volume'), slider('volume', 0, 1, 0.05, pct)));
+    } else if (this.cat === 'controls') {
+      const b = bindingsOf(w);
+      const owner = (code: string, except: Action) => (Object.keys(b) as Action[]).find((a) => a !== except && b[a].includes(code));
+      const rows = (Object.keys(DEFAULT_BINDINGS) as Action[]).map((a) => {
+        const btn = button(this.rebinding === a ? t('set.rebind') : b[a].map(keyLabel).join(', '), () => {
+          this.rebinding = a;
+          this.render();
+          const onKey = (e: KeyboardEvent | MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            window.removeEventListener('keydown', onKey as EventListener, true);
+            window.removeEventListener('mousedown', onKey as EventListener, true);
+            const code = e instanceof KeyboardEvent ? e.code : `Mouse${e.button}`;
+            this.rebinding = null;
+            if (code === 'Escape') return this.render();
+            const clash = owner(code, a);
+            if (clash) this.note = t('set.conflict', { key: keyLabel(code), action: t(ACTION_KEY[clash]) });
+            else {
+              this.note = '';
+              w.bindings[a] = [code];
+            }
+            this.render();
+          };
+          setTimeout(() => {
+            window.addEventListener('keydown', onKey as EventListener, true);
+            window.addEventListener('mousedown', onKey as EventListener, true);
+          }, 0);
+        }, `pf-btn pf-key${this.rebinding === a ? ' on' : ''}`);
+        return settingRow(t(ACTION_KEY[a]), btn);
+      });
+      body = h('div', { class: 'pf-set-body' },
+        settingRow(t('set.sens'), slider('sensitivity', 0.2, 8, 0.05, (v) => v.toFixed(2))),
+        settingRow(t('set.adsSens'), slider('adsSens', 0.3, 2, 0.05, pct)),
+        settingRow(t('set.invertY'), check('invertY')),
+        settingRow(t('set.toggleCrouch'), check('crouchToggle')),
+        h('h4', {}, t('set.bindings')),
+        ...rows,
+        h('h4', {}, t('set.uiKeys')),
+        ...UI_KEYS.map(([k, key]) => settingRow(t(k), h('span', { class: 'pf-key static' }, key))),
+      );
+    } else {
+      body = h('div', { class: 'pf-set-body' },
+        settingRow(t('menu.lang'), select<Lang>(w.lang ?? lang(), [['cs', 'Čeština'], ['en', 'English']], (v) => (w.lang = v))),
+        settingRow(t('set.hudScale'), slider('hudScale', 0.75, 1.5, 0.05, pct)),
+        settingRow(t('set.hudOpacity'), slider('hudOpacity', 0.4, 1, 0.05, pct)),
+        settingRow(t('set.textSize'), select(w.textSize, [['s', 'S'], ['m', 'M'], ['l', 'L']], (v) => (w.textSize = v))),
+        settingRow(t('set.colorblind'), select<Colorblind>(w.colorblind, (['none', 'deutan', 'protan', 'tritan'] as const).map((c) => [c, t(`set.cb.${c}`)] as [Colorblind, string]), (v) => (w.colorblind = v)), t('set.cbHint')),
+        settingRow(t('set.netDiag'), check('netDiag')),
+      );
+    }
+    this.root.replaceChildren(
+      tabs((['video', 'audio', 'controls', 'ui'] as Cat[]).map((c) => ({ id: c, label: t(`set.cat.${c}`) })), this.cat, (id) => {
+        this.cat = id as Cat;
+        this.render();
+      }),
+      body,
+      h('footer', { class: 'pf-set-foot' }),
+    );
+    this.renderFooter();
+  }
+
+  private renderFooter() {
+    const f = this.root.querySelector('.pf-set-foot') as HTMLElement;
+    const dirty = this.dirty;
+    f.replaceChildren(
+      h('span', { class: `pf-dim${this.note ? ' pf-warn' : ''}` }, this.note || (dirty ? t('set.unsaved') : '')),
+      button(t('common.reset'), () => {
+        const keep = { quality: this.work.quality, qualityChosen: this.work.qualityChosen, lang: this.work.lang };
+        this.work = { ...structuredClone(DEFAULT_SETTINGS), ...keep };
+        this.note = '';
+        this.render();
+      }, 'pf-btn'),
+      button(t('common.cancel'), () => {
+        this.work = structuredClone(this.current());
+        this.note = '';
+        this.render();
+        this.onClose?.();
+      }, 'pf-btn'),
+      button(t('common.apply'), () => {
+        const reload = this.work.quality !== this.current().quality;
+        if (this.work.lang && this.work.lang !== lang()) setLang(this.work.lang);
+        this.apply(structuredClone(this.work), reload);
+        this.note = t('set.applied');
+        this.render();
+      }, 'pf-btn primary', { disabled: !dirty }),
+    );
+  }
+}
+
+/** Přehled ovládání (jen pro čtení; přemapování je v Nastavení → Ovládání). */
+export function controlsView(s: Settings) {
+  const b = bindingsOf(s);
+  return h('div', { class: 'pf-controls' },
+    h('table', { class: 'pf-table' }, h('tbody', {},
+      ...(Object.keys(DEFAULT_BINDINGS) as Action[]).map((a) => h('tr', {}, h('td', {}, t(ACTION_KEY[a])), h('td', { class: 'num' }, h('span', { class: 'pf-key static' }, b[a].map(keyLabel).join(', '))))),
+      ...UI_KEYS.map(([k, key]) => h('tr', {}, h('td', {}, t(k)), h('td', { class: 'num' }, h('span', { class: 'pf-key static' }, key)))),
+    )),
+    h('p', { class: 'pf-dim' }, t('set.layoutNote')),
+  );
 }

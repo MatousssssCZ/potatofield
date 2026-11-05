@@ -1,3 +1,6 @@
+import '@fontsource/barlow-semi-condensed/400.css';
+import '@fontsource/barlow-semi-condensed/600.css';
+import '@fontsource/barlow-semi-condensed/700.css';
 import { App } from './app';
 
 async function main() {

@@ -1,7 +1,7 @@
 import type { MapDocument, SpawnPoint } from '../../shared/map/schema';
 import type { PhysicsWorld } from '../../shared/physics/world';
 import { NetClient, type NetConditions, type WsLike } from '../../shared/net/client';
-import type { ContactInfo, OrderInfo, RemoteState, ServerMsg, SquadInfo } from '../../shared/net/protocol';
+import type { CommandInfo, ContactInfo, OrderInfo, RemoteState, ServerMsg, SquadInfo } from '../../shared/net/protocol';
 import { createConquest, type ConquestState } from '../../shared/sim/conquest';
 import type { InputFrame } from '../../shared/sim/input';
 import { MOVEMENT } from '../../shared/config/movement';
@@ -38,6 +38,10 @@ export class NetDriver implements GameDriver {
   contacts: ContactInfo[] = [];
   chat: Array<{ id: string; name: string; ch: string; text: string; at: number; radio?: boolean }> = [];
   scores: Extract<ServerMsg, { t: 'snap' }>['scores'] = [];
+  /** Velení vlastního týmu (ze snapshotu). */
+  command: CommandInfo | null = null;
+  /** Odezvy serveru na příkazy (potvrzeno / odmítnuto) – pro stav „Odesláno/Potvrzeno/Odmítnuto“. */
+  feedback: Array<{ what: string; ok: boolean; detail?: string; at: number }> = [];
   private factions: Record<Team, Faction> | null = null;
   private serverTime = 0;
   private serverTimeAt = 0;
@@ -79,7 +83,11 @@ export class NetDriver implements GameDriver {
       }
     } else if (m.t === 'chat') this.chat.push({ id: m.id, name: m.name, ch: m.ch, text: m.text, at: performance.now() });
     else if (m.t === 'radio') this.chat.push({ id: m.id, name: m.name, ch: 'radio', text: m.radio, at: performance.now(), radio: true });
-    else if (m.t === 'reject') this.onReject(m.what, m.reason);
+    else if (m.t === 'reject') {
+      this.feedback.push({ what: m.what, ok: false, detail: m.reason, at: performance.now() });
+      this.onReject(m.what, m.reason);
+    } else if (m.t === 'ack') this.feedback.push({ what: m.what, ok: true, detail: m.detail, at: performance.now() });
+    if (this.feedback.length > 20) this.feedback.splice(0, this.feedback.length - 20);
     if (this.chat.length > 80) this.chat.splice(0, this.chat.length - 80);
   }
 
@@ -101,6 +109,7 @@ export class NetDriver implements GameDriver {
     this.squads = s.squads;
     this.order = s.order;
     this.contacts = s.contacts;
+    this.command = s.command;
     if (s.scores.length) this.scores = s.scores;
     if (!this.ctrl) return;
     // Korekce: autoritativní stav + přehrání vstupů, které server ještě nezpracoval.

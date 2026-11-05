@@ -6,7 +6,7 @@ import { MatchSim, dummyOffset, type SimEvent } from '../../shared/sim/match';
 import { clonePlayerState, type PlayerState } from '../../shared/sim/player';
 import type { WeaponState } from '../../shared/sim/weapon';
 import type { LadderDef } from '../../world/parts';
-import { PILOT, type Faction } from '../../shared/config/arsenal';
+import { PILOT, type Faction, type Kit } from '../../shared/config/arsenal';
 
 /** Pohled prezentace na hráče (lokálního i vzdáleného). */
 export interface PlayerView {
@@ -63,8 +63,8 @@ export class OfflineDriver implements GameDriver {
   readonly mode = 'offline' as const;
   readonly sim: MatchSim;
 
-  constructor(phys: PhysicsWorld, doc: MapDocument, opts: { conquest: boolean; scenarioId?: string; team: Team; weapon?: string }, ladders: LadderDef[]) {
-    this.sim = new MatchSim(phys, doc, { conquest: opts.conquest, scenarioId: opts.scenarioId, freeRespawnDelay: 3 });
+  constructor(phys: PhysicsWorld, doc: MapDocument, opts: { conquest: boolean; scenarioId?: string; team: Team; weapon?: string; kits?: Kit[] }, ladders: LadderDef[]) {
+    this.sim = new MatchSim(phys, doc, { conquest: opts.conquest, scenarioId: opts.scenarioId, freeRespawnDelay: 3, allowedKits: opts.kits });
     this.sim.ladders = ladders;
     this.sim.addPlayer(this.localId, opts.team, 'Hráč');
     this.weapon = opts.weapon ?? null;

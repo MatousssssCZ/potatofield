@@ -1,49 +1,114 @@
+import * as THREE from 'three';
 import type { MapDocument, SpawnPoint, Team } from '../../shared/map/schema';
 import type { ConquestState } from '../../shared/sim/conquest';
+import { PILOT, arsenalEntry, type Faction, type Kit } from '../../shared/config/arsenal';
+import type { ContactInfo, OrderInfo, SquadInfo } from '../../shared/net/protocol';
 import type { PlayerView } from '../runtime/driver';
-import { ARSENAL, FACTION_LABEL, KITS, KIT_LABEL, weaponFor, type Faction } from '../../shared/config/arsenal';
+import { worldWeapon } from '../render/weapons/worldModel';
+import { t } from './i18n';
+import { button, fmtTime, h } from './kit';
+import { DeployScreen } from './deploy';
+import { TacticalMap } from './tactical';
 
-/** HUD v DOM (aktualizace ~20×/s, ne každý snímek → UI neřídí render). */
-const TEAM_NAME: Record<Team, string> = { teamA: 'Tým A', teamB: 'Tým B' };
-const TEAM_COL: Record<string, string> = { teamA: '#4f8fe6', teamB: '#e2604a', neutral: '#d8d0bd' };
+/**
+ * Herní HUD (DOM nad canvasem, aktualizace ~20×/s): rozložení podle zadání HUD –
+ * vpravo nahoře minimapa s tickety a časem, vlevo nahoře kill feed / systém / chat,
+ * vlevo dole zdraví, výdrž, postoj a četa, vpravo dole silueta výbavy a munice,
+ * uprostřed zaměřovač, interakce, obsazování a identifikace. Zobrazuje jen data,
+ * která předá herní systém (zdraví, munice, tickety, kontakty).
+ */
+export interface HudContext {
+  now: number;
+  me: PlayerView | null;
+  team: Team;
+  cq: ConquestState | null;
+  doc: MapDocument;
+  simTime: number;
+  spawns: SpawnPoint[];
+  faction: Faction | null;
+  kits: Kit[];
+  remotes: PlayerView[];
+  map: TacticalMap | null;
+  squads: SquadInfo[];
+  contacts: ContactInfo[];
+  order: OrderInfo | null;
+  /** Kontextová interakce (např. „Drž E – oživit“) a průběh 0–1. */
+  interaction: { text: string; progress: number } | null;
+  /** Jméno identifikovaného nepřítele (po souvislém zamíření, ne přes zeď). */
+  identified: string | null;
+  extraTabs: Array<{ id: string; label: string; view: () => HTMLElement }>;
+  network: boolean;
+}
 
 export class Hud {
   private root: HTMLElement;
   private els: Record<string, HTMLElement> = {};
   private killfeed: Array<{ el: HTMLElement; until: number }> = [];
+  private sysmsg: Array<{ el: HTMLElement; until: number }> = [];
   private hitUntil = 0;
-  onSpawn: (id: string | null, weaponId: string | null) => void = () => {};
-  /** Frakce týmu (výběr výbavy); null = volný test – libovolná zbraň. */
-  faction: Faction | null = null;
-  private selectedWeapon: string | null = null;
+  readonly deploy = new DeployScreen();
+  private minimap: HTMLCanvasElement;
+  private silhouette: HTMLCanvasElement;
+  private silId = '';
+  private giveUpHeld = -1;
+  private endShown = false;
+  onSpawn: (id: string | null, weaponId: string | null) => string | null = () => null;
   onRestart: () => void = () => {};
-  private selectedSpawn: string | null = null;
-  private lastSpawnKey = '';
+  onGiveUp: () => void = () => {};
+  onCallMedic: () => void = () => {};
+  onLeave: () => void = () => {};
 
   constructor() {
     this.root = document.getElementById('hud')!;
-    const mk = (id: string, cls: string, parent: HTMLElement = this.root) => {
+    const mk = (id: string, cls: string, tag: 'div' | 'canvas' = 'div') => {
       let e = document.getElementById(id);
       if (!e) {
-        e = document.createElement('div');
+        e = document.createElement(tag);
         e.id = id;
         e.className = cls;
-        parent.appendChild(e);
+        this.root.appendChild(e);
       }
       this.els[id] = e;
       return e;
     };
-    mk('h-ammo', 'h-box h-ammo');
-    mk('h-hp', 'h-box h-hp');
-    mk('h-hit', 'h-hit');
-    mk('h-top', 'h-top');
-    mk('h-cps', 'h-cps');
-    mk('h-zone', 'h-zone hidden');
+    mk('h-tl', 'h-tl');
     mk('h-feed', 'h-feed');
-    mk('h-death', 'h-death hidden');
+    mk('h-sys', 'h-sys');
+    mk('h-tr', 'h-tr');
+    this.minimap = mk('h-minimap', 'h-minimap', 'canvas') as HTMLCanvasElement;
+    this.els['h-tr'].append(this.minimap);
+    mk('h-score', 'h-score tnum');
+    this.els['h-tr'].append(this.els['h-score']);
+    this.els['h-tl'].append(this.els['h-feed'], this.els['h-sys']);
+    mk('h-bl', 'h-bl');
+    mk('h-squad', 'h-squad');
+    mk('h-vitals', 'h-vitals');
+    this.els['h-bl'].append(this.els['h-squad'], this.els['h-vitals']);
+    mk('h-br', 'h-br');
+    this.silhouette = mk('h-sil', 'h-sil', 'canvas') as HTMLCanvasElement;
+    mk('h-ammo', 'h-ammo tnum');
+    this.els['h-br'].append(this.silhouette, this.els['h-ammo']);
+    mk('h-hit', 'h-hit');
+    mk('h-center', 'h-center');
+    mk('h-zone', 'h-zone hidden');
+    mk('h-downed', 'h-downed hidden');
     mk('h-end', 'h-end hidden');
-    mk('h-cap', 'h-cap hidden');
+    // Stávající prvky (zaměřovač, výdrž, postoj) se přesunou do nového rozložení.
+    const st = document.getElementById('stamina');
+    const sc = document.getElementById('stance');
+    if (st) st.remove();
+    if (sc) sc.remove();
+    this.deploy.onDeploy = (id, w) => this.onSpawn(id, w);
+    window.addEventListener('keydown', this.onKey, true);
+    window.addEventListener('keyup', this.onKeyUp, true);
   }
+
+  private onKey = (e: KeyboardEvent) => {
+    if (e.code === 'KeyG' && !this.els['h-downed'].classList.contains('hidden') && this.giveUpHeld < 0) this.giveUpHeld = performance.now();
+  };
+  private onKeyUp = (e: KeyboardEvent) => {
+    if (e.code === 'KeyG') this.giveUpHeld = -1;
+  };
 
   setCrosshair(radiusPx: number, visible: boolean) {
     const ch = document.getElementById('crosshair')!;
@@ -60,215 +125,309 @@ export class Hud {
     this.hitUntil = now + 0.15;
   }
 
+  /** Kill feed (krátký, staré řádky mizí). */
   feed(text: string, now: number) {
-    const el = document.createElement('div');
-    el.textContent = text;
+    const el = h('div', {}, text);
     this.els['h-feed'].prepend(el);
-    this.killfeed.push({ el, until: now + 5 });
+    this.killfeed.push({ el, until: now + 6 });
+    while (this.killfeed.length > 5) this.killfeed.shift()!.el.remove();
   }
 
-  update(now: number, me: PlayerView | null, cq: ConquestState | null, doc: MapDocument, simTime: number, spawns: SpawnPoint[]) {
+  /** Systémové zprávy (oddělený blok od kill feedu a chatu). */
+  system(text: string, now: number) {
+    const el = h('div', {}, text);
+    this.els['h-sys'].append(el);
+    this.sysmsg.push({ el, until: now + 6 });
+    while (this.sysmsg.length > 3) this.sysmsg.shift()!.el.remove();
+  }
+
+  update(c: HudContext) {
     const e = this.els;
+    const now = c.now;
     e['h-hit'].style.opacity = now < this.hitUntil ? '1' : '0';
-    for (const k of this.killfeed) if (now > k.until) k.el.remove();
-    this.killfeed = this.killfeed.filter((k) => now <= k.until);
-    if (me && me.alive) {
-      const w = me.weapon;
-      const act = w.action === 'reload' ? ' · PŘEBÍJÍM' : w.action === 'equip' ? ' · TASENÍ' : '';
-      e['h-ammo'].innerHTML = `<b>${w.mag}</b><span>/ ${w.reserve}</span><small>${w.mode === 'auto' ? 'AUTO' : 'SEMI'}${act}</small>`;
-      e['h-hp'].innerHTML = `<b style="color:${me.hp > 30 ? '#eadfc8' : '#e2604a'}">${Math.ceil(me.hp)}</b><small>ZDRAVÍ</small>`;
-    } else {
-      e['h-ammo'].innerHTML = '';
-      e['h-hp'].innerHTML = '';
+    for (const list of [this.killfeed, this.sysmsg]) {
+      for (const k of list) if (now > k.until) k.el.remove();
+      list.splice(0, list.length, ...list.filter((k) => now <= k.until));
     }
+    const me = c.me;
+    const alive = !!me?.alive;
+    // Nasazení: před prvním nasazením a po definitivní smrti (ne ve vyřazení, ne po konci kola).
+    const showDeploy = !!me && !alive && me.life !== 'downed' && !c.cq?.ended;
+    if (showDeploy !== this.deploy.visible) this.deploy.show(showDeploy);
+    if (showDeploy && me) this.deploy.update({ doc: c.doc, map: c.map!, me, team: c.team, cq: c.cq, spawns: c.spawns, faction: c.faction, kits: c.kits, simTime: c.simTime, teammates: this.teammates(c), extraTabs: c.extraTabs, alive: false });
+    this.root.classList.toggle('pf-dead', !alive);
+
+    // Vlevo dole: zdraví (bez samovolné regenerace), výdrž, postoj; nad tím četa.
+    if (me && alive) {
+      const s = me.state;
+      const low = me.hp <= 30;
+      e['h-vitals'].replaceChildren(
+        h('div', { class: `h-hp${low ? ' low' : ''}` }, h('span', { class: 'h-stance', title: t(`stance.${s.stance}` as never) }, stanceGlyph(s.stance)), h('b', { class: 'tnum' }, String(Math.ceil(me.hp))), h('div', { class: 'h-bar' }, h('i', { style: { width: `${Math.max(0, Math.min(100, me.hp))}%` } }))),
+        h('div', { class: `h-stam${s.sprintLocked ? ' locked' : ''}${s.stamina < 99.5 ? '' : ' full'}` }, h('div', { class: 'h-bar thin' }, h('i', { style: { width: `${s.stamina}%` } }))),
+      );
+    } else e['h-vitals'].replaceChildren();
+    this.renderSquad(c);
+
+    // Vpravo dole: silueta skutečné zbraně, náboje, rezerva, režim; „Přebíjení“ podle zbraňového systému.
+    if (me && alive) {
+      const w = me.weapon;
+      this.drawSilhouette(w.weaponId);
+      const act = w.action === 'reload' ? t('hud.reloading') : w.action === 'equip' ? t('hud.equip') : '';
+      e['h-ammo'].replaceChildren(h('b', {}, String(w.mag)), h('span', {}, `/ ${w.reserve}`), h('small', {}, `${w.mode === 'auto' ? 'AUTO' : 'SEMI'}${act ? ` · ${act}` : ''}`));
+      e['h-br'].classList.toggle('hidden', false);
+    } else e['h-br'].classList.toggle('hidden', true);
+
+    // Vpravo nahoře: minimapa, tickety a čas (číslo + krátký pruh).
+    this.drawMinimap(c);
+    if (c.cq) {
+      const cq = c.cq;
+      const total = Math.max(1, ...Object.values(cq.tickets), 100);
+      const row = (team: Team) => h('div', { class: `h-tk ${team === c.team ? 'own' : 'enemy'}` }, h('b', {}, String(cq.tickets[team])), h('div', { class: 'h-bar thin' }, h('i', { style: { width: `${(cq.tickets[team] / total) * 100}%` } })));
+      e['h-score'].replaceChildren(row(c.team), row(c.team === 'teamA' ? 'teamB' : 'teamA'), h('div', { class: 'h-time' }, fmtTime(cq.timeLimit - cq.time)));
+    } else e['h-score'].replaceChildren();
+
+    // Střed: obsazování, interakce, identifikace.
+    const center: Node[] = [];
+    if (me && alive && c.cq) {
+      const here = c.cq.cps.find((p) => Math.hypot(p.pos[0] - me.state.pos.x, p.pos[2] - me.state.pos.z) <= p.radius && me.state.pos.y >= p.pos[1] - 0.5 && me.state.pos.y <= p.pos[1] + p.height);
+      if (here) {
+        const enemy = c.team === 'teamA' ? 'teamB' : 'teamA';
+        const st = !here.capturable
+          ? t('cap.locked')
+          : here.activity === 'contested'
+            ? t('cap.contested')
+            : here.activity === c.team
+              ? here.owner === enemy
+                ? t('cap.neutralizing')
+                : t('cap.capturing')
+              : here.activity === enemy
+                ? t('cap.enemy')
+                : here.owner === c.team
+                  ? t('cap.ours')
+                  : t('cap.idle');
+        const prog = here.owner === c.team || here.activity === c.team ? Math.abs(here.p) : Math.abs(here.p);
+        center.push(h('div', { class: 'h-cap' }, h('div', {}, `${here.name} – ${st}`), h('div', { class: 'h-bar' }, h('i', { class: (c.team === 'teamA') === here.p >= 0 ? 'own' : 'enemy', style: { width: `${(prog * 100).toFixed(0)}%` } }))));
+      }
+    }
+    if (c.interaction) center.push(h('div', { class: 'h-act' }, c.interaction.text, c.interaction.progress > 0 ? h('div', { class: 'h-bar thin' }, h('i', { style: { width: `${c.interaction.progress * 100}%` } })) : null));
+    if (c.identified) center.push(h('div', { class: 'h-ident' }, c.identified));
+    e['h-center'].replaceChildren(...center);
+
     // Zakázaná zóna.
     if (me?.alive && me.zone) {
       e['h-zone'].classList.remove('hidden');
-      e['h-zone'].textContent = `ZAKÁZANÁ ZÓNA – vraťte se! ${Math.max(0, me.zone.countdown - me.zone.t).toFixed(1)} s`;
+      e['h-zone'].textContent = t('hud.zone', { s: Math.max(0, me.zone.countdown - me.zone.t).toFixed(1) });
     } else e['h-zone'].classList.add('hidden');
-    // Conquest.
-    if (cq) {
-      const left = Math.max(0, cq.timeLimit - cq.time);
-      const mm = Math.floor(left / 60), ss = Math.floor(left % 60);
-      e['h-top'].innerHTML = `<span style="color:${TEAM_COL.teamA}">A ${cq.tickets.teamA}</span><span class="t">${mm}:${String(ss).padStart(2, '0')}</span><span style="color:${TEAM_COL.teamB}">${cq.tickets.teamB} B</span>`;
-      e['h-cps'].innerHTML = cq.cps
-        .map((c) => {
-          const prog = Math.abs(c.p);
-          const col = c.p > 0 ? TEAM_COL.teamA : c.p < 0 ? TEAM_COL.teamB : TEAM_COL.neutral;
-          return `<div class="cp" title="${esc(c.name)}"><i style="background:${TEAM_COL[c.owner]};${c.activity === 'contested' ? 'outline:2px solid #ffd23f' : ''}"></i><span>${esc(c.name.slice(0, 10))}</span><u style="width:${(prog * 100).toFixed(0)}%;background:${col}"></u></div>`;
-        })
-        .join('');
-      // Postup zabírání bodu, ve kterém hráč stojí.
-      const here = me?.alive ? cq.cps.find((c) => Math.hypot(c.pos[0] - me.state.pos.x, c.pos[2] - me.state.pos.z) <= c.radius && me.state.pos.y >= c.pos[1] - 0.5 && me.state.pos.y <= c.pos[1] + c.height) : undefined;
-      if (here) {
-        e['h-cap'].classList.remove('hidden');
-        const st = here.activity === 'contested' ? 'SPORNÝ BOD' : !here.capturable ? 'NEZABÍRATELNÝ' : here.activity ? 'ZABÍRÁNÍ' : 'BOD';
-        e['h-cap'].innerHTML = `<div>${esc(here.name)} – ${st}</div><div class="bar"><u style="width:${(Math.abs(here.p) * 100).toFixed(0)}%;background:${here.p >= 0 ? TEAM_COL.teamA : TEAM_COL.teamB}"></u></div>`;
-      } else e['h-cap'].classList.add('hidden');
-      if (cq.ended) {
-        e['h-end'].classList.remove('hidden');
-        const w = cq.winner === 'draw' ? 'REMÍZA' : `VÍTĚZÍ ${TEAM_NAME[cq.winner as Team].toUpperCase()}`;
-        if (!e['h-end'].dataset.shown) {
-          e['h-end'].dataset.shown = '1';
-          e['h-end'].innerHTML = `<h2>${w}</h2><p>Tickety A ${cq.tickets.teamA} : ${cq.tickets.teamB} B</p><button id="h-restart">Restart scénáře</button>`;
-          document.getElementById('h-restart')!.addEventListener('click', () => this.onRestart());
-        }
-      } else {
-        e['h-end'].classList.add('hidden');
-        delete e['h-end'].dataset.shown;
-      }
-    } else {
-      e['h-top'].innerHTML = '';
-      e['h-cps'].innerHTML = '';
-      e['h-cap'].classList.add('hidden');
-      e['h-end'].classList.add('hidden');
-    }
-    // Smrt a výběr spawnu.
-    if (me && !me.alive && !(cq?.ended)) {
-      e['h-death'].classList.remove('hidden');
-      const wait = Math.max(0, me.respawnAt - simTime);
-      if (!this.selectedWeapon || (this.faction && !ARSENAL.some((w) => w.id === this.selectedWeapon && w.faction === this.faction))) {
-        const cur = ARSENAL.find((w) => w.id === me.weapon.weaponId);
-        this.selectedWeapon = cur && (!this.faction || cur.faction === this.faction) ? cur.id : this.faction ? weaponFor(this.faction, 'assault').id : 'm4a1';
-      }
-      const key = `${spawns.map((s) => s.id).join()}|${Math.ceil(wait)}|${this.selectedSpawn}|${this.selectedWeapon}|${this.faction}`;
-      if (key !== this.lastSpawnKey) {
-        this.lastSpawnKey = key;
-        this.renderSpawn(doc, cq, me.team, spawns, wait);
-      }
-    } else {
-      e['h-death'].classList.add('hidden');
-      this.lastSpawnKey = '';
-    }
+
+    this.renderDowned(c);
+    this.renderEnd(c);
   }
 
-  private renderSpawn(doc: MapDocument, cq: ConquestState | null, team: Team, spawns: SpawnPoint[], wait: number) {
-    const box = this.els['h-death'];
-    box.innerHTML = '';
-    const h = document.createElement('h2');
-    h.textContent = wait > 0 ? `Padl jsi – respawn za ${Math.ceil(wait)} s` : 'Vyber místo nasazení';
-    box.appendChild(h);
-    if (!cq) {
-      const p = document.createElement('p');
-      p.textContent = 'Volný test: oživení u testovacího spawnu.';
-      box.appendChild(p);
+  private teammates(c: HudContext) {
+    const mySquad = c.squads.find((s) => c.me && s.members.includes(c.me.id));
+    return c.remotes.filter((r) => r.alive && r.team === c.team).map((r) => ({ id: r.id, pos: [r.state.pos.x, r.state.pos.z] as [number, number], squad: !!mySquad?.members.includes(r.id), leader: mySquad?.leader === r.id }));
+  }
+
+  private renderSquad(c: HudContext) {
+    const me = c.me;
+    const sq = me ? c.squads.find((s) => s.members.includes(me.id)) : undefined;
+    if (!sq) return this.els['h-squad'].replaceChildren();
+    const names = new Map(c.remotes.map((r) => [r.id, r]));
+    this.els['h-squad'].replaceChildren(
+      h('div', { class: 'h-sq-title' }, sq.name),
+      ...sq.members.map((id) => {
+        const r = id === me!.id ? me! : names.get(id);
+        const state = !r ? '' : r.life === 'downed' ? t('life.downed') : r.life === 'dead' ? t('life.dead') : '';
+        return h('div', { class: `h-sq-m${id === me!.id ? ' me' : ''}${r?.life !== 'alive' ? ' out' : ''}` }, id === sq.leader ? '★ ' : '· ', id === me!.id ? t('common.you') : r?.name ?? id, state ? h('small', {}, ` ${state}`) : null);
+      }),
+    );
+  }
+
+  /** Vyřazení: „Můžeš být oživen“, čas ze serveru, vzdát pomoc podržením (1 s) i tlačítkem. */
+  private renderDowned(c: HudContext) {
+    const d = this.els['h-downed'];
+    const me = c.me;
+    if (!me || me.life !== 'downed' || c.cq?.ended) {
+      d.classList.add('hidden');
+      this.giveUpHeld = -1;
+      return;
     }
-    // Schematická mapa: body a dostupné spawny (shora).
-    const cv = document.createElement('canvas');
-    cv.width = 360;
-    cv.height = 260;
-    box.appendChild(cv);
+    d.classList.remove('hidden');
+    const held = this.giveUpHeld >= 0 ? Math.min(1, (performance.now() - this.giveUpHeld) / 1000 / PILOT.giveUpHold) : 0;
+    if (held >= 1) {
+      this.giveUpHeld = -1;
+      this.onGiveUp();
+    }
+    if (!d.dataset.built) {
+      d.dataset.built = '1';
+      const gb = button(t('downed.giveUp'), () => {}, 'pf-btn');
+      // Tlačítko: také podržení (1 s) – brání náhodnému potvrzení.
+      gb.addEventListener('pointerdown', () => (this.giveUpHeld = performance.now()));
+      for (const ev of ['pointerup', 'pointerleave']) gb.addEventListener(ev, () => (this.giveUpHeld = -1));
+      d.replaceChildren(h('h2', {}, t('downed.title')), h('div', { class: 'h-downed-time tnum' }), h('div', { class: 'h-bar' }, h('i')), h('p', { class: 'pf-dim' }, t('downed.hint')), h('div', { class: 'pf-row-inline' }, gb, button(t('downed.callMedic'), () => this.onCallMedic(), 'pf-btn')));
+    }
+    (d.querySelector('.h-downed-time') as HTMLElement).textContent = `${Math.ceil(me.downedLeft)} s`;
+    (d.querySelector('.h-bar i') as HTMLElement).style.width = `${held * 100}%`;
+  }
+
+  /** Konec kola: vítěz, důvod, tickety, týmové tabulky a vlastní příspěvek – jen ze skutečných dat. */
+  private renderEnd(c: HudContext) {
+    const e = this.els['h-end'];
+    if (!c.cq?.ended) {
+      e.classList.add('hidden');
+      this.endShown = false;
+      return;
+    }
+    if (this.endShown) return;
+    this.endShown = true;
+    this.deploy.show(false);
+    const cq = c.cq;
+    const win = cq.winner === 'draw' ? t('end.draw') : cq.winner === c.team ? t('end.victory') : t('end.defeat');
+    const reason = cq.tickets.teamA <= 0 || cq.tickets.teamB <= 0 ? t('end.reasonTickets') : t('end.reasonTime');
+    const all = [...(c.me ? [c.me] : []), ...c.remotes];
+    const col = (team: Team) =>
+      h('div', { class: `pf-end-team ${team === c.team ? 'own' : 'enemy'}` },
+        h('h3', {}, team === c.team ? t('score.ownTeam') : t('score.enemyTeam'), ` – ${cq.tickets[team]}`),
+        h('table', { class: 'pf-table' }, h('thead', {}, h('tr', {}, h('th', {}, t('col.name')), h('th', { class: 'num' }, t('col.kills')), h('th', { class: 'num' }, t('col.deaths')), h('th', { class: 'num' }, t('col.revives')))),
+          h('tbody', {}, ...all.filter((p) => p.team === team).sort((a, b) => b.kills - a.kills).map((p) => h('tr', { class: p === c.me ? 'mine' : '' }, h('td', {}, p === c.me ? t('common.you') : p.name), h('td', { class: 'num' }, String(p.kills)), h('td', { class: 'num' }, String(p.deaths)), h('td', { class: 'num' }, String(p.revives)))))),
+      );
+    e.replaceChildren(
+      h('h2', {}, win),
+      h('p', {}, reason),
+      h('div', { class: 'pf-end-cols' }, col(c.team), col(c.team === 'teamA' ? 'teamB' : 'teamA')),
+      h('div', { class: 'pf-row-inline' }, c.network ? button(t('end.leave'), () => this.onLeave(), 'pf-btn primary') : button(t('end.restart'), () => this.onRestart(), 'pf-btn primary'), c.network ? null : button(t('end.leave'), () => this.onLeave(), 'pf-btn')),
+    );
+    if (c.network) e.append(h('p', { class: 'pf-dim' }, t('end.noNextMap')));
+    e.classList.remove('hidden');
+  }
+
+  /** Minimapa: sever nahoře, měřítko podle skutečných souřadnic; kreslí se z mapového podkladu. */
+  private drawMinimap(c: HudContext) {
+    const cv = this.minimap;
+    const W = Math.round(cv.getBoundingClientRect().width) || 240;
+    if (cv.width !== W) cv.width = cv.height = W;
     const g = cv.getContext('2d')!;
-    const pts = [...doc.controlPoints.map((c) => c.position), ...doc.spawnPoints.map((s) => s.position)];
-    if (pts.length) {
-      const xs = pts.map((p) => p[0]), zs = pts.map((p) => p[2]);
-      const minX = Math.min(...xs) - 20, maxX = Math.max(...xs) + 20, minZ = Math.min(...zs) - 20, maxZ = Math.max(...zs) + 20;
-      const sc = Math.min(cv.width / (maxX - minX), cv.height / (maxZ - minZ));
-      const tx = (x: number) => (x - minX) * sc + (cv.width - (maxX - minX) * sc) / 2;
-      const tz = (z: number) => (z - minZ) * sc + (cv.height - (maxZ - minZ) * sc) / 2;
-      g.fillStyle = 'rgba(30,26,20,0.85)';
-      g.fillRect(0, 0, cv.width, cv.height);
-      for (const c of cq?.cps ?? []) {
-        g.beginPath();
-        g.arc(tx(c.pos[0]), tz(c.pos[2]), Math.max(5, c.radius * sc), 0, Math.PI * 2);
-        g.fillStyle = TEAM_COL[c.owner] + '66';
-        g.fill();
-        g.fillStyle = '#eadfc8';
-        g.font = '11px sans-serif';
-        g.fillText(c.name.slice(0, 14), tx(c.pos[0]) + 8, tz(c.pos[2]) - 6);
-      }
-      for (const s of spawns) {
-        g.fillStyle = s.id === this.selectedSpawn ? '#ffd23f' : TEAM_COL[team];
-        g.fillRect(tx(s.position[0]) - 4, tz(s.position[2]) - 4, 8, 8);
-      }
-      cv.addEventListener('click', (ev) => {
-        const r = cv.getBoundingClientRect();
-        const x = ev.clientX - r.left, y = ev.clientY - r.top;
-        let best: SpawnPoint | null = null, bd = 20;
-        for (const s of spawns) {
-          const d = Math.hypot(tx(s.position[0]) - x, tz(s.position[2]) - y);
-          if (d < bd) {
-            bd = d;
-            best = s;
-          }
-        }
-        if (best) {
-          this.selectedSpawn = best.id;
-          this.lastSpawnKey = '';
-        }
-      });
+    g.clearRect(0, 0, W, W);
+    const me = c.me;
+    if (!c.map || !me || (!me.alive && me.life !== 'downed')) {
+      cv.style.visibility = 'hidden';
+      return;
     }
-    if (cq) {
-      const list = document.createElement('div');
-      list.className = 'h-spawns';
-      const groups = new Map<string, SpawnPoint>();
-      for (const s of spawns) groups.set(s.controlPointId ?? `base:${s.id}`, groups.get(s.controlPointId ?? `base:${s.id}`) ?? s);
-      for (const [k, s] of groups) {
-        const b = document.createElement('button');
-        const cp = cq.cps.find((c) => c.id === s.controlPointId);
-        b.textContent = cp ? cp.name : `Základna (${s.id})`;
-        if (this.selectedSpawn === s.id) b.className = 'on';
-        b.addEventListener('click', () => {
-          this.selectedSpawn = s.id;
-          this.lastSpawnKey = '';
-        });
-        list.appendChild(b);
-        void k;
-      }
-      if (!spawns.length) list.textContent = 'Žádné dostupné místo – počkejte nebo zabírejte body.';
-      box.appendChild(list);
+    cv.style.visibility = '';
+    const scale = W / 120; // 120 m přes průměr
+    const cx = me.state.pos.x, cz = me.state.pos.z;
+    g.save();
+    g.beginPath();
+    g.arc(W / 2, W / 2, W / 2 - 1, 0, Math.PI * 2);
+    g.clip();
+    g.fillStyle = '#151b1b';
+    g.fillRect(0, 0, W, W);
+    c.map.draw(g, cx, cz, W / 2, W / 2, scale);
+    const w2s = TacticalMap.w2s(cx, cz, W / 2, W / 2, scale);
+    const css = getComputedStyle(document.documentElement);
+    const col = { own: css.getPropertyValue('--pf-team').trim(), enemy: css.getPropertyValue('--pf-enemy').trim(), neutral: css.getPropertyValue('--pf-neutral').trim(), squad: css.getPropertyValue('--pf-squad').trim(), accent: css.getPropertyValue('--pf-accent').trim() };
+    g.font = '700 11px "Barlow Semi Condensed", sans-serif';
+    for (const cp of c.cq?.cps ?? []) {
+      const [x, y] = w2s(cp.pos[0], cp.pos[2]);
+      const k = cp.owner === 'neutral' ? 'neutral' : cp.owner === c.team ? 'own' : 'enemy';
+      g.fillStyle = col[k] + '55';
+      g.strokeStyle = col[k];
+      g.beginPath();
+      g.arc(x, y, Math.max(5, cp.radius * scale), 0, Math.PI * 2);
+      g.fill();
+      g.stroke();
+      g.fillStyle = '#e5e7d8';
+      g.fillText(cp.name.slice(0, 1), x - 3, y + 4);
     }
-    // Výbava: classa frakce týmu (server ověří); ve volném testu libovolná zbraň arzenálu.
-    const kit = document.createElement('div');
-    kit.className = 'h-kits';
-    const lab = document.createElement('div');
-    lab.className = 'h-kit-title';
-    lab.textContent = this.faction ? `Výbava – ${FACTION_LABEL[this.faction]}` : 'Výbava (volný test – libovolná frakce)';
-    kit.appendChild(lab);
-    const factions: Faction[] = this.faction ? [this.faction] : ['usmc', 'mec', 'pla'];
-    for (const f of factions) {
-      const row = document.createElement('div');
-      row.className = 'h-kit-row';
-      if (!this.faction) {
-        const fl = document.createElement('span');
-        fl.textContent = FACTION_LABEL[f];
-        row.appendChild(fl);
-      }
-      for (const k of KITS) {
-        const w = weaponFor(f, k);
-        const b = document.createElement('button');
-        b.innerHTML = '';
-        const t1 = document.createElement('b');
-        t1.textContent = KIT_LABEL[k];
-        const t2 = document.createElement('small');
-        t2.textContent = w.name;
-        b.append(t1, t2);
-        if (this.selectedWeapon === w.id) b.className = 'on';
-        b.addEventListener('click', () => {
-          this.selectedWeapon = w.id;
-          this.lastSpawnKey = '';
-        });
-        row.appendChild(b);
-      }
-      kit.appendChild(row);
+    const mySquad = c.squads.find((s) => s.members.includes(me.id));
+    for (const r of c.remotes) {
+      if (!r.alive || r.team !== c.team) continue;
+      const [x, y] = w2s(r.state.pos.x, r.state.pos.z);
+      g.fillStyle = mySquad?.members.includes(r.id) ? col.squad : col.own;
+      g.fillRect(x - 3, y - 3, 6, 6);
     }
-    box.appendChild(kit);
-    const go = document.createElement('button');
-    go.className = 'primary';
-    go.textContent = wait > 0 ? `Nasadit (${Math.ceil(wait)} s)` : 'Nasadit';
-    go.disabled = wait > 0 || (!!cq && !this.selectedSpawn && spawns.length > 0);
-    go.addEventListener('click', () => this.onSpawn(cq ? this.selectedSpawn : null, this.selectedWeapon));
-    box.appendChild(go);
+    for (const ct of c.contacts) {
+      const [x, y] = w2s(ct.pos[0], ct.pos[2]);
+      g.strokeStyle = ct.kind === 'confirmed' ? col.enemy : '#e8a24a';
+      g.lineWidth = 2;
+      g.beginPath();
+      if (ct.kind === 'confirmed') {
+        g.moveTo(x, y - 6);
+        g.lineTo(x + 5, y + 4);
+        g.lineTo(x - 5, y + 4);
+        g.closePath();
+      } else g.arc(x, y, 6, 0, Math.PI * 2);
+      g.stroke();
+    }
+    if (c.order?.status === 'active') {
+      const [x, y] = w2s(c.order.target.pos[0], c.order.target.pos[2]);
+      g.strokeStyle = col.accent;
+      g.lineWidth = 2;
+      g.strokeRect(x - 7, y - 7, 14, 14);
+    }
+    g.restore();
+    // Vlastní hráč a orientace (šipka ve směru pohledu; sever nahoře).
+    g.save();
+    g.translate(W / 2, W / 2);
+    g.rotate(-me.state.yaw);
+    g.fillStyle = '#ffffff';
+    g.beginPath();
+    g.moveTo(0, -8);
+    g.lineTo(5, 5);
+    g.lineTo(-5, 5);
+    g.closePath();
+    g.fill();
+    g.restore();
+    g.fillStyle = '#e5e7d8';
+    g.font = '700 11px "Barlow Semi Condensed", sans-serif';
+    g.fillText('N', W / 2 - 3, 12);
+  }
+
+  /** Silueta aktivní výbavy z geometrie skutečné zbraně (boční průmět, jednou na zbraň). */
+  private drawSilhouette(id: string) {
+    if (id === this.silId) return;
+    this.silId = id;
+    const cv = this.silhouette;
+    cv.width = 220;
+    cv.height = 70;
+    const g = cv.getContext('2d')!;
+    g.clearRect(0, 0, cv.width, cv.height);
+    const geo = worldWeapon(id, 'low').lods[1];
+    const p = geo.getAttribute('position') as THREE.BufferAttribute;
+    geo.computeBoundingBox();
+    const b = geo.boundingBox!;
+    const sc = Math.min((cv.width - 8) / (b.max.z - b.min.z), (cv.height - 8) / (b.max.y - b.min.y));
+    const X = (z: number) => cv.width - 4 - (z - b.min.z) * sc;
+    const Y = (y: number) => cv.height - 4 - (y - b.min.y) * sc;
+    g.fillStyle = 'rgba(229,231,216,0.85)';
+    const idx = geo.index;
+    const n = idx ? idx.count : p.count;
+    for (let i = 0; i < n; i += 3) {
+      const a = idx ? idx.getX(i) : i, b2 = idx ? idx.getX(i + 1) : i + 1, c2 = idx ? idx.getX(i + 2) : i + 2;
+      g.beginPath();
+      g.moveTo(X(p.getZ(a)), Y(p.getY(a)));
+      g.lineTo(X(p.getZ(b2)), Y(p.getY(b2)));
+      g.lineTo(X(p.getZ(c2)), Y(p.getY(c2)));
+      g.closePath();
+      g.fill();
+    }
+    cv.title = arsenalEntry(id)?.name ?? id;
   }
 
   reset() {
-    this.selectedSpawn = null;
-    this.lastSpawnKey = '';
     for (const k of this.killfeed) k.el.remove();
     this.killfeed = [];
+    this.endShown = false;
+  }
+
+  dispose() {
+    window.removeEventListener('keydown', this.onKey, true);
+    window.removeEventListener('keyup', this.onKeyUp, true);
+    this.deploy.dispose();
+    for (const id of ['h-tl', 'h-tr', 'h-bl', 'h-br', 'h-hit', 'h-center', 'h-zone', 'h-downed', 'h-end']) document.getElementById(id)?.remove();
   }
 }
 
-function esc(s: string) {
-  return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+function stanceGlyph(s: string) {
+  return s === 'prone' ? '▁' : s === 'crouch' ? '▃' : '▆';
 }

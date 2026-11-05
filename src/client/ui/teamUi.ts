@@ -118,15 +118,7 @@ export class TeamUi {
       this.issueOrder(Number(code.slice(5)));
       return true;
     }
-    if ((code === 'Home' || code === 'KeyP') && down) {
-      this.squadPanel.classList.toggle('hidden');
-      if (!this.squadPanel.classList.contains('hidden')) this.input.releaseLock();
-      return true;
-    }
-    if (code === 'Tab') {
-      this.score.classList.toggle('hidden', !down);
-      return true;
-    }
+    // Četa, velitel a skóre mají vlastní obrazovky (pauza / Tab) – řeší aplikace.
     return false;
   }
 
@@ -200,7 +192,7 @@ export class TeamUi {
     this.renderOrderMenu();
   }
 
-  update(me: PlayerView | null, remotes: PlayerView[]) {
+  update(me: PlayerView | null, _remotes: PlayerView[]) {
     // Chat a rádio (každá zpráva jednou podle ID).
     for (const m of this.driver.chat) {
       if (this.shown.has(m.id)) continue;
@@ -213,7 +205,9 @@ export class TeamUi {
       } else this.line(m.ch, m.name, m.text);
     }
     this.requests = this.requests.filter((r) => r.until > performance.now());
-    this.drawMinimap(me, remotes);
+    // Minimapu kreslí HUD (vpravo nahoře); tady jen požadavky z rádia.
+    void this.drawMinimap;
+    this.minimap.style.display = 'none';
     if (!this.squadPanel.classList.contains('hidden')) this.renderSquads(me);
     if (!this.score.classList.contains('hidden')) this.renderScore();
   }
