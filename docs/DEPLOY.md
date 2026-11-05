@@ -8,7 +8,7 @@ s WebSocketem (autoritativní simulace 60 Hz), proto běží jinde než web.
 1. GitHub → repozitář **potatofield** → **Settings → Pages** → *Build and deployment* →
    **Source: GitHub Actions**.
 2. Hotovo: každý push na `main` spustí workflow **Web (GitHub Pages)** (`.github/workflows/pages.yml`) –
-   typová kontrola, testy, build, nasazení. Web: <https://matousssssscz.github.io/potatofield/>
+   typová kontrola, testy, build, nasazení. Web: <https://matoussssscz.github.io/potatofield/>
    (přesná adresa je v záložce Actions u běhu workflow, krok *deploy*).
 
 Bez serveru na webu funguje trénink (offline Conquest), editor map i ukládání map v prohlížeči.
