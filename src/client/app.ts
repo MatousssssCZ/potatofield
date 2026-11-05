@@ -415,7 +415,7 @@ export class App {
       this.audio,
       this.quality,
       { sensitivity: s.sensitivity, invertY: s.invertY, crouchToggle: s.crouchToggle },
-      { hFov: s.hFov, bob: s.bob, landingKick: s.landingKick },
+      { hFov: s.hFov, bob: s.bob, landingKick: s.landingKick, weapon: s.weapon },
       CAMERA.radiansPerCount,
       { ...mode, driver: netDriver },
     );
@@ -530,7 +530,7 @@ export class App {
     });
     buildSettingsUI(this.settings, () => {
       const g = this.session?.game;
-      if (g) g.settings = { hFov: this.settings.hFov, bob: this.settings.bob, landingKick: this.settings.landingKick };
+      if (g) g.settings = { hFov: this.settings.hFov, bob: this.settings.bob, landingKick: this.settings.landingKick, weapon: this.settings.weapon };
       const i = this.session?.input;
       if (i) i.settings = { sensitivity: this.settings.sensitivity, invertY: this.settings.invertY, crouchToggle: this.settings.crouchToggle };
     });

@@ -51,7 +51,7 @@ export class PlaySession {
     this.input.settings = { ...inputSettings };
     this.input.attach();
     const driver = opts.driver ?? new OfflineDriver(phys, this.runtimeDoc, { conquest: opts.conquest, scenarioId: opts.scenarioId, team: opts.team }, ladders);
-    this.game = new Game(camera, this.input, driver, world, scene, this.runtimeDoc, audio, quality);
+    this.game = new Game(camera, this.input, driver, world, scene, this.runtimeDoc, audio, quality, gameSettings.weapon);
     this.game.settings = { ...gameSettings };
     this.game.onDeath = () => this.input.releaseLock();
     this.game.onSpawned = () => this.input.requestLock();

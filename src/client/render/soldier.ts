@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { MOVEMENT } from '../../shared/config/movement';
 import type { PlayerView } from '../runtime/driver';
-import { buildM4A1 } from './weapons/m4a1';
+import { buildM4A1 } from './weapons/ar';
 
 /**
  * Vzdálený voják (world model): jednoduchá postava se dvěma týmovými variantami
@@ -47,7 +47,7 @@ export class SoldierPool {
     // Světový model pušky = stejný generátor v nižším rozlišení (LOD), jeden mesh.
     const m = buildM4A1(quality === 'high' ? 0.5 : 0.35);
     this.rifleGeo = mergeGeometries([m.static.metal, m.static.polymer, m.moving.magazine.geometry])!;
-    for (const g of [m.static.metal, m.static.polymer, m.moving.magazine.geometry, m.moving.chargingHandle.geometry, m.optic!.glass]) g.dispose();
+    for (const g of [m.static.metal, m.static.polymer, m.moving.magazine.geometry, m.moving.chargingHandle?.geometry, m.optic?.glass]) g?.dispose();
     const seg = quality === 'low' ? 6 : 10;
     this.geo = {
       torso: new THREE.BoxGeometry(0.42, 0.55, 0.24),

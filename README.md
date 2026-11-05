@@ -143,7 +143,7 @@ a scénáři dialog nabídne Conquest (scénář + tým): zabírání, tickety, 
 
 ## Prohlížeč zbraní
 
-`/viewer.html` – M4A1 a ruce: hip/ADS/boky, světlo, kvalita, FOV, animace, počty trojúhelníků a draw calls.
+`/viewer.html` – hotové zbraně (M4A1, M16A2, AK-101, AKM, QBZ-95, Type 81) s rukama podle frakce a classy: hip/ADS/boky, světlo, kvalita, FOV, animace přebití, počty trojúhelníků a draw calls (`?w=akm` vybere zbraň). Vzhled zbraně do testu se volí v Nastavení; pravidla střelby jsou pro všechny stejná (PF-Rifle). `npx tsx scripts/weapon-report.ts` vypíše rozpočty.
 
 ## Dokumenty
 

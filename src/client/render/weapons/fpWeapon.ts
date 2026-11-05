@@ -1,15 +1,16 @@
 import * as THREE from 'three';
 import type { WeaponState } from '../../../shared/sim/weapon';
 import type { PlayerState } from '../../../shared/sim/player';
-import { PF_RIG, adsRoot } from '../../../shared/config/rig';
 import { PF_RIFLE } from '../../../shared/config/weapon';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { buildM4A1, type WeaponModel } from './m4a1';
+import type { WeaponModel } from './types';
+import { weaponDef } from './catalog';
 import { HAND_LOOKS, Hand, POSES, buildHandGeometry, makeCamoTexture, type HandGeometry } from './hands';
 
 /**
- * Zbraň a ruce v první osobě (M4A1, USMC Assault). Hierarchie:
+ * Zbraň a ruce v první osobě (libovolný hotový model z katalogu). Hierarchie:
  * camera → presentation (sway, bob, kopnutí, stažení u zdi) → weaponRoot (hip↔ADS) → díly.
+ * Hip póza a poloha oka v ADS jsou vlastností modelu (vlastní mířidla každé zbraně).
  * Kosmetika nikdy nemění herní ústí ani směr střely (ty počítá simulace z PF_RIG).
  */
 
@@ -74,8 +75,10 @@ export class FPWeapon {
   private rightHand: Hand;
   private leftHand: Hand;
   private mag: THREE.Mesh;
-  private reticle: THREE.Mesh;
-  private reticleMat: THREE.ShaderMaterial;
+  private handle: THREE.Mesh | null = null;
+  private reticle: THREE.Mesh | null = null;
+  private reticleMat: THREE.ShaderMaterial | null = null;
+  private geometries: THREE.BufferGeometry[] = [];
   private flash: THREE.Group;
   private flashUntil = 0;
   private materials: THREE.Material[] = [];
@@ -97,11 +100,14 @@ export class FPWeapon {
   private equipT = 1;
   private time = 0;
   private reloadVisual = 0; // 0 = zásobník v šachtě
+  private handlePull = 0;
   showCasings = true;
 
-  constructor(lookId = 'usmcAssault', quality: 'low' | 'standard' | 'high' = 'standard') {
+  constructor(weaponId = 'm4a1', lookId: string | null = null, quality: 'low' | 'standard' | 'high' = 'standard') {
     const seg = quality === 'low' ? 0.6 : quality === 'high' ? 1.25 : 1;
-    this.model = buildM4A1(seg);
+    const def = weaponDef(weaponId);
+    this.model = def.build!(seg);
+    lookId = lookId ?? def.hands;
     const grain = grainTexture();
     this.textures.push(grain);
     const metal = new THREE.MeshStandardMaterial({ vertexColors: true, metalness: 0.55, roughness: 0.52, normalMap: grain, normalScale: new THREE.Vector2(0.25, 0.25), side: THREE.DoubleSide });
@@ -128,14 +134,22 @@ export class FPWeapon {
     this.mag = add(magDef.geometry, polymer, this.weaponRoot);
     this.mag.position.copy(magDef.pivot);
     const ch = this.model.moving.chargingHandle;
-    add(ch.geometry, metal, this.weaponRoot).position.copy(ch.pivot);
-    // Sklo + tečka kolimátoru (jediný dodatečný materiál optiky).
-    this.reticleMat = reticleMaterial(0.11);
-    this.materials.push(this.reticleMat);
-    this.reticle = new THREE.Mesh(this.model.optic!.glass, this.reticleMat);
-    this.reticle.renderOrder = 5;
-    this.reticle.frustumCulled = false;
-    this.weaponRoot.add(this.reticle);
+    if (ch) {
+      this.handle = add(ch.geometry, metal, this.weaponRoot);
+      this.handle.position.copy(ch.pivot);
+    }
+    this.geometries.push(this.model.static.metal, this.model.static.polymer, magDef.geometry);
+    if (ch) this.geometries.push(ch.geometry);
+    // Sklo + tečka kolimátoru (jediný dodatečný materiál optiky) – jen u zbraní s kolimátorem.
+    if (this.model.optic) {
+      this.reticleMat = reticleMaterial(0.11);
+      this.materials.push(this.reticleMat);
+      this.reticle = new THREE.Mesh(this.model.optic.glass, this.reticleMat);
+      this.reticle.renderOrder = 5;
+      this.reticle.frustumCulled = false;
+      this.weaponRoot.add(this.reticle);
+      this.geometries.push(this.model.optic.glass);
+    }
 
     this.handGeo = buildHandGeometry(look, seg);
     this.rightHand = new Hand('right', { glove, sleeve, skin }, look, this.handGeo);
@@ -224,7 +238,10 @@ export class FPWeapon {
     const base = new THREE.Vector3(-0.05, P.gripLeft.y - 0.032, P.gripLeft.z + 0.012);
     const magPos = new THREE.Vector3(-0.05, P.magazineSocket.y - 0.11, P.magazineSocket.z + 0.01);
     const below = new THREE.Vector3(-0.08, -0.36, 0.02);
-    const bolt = new THREE.Vector3(-0.055, P.boltCatch.y - 0.01, P.boltCatch.z + 0.03);
+    // Prázdné přebití: záchyt závěru vlevo (AR), nebo natažení páky závěru (AK/bullpup – levá ruka přes zbraň).
+    const bolt = this.model.emptyAction === 'boltCatch'
+      ? new THREE.Vector3(-0.055, P.boltCatch.y - 0.01, P.boltCatch.z + 0.03)
+      : new THREE.Vector3(P.chargingHandle.x + 0.02, P.chargingHandle.y + 0.035, P.chargingHandle.z + 0.04 + this.handlePull * (this.model.moving.chargingHandle?.travel?.z ?? 0));
     const k = reloadT;
     let target = base;
     const seg = (x: number, y: number) => THREE.MathUtils.smoothstep(k, x, y);
@@ -262,14 +279,13 @@ export class FPWeapon {
   update(dt: number, ps: PlayerState, ws: WeaponState | null, simTime: number, bobPhase: number, bobAmp: number, lookDYaw: number, lookDPitch: number) {
     this.time += dt;
     const ads = ws?.adsProgress ?? 0;
-    // Hip ↔ ADS: ADS kořen klade oko optiky do středu pohledu (opticEye).
-    const P = this.model.points;
-    const hip = new THREE.Vector3(...PF_RIG.hipRoot);
-    const adsV = new THREE.Vector3(...adsRoot(PF_RIG));
-    void P;
+    // Hip ↔ ADS: ADS kořen klade oko (opticEye – kolimátor nebo hledí + odstup) do středu pohledu.
+    const hip = this.model.hipRoot;
+    const adsV = this.model.points.opticEye.clone().negate();
     const e = ads * ads * (3 - 2 * ads);
     this.weaponRoot.position.lerpVectors(hip, adsV, e);
-    this.weaponRoot.rotation.set(PF_RIG.hipRot[0] * (1 - e), PF_RIG.hipRot[1] * (1 - e), PF_RIG.hipRot[2] * (1 - e));
+    const hr = this.model.hipRot;
+    this.weaponRoot.rotation.set(hr.x * (1 - e), hr.y * (1 - e), hr.z * (1 - e));
 
     // Sway jen kosmetický; v ADS výrazně tlumený (zarovnání mířidel).
     const k = 1 - Math.exp(-dt * 12);
@@ -313,7 +329,11 @@ export class FPWeapon {
     this.reloadVisual = reloadT > 0 ? magOut : 0;
     const P2 = this.model.points;
     this.mag.position.set(P2.magazineSocket.x - 0.03 * this.reloadVisual, P2.magazineSocket.y - 0.3 * this.reloadVisual, P2.magazineSocket.z + 0.02 * this.reloadVisual);
-    this.mag.rotation.x = 0.4 * this.reloadVisual;
+    this.mag.rotation.x = this.model.magRock * this.reloadVisual;
+    // Natažení páky závěru při prázdném přebití (AK, bullpup); AR uvolní záchyt bez pohybu páky.
+    const pull = empty && this.model.emptyAction === 'chargingHandle' ? THREE.MathUtils.smoothstep(reloadT, 0.72, 0.78) * (1 - THREE.MathUtils.smoothstep(reloadT, 0.8, 0.83)) : 0;
+    this.handlePull = pull;
+    if (this.handle && this.model.moving.chargingHandle) this.handle.position.copy(this.model.moving.chargingHandle.pivot).addScaledVector(this.model.moving.chargingHandle.travel ?? new THREE.Vector3(), pull);
     this.placeHands(reloadT, empty);
 
     // Prezentace (meze N ze zadání „Pohyb vojáků“, kap. 11): bob hip ≤ 8 mm svisle / 5 mm bokem,
@@ -339,10 +359,12 @@ export class FPWeapon {
     this.placeForearms();
 
     // Osa kolimátoru ve světě (pro výpočet tečky v nekonečnu).
-    this.reticle.updateWorldMatrix(true, false);
-    const q = new THREE.Quaternion();
-    this.reticle.getWorldQuaternion(q);
-    (this.reticleMat.uniforms.uAxis.value as THREE.Vector3).set(0, 0, -1).applyQuaternion(q);
+    if (this.reticle && this.reticleMat) {
+      this.reticle.updateWorldMatrix(true, false);
+      const q = new THREE.Quaternion();
+      this.reticle.getWorldQuaternion(q);
+      (this.reticleMat.uniforms.uAxis.value as THREE.Vector3).set(0, 0, -1).applyQuaternion(q);
+    }
 
     this.updateCasings(dt);
     void PF_RIFLE;
@@ -394,7 +416,7 @@ export class FPWeapon {
 
   dispose() {
     this.root.removeFromParent();
-    for (const g of [this.model.static.metal, this.model.static.polymer, this.model.moving.magazine.geometry, this.model.moving.chargingHandle.geometry, this.model.optic!.glass, this.casingGeo]) g.dispose();
+    for (const g of [...this.geometries, this.casingGeo]) g.dispose();
     this.handGeo.dispose();
     this.flash.traverse((o) => (o as THREE.Mesh).geometry?.dispose());
     for (const m of this.materials) m.dispose();

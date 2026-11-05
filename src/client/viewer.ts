@@ -6,22 +6,10 @@ import { MOVEMENT } from '../shared/config/movement';
 import { PF_RIFLE } from '../shared/config/weapon';
 import { FPWeapon } from './render/weapons/fpWeapon';
 import { HAND_LOOKS } from './render/weapons/hands';
+import { FACTION_LABEL, KIT_LABEL, WEAPON_DEFS, weaponDef } from './render/weapons/catalog';
 
 /** Interní prohlížeč zbraní a rukou (vývojová scéna). */
-const WEAPONS = [
-  { id: 'm4a1', label: 'USMC Assault – M4A1', ready: true },
-  { id: 'm16a2', label: 'USMC Medic – M16A2 (čeká)', ready: false },
-  { id: 'm249', label: 'USMC Support – M249 (čeká)', ready: false },
-  { id: 'r870', label: 'USMC Engineer – Remington 870 (čeká)', ready: false },
-  { id: 'ak101', label: 'MEC Assault – AK-101 (čeká)', ready: false },
-  { id: 'akm', label: 'MEC Medic – AKM (čeká)', ready: false },
-  { id: 'pkm', label: 'MEC Support – PKM (čeká)', ready: false },
-  { id: 'saiga', label: 'MEC Engineer – Saiga-12 (čeká)', ready: false },
-  { id: 'qbz95', label: 'PLA Assault – QBZ-95 (čeká)', ready: false },
-  { id: 't81', label: 'PLA Medic – Type 81 (čeká)', ready: false },
-  { id: 'qbb95', label: 'PLA Support – QBB-95 (čeká)', ready: false },
-  { id: 'hawk97', label: 'PLA Engineer – Hawk Type 97 (čeká)', ready: false },
-];
+const WEAPONS = WEAPON_DEFS.map((w) => ({ id: w.id, label: `${FACTION_LABEL[w.faction]} ${KIT_LABEL[w.kit]} – ${w.name}${w.build ? '' : ' (čeká)'}`, ready: !!w.build }));
 
 const $ = <T extends HTMLElement>(s: string) => document.querySelector(s) as T;
 const canvas = $<HTMLCanvasElement>('#c');
@@ -74,7 +62,11 @@ const sel = (id: string, opts: Array<[string, string]>) => {
   return s;
 };
 sel('#weapon', WEAPONS.map((w) => [w.id, w.label]));
+for (const o of $<HTMLSelectElement>('#weapon').options) o.disabled = !WEAPONS.find((w) => w.id === o.value)?.ready;
+const urlW = new URLSearchParams(location.search).get('w');
+if (urlW && weaponDef(urlW).id === urlW) $<HTMLSelectElement>('#weapon').value = urlW;
 sel('#hands', Object.keys(HAND_LOOKS).map((k) => [k, k]));
+$<HTMLSelectElement>('#hands').value = weaponDef($<HTMLSelectElement>('#weapon').value).hands;
 
 let fp: FPWeapon | null = null;
 const ps = createPlayerState(MOVEMENT, { x: 0, y: 0, z: 0 });
@@ -86,7 +78,7 @@ const ptsGroup = new THREE.Group();
 
 function build() {
   fp?.dispose();
-  fp = new FPWeapon($<HTMLSelectElement>('#hands').value, $<HTMLSelectElement>('#q').value as never);
+  fp = new FPWeapon($<HTMLSelectElement>('#weapon').value, $<HTMLSelectElement>('#hands').value, $<HTMLSelectElement>('#q').value as never);
   camera.add(fp.root);
   rebuildPoints();
 }
@@ -153,6 +145,11 @@ function applyLight() {
   }
 }
 
+$('#weapon').addEventListener('change', () => {
+  $<HTMLSelectElement>('#hands').value = weaponDef($<HTMLSelectElement>('#weapon').value).hands;
+  build();
+  applyView();
+});
 for (const id of ['#hands', '#q']) $(id).addEventListener('change', () => {
   build();
   applyView();

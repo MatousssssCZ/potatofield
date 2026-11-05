@@ -12,12 +12,21 @@ await page.waitForFunction(() => window.__viewer, null, { timeout: 120000 });
 for (const s of shots) {
   await page.evaluate((s) => {
     const set = (id, v) => { const e = document.querySelector(id); e.value = v; e.dispatchEvent(new Event('change')); };
+    if (s.weapon) set('#weapon', s.weapon);
     if (s.view) set('#view', s.view);
     if (s.light) set('#light', s.light);
     if (s.q) set('#q', s.q);
     if (s.fov) set('#fov', s.fov);
     if (s.hands) set('#hands', s.hands);
     if (s.reload !== undefined) window.__viewer.reload(s.reload === 'empty');
+    if (s.phase !== undefined) {
+      // Deterministická fáze přebití (nezávislá na rychlosti softwarového rendereru).
+      const v = window.__viewer;
+      v.reload(!!s.empty);
+      const d = v.ws.actionEnd - v.ws.actionStart;
+      v.ws.actionStart -= s.phase * d;
+      v.ws.actionEnd -= s.phase * d;
+    }
   }, s);
   await page.waitForTimeout(s.wait ?? 1500);
   await page.screenshot({ path: `${out}/${s.name}.png`, timeout: 120000 });

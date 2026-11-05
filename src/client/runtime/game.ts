@@ -21,6 +21,8 @@ export interface GameSettings {
   hFov: number;
   bob: number;
   landingKick: boolean;
+  /** Vzhled zbraně (pravidla střelby zůstávají PF-Rifle). */
+  weapon?: string;
 }
 
 /**
@@ -58,8 +60,9 @@ export class Game {
     private doc: MapDocument,
     private audio: GameAudio,
     quality: QualityProfile,
+    weaponId = 'm4a1',
   ) {
-    this.fp = new FPWeapon('usmcAssault', quality.id);
+    this.fp = new FPWeapon(weaponId, null, quality.id);
     this.fp.showCasings = quality.id !== 'low';
     this.fp.onShot = () => this.audio.shot();
     camera.add(this.fp.root);

@@ -78,6 +78,10 @@ Všechny číselné hodnoty jsou návrhy Potatofieldu (`proposed`), ne změřen�
 - Herní ústí ze sdíleného profilu PF_RIG (oči → ústí → bod zamíření); blízká překážka zbraň stáhne a pod 0,55 m blokuje střelbu.
 - Kolimátor: tečka v shaderu podle směru pohledu vůči ose optiky (kolimace), viditelná jen průhledem tubusu; ADS přiblížení 1,35× je prezentace kamery.
 - Ruce: skinned mesh (1 draw call/ruka), pózy = data; full-body IK se nepoužívá.
+- Každá zbraň má vlastní vizuální rig: hip póza se odvozuje z polohy rukojeti (rukojeť všech zbraní leží na stejném místě obrazu), ADS klade `opticEye` do středu pohledu. Herní ústí a blokace hlavně zůstávají ze sdíleného PF_RIG – vzhled zbraně nemění pravidla.
+- Mechanická mířidla: skutečný otvor clony (M16A2) / výřez hledí (AK, Type 81), bez HUD tečky. Otvory jsou mírně větší než předloha kvůli čitelnosti při 720p (herní úprava, uvedeno v kartách).
+- Dřevo sdílí materiál „polymer“ (roughness 0,74, barva vrcholů) – drží limit 4 neprůhledných materiálů sestavy.
+- U QBZ-95 jsou mechanická mířidla sklopená, aby nezasahovala do průhledu kolimátoru.
 
 ## Multiplayer
 - JSON přes WebSocket (`ws`, MIT), permessage-deflate. Server 60 Hz, snapshot 30 Hz, interpolace 100 ms.
@@ -88,7 +92,7 @@ Všechny číselné hodnoty jsou návrhy Potatofieldu (`proposed`), ne změřen�
 - Referenční ulice obsahuje testovací Conquest data (5 bodů, 2 scénáře) jen pro síťový pilot.
 
 ## Dočasné / placeholdery
-- Ostatních 11 zbraní arzenálu není hotových (prohlížeč je označuje „čeká“).
+- Support a Engineer zbraně (6) nejsou hotové (prohlížeč je označuje „čeká“, v nastavení nejsou).
 - World model vojáka je jednoduchá figura bez skeletu (kolena/kyčle pózy ze stavu); 3P rig podle zadání pohybu vojáků zbývá.
 - Ruce: póza levé ruky a prstů vyžaduje další ladění.
 

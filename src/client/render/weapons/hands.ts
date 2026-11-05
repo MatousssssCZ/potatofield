@@ -27,6 +27,11 @@ export const HAND_LOOKS: Record<string, HandLook> = {
   mecAssault: { id: 'mecAssault', glove: '#1e1e1e', gloveDark: '#141414', fingerless: false, bare: false, skin: '#a8775a', sleeve: 'mecDesert', rolledSleeve: false },
   mecSupport: { id: 'mecSupport', glove: '#6b5038', gloveDark: '#4f3a28', fingerless: true, bare: false, skin: '#9c6c50', sleeve: 'mecDesert', rolledSleeve: false },
   plaAssault: { id: 'plaAssault', glove: '#4f5a3c', gloveDark: '#39422b', fingerless: false, bare: false, skin: '#d1a582', sleeve: 'plaGreen', rolledSleeve: false },
+  mecMedic: { id: 'mecMedic', glove: '#a8775a', gloveDark: '#8a5f45', fingerless: false, bare: true, skin: '#a8775a', sleeve: 'mecDesert', rolledSleeve: true },
+  mecEngineer: { id: 'mecEngineer', glove: '#6e6658', gloveDark: '#544d41', fingerless: false, bare: false, skin: '#b07e5e', sleeve: 'mecDesert', rolledSleeve: false },
+  plaMedic: { id: 'plaMedic', glove: '#d1a582', gloveDark: '#b38966', fingerless: false, bare: true, skin: '#d1a582', sleeve: 'plaGreen', rolledSleeve: true },
+  plaSupport: { id: 'plaSupport', glove: '#34402c', gloveDark: '#262f20', fingerless: false, bare: false, skin: '#c99c78', sleeve: 'plaGreen', rolledSleeve: false },
+  plaEngineer: { id: 'plaEngineer', glove: '#3d3e3c', gloveDark: '#2b2c2a', fingerless: false, bare: false, skin: '#be8f6c', sleeve: 'plaGreen', rolledSleeve: false },
 };
 
 export interface FingerPose {

@@ -32,7 +32,11 @@ Viz git historie; 20 testů pohybu, editor s gizmy, historie, IndexedDB, export/
 - [x] Projektily s gravitací, hitboxy podle postoje, efekty zásahů v poolu, procedurální zvuk
 - [x] Referenční ulice 70 m, předvolby prašné poledne / čisté slunečno / zataženo s deštěm
 - [~] Ruce: držení funguje, prsty a levá ruka potřebují další ladění póz
-- [ ] Zbylých 11 zbraní arzenálu (M16A2, M249, 870, AK-101, AKM, PKM, Saiga-12, QBZ-95, Type 81, QBB-95, Hawk 97) – v prohlížeči označeny „čeká“
+- [x] Krok 5 grafického zadání – Assault a Medic všech frakcí: M16A2, AK-101 (boční montáž kolimátoru), AKM, QBZ-95 (kolimátor na nosné rukojeti), Type 81; rodiny AR / AK / bullpup se sdílenými díly, vlastní rig (hip póza, poloha oka), skutečná mechanická mířidla, přebití podle konstrukce (naklopení zásobníku AK, natažení páky). Testy: osa mířidel, paprsek otvorem hledí, volný průhled kolimátoru, near plane, rozpočet ≤ 20 tis. trojúhelníků
+- [x] Volba vzhledu zbraně v nastavení (pravidla střelby zůstávají PF-Rifle)
+- [~] Referenční karty nových zbraní: rozměry jsou umělecký odhad, porovnání s referencemi neproběhlo (Type 81 bez dostupné reference)
+- [ ] Support (M249, PKM, QBB-95) a Engineer (870, Saiga-12, Hawk 97) – vyžadují pásové/pumpovací mechanismy a pravidla simulace brokovnic
+- [ ] World model ve 3P je zatím M4A1 pro všechny; LOD nových zbraní
 - [ ] Výkonové měření klienta na i5-1335U
 
 ## Krok 7 – lokální Conquest

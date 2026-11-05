@@ -1,5 +1,6 @@
 import { CAMERA } from '../../shared/config/camera';
 import { QUALITY, type QualityProfile } from '../render/quality';
+import { FACTION_LABEL, KIT_LABEL, readyWeapons } from '../render/weapons/catalog';
 import { ACTION_LABELS, DEFAULT_BINDINGS, InputSystem, type Action } from '../runtime/input';
 
 /** Nastavení hráče (per-viewer pohodlí v localStorage; vše funguje i bez něj). */
@@ -12,6 +13,8 @@ export interface Settings {
   landingKick: boolean;
   crouchToggle: boolean;
   fullscreen: boolean;
+  /** Vzhled zbraně v testu (jen vizuál – pravidla střelby jsou pro všechny PF-Rifle). */
+  weapon: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -23,6 +26,7 @@ export const DEFAULT_SETTINGS: Settings = {
   landingKick: true,
   crouchToggle: false,
   fullscreen: true,
+  weapon: 'm4a1',
 };
 
 export function loadSettings(): Settings {
@@ -103,6 +107,24 @@ export function buildSettingsUI(s: Settings, onChange: () => void) {
   });
   ql.append(qs, sel);
   root.appendChild(ql);
+  const wl = document.createElement('label');
+  const wsp = document.createElement('span');
+  wsp.textContent = 'Zbraň (vzhled)';
+  const wsel = document.createElement('select');
+  for (const w of readyWeapons()) {
+    const o = document.createElement('option');
+    o.value = w.id;
+    o.textContent = `${FACTION_LABEL[w.faction]} ${KIT_LABEL[w.kit]} – ${w.name}`;
+    wsel.appendChild(o);
+  }
+  wsel.value = readyWeapons().some((w) => w.id === s.weapon) ? s.weapon : 'm4a1';
+  wsel.addEventListener('change', () => {
+    s.weapon = wsel.value;
+    saveSettings(s);
+    onChange();
+  });
+  wl.append(wsp, wsel);
+  root.appendChild(wl);
   slider('FOV (horizontální, 16:9)', 'hFov', CAMERA.hFovMinDeg, CAMERA.hFovMaxDeg, 1, (v) => `${v}°`);
   slider('Citlivost myši', 'sensitivity', 0.2, 8, 0.05, (v) => v.toFixed(2));
   slider('Pohupování kamery', 'bob', 0, 1, 0.05, (v) => `${Math.round(v * 100)} %`);
@@ -112,7 +134,7 @@ export function buildSettingsUI(s: Settings, onChange: () => void) {
   check('Celá obrazovka (chrání Ctrl+W)', 'fullscreen');
   const note = document.createElement('div');
   note.className = 'note';
-  note.textContent = 'Změna kvality znovu načte stránku (mapa je uložená). Kvalita mění jen vzhled, nikoli kolize, mlhu ani kryty.';
+  note.textContent = 'Změna kvality znovu načte stránku (mapa je uložená). Kvalita mění jen vzhled, nikoli kolize, mlhu ani kryty. Vzhled zbraně se projeví při dalším spuštění testu.';
   root.appendChild(note);
 }
 
