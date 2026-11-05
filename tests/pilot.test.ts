@@ -95,14 +95,14 @@ describe('pilot: vyřazení, oživení, vzdání pomoci', () => {
     expect(m.giveUp('a')).toMatch(/nejsi/);
   });
 
-  it('classy pilotu: Engineer odmítnut, Sniper vidět, ale zbraň zatím není hotová', async () => {
+  it('classy pilotu: Engineer odmítnut, Sniper s M24 povolen, cizí frakce odmítnuta', async () => {
     const { m, a, med } = await setup();
     a.ctrl.place(a.state, { x: 0, y: 0.02, z: 20 }, 0);
     med.ctrl.place(med.state, { x: 5, y: 0.02, z: 20 }, 0);
     m.addPlayer('c', 'teamA');
     expect(m.requestSpawn('c', 'sa', 'r870')).toMatch(/classa/);
-    expect(m.requestSpawn('c', 'sa', 'm24')).toMatch(/není hotová/);
-    expect(m.requestSpawn('c', 'sa', 'm249')).toBeNull();
+    expect(m.requestSpawn('c', 'sa', 'svd')).not.toBeNull(); // MEC zbraň pro tým USMC
+    expect(m.requestSpawn('c', 'sa', 'm24')).toBeNull();
   });
 });
 

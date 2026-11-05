@@ -32,8 +32,8 @@ export const ARSENAL: ArsenalEntry[] = [
   { id: 't81', name: 'Type 81', faction: 'pla', kit: 'medic', rules: PF_RIFLE },
   { id: 'qbb95', name: 'QBB-95', faction: 'pla', kit: 'support', rules: PF_MG },
   { id: 'hawk97', name: 'Hawk Type 97 (návrh)', faction: 'pla', kit: 'engineer', rules: PF_PUMP },
-  { id: 'm24', name: 'M24', faction: 'usmc', kit: 'sniper', rules: PF_SNIPER, available: false },
-  { id: 'svd', name: 'SVD', faction: 'mec', kit: 'sniper', rules: PF_SNIPER, available: false },
+  { id: 'm24', name: 'M24', faction: 'usmc', kit: 'sniper', rules: PF_SNIPER },
+  { id: 'svd', name: 'SVD', faction: 'mec', kit: 'sniper', rules: PF_SNIPER },
 ];
 
 /**

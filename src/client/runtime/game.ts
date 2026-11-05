@@ -5,6 +5,7 @@ import { PF_MG } from '../../shared/config/weapon';
 import { PILOT, arsenalEntry, rulesOf, type Kit } from '../../shared/config/arsenal';
 import type { PhysicsWorld } from '../../shared/physics/world';
 import { TacticalMap, type Footprint } from '../ui/tactical';
+import { ScopeView } from '../ui/scope';
 import { t } from '../ui/i18n';
 import type { NetDriver } from './netDriver';
 import type { MapDocument } from '../../shared/map/schema';
@@ -66,6 +67,9 @@ export class Game {
   private identT = 0;
   private identId: string | null = null;
   private callMedicAt = -10;
+  /** Puškohled: prolnutí pohledu do zaměřovače (0 = zbraň, 1 = obraz puškohledu). */
+  private scopeBlend = 0;
+  private scope: ScopeView | null = null;
 
   constructor(
     private camera: THREE.PerspectiveCamera,
@@ -311,6 +315,8 @@ export class Game {
       this.camera.position.copy(this.lastEye);
       this.fp.root.visible = false;
       this.hud.setCrosshair(0, false);
+      this.scopeBlend = 0;
+      this.scope?.update(null, 0, 0);
       return;
     }
     if (w.weaponId !== this.fpId) {
@@ -355,18 +361,30 @@ export class Game {
     cam.position.y += bobY - kick;
 
     // FOV: H@16:9 → vertikální; ADS = optické přiblížení 1,35× (prezentace, ne optika kolimátoru).
+    // Puškohled: po dokončení ADS se obraz přepne do zaměřovače se zvětšením optiky; během
+    // cyklu závěru, přebití nebo sprintu se vrátí ke zbrani (ruka je na páce).
+    const optic = this.fp.model.optic;
+    const scoped = optic?.kind === 'scope' && ads > 0.92 && !this.fp.busy && !s.sprinting && w.action !== 'reload';
+    this.scopeBlend = THREE.MathUtils.clamp(this.scopeBlend + (scoped ? frameDt / 0.09 : -frameDt / 0.07), 0, 1);
+    const zoom = optic?.kind === 'scope' ? lerp(CAMERA.adsZoom, optic.zoom ?? CAMERA.adsZoom, this.scopeBlend) : CAMERA.adsZoom;
     const vHip = vFovFromH16x9(this.settings.hFov);
-    const vfov = THREE.MathUtils.radToDeg(lerp(vHip, adsVFov(vHip, CAMERA.adsZoom), ads));
+    const vfov = THREE.MathUtils.radToDeg(lerp(vHip, adsVFov(vHip, zoom), ads));
+    this.fp.root.visible = this.scopeBlend < 0.5;
+    if (optic?.kind === 'scope') {
+      this.scope ??= new ScopeView(document.getElementById('viewport') ?? document.body);
+      this.scope.update(optic.reticle ?? 'mildot', this.scopeBlend, vfov);
+    } else this.scope?.update(null, 0, 0);
     if (Math.abs(cam.fov - vfov) > 1e-4) {
       cam.fov = vfov;
       cam.updateProjectionMatrix();
     }
-    this.input.adsSensScale = lerp(1, CAMERA.adsSensitivity * (this.settings.adsSens ?? 1), ads);
+    // Citlivost klesá se zvětšením (stejný pohyb myši = stejný posun obrazu v puškohledu).
+    this.input.adsSensScale = lerp(1, CAMERA.adsSensitivity * (this.settings.adsSens ?? 1) * (CAMERA.adsZoom / zoom), ads);
     // Dynamický zaměřovač z rozptylu (v ADS skrytý).
     const spread = spreadOf(rulesOf(w.weaponId), this.cfg, s, w, this.simTime).total;
     const h = this.camera.userData.viewportHeight ?? window.innerHeight;
     const radius = (h / 2) * (Math.tan(spread) / Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2));
-    this.hud.setCrosshair(radius, ads < 0.5 && !s.sprinting && !s.ladder);
+    this.hud.setCrosshair(radius, ads < 0.5 && !s.sprinting && !s.ladder && this.scopeBlend === 0);
     this.fp.update(frameDt, s, w, this.simTime, this.bobPhase, this.bobAmp, this.input.pendingYaw, this.input.pendingPitch);
     void BTN;
   }
@@ -375,6 +393,7 @@ export class Game {
     this.fp.dispose();
     this.effects.dispose();
     this.soldiers.dispose();
+    this.scope?.dispose();
     this.hud.dispose();
     this.driver.dispose();
     this.world.updateDummies([]);

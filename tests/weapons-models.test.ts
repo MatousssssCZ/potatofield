@@ -31,14 +31,14 @@ function firstHit(m: WeaponModel, from: THREE.Vector3, to: THREE.Vector3) {
 describe('arzenál – pevné sestavy', () => {
   const ready = readyWeapons();
 
-  it('katalog: 12 hotových zbraní + 2 čekající (Sniper); kolimátor jen Assault', () => {
+  it('katalog: všech 14 zbraní hotových; kolimátor jen Assault, puškohled jen Sniper', () => {
     expect(WEAPON_DEFS).toHaveLength(14);
-    expect(ready).toHaveLength(12);
-    expect(WEAPON_DEFS.filter((w) => !w.build).map((w) => w.id).sort()).toEqual(['m24', 'svd']);
+    expect(ready).toHaveLength(14);
     for (const d of ready) {
       const m = buildFirstPerson(d.id);
-      expect(!!m.optic, d.id).toBe(d.kit === 'assault');
-      expect(m.sight).toBe(d.kit === 'assault' ? 'optic' : 'iron');
+      expect(!!m.optic, d.id).toBe(d.kit === 'assault' || d.kit === 'sniper');
+      expect(m.optic?.kind === 'scope', d.id).toBe(d.kit === 'sniper');
+      expect(m.sight).toBe(d.kit === 'assault' || d.kit === 'sniper' ? 'optic' : 'iron');
       expect(HAND_LOOKS[d.hands], d.hands).toBeTruthy();
     }
   });
@@ -80,7 +80,7 @@ describe('arzenál – pevné sestavy', () => {
   });
 
   it('mechanická mířidla: paprsek z oka projde skutečným otvorem/výřezem hledí a narazí až na mušku', () => {
-    for (const d of ready.filter((w) => w.kit !== 'assault')) {
+    for (const d of ready.filter((w) => w.kit !== 'assault' && w.kit !== 'sniper')) {
       const m = buildFirstPerson(d.id);
       const P = m.points;
       // Míří těsně pod vrchol mušky – musí projít hledím (v otvoru není neprůhledný disk).
@@ -91,8 +91,8 @@ describe('arzenál – pevné sestavy', () => {
     }
   });
 
-  it('kolimátor: osa průhledu je volná (tubus, montáž ani muška nezakrývají střed)', () => {
-    for (const d of ready.filter((w) => w.kit === 'assault')) {
+  it('kolimátor i puškohled: osa průhledu je volná (tubus, montáž ani muška nezakrývají střed)', () => {
+    for (const d of ready.filter((w) => w.kit === 'assault' || w.kit === 'sniper')) {
       const m = buildFirstPerson(d.id);
       const P = m.points;
       for (const [dx, dy] of [[0, 0], [0.006, 0], [-0.006, 0], [0, 0.006], [0, -0.006]]) {
@@ -136,6 +136,29 @@ describe('arzenál – pevné sestavy', () => {
     const qbb = buildFirstPerson('qbb95');
     expect(qbb.reloadStyle).toBe('magazine');
     expect(qbb.optic).toBeUndefined();
+  });
+
+  it('odstřelovací pušky: zvětšení M24 10×, SVD 4×; M24 opakovačka se závěrem, SVD zásobník', () => {
+    const m24 = buildFirstPerson('m24'), svd = buildFirstPerson('svd');
+    expect(m24.optic?.zoom).toBe(10);
+    expect(svd.optic?.zoom).toBe(4);
+    expect(m24.optic?.reticle).toBe('mildot');
+    expect(svd.optic?.reticle).toBe('pso1');
+    expect(m24.cycle).toBe('bolt');
+    expect(m24.reloadStyle).toBe('bolt');
+    expect(svd.cycle).toBe('none');
+    expect(svd.reloadStyle).toBe('magazine');
+    // Páka závěru M24 je vpravo od pouzdra; okulár je za pouzdrem, objektiv před ním.
+    expect(m24.points.chargingHandle.x).toBeGreaterThan(0.03);
+    expect(m24.points.sightRear.z).toBeGreaterThan(0.1);
+    // Siluety: obě delší než M16A2, SVD má delší hlaveň (ústí dál vpředu).
+    const len = (m: typeof m24) => {
+      const b = new THREE.Box3().setFromBufferAttribute(m.static.polymer.getAttribute('position') as THREE.BufferAttribute);
+      b.union(new THREE.Box3().setFromBufferAttribute(m.static.metal.getAttribute('position') as THREE.BufferAttribute));
+      return b.max.z - b.min.z;
+    };
+    expect(len(m24)).toBeGreaterThan(len(buildFirstPerson('m16a2')));
+    expect(len(svd)).toBeGreaterThan(len(buildFirstPerson('m16a2')));
   });
 
   it('siluety: M16A2 je viditelně delší než M4A1, bullpup nejkratší', () => {

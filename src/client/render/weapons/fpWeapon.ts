@@ -62,6 +62,9 @@ function reticleMaterial(dotDeg: number) {
   });
 }
 
+/** Zdvih páky závěru opakovačky (rad). */
+const BOLT_LIFT = 1.05;
+
 export interface FpStats {
   triangles: number;
   meshes: number;
@@ -88,7 +91,17 @@ export class FPWeapon {
   private singleTarget: THREE.Vector3 | null = null;
   private shellCount = -1;
   /** Mechanické zvuky (pumpa, náboj, víko) – napojí Game na audio. */
-  onMech: (kind: 'pump' | 'shell' | 'cover') => void = () => {};
+  onMech: (kind: 'pump' | 'shell' | 'cover' | 'bolt') => void = () => {};
+  /** Opakovačka: cyklus závěru po výstřelu, nabíjení po jednom do otevřeného závěru. */
+  private boltStart = -1;
+  private boltSound = 0;
+  private boltReloadKey = -1;
+  private boltRounds = 1;
+  private rightTarget = new THREE.Vector3();
+  private rightBlend = 0;
+  /** Závěr / přebíjení právě zaměstnává ruku → puškohled se nepoužívá (hra ukáže zbraň). */
+  busy = false;
+  private busyBlend = 0;
   /** Pásové přebití: úhel víka a posun schránky (prostor zbraně). */
   private coverAngle = 0;
   private boxOffset = new THREE.Vector3();
@@ -163,7 +176,7 @@ export class FPWeapon {
       this.geometries.push(pm.geometry);
     }
     // Nabíjení po jednom: volný náboj je vidět jen ve fázi vkládání.
-    if (this.model.reloadStyle === 'single') this.mag.visible = false;
+    if (this.model.reloadStyle === 'single' || this.model.reloadStyle === 'bolt') this.mag.visible = false;
     const fc = this.model.moving.feedCover;
     if (fc) {
       this.cover = add(fc.geometry, fc.material === 'metal' ? metal : polymer, this.weaponRoot);
@@ -173,7 +186,15 @@ export class FPWeapon {
     this.geometries.push(this.model.static.metal, this.model.static.polymer, magDef.geometry);
     if (ch) this.geometries.push(ch.geometry);
     // Sklo + tečka kolimátoru (jediný dodatečný materiál optiky) – jen u zbraní s kolimátorem.
-    if (this.model.optic) {
+    if (this.model.optic?.kind === 'scope') {
+      // Puškohled: okulár = tmavé sklo s odleskem; zaměřovací obraz kreslí hra přes celou obrazovku.
+      const lens = new THREE.MeshStandardMaterial({ color: '#0b1519', metalness: 0.3, roughness: 0.06, emissive: '#06222c', emissiveIntensity: 0.35, side: THREE.DoubleSide });
+      this.materials.push(lens);
+      const g = new THREE.Mesh(this.model.optic.glass, lens);
+      g.frustumCulled = false;
+      this.weaponRoot.add(g);
+      this.geometries.push(this.model.optic.glass);
+    } else if (this.model.optic) {
       this.reticleMat = reticleMaterial(0.11);
       this.materials.push(this.reticleMat);
       this.reticle = new THREE.Mesh(this.model.optic.glass, this.reticleMat);
@@ -260,6 +281,8 @@ export class FPWeapon {
     const rh = this.rightHand.root;
     rh.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(rx, ry, rz));
     rh.position.set(0.03, P.gripRight.y - 0.005, P.gripRight.z + 0.065);
+    if (this.rightBlend > 0) rh.position.lerp(this.rightTarget, this.rightBlend);
+    this.rightHand.setPose(this.rightBlend > 0.5 ? POSES.magazine : POSES.grip, 0.3);
     // Levá ruka (rámec před zrcadlením): hřbet dolů-vlevo, prsty obepínají předpažbí zprava.
     const ly = new THREE.Vector3(-0.4, -0.9, 0.1).normalize();
     let lz = new THREE.Vector3(-0.9, -0.35, 0.25).normalize();
@@ -300,7 +323,7 @@ export class FPWeapon {
       target.lerp(base, seg(0.86 + emptyBolt * 0.08, 0.97));
       const onPart = k < 0.84 + emptyBolt * 0.08;
       this.leftHand.setPose(onPart ? (k > 0.6 && k < 0.68 ? POSES.open : POSES.magazine) : POSES.handguard, 0.25);
-    } else if (k > 0) {
+    } else if (k > 0 && this.model.reloadStyle !== 'bolt') {
       const toMag = seg(0.1, 0.24);
       const down = seg(0.3, 0.42);
       const back = seg(0.46, 0.6);
@@ -333,7 +356,9 @@ export class FPWeapon {
    */
   update(dt: number, ps: PlayerState, ws: WeaponState | null, simTime: number, bobPhase: number, bobAmp: number, lookDYaw: number, lookDPitch: number) {
     this.time += dt;
-    const ads = ws?.adsProgress ?? 0;
+    // Opakovačka: během cyklu závěru / přebití zbraň klesne od oka (ruka na páce je vidět).
+    this.busyBlend = THREE.MathUtils.lerp(this.busyBlend, this.busy ? 1 : 0, 1 - Math.exp(-dt * 14));
+    const ads = (ws?.adsProgress ?? 0) * (1 - 0.65 * this.busyBlend);
     // Hip ↔ ADS: ADS kořen klade oko (opticEye – kolimátor nebo hledí + odstup) do středu pohledu.
     const hip = this.model.hipRoot;
     const adsV = this.model.points.opticEye.clone().negate();
@@ -362,7 +387,11 @@ export class FPWeapon {
         this.flashUntil = this.time + 0.045;
         this.flash.rotation.z = Math.random() * Math.PI;
         this.flash.scale.setScalar(0.85 + Math.random() * 0.4);
-        if (this.showCasings && this.model.cycle !== 'pump') this.ejectCasing();
+        if (this.showCasings && this.model.cycle === 'none') this.ejectCasing();
+        if (this.model.cycle === 'bolt') {
+          this.boltStart = this.time + 0.12;
+          this.boltSound = 0;
+        }
         if (this.model.cycle === 'pump') {
           this.pumpStart = this.time + 0.12;
           this.pumpSounded = false;
@@ -385,8 +414,9 @@ export class FPWeapon {
     }
     const belt = this.model.reloadStyle === 'belt';
     this.updatePumpAndShells(ws, simTime, empty);
+    this.updateBolt(ws, reloadT);
     // Pásové zbraně: menší naklopení (víko a schránka musí zůstat v obraze).
-    const tilt = Math.sin(Math.min(1, reloadT * 1.15) * Math.PI) * (belt ? 0.45 : this.model.reloadStyle === 'single' ? 0 : 1);
+    const tilt = Math.sin(Math.min(1, reloadT * 1.15) * Math.PI) * (belt ? 0.45 : this.model.reloadStyle === 'single' ? 0 : this.model.reloadStyle === 'bolt' ? 0.35 : 1);
     const magOut = THREE.MathUtils.smoothstep(reloadT, 0.27, 0.42) * (1 - THREE.MathUtils.smoothstep(reloadT, 0.5, 0.68));
     this.reloadVisual = reloadT > 0 ? magOut : 0;
     const P2 = this.model.points;
@@ -399,7 +429,7 @@ export class FPWeapon {
       this.boxOffset.set(this.model.magSide * 0.07 * out, -0.26 * out, 0.02 * out);
       this.mag.position.copy(P2.magazineSocket).add(this.boxOffset);
       this.mag.rotation.set(this.model.magRock * out, 0, this.model.magSide * 0.35 * out);
-    } else if (this.model.reloadStyle !== 'single') {
+    } else if (this.model.reloadStyle !== 'single' && this.model.reloadStyle !== 'bolt') {
       this.mag.position.set(P2.magazineSocket.x - 0.03 * this.reloadVisual, P2.magazineSocket.y - 0.3 * this.reloadVisual, P2.magazineSocket.z + 0.02 * this.reloadVisual);
       this.mag.rotation.x = this.model.magRock * this.reloadVisual;
     }
@@ -407,7 +437,7 @@ export class FPWeapon {
     const [p0, p1, p2, p3] = belt ? [0.88, 0.91, 0.92, 0.95] : [0.72, 0.78, 0.8, 0.83];
     const pull = empty && this.model.emptyAction === 'chargingHandle' ? THREE.MathUtils.smoothstep(reloadT, p0, p1) * (1 - THREE.MathUtils.smoothstep(reloadT, p2, p3)) : 0;
     this.handlePull = pull;
-    if (this.handle && this.model.moving.chargingHandle) this.handle.position.copy(this.model.moving.chargingHandle.pivot).addScaledVector(this.model.moving.chargingHandle.travel ?? new THREE.Vector3(), pull);
+    if (this.handle && this.model.moving.chargingHandle && this.model.cycle !== 'bolt') this.handle.position.copy(this.model.moving.chargingHandle.pivot).addScaledVector(this.model.moving.chargingHandle.travel ?? new THREE.Vector3(), pull);
     this.placeHands(reloadT, empty);
 
     // Prezentace (meze N ze zadání „Pohyb vojáků“, kap. 11): bob hip ≤ 8 mm svisle / 5 mm bokem,
@@ -445,6 +475,98 @@ export class FPWeapon {
     }
 
     this.updateCasings(dt);
+  }
+
+  /** Poloha hlavice páky závěru (prostor zbraně) pro zdvih `lift` a zátah `back` (0–1). */
+  private boltHandleAt(lift: number, back: number) {
+    const ch = this.model.moving.chargingHandle!;
+    const rel = this.model.points.chargingHandle.clone().sub(ch.pivot).applyAxisAngle(new THREE.Vector3(0, 0, 1), lift * BOLT_LIFT);
+    return rel.add(ch.pivot).addScaledVector(ch.travel ?? new THREE.Vector3(), back);
+  }
+
+  /**
+   * Opakovačka. Po výstřelu: ruka z rukojeti na páku → zvednout → vzad (vyhození nábojnice) →
+   * vpřed → dolů → zpět na rukojeť. Přebití: otevřít závěr, náboje po jednom do okna, zavřít.
+   * Časy přebití ze simulace (normalizované), cyklus podle kadence pravidel.
+   */
+  private updateBolt(ws: WeaponState | null, reloadT: number) {
+    if (this.model.cycle !== 'bolt' || !this.handle) return;
+    const sm = THREE.MathUtils.smoothstep;
+    const P = this.model.points;
+    let lift = 0, back = 0, blend = 0;
+    let target: THREE.Vector3 | null = null;
+    const onHandle = (l: number, b: number) => this.boltHandleAt(l, b).add(new THREE.Vector3(0.018, -0.012, 0.06));
+    this.busy = false;
+    this.mag.visible = false;
+    if (ws?.action === 'reload') {
+      this.busy = true;
+      this.boltStart = -1;
+      if (ws.actionStart !== this.boltReloadKey) {
+        this.boltReloadKey = ws.actionStart;
+        this.boltRounds = THREE.MathUtils.clamp(this.rules.magazine - ws.mag, 1, this.rules.magazine);
+        this.boltSound = 0;
+      }
+      const k = reloadT;
+      lift = sm(k, 0.05, 0.09) * (1 - sm(k, 0.93, 0.96));
+      back = sm(k, 0.09, 0.15) * (1 - sm(k, 0.88, 0.93));
+      blend = sm(k, 0, 0.05) * (1 - sm(k, 0.96, 1));
+      target = onHandle(lift, back);
+      if (this.boltSound === 0 && k > 0.12) {
+        this.boltSound = 1;
+        this.onMech('bolt');
+      }
+      const r0 = 0.18, r1 = 0.82, n = this.boltRounds;
+      if (k > 0.15 && k < 0.84) {
+        // Náboje po jednom: páka → sumka → okno pouzdra (náboj v prstech, zatlačení do schránky).
+        const port = P.loadingPort ?? P.magazineSocket;
+        const pouch = new THREE.Vector3(0.16, -0.32, 0.18);
+        const ready = port.clone().add(new THREE.Vector3(0.05, 0.04, 0.09));
+        const u0 = THREE.MathUtils.clamp((k - r0) / (r1 - r0), 0, 0.9999) * n;
+        const i = Math.floor(u0), u = u0 - i;
+        const from = i === 0 ? onHandle(lift, back) : ready;
+        target = u < 0.35 ? from.clone().lerp(pouch, sm(u, 0, 0.35)) : u < 0.7 ? pouch.clone().lerp(ready, sm(u, 0.35, 0.7)) : ready.clone().lerp(port.clone().add(new THREE.Vector3(0.02, 0.012, 0.06)), sm(u, 0.7, 0.88));
+        if (k > r1) target = ready.clone().lerp(onHandle(lift, back), sm(k, r1, 0.84));
+        const show = k < r1 && u > 0.3 && u < 0.9;
+        this.mag.visible = show;
+        if (show) {
+          this.mag.position.copy(target).add(new THREE.Vector3(-0.022, 0.012, -0.05)).lerp(port, sm(u, 0.72, 0.9));
+          this.mag.rotation.set(0, 0, 0);
+        }
+        if (this.boltSound <= i + 1 && u > 0.86) {
+          this.boltSound = i + 2;
+          this.onMech('shell');
+        }
+      }
+      if (this.boltSound < 100 && k > 0.92) {
+        this.boltSound = 100;
+        this.onMech('bolt');
+      }
+    } else if (this.boltStart >= 0) {
+      this.busy = true;
+      const D = Math.min(1.0, this.rules.fireInterval * 0.75);
+      const u = (this.time - this.boltStart) / D;
+      if (u > 1) {
+        this.boltStart = -1;
+        this.busy = false;
+      } else if (u >= 0) {
+        lift = sm(u, 0.15, 0.28) * (1 - sm(u, 0.66, 0.76));
+        back = sm(u, 0.28, 0.45) * (1 - sm(u, 0.5, 0.66));
+        blend = sm(u, 0, 0.15) * (1 - sm(u, 0.8, 1));
+        target = onHandle(lift, back);
+        if (this.boltSound === 0 && u > 0.3) {
+          this.boltSound = 1;
+          this.onMech('bolt');
+        }
+        if (this.boltSound === 1 && u > 0.42) {
+          this.boltSound = 2;
+          if (this.showCasings) this.ejectCasing();
+        }
+      }
+    }
+    this.handle.position.copy(this.model.moving.chargingHandle!.pivot).addScaledVector(this.model.moving.chargingHandle!.travel ?? new THREE.Vector3(), back);
+    this.handle.rotation.set(0, 0, lift * BOLT_LIFT);
+    this.rightBlend = blend;
+    if (target) this.rightTarget.copy(target);
   }
 
   /**

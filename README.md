@@ -88,8 +88,9 @@ mapu, hráče, kapacitu, pravidla a verzi.
 
 **Pilot (výchozí):** USMC × MEC, 8 proti 8, classy Assault / Medic / Support / Sniper, 100 HP bez
 regenerace. Zásah do 0 HP = **vyřazení** (15 s, lze oživit medikem – podržet E 1 s – na 50 HP, nebo
-vzdát pomoc podržením G). Sniper je viditelný, ale jeho puška zatím nemá model – server nasazení
-s ní odmítne a obrazovka to vysvětlí.
+vzdát pomoc podržením G). Sniper: M24 (USMC, puškohled 10× mil-dot, opakovačka – po každé ráně
+cyklus závěru) a SVD (MEC, PSO-1 4×). Při plném míření se obraz přepne do puškohledu; citlivost
+myši klesá se zvětšením.
 
 **Nasazení:** taktická obrazovka – vlevo classa a výbava, vpravo mapa se spawny (klik vybere),
 dole Nasadit (nedostupné tlačítko říká proč). Odmítnutí serverem i ztráta spawnu se vysvětlí.

@@ -113,7 +113,9 @@ Všechny číselné hodnoty jsou návrhy Potatofieldu (`proposed`), ne změřen�
 ## Dočasné / placeholdery
 - Hawk Type 97 čeká na ověřenou referenci; ostatní modely mají rozměry jako umělecký odhad.
 - Vojáci jsou vlastní skinned modely (20 kostí, procedurální animace, LOD); obličeje a výstroj jsou stylizované podle textu zadání, ne podle referenčních obrázků (nebyly přiloženy).
-- Odstřelovací pušky M24 / SVD nemají model ani optiku: classa Sniper je vidět, server nasazení s ní odmítne.
+- Puškohled M24 / SVD: zbraň se při dokončeném míření nahradí obrazem přes celou obrazovku (kruhový průhled + osnova kreslená v úhlových jednotkách podle zorného pole), ne vykreslením scény přes čočku (render-to-texture by znamenal druhý průchod scény). Během cyklu závěru a přebití se obraz vrátí ke zbrani.
+- M24 a SVD sdílí pravidla PF-Marksman (vyvážení pilotu beze změny); SVD tedy střílí stejně pomalu jako opakovačka – otevřené rozhodnutí.
+- Třetí osoba: cyklus závěru M24 se na modelu vojáka nepřehrává (jen zpětný ráz).
 - Ruce: póza levé ruky a prstů vyžaduje další ladění.
 
 ## Prostředí, kde vznikal kód

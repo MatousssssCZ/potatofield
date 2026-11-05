@@ -1169,3 +1169,13 @@ body.mode-play .tui-log {
     grid-template-columns: 1fr 1.4fr;
   }
 }
+
+/* Puškohled přes celou obrazovku (pod HUD, nad scénou). */
+.pf-scope {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 4;
+}

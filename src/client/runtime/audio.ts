@@ -92,8 +92,11 @@ export class GameAudio {
   }
 
   /** Mechanika: pumpa, vložení náboje, víko (krátké kovové cvaknutí). */
-  mech(kind: 'pump' | 'shell' | 'cover') {
-    if (kind === 'pump') {
+  mech(kind: 'pump' | 'shell' | 'cover' | 'bolt') {
+    if (kind === 'bolt') {
+      this.burst({ gain: 0.18, decay: 0.035, lp: 5200, hp: 900, rate: 1.1 });
+      this.burst({ gain: 0.22, decay: 0.05, lp: 3800, hp: 500, rate: 0.85, delay: 0.12 });
+    } else if (kind === 'pump') {
       this.burst({ gain: 0.22, decay: 0.05, lp: 4000, hp: 600, rate: 0.8 });
       this.burst({ gain: 0.26, decay: 0.05, lp: 4500, hp: 700, rate: 0.9, delay: 0.16 });
     } else if (kind === 'shell') this.burst({ gain: 0.14, decay: 0.04, lp: 5000, hp: 1200, rate: 1.2 });

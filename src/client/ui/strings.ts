@@ -118,7 +118,7 @@ const cs = {
   'kit.support.role': 'Kulomet, krycí palba',
   'kit.support.note': 'Velký zásobník, delší přebíjení, nejlépe vleže nebo v podřepu.',
   'kit.sniper.role': 'Přesná palba na velkou vzdálenost',
-  'kit.sniper.note': 'Odstřelovací puška zatím nemá hotový model – server nasazení s ní odmítne.',
+  'kit.sniper.note': 'Puškohled: M24 10× s mil-dot osnovou (opakovačka, závěr po každé ráně), SVD 4× PSO-1 (samonabíjecí).',
   'kit.engineer.role': 'Technik',
   'kit.engineer.note': 'V pilotní verzi není dostupný.',
 
@@ -420,7 +420,7 @@ const en: Record<StringKey, string> = {
   'kit.support.role': 'Machine gun, suppressing fire',
   'kit.support.note': 'Large magazine, longer reload, best prone or crouched.',
   'kit.sniper.role': 'Precise long-range fire',
-  'kit.sniper.note': 'The sniper rifle model is not finished yet – the server rejects deploying with it.',
+  'kit.sniper.note': 'Scope: M24 10× mil-dot (bolt action, cycle after every shot), SVD 4× PSO-1 (semi-automatic).',
   'kit.engineer.role': 'Engineer',
   'kit.engineer.note': 'Not available in the pilot.',
 
