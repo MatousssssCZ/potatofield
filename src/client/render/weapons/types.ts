@@ -21,6 +21,9 @@ export interface WeaponPoints {
   /** Pásové zbraně: zadní konec podávacího víka (cíl ruky) a vstup pásu na podávací lůžko. */
   feedCover?: THREE.Vector3;
   feedEntry?: THREE.Vector3;
+  /** Pumpovací brokovnice: úchop levé ruky na pumpě a nabíjecí otvor (spodní strana pouzdra). */
+  pumpGrip?: THREE.Vector3;
+  loadingPort?: THREE.Vector3;
 }
 
 export type WeaponMaterial = 'metal' | 'polymer';
@@ -39,7 +42,8 @@ export interface WeaponModel {
   /** Statické díly sloučené podle materiálu (dřevo = „polymer“ materiál s barvou vrcholů dřeva). */
   static: Record<WeaponMaterial, THREE.BufferGeometry>;
   /** feedCover: pivot = závěs víka vpředu, otevírá se rotací kolem X (zadní konec nahoru). */
-  moving: { magazine: MovingPart; chargingHandle?: MovingPart; feedCover?: MovingPart };
+  /** pump: posuvné předpažbí (travel = zdvih dozadu). U nabíjení po jednom je `magazine` volný náboj v ruce. */
+  moving: { magazine: MovingPart; chargingHandle?: MovingPart; feedCover?: MovingPart; pump?: MovingPart };
   /** Kolimátor (jen Assault). Ostatní mají mechanická mířidla bez optiky. */
   optic?: { lensZ: number; axisY: number; innerR: number; glass: THREE.BufferGeometry };
   sight: 'optic' | 'iron';
@@ -50,9 +54,11 @@ export interface WeaponModel {
   /** Přebití: zásobník se při vyjmutí naklápí dopředu (AK) místo rovného tahu (AR). */
   magRock: number;
   /** Prázdné přebití: záchyt závěru (AR) nebo natažení páky závěru (AK, bullpup). */
-  emptyAction: 'boltCatch' | 'chargingHandle';
+  emptyAction: 'boltCatch' | 'chargingHandle' | 'pump';
   /** Způsob přebití: výměna zásobníku, nebo pás (otevřít víko → schránka → pás na lůžko → zavřít víko). */
-  reloadStyle: 'magazine' | 'belt';
+  reloadStyle: 'magazine' | 'belt' | 'single';
+  /** Cyklus po výstřelu: pumpa (ruční), jinak samočinně. */
+  cycle: 'none' | 'pump';
   /** Strana, kam odchází schránka/zásobník při přebití (+1 vpravo, −1 vlevo, 0 dolů). */
   magSide: number;
   triangles: number;

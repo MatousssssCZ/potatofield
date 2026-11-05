@@ -4,6 +4,7 @@ import { validateMap } from '../src/shared/map/validate';
 import { PhysicsWorld } from '../src/shared/physics/world';
 import { NET, PROTOCOL_VERSION, RADIO_TEXT, encodeRemote, mapHash, parseClientMsg, type ClientMsg, type RemoteState, type RemoteTuple, type ServerMsg } from '../src/shared/net/protocol';
 import { TeamLayer } from '../src/shared/net/team';
+import type { Faction } from '../src/shared/config/arsenal';
 import { MatchSim, type SimEvent, type SimPlayer } from '../src/shared/sim/match';
 import { emptyInput, sanitizeInput, type InputFrame } from '../src/shared/sim/input';
 import { eyePosition } from '../src/shared/sim/player';
@@ -19,6 +20,8 @@ import { allAssets, collidersForMap, generateMap, laddersForMap } from '../src/w
 export interface ServerOptions {
   conquest: boolean;
   scenarioId?: string;
+  /** Frakce týmů (kontrola výbavy při spawnu). */
+  factions?: Record<Team, Faction>;
   port?: number;
   /** Bez vlastního časovače (testy krokují ručně). */
   manualTick?: boolean;
@@ -75,7 +78,7 @@ export class GameServer {
     readonly phys: PhysicsWorld,
     readonly opts: ServerOptions,
   ) {
-    this.sim = new MatchSim(phys, doc, { conquest: opts.conquest, scenarioId: opts.scenarioId });
+    this.sim = new MatchSim(phys, doc, { conquest: opts.conquest, scenarioId: opts.scenarioId, factions: opts.factions });
     const gen = generateMap(doc);
     this.sim.ladders = laddersForMap(gen);
     this.hash = mapHash(doc);
@@ -199,7 +202,7 @@ export class GameServer {
       c.player = this.sim.addPlayer(c.id, team, c.name);
       this.team.addMember(c.id, c.name, team);
       // Připojení během zápasu: úplný aktuální stav (mapa, tým, body) hned ve welcome + snapshotu.
-      this.send(c, { t: 'welcome', v: PROTOCOL_VERSION, id: c.id, map: this.doc, mapHash: this.hash, generators: this.generators, tick: this.sim.tick, scenarioId: this.sim.conquest?.scenarioId ?? '', team, conquest: !!this.sim.conquest });
+      this.send(c, { t: 'welcome', v: PROTOCOL_VERSION, id: c.id, map: this.doc, mapHash: this.hash, generators: this.generators, tick: this.sim.tick, scenarioId: this.sim.conquest?.scenarioId ?? '', team, conquest: !!this.sim.conquest, factions: { teamA: this.sim.factionOf('teamA'), teamB: this.sim.factionOf('teamB') } });
       if (!this.sim.conquest) this.sim.requestSpawn(c.id, null);
       this.broadcastSystem(`${c.name} se připojil (${team === 'teamA' ? 'tým A' : 'tým B'}).`);
       this.sendSnapshot(c);
@@ -227,7 +230,7 @@ export class GameServer {
         break;
       }
       case 'spawn': {
-        const err = this.sim.requestSpawn(c.id, m.id);
+        const err = this.sim.requestSpawn(c.id, m.id, m.weapon);
         if (err) this.reject(c, 'spawn', err);
         else {
           const mem = this.team.members.get(c.id);
@@ -440,6 +443,7 @@ export class GameServer {
       shotSeq: w.shotSeq,
       ladder: s.ladder,
       squad: this.team.members.get(p.id)?.squad ?? null,
+      weapon: p.weaponId,
     };
   }
 

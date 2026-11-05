@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import type { WeaponState } from '../../../shared/sim/weapon';
 import type { PlayerState } from '../../../shared/sim/player';
-import { PF_RIFLE } from '../../../shared/config/weapon';
+import type { WeaponConfig } from '../../../shared/config/weapon';
+import { rulesOf } from '../../../shared/config/arsenal';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { WeaponModel } from './types';
 import { weaponDef } from './catalog';
@@ -77,6 +78,17 @@ export class FPWeapon {
   private mag: THREE.Mesh;
   private handle: THREE.Mesh | null = null;
   private cover: THREE.Mesh | null = null;
+  private pump: THREE.Mesh | null = null;
+  /** Pumpa: 0 = vpředu, 1 = stažená vzad (prostor zbraně podél travel). */
+  private pumpPos = 0;
+  private pumpStart = -1;
+  private pumpSounded = true;
+  private rules: WeaponConfig;
+  /** Nabíjení po jednom: cíl levé ruky a stav volného náboje. */
+  private singleTarget: THREE.Vector3 | null = null;
+  private shellCount = -1;
+  /** Mechanické zvuky (pumpa, náboj, víko) – napojí Game na audio. */
+  onMech: (kind: 'pump' | 'shell' | 'cover') => void = () => {};
   /** Pásové přebití: úhel víka a posun schránky (prostor zbraně). */
   private coverAngle = 0;
   private boxOffset = new THREE.Vector3();
@@ -111,6 +123,7 @@ export class FPWeapon {
     const seg = quality === 'low' ? 0.6 : quality === 'high' ? 1.25 : 1;
     const def = weaponDef(weaponId);
     this.model = def.build!(seg);
+    this.rules = rulesOf(def.id);
     lookId = lookId ?? def.hands;
     const grain = grainTexture();
     this.textures.push(grain);
@@ -142,6 +155,14 @@ export class FPWeapon {
       this.handle = add(ch.geometry, metal, this.weaponRoot);
       this.handle.position.copy(ch.pivot);
     }
+    const pm = this.model.moving.pump;
+    if (pm) {
+      this.pump = add(pm.geometry, pm.material === 'metal' ? metal : polymer, this.weaponRoot);
+      this.pump.position.copy(pm.pivot);
+      this.geometries.push(pm.geometry);
+    }
+    // Nabíjení po jednom: volný náboj je vidět jen ve fázi vkládání.
+    if (this.model.reloadStyle === 'single') this.mag.visible = false;
     const fc = this.model.moving.feedCover;
     if (fc) {
       this.cover = add(fc.geometry, fc.material === 'metal' ? metal : polymer, this.weaponRoot);
@@ -245,7 +266,8 @@ export class FPWeapon {
     lz = new THREE.Vector3().crossVectors(lx, ly).normalize();
     const lh = this.leftHand.root;
     lh.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(lx, ly, lz));
-    const base = new THREE.Vector3(-0.05, P.gripLeft.y - 0.032, P.gripLeft.z + 0.012);
+    const pumpTravel = this.model.moving.pump?.travel?.z ?? 0;
+    const base = new THREE.Vector3(-0.05, P.gripLeft.y - 0.032, P.gripLeft.z + 0.012 + this.pumpPos * pumpTravel);
     const magPos = new THREE.Vector3(-0.05, P.magazineSocket.y - 0.11, P.magazineSocket.z + 0.01);
     const below = new THREE.Vector3(-0.08, -0.36, 0.02);
     // Prázdné přebití: záchyt závěru vlevo (AR), nebo natažení páky závěru (AK/bullpup – levá ruka přes zbraň).
@@ -255,7 +277,10 @@ export class FPWeapon {
     const k = reloadT;
     let target = base;
     const seg = (x: number, y: number) => THREE.MathUtils.smoothstep(k, x, y);
-    if (k > 0 && this.model.reloadStyle === 'belt' && this.model.moving.feedCover && P.feedCover && P.feedEntry) {
+    if (k > 0 && this.singleTarget) {
+      target = this.singleTarget;
+      this.leftHand.setPose(this.mag.visible ? POSES.magazine : POSES.handguard, 0.25);
+    } else if (k > 0 && this.model.reloadStyle === 'belt' && this.model.moving.feedCover && P.feedCover && P.feedEntry) {
       // Pás: víko → schránka → nová schránka → pás na lůžko → zavřít víko → (prázdné) páka → zpět.
       const piv = this.model.moving.feedCover.pivot;
       const tip = P.feedCover.clone().sub(piv).applyAxisAngle(new THREE.Vector3(1, 0, 0), -this.coverAngle).add(piv);
@@ -336,7 +361,11 @@ export class FPWeapon {
         this.flashUntil = this.time + 0.045;
         this.flash.rotation.z = Math.random() * Math.PI;
         this.flash.scale.setScalar(0.85 + Math.random() * 0.4);
-        if (this.showCasings) this.ejectCasing();
+        if (this.showCasings && this.model.cycle !== 'pump') this.ejectCasing();
+        if (this.model.cycle === 'pump') {
+          this.pumpStart = this.time + 0.12;
+          this.pumpSounded = false;
+        }
       }
       if (this.lastSeq < 0) this.maxSeq = ws.shotSeq;
       if (ws.shotSeq < this.lastSeq) this.maxSeq = Math.max(this.maxSeq, this.lastSeq);
@@ -354,8 +383,9 @@ export class FPWeapon {
       empty = ws.reloadEmpty ? 1 : 0;
     }
     const belt = this.model.reloadStyle === 'belt';
+    this.updatePumpAndShells(ws, simTime, empty);
     // Pásové zbraně: menší naklopení (víko a schránka musí zůstat v obraze).
-    const tilt = Math.sin(Math.min(1, reloadT * 1.15) * Math.PI) * (belt ? 0.45 : 1);
+    const tilt = Math.sin(Math.min(1, reloadT * 1.15) * Math.PI) * (belt ? 0.45 : this.model.reloadStyle === 'single' ? 0 : 1);
     const magOut = THREE.MathUtils.smoothstep(reloadT, 0.27, 0.42) * (1 - THREE.MathUtils.smoothstep(reloadT, 0.5, 0.68));
     this.reloadVisual = reloadT > 0 ? magOut : 0;
     const P2 = this.model.points;
@@ -368,7 +398,7 @@ export class FPWeapon {
       this.boxOffset.set(this.model.magSide * 0.07 * out, -0.26 * out, 0.02 * out);
       this.mag.position.copy(P2.magazineSocket).add(this.boxOffset);
       this.mag.rotation.set(this.model.magRock * out, 0, this.model.magSide * 0.35 * out);
-    } else {
+    } else if (this.model.reloadStyle !== 'single') {
       this.mag.position.set(P2.magazineSocket.x - 0.03 * this.reloadVisual, P2.magazineSocket.y - 0.3 * this.reloadVisual, P2.magazineSocket.z + 0.02 * this.reloadVisual);
       this.mag.rotation.x = this.model.magRock * this.reloadVisual;
     }
@@ -391,15 +421,17 @@ export class FPWeapon {
     const kickPitch = THREE.MathUtils.clamp(this.kick, -0.2, 1) * THREE.MathUtils.degToRad(1.4);
     // Pásové přebití: zbraň níž, blíž a horní stranou k hráči (lůžko a víko v obraze).
     const bt = belt && reloadT > 0 ? Math.sin(Math.min(1, reloadT * 1.08) * Math.PI) : 0;
+    // Nabíjení po jednom: zbraň zvednutá a přetočená spodkem k hráči (nabíjecí otvor v obraze).
+    const sgl = this.model.reloadStyle === 'single' && reloadT > 0 ? Math.min(1, reloadT * 8, (1 - reloadT) * 8) : 0;
     pr.position.set(
-      this.swayX * 0.1 + Math.cos(bobPhase) * bobH - sprintPose * 0.02 + tilt * 0.02 - bt * 0.015,
-      this.swayY * 0.1 + Math.sin(bobPhase * 2) * bobV - sprintPose * 0.08 - this.lower * 0.07 - (1 - this.equipT) * 0.35 - tilt * 0.03 - bt * 0.035,
-      kickBack + sprintPose * 0.02 + this.lower * 0.12 + bt * 0.03,
+      this.swayX * 0.1 + Math.cos(bobPhase) * bobH - sprintPose * 0.02 + tilt * 0.02 - bt * 0.015 - sgl * 0.06,
+      this.swayY * 0.1 + Math.sin(bobPhase * 2) * bobV - sprintPose * 0.08 - this.lower * 0.07 - (1 - this.equipT) * 0.35 - tilt * 0.03 - bt * 0.035 + sgl * 0.07,
+      kickBack + sprintPose * 0.02 + this.lower * 0.12 + bt * 0.03 + sgl * 0.04,
     );
     pr.rotation.set(
-      -sprintPose * THREE.MathUtils.degToRad(20) + this.swayY * 0.6 + kickPitch - this.lower * 0.55 + (1 - this.equipT) * 0.6 + tilt * 0.18 - bt * 0.12,
+      -sprintPose * THREE.MathUtils.degToRad(20) + this.swayY * 0.6 + kickPitch - this.lower * 0.55 + (1 - this.equipT) * 0.6 + tilt * 0.18 - bt * 0.12 + sgl * 0.15,
       sprintPose * THREE.MathUtils.degToRad(10) + this.swayX * 0.6 + tilt * 0.12,
-      sprintPose * THREE.MathUtils.degToRad(8) - tilt * 0.42 + bt * 0.22,
+      sprintPose * THREE.MathUtils.degToRad(8) - tilt * 0.42 + bt * 0.22 - sgl * 0.75,
     );
     this.placeForearms();
 
@@ -412,7 +444,85 @@ export class FPWeapon {
     }
 
     this.updateCasings(dt);
-    void PF_RIFLE;
+  }
+
+  /**
+   * Pumpa po výstřelu (vzad → vpřed během kadence) a nabíjení po jednom podle časů pravidel:
+   * příprava → pro každý náboj ruka k sumce, s nábojem k otvoru, zatlačení → dopumpování po prázdné zbrani.
+   */
+  private updatePumpAndShells(ws: WeaponState | null, simTime: number, empty: number) {
+    const sm = THREE.MathUtils.smoothstep;
+    const R = this.rules;
+    let pumpPos = 0;
+    if (this.model.cycle === 'pump' && this.pumpStart >= 0) {
+      const dur = Math.min(0.55, R.fireInterval * 0.6);
+      const u = (this.time - this.pumpStart) / dur;
+      if (u >= 0 && u <= 1) {
+        pumpPos = u < 0.5 ? sm(u, 0, 0.5) : 1 - sm(u, 0.5, 1);
+        if (!this.pumpSounded) {
+          this.pumpSounded = true;
+          this.onMech('pump');
+          if (this.showCasings) this.ejectCasing();
+        }
+      }
+    }
+    this.singleTarget = null;
+    const single = this.model.reloadStyle === 'single' && ws?.action === 'reload';
+    if (!single) {
+      if (this.model.reloadStyle === 'single') this.mag.visible = false;
+      this.shellCount = -1;
+    } else {
+      const P = this.model.points;
+      const port = P.loadingPort ?? P.magazineSocket;
+      const rel = simTime - ws!.actionStart;
+      const st = R.shellStart ?? 0.4, ins = R.shellInsert ?? 0.5;
+      const n = ws!.shellsPlanned;
+      const ready = port.clone().add(new THREE.Vector3(-0.05, -0.05, 0.035));
+      const pouch = new THREE.Vector3(-0.1, -0.3, 0.12);
+      const pumpHand = new THREE.Vector3(-0.05, P.gripLeft.y - 0.032, P.gripLeft.z + 0.012);
+      let showShell = false;
+      const shellPos = new THREE.Vector3();
+      if (rel < st) {
+        this.singleTarget = pumpHand.clone().lerp(ready, sm(rel / st, 0.1, 1));
+      } else if (rel < st + n * ins) {
+        const i = Math.floor((rel - st) / ins);
+        const u = (rel - st) / ins - i;
+        const t = ready.clone();
+        if (u < 0.35) t.lerp(pouch, sm(u, 0, 0.35));
+        else if (u < 0.7) t.copy(pouch).lerp(ready, sm(u, 0.35, 0.7));
+        else t.lerpVectors(ready, port.clone().add(new THREE.Vector3(-0.035, -0.035, 0.02)), sm(u, 0.7, 0.86));
+        this.singleTarget = t;
+        showShell = u > 0.28 && u < 0.88;
+        const inHand = t.clone().add(new THREE.Vector3(0.03, 0.012, -0.035));
+        shellPos.copy(inHand).lerp(port.clone().add(new THREE.Vector3(0, 0.012, -0.02)), sm(u, 0.72, 0.88));
+        if (i !== this.shellCount && u > 0.85) {
+          this.shellCount = i;
+          this.onMech('shell');
+        }
+      } else {
+        // Dopumpování po prázdné zbrani (ruka zpět na pumpě).
+        const ch = R.chamberTime ?? 0.6;
+        const c = empty ? (rel - st - n * ins) / ch : 1;
+        this.singleTarget = ready.clone().lerp(pumpHand, sm(c, 0, 0.3));
+        if (empty && c > 0.3 && c < 1) {
+          const v = (c - 0.3) / 0.7;
+          pumpPos = v < 0.5 ? sm(v, 0, 0.5) : 1 - sm(v, 0.5, 1);
+          if (this.shellCount !== -2) {
+            this.shellCount = -2;
+            this.onMech('pump');
+          }
+        }
+      }
+      this.mag.visible = showShell;
+      if (showShell) {
+        this.mag.position.copy(shellPos);
+        this.mag.rotation.set(0, 0, 0);
+      }
+      // Ruka na pumpě sleduje její polohu i během dopumpování.
+      if (this.singleTarget && pumpPos > 0) this.singleTarget.z += pumpPos * (this.model.moving.pump?.travel?.z ?? 0);
+    }
+    this.pumpPos = pumpPos;
+    if (this.pump && this.model.moving.pump) this.pump.position.copy(this.model.moving.pump.pivot).addScaledVector(this.model.moving.pump.travel ?? new THREE.Vector3(), pumpPos);
   }
 
   private ejectCasing() {

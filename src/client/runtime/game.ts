@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { CAMERA, adsVFov, vFovFromH16x9 } from '../../shared/config/camera';
 import { MOVEMENT, type MovementConfig } from '../../shared/config/movement';
-import { PF_RIFLE } from '../../shared/config/weapon';
+import { PF_MG } from '../../shared/config/weapon';
+import { rulesOf } from '../../shared/config/arsenal';
 import type { MapDocument } from '../../shared/map/schema';
 import { clamp, lerp } from '../../shared/math';
 import { BTN } from '../../shared/sim/input';
@@ -38,7 +39,8 @@ export class Game {
   private kickT = 1;
   private kickAmp = 0;
   private lastLandSeen = -1;
-  readonly fp: FPWeapon;
+  fp: FPWeapon;
+  private fpId: string;
   readonly effects: Effects;
   readonly hud: Hud;
   readonly soldiers: SoldierPool;
@@ -59,25 +61,33 @@ export class Game {
     private scene: THREE.Scene,
     private doc: MapDocument,
     private audio: GameAudio,
-    quality: QualityProfile,
+    private quality: QualityProfile,
     weaponId = 'm4a1',
   ) {
-    this.fp = new FPWeapon(weaponId, null, quality.id);
-    this.fp.showCasings = quality.id !== 'low';
-    this.fp.onShot = () => this.audio.shot();
-    camera.add(this.fp.root);
+    this.fpId = weaponId;
+    this.fp = this.makeFp(weaponId);
     this.effects = new Effects(quality.maxDecals);
     scene.add(this.effects.root);
     this.soldiers = new SoldierPool(quality.id);
     scene.add(this.soldiers.root);
     this.hud = new Hud();
     this.hud.reset();
-    this.hud.onSpawn = (id) => {
-      const err = this.driver.requestSpawn(id);
+    this.hud.onSpawn = (id, weaponId) => {
+      const err = this.driver.requestSpawn(id, weaponId);
       if (err) this.hud.feed(`Spawn odmítnut: ${err}`, this.now);
       else this.onSpawned();
     };
     this.hud.onRestart = () => this.driver.restart();
+  }
+
+  /** Zbraň v první osobě podle výbavy (přestaví se, když server potvrdí jinou zbraň). */
+  private makeFp(weaponId: string) {
+    const fp = new FPWeapon(weaponId, null, this.quality.id);
+    fp.showCasings = this.quality.id !== 'low';
+    fp.onMech = (k) => this.audio.mech(k);
+    fp.onShot = () => this.audio.shot(rulesOf(weaponId).pellets ? 'shotgun' : rulesOf(weaponId) === PF_MG ? 'mg' : 'rifle');
+    this.camera.add(fp.root);
+    return fp;
   }
 
   get simTime() {
@@ -108,13 +118,14 @@ export class Game {
     }
     this.processEvents();
     this.world.updateDummies(this.driver.dummies());
-    this.soldiers.update(this.driver.remotes(), frameDt, this.simTime);
+    this.soldiers.update(this.driver.remotes(), frameDt, this.simTime, this.camera.position);
     this.updateCamera(frameDt, this.acc / dt);
     this.effects.update(frameDt);
     this.hudT += frameDt;
     if (this.hudT > 0.05) {
       this.hudT = 0;
       const me = this.driver.local();
+      this.hud.faction = this.driver.faction();
       this.hud.update(this.now, me, this.driver.conquest(), this.doc, this.simTime, me && !me.alive ? this.driver.spawnOptions() : []);
     }
   }
@@ -126,6 +137,9 @@ export class Game {
       if (e.type === 'shot') {
         if (e.owner === this.driver.localId) {
           /* vlastní zvuk/záblesk už přehrála predikce (FPWeapon.onShot) */
+        } else if ((e.pellet ?? 0) > 0) {
+          /* další broky téhož výstřelu: jen občas stopovka, zvuk a záblesk jednou */
+          if (Math.random() < 0.15) this.effects.tracer(new THREE.Vector3(e.origin.x, e.origin.y, e.origin.z), new THREE.Vector3(e.origin.x + e.dir.x * 25, e.origin.y + e.dir.y * 25, e.origin.z + e.dir.z * 25));
         } else {
           const d = Math.hypot(e.origin.x - eye.x, e.origin.y - eye.y, e.origin.z - eye.z);
           const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
@@ -176,6 +190,11 @@ export class Game {
       this.hud.setCrosshair(0, false);
       return;
     }
+    if (w.weaponId !== this.fpId) {
+      this.fp.dispose();
+      this.fpId = w.weaponId;
+      this.fp = this.makeFp(w.weaponId);
+    }
     this.fp.root.visible = true;
     const p = this.prev && this.prev.tick < s.tick ? this.prev : s;
     const eyeA = eyePosition(this.cfg, p), eyeB = eyePosition(this.cfg, s);
@@ -221,7 +240,7 @@ export class Game {
     }
     this.input.adsSensScale = lerp(1, CAMERA.adsSensitivity, ads);
     // Dynamický zaměřovač z rozptylu (v ADS skrytý).
-    const spread = spreadOf(PF_RIFLE, this.cfg, s, w, this.simTime).total;
+    const spread = spreadOf(rulesOf(w.weaponId), this.cfg, s, w, this.simTime).total;
     const h = this.camera.userData.viewportHeight ?? window.innerHeight;
     const radius = (h / 2) * (Math.tan(spread) / Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2));
     this.hud.setCrosshair(radius, ads < 0.5 && !s.sprinting && !s.ladder);

@@ -19,6 +19,7 @@ for (const s of shots) {
     if (s.fov) set('#fov', s.fov);
     if (s.hands) set('#hands', s.hands);
     if (s.reload !== undefined) window.__viewer.reload(s.reload === 'empty');
+    if (s.fire) window.__viewer.ws.shotSeq++;
     if (s.phase !== undefined) {
       // Deterministická fáze přebití (nezávislá na rychlosti softwarového rendereru).
       const v = window.__viewer;

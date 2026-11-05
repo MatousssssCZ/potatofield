@@ -73,7 +73,13 @@ npm run server
 
 V editoru klikněte na **🌐 Multiplayer**, zadejte `ws://<adresa>:8787` a jméno. Mapu posílá server
 (klient ji jen validuje); po návratu do editoru se obnoví vaše mapa. Dialog umožňuje simulovat RTT,
-jitter a ztráty. Server: `--map soubor.json --port 8787 --scenario sc_bases | --free`.
+jitter a ztráty. Server: `--map soubor.json --port 8787 --scenario sc_bases | --free --factions usmc,mec`
+(frakce týmů A a B: usmc | mec | pla). Protokol v2.
+
+**Výbava:** po smrti / před nasazením se na obrazovce nasazení volí classa (Assault, Medic, Support,
+Engineer) frakce vašeho týmu; server ověří, že zbraň frakci patří. Ve volném testu lze zvolit kteroukoli
+z 12 zbraní (výchozí v Nastavení). Pravidla jsou fiktivní profily PF-* (N): puška, kulomet,
+pumpovací a samonabíjecí brokovnice.
 
 | Akce | Klávesa |
 |---|---|
@@ -143,7 +149,7 @@ a scénáři dialog nabídne Conquest (scénář + tým): zabírání, tickety, 
 
 ## Prohlížeč zbraní
 
-`/viewer.html` – hotové zbraně (Assault, Medic a Support všech frakcí – 9 z 12) s rukama podle frakce a classy: hip/ADS/boky, světlo, kvalita, FOV, animace přebití, počty trojúhelníků a draw calls (`?w=akm` vybere zbraň). Vzhled zbraně do testu se volí v Nastavení; pravidla střelby jsou pro všechny stejná (PF-Rifle). `npx tsx scripts/weapon-report.ts` vypíše rozpočty.
+`/viewer.html` – všech 12 zbraní (Hawk Type 97 jako neověřený návrh) s rukama podle frakce a classy: hip/ADS/boky, světlo, kvalita, FOV, animace přebití, počty trojúhelníků a draw calls (`?w=akm` vybere zbraň). Vzhled zbraně do testu se volí v Nastavení; pravidla střelby jsou pro všechny stejná (PF-Rifle). `npx tsx scripts/weapon-report.ts` vypíše rozpočty.
 
 ## Dokumenty
 

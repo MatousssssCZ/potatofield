@@ -5,7 +5,8 @@ import type { ContactInfo, OrderInfo, RemoteState, ServerMsg, SquadInfo } from '
 import { createConquest, type ConquestState } from '../../shared/sim/conquest';
 import type { InputFrame } from '../../shared/sim/input';
 import { MOVEMENT } from '../../shared/config/movement';
-import { PF_RIFLE } from '../../shared/config/weapon';
+import { rulesOf, type Faction } from '../../shared/config/arsenal';
+import type { Team } from '../../shared/map/schema';
 import type { SimEvent } from '../../shared/sim/match';
 import { PlayerController, clonePlayerState, createPlayerState, type PlayerState } from '../../shared/sim/player';
 import { createWeaponState, stepWeapon, type WeaponState } from '../../shared/sim/weapon';
@@ -37,6 +38,7 @@ export class NetDriver implements GameDriver {
   contacts: ContactInfo[] = [];
   chat: Array<{ id: string; name: string; ch: string; text: string; at: number; radio?: boolean }> = [];
   scores: Extract<ServerMsg, { t: 'snap' }>['scores'] = [];
+  private factions: Record<Team, Faction> | null = null;
   private serverTime = 0;
   private serverTimeAt = 0;
   onReject: (what: string, reason: string) => void = () => {};
@@ -62,6 +64,7 @@ export class NetDriver implements GameDriver {
   private onMsg(m: ServerMsg) {
     if (m.t === 'welcome') {
       this.doc = m.map;
+      this.factions = m.factions;
       this.cq = m.conquest ? createConquest(m.map, m.scenarioId) : null;
     } else if (m.t === 'events') {
       for (const e of m.list) {
@@ -119,7 +122,7 @@ export class NetDriver implements GameDriver {
     if (!this.ctrl || !this.state || !this.weapon || !this.phys) return;
     this.ctrl.step(this.state, f);
     // Predikce akcí zbraně (projektily rozhoduje server; lokálně jen prezentace).
-    stepWeapon(PF_RIFLE, MOVEMENT, this.state, this.weapon, f, { playerId: this.localId, lifeId: 0, seed: 0, phys: this.phys });
+    stepWeapon(rulesOf(this.weapon.weaponId), MOVEMENT, this.state, this.weapon, f, { playerId: this.localId, lifeId: 0, seed: 0, phys: this.phys });
   }
 
   step(input: InputFrame) {
@@ -172,7 +175,7 @@ export class NetDriver implements GameDriver {
       st.grounded = o.grounded;
       st.sprinting = o.sprinting;
       st.ladder = o.ladder;
-      const w = createWeaponState(PF_RIFLE, 0);
+      const w = createWeaponState(rulesOf(o.weapon), 0, o.weapon);
       w.adsProgress = L(p.ads, o.ads);
       w.action = o.action;
       w.actionStart = o.actionStart;
@@ -204,8 +207,12 @@ export class NetDriver implements GameDriver {
     }
     return list;
   }
-  requestSpawn(id: string | null) {
-    this.net.send({ t: 'spawn', id });
+  faction(): Faction | null {
+    const me = this.net.lastSnap?.me;
+    return me && this.factions && this.net.welcome?.conquest ? this.factions[me.team] : null;
+  }
+  requestSpawn(id: string | null, weaponId?: string | null) {
+    this.net.send(weaponId ? { t: 'spawn', id, weapon: weaponId } : { t: 'spawn', id });
     this.pending = [];
     this.state = null;
     return null;

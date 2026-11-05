@@ -1,8 +1,7 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { MOVEMENT } from '../../shared/config/movement';
 import type { PlayerView } from '../runtime/driver';
-import { buildM4A1 } from './weapons/ar';
+import { WORLD_LOD, worldWeapon } from './weapons/worldModel';
 
 /**
  * Vzdálený voják (world model): jednoduchá postava se dvěma týmovými variantami
@@ -19,7 +18,9 @@ interface Soldier {
   legR: THREE.Object3D;
   armL: THREE.Object3D;
   armR: THREE.Object3D;
-  rifle: THREE.Object3D;
+  rifle: THREE.Mesh;
+  weaponId: string;
+  lod: number;
   flash: THREE.Mesh;
   flashUntil: number;
   phase: number;
@@ -32,7 +33,9 @@ export class SoldierPool {
   private mats: Record<'teamA' | 'teamB', { cloth: THREE.Material; vest: THREE.Material; helmet: THREE.Material }>;
   private skin = new THREE.MeshStandardMaterial({ color: '#b78a6a', roughness: 0.7 });
   private gear = new THREE.MeshStandardMaterial({ color: '#2b2a27', roughness: 0.8 });
-  private rifleGeo: THREE.BufferGeometry;
+  private quality: 'low' | 'standard' | 'high';
+  /** Statistika posledního snímku (počet postav podle LOD zbraně). */
+  lodCounts = [0, 0, 0];
   private rifleMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, metalness: 0.3 });
   private flashMat = new THREE.MeshBasicMaterial({ color: '#ffd28a', transparent: true, opacity: 0.9, toneMapped: false, depthWrite: false });
   private geo: Record<string, THREE.BufferGeometry> = {};
@@ -44,10 +47,8 @@ export class SoldierPool {
       teamA: { cloth: mk(UNIFORM.teamA.cloth), vest: mk(UNIFORM.teamA.vest), helmet: mk(UNIFORM.teamA.helmet) },
       teamB: { cloth: mk(UNIFORM.teamB.cloth), vest: mk(UNIFORM.teamB.vest), helmet: mk(UNIFORM.teamB.helmet) },
     };
-    // Světový model pušky = stejný generátor v nižším rozlišení (LOD), jeden mesh.
-    const m = buildM4A1(quality === 'high' ? 0.5 : 0.35);
-    this.rifleGeo = mergeGeometries([m.static.metal, m.static.polymer, m.moving.magazine.geometry])!;
-    for (const g of [m.static.metal, m.static.polymer, m.moving.magazine.geometry, m.moving.chargingHandle?.geometry, m.optic?.glass]) g?.dispose();
+    // Světové modely zbraní: sdílená mezipaměť podle zbraně a kvality (LOD0–2), jeden mesh na postavu.
+    this.quality = quality;
     const seg = quality === 'low' ? 6 : 10;
     this.geo = {
       torso: new THREE.BoxGeometry(0.42, 0.55, 0.24),
@@ -91,16 +92,17 @@ export class SoldierPool {
     armL.rotation.set(-1.2, 0, 0.5);
     armR.rotation.set(-0.9, 0, -0.2);
     body.add(armL, armR);
-    const rifle = new THREE.Mesh(this.rifleGeo, this.rifleMat);
+    const ww = worldWeapon('m4a1', this.quality);
+    const rifle = new THREE.Mesh(ww.lods[0], this.rifleMat);
     rifle.castShadow = true;
     rifle.position.set(0.14, 0.42, -0.25);
     body.add(rifle);
     const flash = new THREE.Mesh(this.geo.flash, this.flashMat);
-    flash.position.set(0, 0.026, -0.6);
+    flash.position.copy(ww.muzzle);
     flash.visible = false;
     rifle.add(flash);
     this.root.add(root);
-    const s: Soldier = { id, root, body, legL, legR, armL, armR, rifle, flash, flashUntil: 0, phase: 0, seen: true };
+    const s: Soldier = { id, root, body, legL, legR, armL, armR, rifle, weaponId: 'm4a1', lod: 0, flash, flashUntil: 0, phase: 0, seen: true };
     this.soldiers.set(id, s);
     return s;
   }
@@ -110,8 +112,9 @@ export class SoldierPool {
     if (s) s.flashUntil = this.time + 0.05;
   }
 
-  update(list: PlayerView[], dt: number, _simTime: number) {
+  update(list: PlayerView[], dt: number, _simTime: number, eye?: THREE.Vector3) {
     this.time += dt;
+    this.lodCounts = [0, 0, 0];
     for (const s of this.soldiers.values()) s.seen = false;
     const st = MOVEMENT.stances;
     for (const p of list) {
@@ -140,7 +143,22 @@ export class SoldierPool {
       s.legR.rotation.x = -swing + crouchK * 1.0;
       s.rifle.rotation.x = ps.pitch * 0.8;
       s.flash.visible = this.time < s.flashUntil;
-      s.rifle.visible = s.root.position.distanceToSquared(new THREE.Vector3()) >= 0; // LOD: puška zůstává (malý mesh)
+      // Zbraň podle výbavy a LOD podle vzdálenosti od kamery (bez nápadného přeskakování: hystereze 2 m).
+      const d = eye ? s.root.position.distanceTo(eye) : 0;
+      let lod = s.lod;
+      if (d < WORLD_LOD[0] - 2) lod = 0;
+      else if (d > WORLD_LOD[1] + 2) lod = 2;
+      else if (d > WORLD_LOD[0] + 2 && d < WORLD_LOD[1] - 2) lod = 1;
+      const wid = p.weapon.weaponId || 'm4a1';
+      if (wid !== s.weaponId || lod !== s.lod) {
+        const ww = worldWeapon(wid, this.quality);
+        s.rifle.geometry = ww.lods[lod];
+        s.flash.position.copy(ww.muzzle);
+        s.weaponId = wid;
+        s.lod = lod;
+      }
+      s.rifle.castShadow = lod < 2;
+      this.lodCounts[lod]++;
     }
     for (const [id, s] of this.soldiers) {
       if (!s.seen) {
@@ -156,7 +174,6 @@ export class SoldierPool {
 
   dispose() {
     for (const g of Object.values(this.geo)) g.dispose();
-    this.rifleGeo.dispose();
     for (const t of Object.values(this.mats)) for (const m of Object.values(t)) m.dispose();
     this.skin.dispose();
     this.gear.dispose();

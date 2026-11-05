@@ -902,6 +902,38 @@ kbd {
 .h-death button:disabled {
   opacity: 0.4;
 }
+.h-kits {
+  margin: 8px 0;
+}
+.h-kit-title {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--dim, #a99d86);
+  margin-bottom: 4px;
+}
+.h-kit-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+}
+.h-kit-row > span {
+  width: 42px;
+  font-size: 11px;
+  color: var(--dim, #a99d86);
+}
+.h-death .h-kit-row button {
+  display: flex;
+  flex-direction: column;
+  min-width: 92px;
+  padding: 5px 8px;
+}
+.h-kit-row button small {
+  font-weight: 400;
+  font-size: 11px;
+  opacity: 0.8;
+}
 
 /* ---------- Týmové UI (síť) ---------- */
 .tui-log {

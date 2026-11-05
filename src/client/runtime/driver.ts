@@ -6,6 +6,7 @@ import { MatchSim, dummyOffset, type SimEvent } from '../../shared/sim/match';
 import { clonePlayerState, type PlayerState } from '../../shared/sim/player';
 import type { WeaponState } from '../../shared/sim/weapon';
 import type { LadderDef } from '../../world/parts';
+import type { Faction } from '../../shared/config/arsenal';
 
 /** Pohled prezentace na hráče (lokálního i vzdáleného). */
 export interface PlayerView {
@@ -37,7 +38,10 @@ export interface GameDriver {
   takeEvents(): SimEvent[];
   time(): number;
   spawnOptions(): SpawnPoint[];
-  requestSpawn(spawnId: string | null): string | null;
+  /** Žádost o spawn s volitelnou výbavou (zbraň z arzenálu); autorita ji ověří. */
+  requestSpawn(spawnId: string | null, weaponId?: string | null): string | null;
+  /** Frakce týmu lokálního hráče (výběr výbavy) – null = volný test, libovolná frakce. */
+  faction(): Faction | null;
   dummies(): Array<{ id: string; offset: number; down: boolean }>;
   restart(): void;
   dispose(): void;
@@ -50,11 +54,18 @@ export class OfflineDriver implements GameDriver {
   readonly mode = 'offline' as const;
   readonly sim: MatchSim;
 
-  constructor(phys: PhysicsWorld, doc: MapDocument, opts: { conquest: boolean; scenarioId?: string; team: Team }, ladders: LadderDef[]) {
+  constructor(phys: PhysicsWorld, doc: MapDocument, opts: { conquest: boolean; scenarioId?: string; team: Team; weapon?: string }, ladders: LadderDef[]) {
     this.sim = new MatchSim(phys, doc, { conquest: opts.conquest, scenarioId: opts.scenarioId, freeRespawnDelay: 3 });
     this.sim.ladders = ladders;
     this.sim.addPlayer(this.localId, opts.team, 'Hráč');
-    if (!opts.conquest) this.sim.requestSpawn(this.localId, null);
+    this.weapon = opts.weapon ?? null;
+    if (!opts.conquest) this.sim.requestSpawn(this.localId, null, this.weapon);
+  }
+  private weapon: string | null;
+
+  faction() {
+    const p = this.sim.players.get(this.localId);
+    return p && this.sim.conquest ? this.sim.factionOf(p.team) : null;
   }
 
   step(input: InputFrame) {
@@ -88,8 +99,12 @@ export class OfflineDriver implements GameDriver {
     const p = this.sim.players.get(this.localId);
     return p ? this.sim.spawnOptions(p.team) : [];
   }
-  requestSpawn(spawnId: string | null) {
-    return this.sim.requestSpawn(this.localId, spawnId);
+  requestSpawn(spawnId: string | null, weaponId?: string | null) {
+    if (weaponId) this.weapon = weaponId;
+    const p = this.sim.players.get(this.localId);
+    // Výchozí zbraň z nastavení jiné frakce se v Conquestu nepoužije (server by ji odmítl).
+    const w = weaponId ?? (p && this.weapon && !this.sim.checkWeapon(p.team, this.weapon) ? this.weapon : null);
+    return this.sim.requestSpawn(this.localId, spawnId, w);
   }
   dummies() {
     const t = this.sim.time;
@@ -97,7 +112,7 @@ export class OfflineDriver implements GameDriver {
   }
   restart() {
     this.sim.restart();
-    if (!this.sim.conquest) this.sim.requestSpawn(this.localId, null);
+    if (!this.sim.conquest) this.sim.requestSpawn(this.localId, null, this.weapon);
   }
   dispose() {
     this.sim.dispose();

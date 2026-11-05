@@ -144,6 +144,7 @@ function build95(variant: 'qbz95' | 'qbb95', segScale: number): WeaponModel {
     magRock: qbb ? 0.12 : 0.25,
     emptyAction: 'chargingHandle',
     reloadStyle: 'magazine',
+    cycle: 'none',
     magSide: 0,
     triangles: triCount(m, p, mag, handle, optic?.glass),
   };

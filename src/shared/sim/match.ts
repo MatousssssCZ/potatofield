@@ -1,5 +1,6 @@
 import { MOVEMENT, type MovementConfig } from '../config/movement';
 import { PF_RIFLE, type WeaponConfig } from '../config/weapon';
+import { DEFAULT_FACTIONS, arsenalEntry, rulesOf, weaponFor, type Faction } from '../config/arsenal';
 import type { MapDocument, SpawnPoint, Team, Zone } from '../map/schema';
 import type { V3 } from '../math';
 import type { PhysicsWorld } from '../physics/world';
@@ -34,6 +35,8 @@ export interface SimPlayer {
   deaths: number;
   lastInputTick: number;
   seed: number;
+  /** Zbraň z arzenálu potvrzená serverem při spawnu (vzhled + pravidla). */
+  weaponId: string;
 }
 
 export interface DummyDef {
@@ -50,7 +53,7 @@ export interface Dummy extends DummyDef {
 }
 
 export type SimEvent =
-  | { type: 'shot'; key: string; owner: string; origin: V3; dir: V3 }
+  | { type: 'shot'; key: string; owner: string; origin: V3; dir: V3; pellet?: number }
   | ({ type: 'impact' } & ImpactEvent)
   | { type: 'hit'; owner: string; target: string; damage: number; zone: string; hp: number }
   | { type: 'death'; id: string; killer: string | null; cause: 'weapon' | 'zone' | 'fall'; lifeId: number }
@@ -65,6 +68,8 @@ export interface MatchOptions {
   seed?: number;
   /** Respawn bez Conquestu (střelnice). */
   freeRespawnDelay?: number;
+  /** Frakce týmů pro kontrolu výbavy (výchozí USMC × MEC). Bez Conquestu je volná. */
+  factions?: Record<Team, Faction>;
 }
 
 /** Pohyb figuríny: konstantní rychlost tam a zpět (deterministicky z času). */
@@ -89,6 +94,7 @@ export function dummiesFromMap(doc: MapDocument): DummyDef[] {
 
 export class MatchSim {
   readonly cfg: MovementConfig = MOVEMENT;
+  /** Výchozí pravidla (projektily bez vlastních pravidel). Hráč má pravidla podle své zbraně. */
   readonly weaponCfg: WeaponConfig = PF_RIFLE;
   tick = 0;
   readonly players = new Map<string, SimPlayer>();
@@ -115,7 +121,23 @@ export class MatchSim {
     return this.tick / this.cfg.tickRate;
   }
 
+  factionOf(team: Team): Faction {
+    return (this.opts.factions ?? DEFAULT_FACTIONS)[team];
+  }
+
+  /**
+   * Ověření volby výbavy: zbraň musí existovat a v Conquestu patřit frakci týmu.
+   * Vrací důvod odmítnutí nebo null.
+   */
+  checkWeapon(team: Team, weaponId: string): string | null {
+    const e = arsenalEntry(weaponId);
+    if (!e) return 'neznámá zbraň';
+    if (this.conquest && e.faction !== this.factionOf(team)) return 'zbraň nepatří frakci týmu';
+    return null;
+  }
+
   addPlayer(id: string, team: Team, name = id): SimPlayer {
+    const weaponId = weaponFor(this.factionOf(team), 'assault').id;
     const ctrl = new PlayerController(this.phys, this.cfg);
     ctrl.ladders = this.ladders;
     const state = createPlayerState(this.cfg, { x: 0, y: -1000, z: 0 });
@@ -126,7 +148,8 @@ export class MatchSim {
       team,
       ctrl,
       state,
-      weapon: createWeaponState(this.weaponCfg, this.time),
+      weapon: createWeaponState(rulesOf(weaponId), this.time, weaponId),
+      weaponId,
       hp: 0,
       alive: false,
       lifeId: 0,
@@ -164,10 +187,14 @@ export class MatchSim {
   }
 
   /** Žádost o spawn: server ověřuje oprávnění, prodlevu a volné místo. Vrací důvod odmítnutí. */
-  requestSpawn(id: string, spawnId: string | null): string | null {
+  requestSpawn(id: string, spawnId: string | null, weaponId?: string | null): string | null {
     const p = this.players.get(id);
     if (!p) return 'neznámý hráč';
     if (p.alive) return 'hráč žije';
+    if (weaponId) {
+      const err = this.checkWeapon(p.team, weaponId);
+      if (err) return err;
+    } else if (this.checkWeapon(p.team, p.weaponId)) weaponId = weaponFor(this.factionOf(p.team), 'assault').id;
     if (this.time < p.respawnAt - 1e-9) return 'respawn ještě neuplynul';
     if (this.conquest?.ended) return 'zápas skončil';
     let pos: V3, yaw = 0;
@@ -198,7 +225,8 @@ export class MatchSim {
     p.state = createPlayerState(this.cfg, pos, yaw);
     p.state.tick = this.tick;
     p.ctrl.place(p.state, pos, yaw);
-    p.weapon = createWeaponState(this.weaponCfg, this.time);
+    if (weaponId) p.weaponId = weaponId;
+    p.weapon = createWeaponState(rulesOf(p.weaponId), this.time, p.weaponId);
     p.hp = MAX_HP;
     p.alive = true;
     p.lifeId++;
@@ -249,11 +277,11 @@ export class MatchSim {
         this.kill(p, null, 'fall');
         continue;
       }
-      const shots = ended ? [] : stepWeapon(this.weaponCfg, this.cfg, p.state, p.weapon, input, { playerId: p.id, lifeId: p.lifeId, team: p.team, seed: p.seed, phys: this.phys });
+      const shots = ended ? [] : stepWeapon(rulesOf(p.weaponId), this.cfg, p.state, p.weapon, input, { playerId: p.id, lifeId: p.lifeId, team: p.team, seed: p.seed, phys: this.phys });
       for (const s of shots) {
         this.projectiles.push(s);
         const l = Math.hypot(s.vel.x, s.vel.y, s.vel.z);
-        this.events.push({ type: 'shot', key: s.key, owner: p.id, origin: { ...s.origin }, dir: { x: s.vel.x / l, y: s.vel.y / l, z: s.vel.z / l } });
+        this.events.push({ type: 'shot', key: s.key, owner: p.id, origin: { ...s.origin }, dir: { x: s.vel.x / l, y: s.vel.y / l, z: s.vel.z / l }, pellet: s.pellet ?? 0 });
       }
     }
     this.tick++;

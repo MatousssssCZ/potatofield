@@ -83,7 +83,12 @@ Všechny číselné hodnoty jsou návrhy Potatofieldu (`proposed`), ne změřen�
 - Dřevo sdílí materiál „polymer“ (roughness 0,74, barva vrcholů) – drží limit 4 neprůhledných materiálů sestavy.
 - U QBZ-95 jsou mechanická mířidla sklopená, aby nezasahovala do průhledu kolimátoru.
 - Pásové zbraně: schránka a viditelný úsek pásu jsou jeden pohyblivý celek (1 draw call); víko je samostatný díl na závěsu. Pás se hýbe jen při otevřeném víku. Přebití je rozfázované podle normalizovaného času akce ze simulace, takže se nikdy nerozejde s herním stavem.
-- Podpůrné zbraně zatím sdílí herní pravidla PF-Rifle (vzhled ≠ pravidla); kulometná pravidla musí přijít na server dřív, než se podpůrná zbraň stane výběrem ve hře.
+- Pravidla podle classy jsou fiktivní profily (N), ne parametry reálných zbraní: PF-Rifle, PF-MG, PF-Pump, PF-Auto12. Zbraň (vzhled + pravidla) určuje server při spawnu; klient jen žádá. Arzenál je sdílený (`src/shared/config/arsenal.ts`), vizuální katalog nad ním staví jen modely a ruce.
+- Frakce týmů: mapa je zatím neurčuje – výchozí USMC (tým A) × MEC (tým B), server je mění volbou `--factions`. Volný test povoluje libovolnou zbraň.
+- Brokovnice: jeden náboj = N projektilů (broků) v kuželu kolem směru výstřelu, deterministicky ze seedu serveru, pořadí výstřelu a indexu broku. Každý projektil nese pravidla své zbraně (poškození, dolet). Zvuk a záblesk vzdálené rány jen pro první brok.
+- Nabíjení po jednom: náboj se připíše v okamžiku vložení; stisk spouště s nábojem v zásobníku nabíjení přeruší (po prázdné zbrani se ještě dopumpuje). Prezentace čte fáze z časů pravidel a stavu akce, nikdy si munici nepočítá sama.
+- World modely: LOD0 = stejný generátor s menším rozlišením oblouků, LOD1/LOD2 = siluety z řezů podél hlavně (12–36 kvádrů); přepnutí 22 / 60 m s hysterezí 2 m.
+- Hawk Type 97 je označený neověřený návrh (zadání: bez reference blokovat k ověření, placeholder nevydávat za věrný model).
 
 ## Multiplayer
 - JSON přes WebSocket (`ws`, MIT), permessage-deflate. Server 60 Hz, snapshot 30 Hz, interpolace 100 ms.
@@ -94,7 +99,7 @@ Všechny číselné hodnoty jsou návrhy Potatofieldu (`proposed`), ne změřen�
 - Referenční ulice obsahuje testovací Conquest data (5 bodů, 2 scénáře) jen pro síťový pilot.
 
 ## Dočasné / placeholdery
-- Engineer zbraně (3) nejsou hotové (prohlížeč je označuje „čeká“, v nastavení nejsou).
+- Hawk Type 97 čeká na ověřenou referenci; ostatní modely mají rozměry jako umělecký odhad.
 - World model vojáka je jednoduchá figura bez skeletu (kolena/kyčle pózy ze stavu); 3P rig podle zadání pohybu vojáků zbývá.
 - Ruce: póza levé ruky a prstů vyžaduje další ladění.
 

@@ -262,6 +262,7 @@ function finish(
     magRock: 0.15,
     emptyAction: 'chargingHandle',
     reloadStyle: 'belt',
+    cycle: 'none',
     magSide: o.magSide,
     triangles: triCount(m, p, o.box, o.handle, o.cover),
   };

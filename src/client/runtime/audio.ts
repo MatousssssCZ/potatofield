@@ -72,11 +72,27 @@ export class GameAudio {
   }
 
   /** Vlastní výstřel: ostrý třesk + nízký úder + krátký dozvuk. */
-  shot() {
+  shot(kind: 'rifle' | 'mg' | 'shotgun' = 'rifle') {
     const r = 0.95 + Math.random() * 0.1;
-    this.burst({ gain: 0.9, decay: 0.09, lp: 9000, hp: 300, rate: r });
-    this.thump(70, 0.7, 0.16);
+    if (kind === 'shotgun') {
+      // Brokovnice: tupější, hlubší a delší třesk; pumpa je samostatný mechanický zvuk.
+      this.burst({ gain: 1.0, decay: 0.14, lp: 5000, hp: 140, rate: r * 0.75 });
+      this.thump(52, 0.95, 0.24);
+      this.burst({ gain: 0.26, decay: 0.7, lp: 1000, hp: 90, delay: 0.025, rate: 0.5 });
+      return;
+    }
+    this.burst({ gain: kind === 'mg' ? 0.8 : 0.9, decay: 0.09, lp: kind === 'mg' ? 7500 : 9000, hp: 300, rate: r * (kind === 'mg' ? 0.92 : 1) });
+    this.thump(kind === 'mg' ? 62 : 70, 0.7, 0.16);
     this.burst({ gain: 0.18, decay: 0.45, lp: 1400, hp: 120, delay: 0.02, rate: 0.6 });
+  }
+
+  /** Mechanika: pumpa, vložení náboje, víko (krátké kovové cvaknutí). */
+  mech(kind: 'pump' | 'shell' | 'cover') {
+    if (kind === 'pump') {
+      this.burst({ gain: 0.22, decay: 0.05, lp: 4000, hp: 600, rate: 0.8 });
+      this.burst({ gain: 0.26, decay: 0.05, lp: 4500, hp: 700, rate: 0.9, delay: 0.16 });
+    } else if (kind === 'shell') this.burst({ gain: 0.14, decay: 0.04, lp: 5000, hp: 1200, rate: 1.2 });
+    else this.burst({ gain: 0.2, decay: 0.06, lp: 3500, hp: 500, rate: 0.7 });
   }
 
   /** Vzdálený výstřel: tlumenější, se zpožděním podle vzdálenosti (rychlost zvuku). */

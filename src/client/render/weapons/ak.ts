@@ -15,7 +15,7 @@ import { PAL as C, hipFromGrip, triCount, type WeaponModel, type WeaponPoints } 
  */
 
 type Seg = (n: number) => number;
-type Variant = 'ak101' | 'akm' | 't81';
+type Variant = 'ak101' | 'akm' | 't81' | 'saiga';
 
 interface AkLook {
   furniture: string;
@@ -27,6 +27,7 @@ const LOOK: Record<Variant, AkLook> = {
   ak101: { furniture: C.polymer, furnitureDark: C.polymerGrip, mag: '#2a2a2b' },
   akm: { furniture: C.woodAkm, furnitureDark: C.woodAkmDark, mag: C.magSteel },
   t81: { furniture: C.woodT81, furnitureDark: C.woodT81Dark, mag: '#3a3d38' },
+  saiga: { furniture: C.polymer, furnitureDark: C.polymerGrip, mag: '#252526' },
 };
 
 /** Výška záměrné přímky nad osou vývrtu. */
@@ -54,6 +55,9 @@ function build(variant: Variant, segScale: number): WeaponModel {
   const S: Seg = (n) => Math.max(8, Math.round(n * segScale));
   const L = LOOK[variant];
   const t81 = variant === 't81';
+  /** Saiga-12: samonabíjecí brokovnice z rodiny AK – robustnější zásobník a hlaveň, muška na plynovém bloku. */
+  const sg = variant === 'saiga';
+  const poly101 = variant === 'ak101' || sg;
   const metal: THREE.BufferGeometry[] = [];
   const furn: THREE.BufferGeometry[] = [];
 
@@ -82,7 +86,7 @@ function build(variant: Variant, segScale: number): WeaponModel {
 
   // --- Plynová trubice, horní a dolní předpažbí, plynový blok, hlaveň. ---
   const gasZ0 = rsZ0 - 0.082;
-  const gasEnd = t81 ? -0.335 : -0.335;
+  const gasEnd = sg ? -0.37 : -0.335;
   metal.push(tube(0.0105, gasZ0, gasEnd, S(16), C.blued, 0, 0.026));
   const uhEnd = t81 ? gasZ0 - 0.085 : gasZ0 - 0.11;
   furn.push(crossProfile([[-0.016, 0.014], [0.016, 0.014], [0.0175, 0.024], [0.012, 0.032], [0.0, 0.035], [-0.012, 0.032], [-0.0175, 0.024]], gasZ0 - 0.002, uhEnd, 0.003, L.furniture));
@@ -98,7 +102,7 @@ function build(variant: Variant, segScale: number): WeaponModel {
     ? [[-0.0195, 0.014], [-0.021, -0.004], [-0.017, -0.022], [-0.008, -0.027], [0.008, -0.027], [0.017, -0.022], [0.021, -0.004], [0.0195, 0.014]]
     : [[-0.022, 0.014], [-0.0245, -0.004], [-0.02, -0.024], [-0.01, -0.03], [0.01, -0.03], [0.02, -0.024], [0.0245, -0.004], [0.022, 0.014]];
   furn.push(crossProfile(lh, lhZ0, lhZ1, 0.004, L.furniture));
-  if (variant === 'ak101') for (const y of [-0.006, -0.016]) for (const sx of [-1, 1]) furn.push(bevelBox(0.0018, 0.0035, 0.15, 0.0006, L.furnitureDark, [sx * 0.0238, y, -0.225]));
+  if (poly101) for (const y of [-0.006, -0.016]) for (const sx of [-1, 1]) furn.push(bevelBox(0.0018, 0.0035, 0.15, 0.0006, L.furnitureDark, [sx * 0.0238, y, -0.225]));
   if (variant === 'akm') for (const sx of [-1, 1]) furn.push(bevelBox(0.004, 0.02, 0.07, 0.0018, L.furnitureDark, [sx * 0.0225, -0.008, -0.235])); // prohmaty
   if (t81) for (const z of [-0.2, -0.235, -0.27]) for (const sx of [-1, 1]) metal.push(plainBox(0.0015, 0.008, 0.016, C.metalDark, [sx * 0.0203, -0.006, z]));
   // Kovové objímky předpažbí.
@@ -108,22 +112,23 @@ function build(variant: Variant, segScale: number): WeaponModel {
   // Plynový blok (u Type 81 s regulátorem vpředu).
   const gb0 = gasEnd;
   metal.push(sideProfile([[gb0, -0.011], [gb0, 0.038], [gb0 - 0.012, 0.038], [gb0 - 0.034, 0.012], [gb0 - 0.034, -0.011]], 0.024, 0.0015, C.blued));
-  if (t81) metal.push(lathe(fwd([[0.0, -gb0 + 0.03], [0.0085, -gb0 + 0.03], [0.0085, -gb0 + 0.05], [0.007, -gb0 + 0.052], [0, -gb0 + 0.052]]), S(14), C.metal, 0, 0.026));
+  if (t81 || sg) metal.push(lathe(fwd([[0.0, -gb0 + 0.03], [0.0085, -gb0 + 0.03], [0.0085, -gb0 + 0.05], [0.007, -gb0 + 0.052], [0, -gb0 + 0.052]]), S(14), C.metal, 0, 0.026));
 
   // Hlaveň a čisticí tyč.
-  const barrelEnd = t81 ? -0.5 : -0.47;
-  metal.push(lathe(fwd([[0, 0.11], [0.0092, 0.11], [0.0092, 0.3], [0.0082, 0.305], [0.0082, -barrelEnd], [0, -barrelEnd]]), S(18), C.blued, 0, 0));
-  if (!t81) metal.push(tube(0.0028, gb0 - 0.03, barrelEnd + 0.012, S(8), C.metal, 0, -0.016));
+  const barrelEnd = t81 ? -0.5 : sg ? -0.53 : -0.47;
+  const [br0, br1] = sg ? [0.0128, 0.0122] : [0.0092, 0.0082];
+  metal.push(lathe(fwd([[0, 0.11], [br0, 0.11], [br0, 0.3], [br1, 0.305], [br1, -barrelEnd], [0, -barrelEnd]]), S(18), C.blued, 0, 0));
+  if (!t81 && !sg) metal.push(tube(0.0028, gb0 - 0.03, barrelEnd + 0.012, S(8), C.metal, 0, -0.016));
 
   // --- Muška: AK na bloku u ústí s prstencovým krytem; Type 81 vysoký sloupek blíž k bloku. ---
-  const fsZ = t81 ? gb0 - 0.068 : barrelEnd + 0.016;
+  const fsZ = t81 ? gb0 - 0.068 : sg ? gb0 - 0.014 : barrelEnd + 0.016;
   if (t81) {
     metal.push(sideProfile([[fsZ + 0.014, -0.012], [fsZ + 0.014, 0.012], [fsZ + 0.008, SY - 0.012], [fsZ - 0.008, SY - 0.012], [fsZ - 0.014, 0.012], [fsZ - 0.014, -0.012]], 0.02, 0.0015, C.blued));
     metal.push(bevelBox(0.012, 0.014, 0.024, 0.002, C.blued, [0, -0.018, fsZ])); // úchyt bajonetu
-  } else {
+  } else if (!sg) {
     metal.push(sideProfile([[fsZ + 0.015, -0.012], [fsZ + 0.015, 0.012], [fsZ + 0.01, 0.03], [fsZ - 0.01, 0.03], [fsZ - 0.015, 0.012], [fsZ - 0.015, -0.012]], 0.022, 0.0015, C.blued));
   }
-  const postBase = t81 ? SY - 0.013 : 0.029;
+  const postBase = t81 ? SY - 0.013 : sg ? 0.037 : 0.029;
   metal.push(bevelBox(0.0022, SY - postBase, 0.0022, 0.0005, C.metalDark, [0, (SY + postBase) / 2, fsZ]));
   hoodRing(metal, fsZ, S, t81);
 
@@ -140,6 +145,10 @@ function build(variant: Variant, segScale: number): WeaponModel {
     for (const sx of [-1, 1]) metal.push(plainBox(0.0016, 0.007, 0.016, C.metalDark, [sx * 0.0118, 0.0, barrelEnd - 0.05]));
     metal.push(plainBox(0.006, 0.0016, 0.022, C.metalDark, [0, 0.0121, barrelEnd - 0.048]));
     muzzleZ = barrelEnd - 0.072;
+  } else if (sg) {
+    // Saiga-12: krytka závitu místo úsťového zařízení.
+    metal.push(lathe(fwd([[0, -barrelEnd], [0.0134, -barrelEnd], [0.0134, -barrelEnd + 0.018], [0.0125, -barrelEnd + 0.02], [0, -barrelEnd + 0.02]]), S(18), C.blued, 0, 0));
+    muzzleZ = barrelEnd - 0.02;
   } else {
     // Dlouhé ústí s kroužky pro nástřelné granáty.
     const prof: Array<[number, number]> = [[0, -barrelEnd], [0.0112, -barrelEnd]];
@@ -173,7 +182,7 @@ function build(variant: Variant, segScale: number): WeaponModel {
   if (variant === 'akm') {
     furn.push(sideProfile([[rearZ, 0.01], [0.375, -0.018], [0.383, -0.02], [0.383, -0.128], [0.375, -0.134], [0.27, -0.088], [0.18, -0.046], [rearZ, -0.035]], 0.038, 0.006, L.furniture));
     metal.push(bevelBox(0.04, 0.112, 0.006, 0.002, C.blued, [0, -0.075, 0.386]));
-  } else if (variant === 'ak101') {
+  } else if (poly101) {
     // Plná polymerová pažba (pevně rozložená) s hřbetem a vybráním.
     furn.push(sideProfile([[rearZ, 0.012], [0.4, -0.006], [0.408, -0.008], [0.408, -0.124], [0.4, -0.13], [0.3, -0.1], [0.2, -0.06], [rearZ, -0.036]], 0.036, 0.006, L.furniture));
     for (const sx of [-1, 1]) furn.push(sideProfile([[0.21, -0.018], [0.36, -0.03], [0.36, -0.08], [0.24, -0.052]], 0.002, 0.0008, L.furnitureDark, sx * 0.018));
@@ -202,10 +211,16 @@ function build(variant: Variant, segScale: number): WeaponModel {
   }
 
   // --- Pohyblivé díly ---
-  const magLen = variant === 'ak101' ? 0.19 : 0.2;
-  const magCurve = variant === 'akm' ? 0.062 : variant === 'ak101' ? 0.036 : 0.05;
-  const magParts = [curvedMag(magLen, 0.062, 0.024, magCurve, L.mag)];
-  magParts.push(bevelBox(0.026, 0.008, 0.012, 0.002, L.mag, [0, -0.004, -0.031])); // přední háček
+  const magLen = sg ? 0.16 : variant === 'ak101' ? 0.19 : 0.2;
+  const magCurve = variant === 'akm' ? 0.062 : variant === 'ak101' ? 0.036 : sg ? 0.012 : 0.05;
+  const magDepth = sg ? 0.085 : 0.062;
+  const magParts = [curvedMag(magLen, magDepth, sg ? 0.036 : 0.024, magCurve, L.mag)];
+  magParts.push(bevelBox(sg ? 0.036 : 0.026, 0.008, 0.012, 0.002, L.mag, [0, -0.004, -magDepth / 2])); // přední háček
+  if (sg) {
+    magParts.push(bevelBox(0.04, 0.01, 0.09, 0.003, '#1b1b1b', [0, -magLen, -magCurve * 0.9])); // dno
+    for (const sx of [-1, 1]) magParts.push(bevelBox(0.002, 0.11, 0.05, 0.0008, '#1c1c1d', [sx * 0.0185, -0.075, -0.004])); // boční prolisy
+    metal.push(bevelBox(0.042, 0.01, 0.094, 0.002, C.blued, [0, -0.036, -0.043])); // rozšířená šachta
+  }
   if (variant === 'ak101') for (const sx of [-1, 1]) magParts.push(curvedMag(magLen * 0.8, 0.012, 0.002, magCurve * 0.75, '#222223').translate(sx * 0.0125, -0.02, 0.0));
   const magGeo = merge(magParts);
   const handle = merge([
@@ -224,13 +239,13 @@ function build(variant: Variant, segScale: number): WeaponModel {
     opticAxis: new THREE.Vector3(0, 0, -1),
     gripRight: new THREE.Vector3(0, -0.078, 0.093),
     gripLeft: new THREE.Vector3(0, t81 ? -0.024 : -0.028, t81 ? -0.25 : -0.225),
-    magazineSocket: new THREE.Vector3(0, -0.033, -0.034),
+    magazineSocket: new THREE.Vector3(0, -0.033, sg ? -0.043 : -0.034),
     ejectionPort: new THREE.Vector3(0.017, 0.006, 0.01),
     chargingHandle: new THREE.Vector3(0.0168, 0.008, -0.045),
     boltCatch: new THREE.Vector3(0.03, 0.008, -0.045),
   };
   const m = merge(metal), p = merge(furn);
-  const name = variant === 'ak101' ? 'AK-101' : variant === 'akm' ? 'AKM' : 'Type 81';
+  const name = variant === 'ak101' ? 'AK-101' : variant === 'akm' ? 'AKM' : sg ? 'Saiga-12' : 'Type 81';
   return {
     id: variant,
     name,
@@ -247,6 +262,7 @@ function build(variant: Variant, segScale: number): WeaponModel {
     magRock: 0.9,
     emptyAction: 'chargingHandle',
     reloadStyle: 'magazine',
+    cycle: 'none',
     magSide: 0,
     triangles: triCount(m, p, magGeo, handle, optic?.glass),
   };
@@ -255,3 +271,4 @@ function build(variant: Variant, segScale: number): WeaponModel {
 export const buildAK101 = (segScale = 1) => build('ak101', segScale);
 export const buildAKM = (segScale = 1) => build('akm', segScale);
 export const buildType81 = (segScale = 1) => build('t81', segScale);
+export const buildSaiga12 = (segScale = 1) => build('saiga', segScale);

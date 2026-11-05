@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { CAMERA, vFovFromH16x9 } from '../shared/config/camera';
 import { MOVEMENT, toDeg } from '../shared/config/movement';
-import { PF_RIFLE } from '../shared/config/weapon';
+import { rulesOf } from '../shared/config/arsenal';
 import { spreadOf } from '../shared/sim/weapon';
 import type { MapDocument } from '../shared/map/schema';
 import { validateMap } from '../shared/map/validate';
@@ -860,7 +860,7 @@ export class App {
       const me = g.driver.local();
       if (me) {
         const s = me.state, w = me.weapon;
-        const sp = spreadOf(PF_RIFLE, MOVEMENT, s, w, g.simTime);
+        const sp = spreadOf(rulesOf(w.weaponId), MOVEMENT, s, w, g.simTime);
         const net = g.driver.netStats?.();
         lines.push(
           `pos ${s.pos.x.toFixed(2)} ${s.pos.y.toFixed(2)} ${s.pos.z.toFixed(2)}  yaw ${toDeg(s.yaw).toFixed(1)}°  pitch ${toDeg(s.pitch).toFixed(1)}°  tick ${s.tick}  zahozeno ${g.stats.droppedSteps}`,

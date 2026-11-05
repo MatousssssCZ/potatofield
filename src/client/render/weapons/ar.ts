@@ -112,6 +112,7 @@ function finish(id: string, name: string, metal: THREE.BufferGeometry[], poly: T
     magRock: 0.4,
     emptyAction: 'boltCatch',
     reloadStyle: 'magazine',
+    cycle: 'none',
     magSide: 0,
     triangles: triCount(m, p, mag, ch, extra.optic?.glass),
   };

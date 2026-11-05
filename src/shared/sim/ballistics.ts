@@ -21,6 +21,10 @@ export interface Projectile {
   pos: V3;
   vel: V3;
   age: number;
+  /** Pravidla zbraně, která projektil vystřelila (poškození, gravitace, životnost). */
+  rules?: WeaponConfig;
+  /** Index broku (brokovnice), jinak 0. */
+  pellet?: number;
 }
 
 export interface Hitbox {
@@ -151,9 +155,10 @@ export function stepProjectiles(
   friendlyFire = false,
 ): ImpactEvent[] {
   const events: ImpactEvent[] = [];
-  const g = w.projectileGravity;
   for (let i = list.length - 1; i >= 0; i--) {
     const p = list[i];
+    const pw = p.rules ?? w;
+    const g = pw.projectileGravity;
     const p0 = p.pos;
     const p1 = { x: p0.x + p.vel.x * dt, y: p0.y + p.vel.y * dt - 0.5 * g * dt * dt, z: p0.z + p.vel.z * dt };
     p.vel = { x: p.vel.x, y: p.vel.y - g * dt, z: p.vel.z };
@@ -174,7 +179,7 @@ export function stepProjectiles(
       const travelled = Math.hypot(point.x - p.origin.x, point.y - p.origin.y, point.z - p.origin.z);
       if (best.hb) {
         const zone = zoneOf(best.hb, point);
-        events.push({ key: p.key, owner: p.owner, point, normal: { x: -dir.x, y: -dir.y, z: -dir.z }, surface: 'flesh', target: best.hb.id, zone, damage: damageAt(w, travelled, zone), distance: travelled });
+        events.push({ key: p.key, owner: p.owner, point, normal: { x: -dir.x, y: -dir.y, z: -dir.z }, surface: 'flesh', target: best.hb.id, zone, damage: damageAt(pw, travelled, zone), distance: travelled });
       } else {
         events.push({ key: p.key, owner: p.owner, point, normal: world!.normal, surface: world!.surface, distance: travelled });
       }
@@ -182,7 +187,7 @@ export function stepProjectiles(
       continue;
     }
     p.pos = p1;
-    if (p.age >= w.projectileLifetime) list.splice(i, 1);
+    if (p.age >= pw.projectileLifetime) list.splice(i, 1);
   }
   return events;
 }

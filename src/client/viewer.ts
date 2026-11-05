@@ -3,13 +3,14 @@ import { vFovFromH16x9 } from '../shared/config/camera';
 import { createWeaponState } from '../shared/sim/weapon';
 import { createPlayerState } from '../shared/sim/player';
 import { MOVEMENT } from '../shared/config/movement';
-import { PF_RIFLE } from '../shared/config/weapon';
+import { reloadDuration } from '../shared/config/weapon';
+import { rulesOf } from '../shared/config/arsenal';
 import { FPWeapon } from './render/weapons/fpWeapon';
 import { HAND_LOOKS } from './render/weapons/hands';
 import { FACTION_LABEL, KIT_LABEL, WEAPON_DEFS, weaponDef } from './render/weapons/catalog';
 
 /** Interní prohlížeč zbraní a rukou (vývojová scéna). */
-const WEAPONS = WEAPON_DEFS.map((w) => ({ id: w.id, label: `${FACTION_LABEL[w.faction]} ${KIT_LABEL[w.kit]} – ${w.name}${w.build ? '' : ' (čeká)'}`, ready: !!w.build }));
+const WEAPONS = WEAPON_DEFS.map((w) => ({ id: w.id, label: `${FACTION_LABEL[w.faction]} ${KIT_LABEL[w.kit]} – ${w.name}${w.build ? (w.verified ? '' : ' (neověřený návrh)') : ' (čeká)'}`, ready: !!w.build }));
 
 const $ = <T extends HTMLElement>(s: string) => document.querySelector(s) as T;
 const canvas = $<HTMLCanvasElement>('#c');
@@ -70,7 +71,7 @@ $<HTMLSelectElement>('#hands').value = weaponDef($<HTMLSelectElement>('#weapon')
 
 let fp: FPWeapon | null = null;
 const ps = createPlayerState(MOVEMENT, { x: 0, y: 0, z: 0 });
-const ws = createWeaponState(PF_RIFLE, -10);
+const ws = createWeaponState(rulesOf('m4a1'), -10);
 ws.action = 'idle';
 let simTime = 0;
 let burst = 0;
@@ -161,10 +162,16 @@ $('#pts').addEventListener('change', rebuildPoints);
 $('#fire').addEventListener('click', () => ws.shotSeq++);
 $('#burst').addEventListener('click', () => (burst = 8));
 const reload = (empty: boolean) => {
+  // Délka a počet nábojů podle pravidel zbraně (nabíjení po jednom: 3 náboje, prázdná: celý zásobník).
+  const R = rulesOf($<HTMLSelectElement>('#weapon').value);
+  ws.mag = empty ? 0 : Math.max(0, R.magazine - 3);
+  const rd = reloadDuration(R, ws.mag, R.reserve);
   ws.action = 'reload';
   ws.reloadEmpty = empty;
   ws.actionStart = simTime;
-  ws.actionEnd = simTime + (empty ? PF_RIFLE.reloadEmpty : PF_RIFLE.reloadPartial);
+  ws.actionEnd = simTime + rd.time;
+  ws.shellsPlanned = rd.shells;
+  ws.shellsLoaded = 0;
   ws.adsToggle = false;
 };
 $('#reload').addEventListener('click', () => reload(false));

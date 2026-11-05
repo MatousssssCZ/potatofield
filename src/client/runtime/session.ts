@@ -50,7 +50,7 @@ export class PlaySession {
     this.input.radPerCount = radPerCount;
     this.input.settings = { ...inputSettings };
     this.input.attach();
-    const driver = opts.driver ?? new OfflineDriver(phys, this.runtimeDoc, { conquest: opts.conquest, scenarioId: opts.scenarioId, team: opts.team }, ladders);
+    const driver = opts.driver ?? new OfflineDriver(phys, this.runtimeDoc, { conquest: opts.conquest, scenarioId: opts.scenarioId, team: opts.team, weapon: gameSettings.weapon }, ladders);
     this.game = new Game(camera, this.input, driver, world, scene, this.runtimeDoc, audio, quality, gameSettings.weapon);
     this.game.settings = { ...gameSettings };
     this.game.onDeath = () => this.input.releaseLock();

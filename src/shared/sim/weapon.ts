@@ -1,7 +1,7 @@
 import { deg, type MovementConfig } from '../config/movement';
 import { CAMERA } from '../config/camera';
 import { PF_RIG, muzzleView, type RigProfile } from '../config/rig';
-import type { WeaponConfig } from '../config/weapon';
+import { reloadDuration, type WeaponConfig } from '../config/weapon';
 import { clamp, type V3 } from '../math';
 import type { PhysicsWorld } from '../physics/world';
 import type { Projectile } from './ballistics';
@@ -41,11 +41,16 @@ export interface WeaponState {
   blockReason: string;
   /** Poslední výstřel (pro prezentaci a testy). */
   lastSpread: number;
+  /** Zbraň z arzenálu (vzhled + pravidla); určuje server při spawnu. */
+  weaponId: string;
+  /** Nabíjení po jednom: kolik nábojů se v této akci vkládá a kolik už je vloženo. */
+  shellsPlanned: number;
+  shellsLoaded: number;
 }
 
-export function createWeaponState(w: WeaponConfig, t: number): WeaponState {
+export function createWeaponState(w: WeaponConfig, t: number, weaponId = 'm4a1'): WeaponState {
   return {
-    mode: 'auto',
+    mode: w.modes.includes('auto') ? 'auto' : 'semi',
     mag: w.magazine,
     reserve: w.reserve,
     action: 'equip',
@@ -68,6 +73,9 @@ export function createWeaponState(w: WeaponConfig, t: number): WeaponState {
     obstruction: 0,
     blockReason: '',
     lastSpread: 0,
+    weaponId,
+    shellsPlanned: 0,
+    shellsLoaded: 0,
   };
 }
 
@@ -172,7 +180,16 @@ export function stepWeapon(
   // Dokončení akcí.
   if (ws.action === 'equip' && t >= ws.actionEnd) ws.action = 'idle';
   if (ws.action === 'sprintOut' && t >= ws.actionEnd) ws.action = 'idle';
-  if (ws.action === 'reload' && t >= ws.actionEnd - 1e-9) {
+  const single = w.reloadKind === 'single';
+  if (ws.action === 'reload' && single) {
+    // Po jednom: každý náboj se připíše v okamžiku vložení (přerušitelné výstřelem).
+    while (ws.shellsLoaded < ws.shellsPlanned && ws.reserve > 0 && ws.mag < w.magazine && t >= ws.actionStart + (w.shellStart ?? 0) + (ws.shellsLoaded + 1) * (w.shellInsert ?? 0.5) - 1e-9) {
+      ws.mag++;
+      ws.reserve--;
+      ws.shellsLoaded++;
+    }
+    if (t >= ws.actionEnd - 1e-9) ws.action = 'idle';
+  } else if (ws.action === 'reload' && t >= ws.actionEnd - 1e-9) {
     // Jediný commit munice na konci přebití.
     const n = Math.min(w.magazine - ws.mag, ws.reserve);
     ws.mag += n;
@@ -191,7 +208,10 @@ export function stepWeapon(
       ws.reloadEmpty = ws.mag === 0;
       ws.action = 'reload';
       ws.actionStart = t;
-      ws.actionEnd = t + (ws.reloadEmpty ? w.reloadEmpty : w.reloadPartial);
+      const rd = reloadDuration(w, ws.mag, ws.reserve);
+      ws.actionEnd = t + rd.time;
+      ws.shellsPlanned = rd.shells;
+      ws.shellsLoaded = 0;
       ws.adsToggle = false; // toggle ADS se po reloadu automaticky neobnoví
     }
   }
@@ -242,6 +262,11 @@ export function stepWeapon(
 
   // Střelba.
   const want = ws.mode === 'auto' ? held(BTN.FIRE) : pressed(BTN.FIRE);
+  // Nabíjení po jednom přeruší stisk spouště, je-li v zásobníku náboj (po prázdné zbrani se ještě dopumpuje).
+  if (want && single && ws.action === 'reload' && ws.mag > 0) {
+    ws.action = 'idle';
+    if (ws.reloadEmpty) ws.nextShotAt = Math.max(ws.nextShotAt, t + (w.chamberTime ?? 0));
+  }
   if (want) {
     let reason = '';
     if (ps.ladder) reason = 'na žebříku';
@@ -257,9 +282,9 @@ export function stepWeapon(
     else {
       // Kadence přes časovou osu: neztrácet zlomky intervalu, ale nenahromadit dluh.
       if (t - ws.nextShotAt > w.fireInterval) ws.nextShotAt = t;
-      const p = fire(w, mv, ps, ws, ctx, rig, eye, aimDir, t);
-      if (p) {
-        out.push(p);
+      const ps2 = fire(w, mv, ps, ws, ctx, rig, eye, aimDir, t);
+      if (ps2.length) {
+        out.push(...ps2);
         ws.nextShotAt += w.fireInterval;
       }
     }
@@ -270,8 +295,12 @@ export function stepWeapon(
   return out;
 }
 
-/** Výstřel: povolení → rozptyl → směr a projektil → odečet náboje → recoil a penalizace pro další ránu. */
-function fire(w: WeaponConfig, mv: MovementConfig, ps: PlayerState, ws: WeaponState, ctx: FireContext, rig: RigProfile, eye: V3, aimDir: V3, t: number): Projectile | null {
+/**
+ * Výstřel: povolení → rozptyl → směr a projektil(y) → odečet náboje → recoil a penalizace pro další ránu.
+ * Brokovnice: jeden náboj = `pellets` projektilů v kuželu `pelletSpreadDeg` kolem směru výstřelu
+ * (deterministicky ze seedu serveru, pořadí výstřelu a indexu broku).
+ */
+function fire(w: WeaponConfig, mv: MovementConfig, ps: PlayerState, ws: WeaponState, ctx: FireContext, rig: RigProfile, eye: V3, aimDir: V3, t: number): Projectile[] {
   // Herní ústí ze sdíleného profilu (bez kosmetiky); kontrola oči → ústí.
   const mv3 = muzzleView(rig, ws.adsProgress);
   const aim = aimAngles(ps, ws);
@@ -290,7 +319,7 @@ function fire(w: WeaponConfig, mv: MovementConfig, ps: PlayerState, ws: WeaponSt
   const block = ctx.phys.castRay(eye, { x: em.x / emLen, y: em.y / emLen, z: em.z / emLen }, emLen);
   if (block) {
     ws.blockReason = 'střelba: hlaveň za překážkou';
-    return null;
+    return [];
   }
   // Bod zamíření kamery → směr z ústí k němu (blízký bod: nikdy neotočit směr).
   const hit = ctx.phys.castRay(eye, aimDir, 2000);
@@ -303,20 +332,27 @@ function fire(w: WeaponConfig, mv: MovementConfig, ps: PlayerState, ws: WeaponSt
   const spread = spreadOf(w, mv, ps, ws, t).total;
   ws.lastSpread = spread;
   const d = sampleCone(dir, spread, shotRandom(ctx.seed, ws.shotSeq, 0), shotRandom(ctx.seed, ws.shotSeq, 1));
-  const p: Projectile = {
-    key: `${ctx.playerId}:${ctx.lifeId}:${ws.shotSeq}`,
-    owner: ctx.playerId,
-    team: ctx.team,
-    origin: { ...muzzle },
-    pos: { ...muzzle },
-    vel: { x: d.x * w.projectileSpeed, y: d.y * w.projectileSpeed, z: d.z * w.projectileSpeed },
-    age: 0,
-  };
+  const n = Math.max(1, w.pellets ?? 1);
+  const out: Projectile[] = [];
+  for (let i = 0; i < n; i++) {
+    const pd = n > 1 ? sampleCone(d, deg(w.pelletSpreadDeg ?? 0), shotRandom(ctx.seed, ws.shotSeq, 3 + 2 * i), shotRandom(ctx.seed, ws.shotSeq, 4 + 2 * i)) : d;
+    out.push({
+      key: n > 1 ? `${ctx.playerId}:${ctx.lifeId}:${ws.shotSeq}:${i}` : `${ctx.playerId}:${ctx.lifeId}:${ws.shotSeq}`,
+      owner: ctx.playerId,
+      team: ctx.team,
+      origin: { ...muzzle },
+      pos: { ...muzzle },
+      vel: { x: pd.x * w.projectileSpeed, y: pd.y * w.projectileSpeed, z: pd.z * w.projectileSpeed },
+      age: 0,
+      rules: w,
+      pellet: i,
+    });
+  }
   ws.mag--;
   ws.recoilPitch += deg(w.recoil.pitchDeg);
   ws.recoilYaw += deg(w.recoil.yawDeg) * (shotRandom(ctx.seed, ws.shotSeq, 2) * 2 - 1);
   ws.firingPenalty = Math.min(w.spread.firingMaxDeg, ws.firingPenalty + w.spread.perShotDeg);
   ws.lastShotAt = t;
   ws.shotSeq++;
-  return p;
+  return out;
 }

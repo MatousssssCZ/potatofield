@@ -1,6 +1,7 @@
 import type { MapDocument, SpawnPoint, Team } from '../../shared/map/schema';
 import type { ConquestState } from '../../shared/sim/conquest';
 import type { PlayerView } from '../runtime/driver';
+import { ARSENAL, FACTION_LABEL, KITS, KIT_LABEL, weaponFor, type Faction } from '../../shared/config/arsenal';
 
 /** HUD v DOM (aktualizace ~20×/s, ne každý snímek → UI neřídí render). */
 const TEAM_NAME: Record<Team, string> = { teamA: 'Tým A', teamB: 'Tým B' };
@@ -11,7 +12,10 @@ export class Hud {
   private els: Record<string, HTMLElement> = {};
   private killfeed: Array<{ el: HTMLElement; until: number }> = [];
   private hitUntil = 0;
-  onSpawn: (id: string | null) => void = () => {};
+  onSpawn: (id: string | null, weaponId: string | null) => void = () => {};
+  /** Frakce týmu (výběr výbavy); null = volný test – libovolná zbraň. */
+  faction: Faction | null = null;
+  private selectedWeapon: string | null = null;
   onRestart: () => void = () => {};
   private selectedSpawn: string | null = null;
   private lastSpawnKey = '';
@@ -123,7 +127,11 @@ export class Hud {
     if (me && !me.alive && !(cq?.ended)) {
       e['h-death'].classList.remove('hidden');
       const wait = Math.max(0, me.respawnAt - simTime);
-      const key = `${spawns.map((s) => s.id).join()}|${Math.ceil(wait)}|${this.selectedSpawn}`;
+      if (!this.selectedWeapon || (this.faction && !ARSENAL.some((w) => w.id === this.selectedWeapon && w.faction === this.faction))) {
+        const cur = ARSENAL.find((w) => w.id === me.weapon.weaponId);
+        this.selectedWeapon = cur && (!this.faction || cur.faction === this.faction) ? cur.id : this.faction ? weaponFor(this.faction, 'assault').id : 'm4a1';
+      }
+      const key = `${spawns.map((s) => s.id).join()}|${Math.ceil(wait)}|${this.selectedSpawn}|${this.selectedWeapon}|${this.faction}`;
       if (key !== this.lastSpawnKey) {
         this.lastSpawnKey = key;
         this.renderSpawn(doc, cq, me.team, spawns, wait);
@@ -210,11 +218,46 @@ export class Hud {
       if (!spawns.length) list.textContent = 'Žádné dostupné místo – počkejte nebo zabírejte body.';
       box.appendChild(list);
     }
+    // Výbava: classa frakce týmu (server ověří); ve volném testu libovolná zbraň arzenálu.
+    const kit = document.createElement('div');
+    kit.className = 'h-kits';
+    const lab = document.createElement('div');
+    lab.className = 'h-kit-title';
+    lab.textContent = this.faction ? `Výbava – ${FACTION_LABEL[this.faction]}` : 'Výbava (volný test – libovolná frakce)';
+    kit.appendChild(lab);
+    const factions: Faction[] = this.faction ? [this.faction] : ['usmc', 'mec', 'pla'];
+    for (const f of factions) {
+      const row = document.createElement('div');
+      row.className = 'h-kit-row';
+      if (!this.faction) {
+        const fl = document.createElement('span');
+        fl.textContent = FACTION_LABEL[f];
+        row.appendChild(fl);
+      }
+      for (const k of KITS) {
+        const w = weaponFor(f, k);
+        const b = document.createElement('button');
+        b.innerHTML = '';
+        const t1 = document.createElement('b');
+        t1.textContent = KIT_LABEL[k];
+        const t2 = document.createElement('small');
+        t2.textContent = w.name;
+        b.append(t1, t2);
+        if (this.selectedWeapon === w.id) b.className = 'on';
+        b.addEventListener('click', () => {
+          this.selectedWeapon = w.id;
+          this.lastSpawnKey = '';
+        });
+        row.appendChild(b);
+      }
+      kit.appendChild(row);
+    }
+    box.appendChild(kit);
     const go = document.createElement('button');
     go.className = 'primary';
     go.textContent = wait > 0 ? `Nasadit (${Math.ceil(wait)} s)` : 'Nasadit';
     go.disabled = wait > 0 || (!!cq && !this.selectedSpawn && spawns.length > 0);
-    go.addEventListener('click', () => this.onSpawn(cq ? this.selectedSpawn : null));
+    go.addEventListener('click', () => this.onSpawn(cq ? this.selectedSpawn : null, this.selectedWeapon));
     box.appendChild(go);
   }
 

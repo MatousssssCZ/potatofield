@@ -4,12 +4,14 @@ import type { PlayerState } from '../sim/player';
 import type { WeaponState } from '../sim/weapon';
 import type { CPState } from '../sim/conquest';
 import type { SimEvent } from '../sim/match';
+import { WEAPON_IDS, type Faction } from '../config/arsenal';
 
 /**
  * Síťový protokol (JSON přes WebSocket). Klient posílá jen vstupy a žádosti;
  * server je autoritou pro pohyb, střelbu, poškození, spawny, body, tickety a týmové informace.
  */
-export const PROTOCOL_VERSION = 1;
+/** v2: výbava při spawnu (zbraň z arzenálu), zbraň vzdálených hráčů, frakce týmů. */
+export const PROTOCOL_VERSION = 2;
 export const NET = {
   snapshotHz: 30,
   maxMessageBytes: 32 * 1024,
@@ -31,7 +33,7 @@ export type OrderKind = 'attack' | 'defend' | 'move';
 export type ClientMsg =
   | { t: 'hello'; v: number; name: string; mapHash?: string }
   | { t: 'input'; frames: InputFrame[] }
-  | { t: 'spawn'; id: string | null }
+  | { t: 'spawn'; id: string | null; weapon?: string }
   | { t: 'team'; team: Team }
   | { t: 'chat'; ch: ChatChannel; text: string }
   | { t: 'radio'; id: RadioId }
@@ -62,6 +64,8 @@ export interface RemoteState {
   shotSeq: number;
   ladder: string | null;
   squad: string | null;
+  /** Zbraň z arzenálu (world model a efekty). */
+  weapon: string;
 }
 
 export interface SquadInfo {
@@ -118,6 +122,7 @@ export type ServerMsg =
       scenarioId: string;
       team: Team;
       conquest: boolean;
+      factions: Record<Team, Faction>;
     }
   | {
       t: 'snap';
@@ -176,7 +181,7 @@ export function parseClientMsg(raw: string): ClientMsg | null {
     case 'input':
       return Array.isArray(o.frames) && o.frames.length <= NET.maxInputsPerMessage && o.frames.every((f) => f && typeof f === 'object' && typeof (f as InputFrame).seq === 'number') ? (o as ClientMsg) : null;
     case 'spawn':
-      return o.id === null || typeof o.id === 'string' ? (o as ClientMsg) : null;
+      return (o.id === null || typeof o.id === 'string') && (o.weapon === undefined || (typeof o.weapon === 'string' && WEAPON_IDS.includes(o.weapon))) ? (o as ClientMsg) : null;
     case 'team':
       return o.team === 'teamA' || o.team === 'teamB' ? (o as ClientMsg) : null;
     case 'chat':
@@ -219,7 +224,7 @@ export function encodeRemote(r: RemoteState): RemoteTuple {
     r.pos[0], r.pos[1], r.pos[2], r.vel[0], r.vel[1], r.vel[2],
     r.yaw, r.pitch, r.bodyYaw, r.height,
     STANCES.indexOf(r.stance), (r.grounded ? 1 : 0) | (r.sprinting ? 2 : 0), r.ads,
-    ACTIONS.indexOf(r.action), r.actionStart, r.actionEnd, r.shotSeq, 0, 0,
+    ACTIONS.indexOf(r.action), r.actionStart, r.actionEnd, r.shotSeq, Math.max(0, WEAPON_IDS.indexOf(r.weapon)), 0,
     r.ladder, r.squad,
   ];
 }
@@ -231,6 +236,6 @@ export function decodeRemote(t: RemoteTuple): RemoteState {
     yaw: t[10], pitch: t[11], bodyYaw: t[12], height: t[13],
     stance: STANCES[t[14]] ?? 'stand', grounded: (t[15] & 1) !== 0, sprinting: (t[15] & 2) !== 0, ads: t[16],
     action: ACTIONS[t[17]] ?? 'idle', actionStart: t[18], actionEnd: t[19], shotSeq: t[20],
-    ladder: t[23], squad: t[24],
+    ladder: t[23], squad: t[24], weapon: WEAPON_IDS[t[21]] ?? 'm4a1',
   };
 }

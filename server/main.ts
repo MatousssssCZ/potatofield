@@ -2,6 +2,8 @@
 import { readFileSync } from 'node:fs';
 import { parseMapJson } from '../src/shared/map/validate';
 import { GameServer } from './gameServer';
+import { FACTION_LABEL, type Faction } from '../src/shared/config/arsenal';
+import { PROTOCOL_VERSION } from '../src/shared/net/protocol';
 
 const args = process.argv.slice(2);
 const arg = (k: string, d: string) => {
@@ -15,9 +17,15 @@ if (!r.ok || !r.doc) {
   process.exit(1);
 }
 const conquest = !args.includes('--free') && r.doc.controlPoints.length > 0 && r.doc.scenarios.length > 0;
-const server = await GameServer.create(r.doc, { conquest, scenarioId: arg('scenario', r.doc.scenarios[0]?.id ?? ''), log: (s) => console.log(s) });
+// Frakce týmů: --factions usmc,mec (výchozí), např. usmc,pla nebo mec,pla.
+const [fa, fb] = arg('factions', 'usmc,mec').split(',') as [Faction, Faction];
+if (![fa, fb].every((f) => f in FACTION_LABEL)) {
+  console.error('Neplatné frakce (usmc | mec | pla).');
+  process.exit(1);
+}
+const server = await GameServer.create(r.doc, { conquest, scenarioId: arg('scenario', r.doc.scenarios[0]?.id ?? ''), factions: { teamA: fa, teamB: fb }, log: (s) => console.log(s) });
 await server.listen(Number(arg('port', '8787')));
-console.log(`režim: ${conquest ? 'Conquest' : 'volný test'} · protokol v1 · tick 60 Hz · snapshot 30 Hz`);
+console.log(`režim: ${conquest ? 'Conquest' : 'volný test'} · protokol v${PROTOCOL_VERSION} · frakce ${FACTION_LABEL[fa]} × ${FACTION_LABEL[fb]} · tick 60 Hz · snapshot 30 Hz`);
 setInterval(() => {
   const s = server.stats();
   if (s.clients) console.log(`hráči ${s.clients}  tick avg ${s.tickMsAvg.toFixed(2)} ms  p95 ${s.tickMsP95.toFixed(2)}  max ${s.tickMsMax.toFixed(2)}  out ${(s.bytesOutPerSec / 1024).toFixed(1)} KiB/s  fronta ${s.queueMax}`);
