@@ -29,7 +29,7 @@ Změřené vlastnosti scény (počty, ne FPS):
 | Položka | Hodnota |
 |---|---|
 | M4A1 + ruce (lokální sestava) | 14 282 trojúhelníků, ~9 draw calls, 4 neprůhledné materiály + optika |
-| Zbraň / zbraň + obě ruce (`scripts/weapon-report.ts`) | M4A1 9 492 / 14 724 · M16A2 10 108 / 15 060 · AK-101 7 108 / 12 340 · AKM 4 552 / 9 504 · QBZ-95 4 984 / 10 216 · Type 81 4 996 / 9 948 |
+| Zbraň / zbraň + obě ruce (`scripts/weapon-report.ts`) | M4A1 9 492 / 14 724 · M16A2 10 108 / 15 060 · AK-101 7 108 / 12 340 · AKM 4 552 / 9 504 · QBZ-95 4 984 / 10 216 · Type 81 4 996 / 9 948 · M249 6 144 / 11 376 · PKM 5 360 / 10 592 · QBB-95 5 056 / 10 288 |
 | Referenční ulice z očí (Standard) | ~230–250 draw calls, ~110 tis. trojúhelníků |
 | Střelnice (Standard) | ~230 draw calls, ~40 tis. trojúhelníků |
 

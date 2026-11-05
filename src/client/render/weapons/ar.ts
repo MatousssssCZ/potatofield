@@ -111,6 +111,8 @@ function finish(id: string, name: string, metal: THREE.BufferGeometry[], poly: T
     hipRot: new THREE.Euler(0.02, 0.05, 0),
     magRock: 0.4,
     emptyAction: 'boltCatch',
+    reloadStyle: 'magazine',
+    magSide: 0,
     triangles: triCount(m, p, mag, ch, extra.optic?.glass),
   };
 }

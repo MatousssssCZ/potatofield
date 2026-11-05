@@ -18,6 +18,9 @@ export interface WeaponPoints {
   ejectionPort: THREE.Vector3;
   chargingHandle: THREE.Vector3;
   boltCatch: THREE.Vector3;
+  /** Pásové zbraně: zadní konec podávacího víka (cíl ruky) a vstup pásu na podávací lůžko. */
+  feedCover?: THREE.Vector3;
+  feedEntry?: THREE.Vector3;
 }
 
 export type WeaponMaterial = 'metal' | 'polymer';
@@ -35,7 +38,8 @@ export interface WeaponModel {
   name: string;
   /** Statické díly sloučené podle materiálu (dřevo = „polymer“ materiál s barvou vrcholů dřeva). */
   static: Record<WeaponMaterial, THREE.BufferGeometry>;
-  moving: { magazine: MovingPart; chargingHandle?: MovingPart };
+  /** feedCover: pivot = závěs víka vpředu, otevírá se rotací kolem X (zadní konec nahoru). */
+  moving: { magazine: MovingPart; chargingHandle?: MovingPart; feedCover?: MovingPart };
   /** Kolimátor (jen Assault). Ostatní mají mechanická mířidla bez optiky. */
   optic?: { lensZ: number; axisY: number; innerR: number; glass: THREE.BufferGeometry };
   sight: 'optic' | 'iron';
@@ -47,6 +51,10 @@ export interface WeaponModel {
   magRock: number;
   /** Prázdné přebití: záchyt závěru (AR) nebo natažení páky závěru (AK, bullpup). */
   emptyAction: 'boltCatch' | 'chargingHandle';
+  /** Způsob přebití: výměna zásobníku, nebo pás (otevřít víko → schránka → pás na lůžko → zavřít víko). */
+  reloadStyle: 'magazine' | 'belt';
+  /** Strana, kam odchází schránka/zásobník při přebití (+1 vpravo, −1 vlevo, 0 dolů). */
+  magSide: number;
   triangles: number;
 }
 

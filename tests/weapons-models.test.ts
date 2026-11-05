@@ -10,6 +10,13 @@ function staticMeshes(m: WeaponModel) {
   const mag = new THREE.Mesh(m.moving.magazine.geometry, mat);
   mag.position.copy(m.moving.magazine.pivot);
   list.push(mag);
+  // Zavřené víko a páka jsou v klidové poloze součástí obrysu (nesmí zakrýt mířidla).
+  for (const part of [m.moving.feedCover, m.moving.chargingHandle]) {
+    if (!part) continue;
+    const o = new THREE.Mesh(part.geometry, mat);
+    o.position.copy(part.pivot);
+    list.push(o);
+  }
   for (const o of list) o.updateMatrixWorld(true);
   return list;
 }
@@ -103,6 +110,25 @@ describe('arzenál – pevné sestavy', () => {
     }
   });
 
+  it('pásové zbraně: víko na závěsu kryje lůžko s pásem, schránka je na straně podávání', () => {
+    for (const id of ['m249', 'pkm']) {
+      const m = WEAPON_DEFS.find((w) => w.id === id)!.build!(1);
+      expect(m.reloadStyle).toBe('belt');
+      const P = m.points;
+      const fc = m.moving.feedCover!;
+      // Vstup pásu leží pod zavřeným víkem (mezi závěsem a zadním koncem, pod jeho horní plochou).
+      const b = new THREE.Box3().setFromBufferAttribute(fc.geometry.getAttribute('position') as THREE.BufferAttribute);
+      b.translate(fc.pivot);
+      expect(P.feedEntry!.z).toBeGreaterThan(b.min.z);
+      expect(P.feedEntry!.z).toBeLessThan(b.max.z);
+      expect(P.feedEntry!.y).toBeLessThan(b.max.y);
+      expect(Math.sign(m.magSide)).toBe(id === 'm249' ? -1 : 1);
+    }
+    const qbb = WEAPON_DEFS.find((w) => w.id === 'qbb95')!.build!(1);
+    expect(qbb.reloadStyle).toBe('magazine');
+    expect(qbb.optic).toBeUndefined();
+  });
+
   it('siluety: M16A2 je viditelně delší než M4A1, bullpup nejkratší', () => {
     const len = (id: string) => {
       const m = WEAPON_DEFS.find((w) => w.id === id)!.build!(1);
@@ -111,6 +137,7 @@ describe('arzenál – pevné sestavy', () => {
       return b.max.z - b.min.z;
     };
     expect(len('m16a2')).toBeGreaterThan(len('m4a1') + 0.08);
-    for (const id of ['m4a1', 'ak101', 'akm', 't81', 'm16a2']) expect(len('qbz95')).toBeLessThan(len(id));
+    for (const id of ['m4a1', 'ak101', 'akm', 't81', 'm16a2', 'qbb95']) expect(len('qbz95')).toBeLessThan(len(id));
+    expect(len('pkm')).toBeGreaterThan(len('m249') + 0.08);
   });
 });

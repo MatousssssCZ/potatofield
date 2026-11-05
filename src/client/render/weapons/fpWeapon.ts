@@ -76,6 +76,10 @@ export class FPWeapon {
   private leftHand: Hand;
   private mag: THREE.Mesh;
   private handle: THREE.Mesh | null = null;
+  private cover: THREE.Mesh | null = null;
+  /** Pásové přebití: úhel víka a posun schránky (prostor zbraně). */
+  private coverAngle = 0;
+  private boxOffset = new THREE.Vector3();
   private reticle: THREE.Mesh | null = null;
   private reticleMat: THREE.ShaderMaterial | null = null;
   private geometries: THREE.BufferGeometry[] = [];
@@ -131,12 +135,18 @@ export class FPWeapon {
     add(this.model.static.metal, metal, this.weaponRoot);
     add(this.model.static.polymer, polymer, this.weaponRoot);
     const magDef = this.model.moving.magazine;
-    this.mag = add(magDef.geometry, polymer, this.weaponRoot);
+    this.mag = add(magDef.geometry, magDef.material === 'metal' ? metal : polymer, this.weaponRoot);
     this.mag.position.copy(magDef.pivot);
     const ch = this.model.moving.chargingHandle;
     if (ch) {
       this.handle = add(ch.geometry, metal, this.weaponRoot);
       this.handle.position.copy(ch.pivot);
+    }
+    const fc = this.model.moving.feedCover;
+    if (fc) {
+      this.cover = add(fc.geometry, fc.material === 'metal' ? metal : polymer, this.weaponRoot);
+      this.cover.position.copy(fc.pivot);
+      this.geometries.push(fc.geometry);
     }
     this.geometries.push(this.model.static.metal, this.model.static.polymer, magDef.geometry);
     if (ch) this.geometries.push(ch.geometry);
@@ -245,7 +255,26 @@ export class FPWeapon {
     const k = reloadT;
     let target = base;
     const seg = (x: number, y: number) => THREE.MathUtils.smoothstep(k, x, y);
-    if (k > 0) {
+    if (k > 0 && this.model.reloadStyle === 'belt' && this.model.moving.feedCover && P.feedCover && P.feedEntry) {
+      // Pás: víko → schránka → nová schránka → pás na lůžko → zavřít víko → (prázdné) páka → zpět.
+      const piv = this.model.moving.feedCover.pivot;
+      const tip = P.feedCover.clone().sub(piv).applyAxisAngle(new THREE.Vector3(1, 0, 0), -this.coverAngle).add(piv);
+      const coverHand = tip.clone().add(new THREE.Vector3(-0.03, 0.02, 0.0));
+      const boxHand = P.magazineSocket.clone().add(this.boxOffset).add(new THREE.Vector3(this.model.magSide * 0.02 - 0.05, -0.06, 0.0));
+      const beltHand = P.feedEntry.clone().add(new THREE.Vector3(-0.035, 0.03, 0.0));
+      const steps: Array<[number, number, THREE.Vector3]> = [
+        [0.0, 0.06, coverHand],
+        [0.19, 0.25, boxHand],
+        [0.6, 0.66, beltHand],
+        [0.68, 0.73, coverHand],
+      ];
+      target = base.clone();
+      for (const [a0, a1, p] of steps) target.lerp(p, seg(a0, a1));
+      if (emptyBolt) target.lerp(bolt, seg(0.85, 0.89) * (1 - seg(0.93, 0.95)));
+      target.lerp(base, seg(0.86 + emptyBolt * 0.08, 0.97));
+      const onPart = k < 0.84 + emptyBolt * 0.08;
+      this.leftHand.setPose(onPart ? (k > 0.6 && k < 0.68 ? POSES.open : POSES.magazine) : POSES.handguard, 0.25);
+    } else if (k > 0) {
       const toMag = seg(0.1, 0.24);
       const down = seg(0.3, 0.42);
       const back = seg(0.46, 0.6);
@@ -324,14 +353,28 @@ export class FPWeapon {
       reloadT = THREE.MathUtils.clamp((simTime - ws.actionStart) / (ws.actionEnd - ws.actionStart), 0, 1);
       empty = ws.reloadEmpty ? 1 : 0;
     }
-    const tilt = Math.sin(Math.min(1, reloadT * 1.15) * Math.PI);
+    const belt = this.model.reloadStyle === 'belt';
+    // Pásové zbraně: menší naklopení (víko a schránka musí zůstat v obraze).
+    const tilt = Math.sin(Math.min(1, reloadT * 1.15) * Math.PI) * (belt ? 0.45 : 1);
     const magOut = THREE.MathUtils.smoothstep(reloadT, 0.27, 0.42) * (1 - THREE.MathUtils.smoothstep(reloadT, 0.5, 0.68));
     this.reloadVisual = reloadT > 0 ? magOut : 0;
     const P2 = this.model.points;
-    this.mag.position.set(P2.magazineSocket.x - 0.03 * this.reloadVisual, P2.magazineSocket.y - 0.3 * this.reloadVisual, P2.magazineSocket.z + 0.02 * this.reloadVisual);
-    this.mag.rotation.x = this.model.magRock * this.reloadVisual;
+    if (belt) {
+      const sm = THREE.MathUtils.smoothstep;
+      const open = reloadT > 0 ? sm(reloadT, 0.06, 0.18) * (1 - sm(reloadT, 0.74, 0.84)) : 0;
+      this.coverAngle = open * 1.05;
+      if (this.cover) this.cover.rotation.x = -this.coverAngle;
+      const out = reloadT > 0 ? sm(reloadT, 0.24, 0.4) * (1 - sm(reloadT, 0.46, 0.6)) : 0;
+      this.boxOffset.set(this.model.magSide * 0.07 * out, -0.26 * out, 0.02 * out);
+      this.mag.position.copy(P2.magazineSocket).add(this.boxOffset);
+      this.mag.rotation.set(this.model.magRock * out, 0, this.model.magSide * 0.35 * out);
+    } else {
+      this.mag.position.set(P2.magazineSocket.x - 0.03 * this.reloadVisual, P2.magazineSocket.y - 0.3 * this.reloadVisual, P2.magazineSocket.z + 0.02 * this.reloadVisual);
+      this.mag.rotation.x = this.model.magRock * this.reloadVisual;
+    }
     // Natažení páky závěru při prázdném přebití (AK, bullpup); AR uvolní záchyt bez pohybu páky.
-    const pull = empty && this.model.emptyAction === 'chargingHandle' ? THREE.MathUtils.smoothstep(reloadT, 0.72, 0.78) * (1 - THREE.MathUtils.smoothstep(reloadT, 0.8, 0.83)) : 0;
+    const [p0, p1, p2, p3] = belt ? [0.88, 0.91, 0.92, 0.95] : [0.72, 0.78, 0.8, 0.83];
+    const pull = empty && this.model.emptyAction === 'chargingHandle' ? THREE.MathUtils.smoothstep(reloadT, p0, p1) * (1 - THREE.MathUtils.smoothstep(reloadT, p2, p3)) : 0;
     this.handlePull = pull;
     if (this.handle && this.model.moving.chargingHandle) this.handle.position.copy(this.model.moving.chargingHandle.pivot).addScaledVector(this.model.moving.chargingHandle.travel ?? new THREE.Vector3(), pull);
     this.placeHands(reloadT, empty);
@@ -346,15 +389,17 @@ export class FPWeapon {
     const bobH = Math.min(ps.sprinting ? 0.01 : 0.005, bobAmp * 0.45) * bobScale;
     const kickBack = THREE.MathUtils.clamp(this.kick, -0.2, 1) * 0.013;
     const kickPitch = THREE.MathUtils.clamp(this.kick, -0.2, 1) * THREE.MathUtils.degToRad(1.4);
+    // Pásové přebití: zbraň níž, blíž a horní stranou k hráči (lůžko a víko v obraze).
+    const bt = belt && reloadT > 0 ? Math.sin(Math.min(1, reloadT * 1.08) * Math.PI) : 0;
     pr.position.set(
-      this.swayX * 0.1 + Math.cos(bobPhase) * bobH - sprintPose * 0.02 + tilt * 0.02,
-      this.swayY * 0.1 + Math.sin(bobPhase * 2) * bobV - sprintPose * 0.08 - this.lower * 0.07 - (1 - this.equipT) * 0.35 - tilt * 0.03,
-      kickBack + sprintPose * 0.02 + this.lower * 0.12,
+      this.swayX * 0.1 + Math.cos(bobPhase) * bobH - sprintPose * 0.02 + tilt * 0.02 - bt * 0.015,
+      this.swayY * 0.1 + Math.sin(bobPhase * 2) * bobV - sprintPose * 0.08 - this.lower * 0.07 - (1 - this.equipT) * 0.35 - tilt * 0.03 - bt * 0.035,
+      kickBack + sprintPose * 0.02 + this.lower * 0.12 + bt * 0.03,
     );
     pr.rotation.set(
-      -sprintPose * THREE.MathUtils.degToRad(20) + this.swayY * 0.6 + kickPitch - this.lower * 0.55 + (1 - this.equipT) * 0.6 + tilt * 0.18,
+      -sprintPose * THREE.MathUtils.degToRad(20) + this.swayY * 0.6 + kickPitch - this.lower * 0.55 + (1 - this.equipT) * 0.6 + tilt * 0.18 - bt * 0.12,
       sprintPose * THREE.MathUtils.degToRad(10) + this.swayX * 0.6 + tilt * 0.12,
-      sprintPose * THREE.MathUtils.degToRad(8) - tilt * 0.42,
+      sprintPose * THREE.MathUtils.degToRad(8) - tilt * 0.42 + bt * 0.22,
     );
     this.placeForearms();
 

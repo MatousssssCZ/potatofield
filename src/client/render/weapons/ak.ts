@@ -246,6 +246,8 @@ function build(variant: Variant, segScale: number): WeaponModel {
     hipRot: new THREE.Euler(0.02, 0.05, 0),
     magRock: 0.9,
     emptyAction: 'chargingHandle',
+    reloadStyle: 'magazine',
+    magSide: 0,
     triangles: triCount(m, p, magGeo, handle, optic?.glass),
   };
 }

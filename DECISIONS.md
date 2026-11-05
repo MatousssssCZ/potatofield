@@ -82,6 +82,8 @@ Všechny číselné hodnoty jsou návrhy Potatofieldu (`proposed`), ne změřen�
 - Mechanická mířidla: skutečný otvor clony (M16A2) / výřez hledí (AK, Type 81), bez HUD tečky. Otvory jsou mírně větší než předloha kvůli čitelnosti při 720p (herní úprava, uvedeno v kartách).
 - Dřevo sdílí materiál „polymer“ (roughness 0,74, barva vrcholů) – drží limit 4 neprůhledných materiálů sestavy.
 - U QBZ-95 jsou mechanická mířidla sklopená, aby nezasahovala do průhledu kolimátoru.
+- Pásové zbraně: schránka a viditelný úsek pásu jsou jeden pohyblivý celek (1 draw call); víko je samostatný díl na závěsu. Pás se hýbe jen při otevřeném víku. Přebití je rozfázované podle normalizovaného času akce ze simulace, takže se nikdy nerozejde s herním stavem.
+- Podpůrné zbraně zatím sdílí herní pravidla PF-Rifle (vzhled ≠ pravidla); kulometná pravidla musí přijít na server dřív, než se podpůrná zbraň stane výběrem ve hře.
 
 ## Multiplayer
 - JSON přes WebSocket (`ws`, MIT), permessage-deflate. Server 60 Hz, snapshot 30 Hz, interpolace 100 ms.
@@ -92,7 +94,7 @@ Všechny číselné hodnoty jsou návrhy Potatofieldu (`proposed`), ne změřen�
 - Referenční ulice obsahuje testovací Conquest data (5 bodů, 2 scénáře) jen pro síťový pilot.
 
 ## Dočasné / placeholdery
-- Support a Engineer zbraně (6) nejsou hotové (prohlížeč je označuje „čeká“, v nastavení nejsou).
+- Engineer zbraně (3) nejsou hotové (prohlížeč je označuje „čeká“, v nastavení nejsou).
 - World model vojáka je jednoduchá figura bez skeletu (kolena/kyčle pózy ze stavu); 3P rig podle zadání pohybu vojáků zbývá.
 - Ruce: póza levé ruky a prstů vyžaduje další ladění.
 
