@@ -33,8 +33,11 @@ interface Bot {
   wander: number;
 }
 const bots: Bot[] = [];
+const sockets: WebSocket[] = [];
 for (let i = 0; i < BOTS; i++) {
-  const c = new NetClient(new WebSocket(`ws://127.0.0.1:${port}`) as unknown as WsLike, `bot${i}`);
+  const ws = new WebSocket(`ws://127.0.0.1:${port}`, { perMessageDeflate: true });
+  sockets.push(ws);
+  const c = new NetClient(ws as unknown as WsLike, `bot${i}`);
   bots.push({ c, seq: 0, yaw: 0, pitch: 0, strafe: 1, burst: 0, wander: Math.random() * 6 });
 }
 await new Promise((r) => setTimeout(r, 800));
@@ -108,6 +111,8 @@ clearInterval(statT);
 const st = server.stats();
 const cq = server.sim.conquest!;
 const bytesIn = bots.reduce((a, b) => a + b.c.bytesIn, 0);
+// Skutečně přenesené bajty (po kompresi permessage-deflate) z TCP soketu klienta.
+const wireIn = sockets.reduce((a, w) => a + (((w as unknown as { _socket?: { bytesRead: number } })._socket?.bytesRead) ?? 0), 0);
 const report = {
   datum: new Date().toISOString(),
   stroj: { cpu: os.cpus()[0]?.model, jader: os.cpus().length, node: process.version, platforma: `${os.platform()} ${os.release()}` },
@@ -127,6 +132,7 @@ const report = {
     tiku_celkem: st.ticks,
   },
   klient_prijato_kib_s_na_bota: +(bytesIn / 1024 / SECONDS / BOTS).toFixed(1),
+  klient_na_drate_kib_s_na_bota: +(wireIn / 1024 / SECONDS / BOTS).toFixed(1),
   hra: { vystrelu: shots, zasahu: hits, umrti: kills, tickety: cq.tickets, body: cq.cps.map((c) => `${c.name}:${c.owner}`) },
   poznamka: 'Automatizovaní klienti ve stejném stroji jako server. Nejde o lidský playtest ani o test 64 hráčů; klientský render výkon se zde neměří.',
 };

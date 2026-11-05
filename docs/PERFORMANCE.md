@@ -14,7 +14,8 @@ střílejí dávky, přebíjejí a respawnují. Automatizovaní klienti nejsou l
 | Příchozí zprávy | ~1000/s (60 vstupů/s na klienta) |
 | Hra | 1314 výstřelů, 16 zásahů, zabrání bodů, bleed ticketů – zápas skutečně běžel |
 
-Surová data: `docs/loadtest-report.json`. Tickrate se nesnižoval. Známé rezervy: plný vlastní stav
+Na drátě (po kompresi permessage-deflate, měřeno z TCP soketu klienta): **~17,6 KiB/s na hráče** při 16 hráčích
+(nekomprimovaný JSON 118 KiB/s). Surová data: `docs/loadtest-report.json`. Tickrate se nesnižoval. Známé rezervy: plný vlastní stav
 v každém snapshotu a dopady střel posílané všem – další optimalizace (delta, zájmová oblast) před
 větším počtem hráčů. **Test 64 hráčů neproběhl.**
 
@@ -35,6 +36,22 @@ Změřené vlastnosti scény (počty, ne FPS):
 | 63 vzdálených postav (test `worldmodel.test.ts`) | ~76 tis. viditelných trojúhelníků; ~12 draw calls na postavu (tělo bez instancingu) – další optimalizace |
 | Referenční ulice z očí (Standard) | ~230–250 draw calls, ~110 tis. trojúhelníků |
 | Střelnice (Standard) | ~230 draw calls, ~40 tis. trojúhelníků |
+
+### Náklady jednoho snímku – referenční ulice z testovacího spawnu (`scripts/client-probe.mjs`, 2026-11-05)
+
+| Kvalita | Draw calls (bez stínů) | Trojúhelníky | Paměť textur (odhad, s mipmapami) | Stínová mapa | Rozlišení renderu | AO |
+|---|---|---|---|---|---|---|
+| Nízká | 320 (207) | 110 tis. | **45 MB** | 1024² | 960×540 | ne |
+| Standardní | 368 (207) | 136 tis. | **159 MB** | 2048² | 1280×720 | ne |
+| Vysoká | 409 (217) | 145 tis. | **613 MB** | 4096² | 1280×720 (DPR až 2) | ano |
+
+Zjištění (seřazeno podle dopadu na i5-1335U s iGPU):
+1. **Paměť textur** – 123 procedurálních textur (albedo + normála + ORM pro každý materiál v plném rozlišení profilu).
+   Vysoká kvalita = 613 MB ve sdílené paměti iGPU; zároveň je **Vysoká výchozí nastavení**.
+2. **Draw calls** – 334 meshů / 126 materiálů bez slučování; stínový průchod přidává dalších ~160 volání každý snímek.
+3. **Vzdálení hráči** – ~12 draw calls na postavu (+ stejně ve stínu): 63 postav ≈ 1 500 volání.
+4. Stíny se překreslují každý snímek, i když se svět nehýbe.
+5. JavaScript hry (simulace, HUD) je v profilu zanedbatelný; síť po kompresi v pořádku.
 
 Draw calls ulice převyšují pracovní cíl 200 – další krok optimalizace je slučování statických
 objektů po materiálech mimo editor (instancing opakovaných dílů oken).
