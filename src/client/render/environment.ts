@@ -91,6 +91,14 @@ export class EnvironmentRig {
   private envRT: THREE.WebGLRenderTarget | null = null;
   private shadowRange = 45;
   private time = 0;
+  /**
+   * Překreslování stínů: 0 = každý snímek (editor – objekty se mění), jinak Hz (hra).
+   * Ve hře se stínová kamera přesouvá po 2 m a mapa se překreslí při přesunu nebo
+   * s touto frekvencí kvůli pohyblivým postavám.
+   */
+  shadowRate = 0;
+  private lastSnap = new THREE.Vector3(Number.NaN, 0, 0);
+  private shadowT = 0;
   /** Déšť: kosmetický efekt jen kolem kamery (Low ho vypíná; herní viditelnost nemění). */
   private rain: THREE.LineSegments | null = null;
   private rainPos: Float32Array | null = null;
@@ -228,9 +236,21 @@ export class EnvironmentRig {
     const lightRot = new THREE.Matrix4().lookAt(new THREE.Vector3(), this.sunDir.clone().negate(), new THREE.Vector3(0, 1, 0));
     const inv = lightRot.clone().invert();
     const p = focus.clone().applyMatrix4(inv);
-    p.x = Math.round(p.x / texel) * texel;
-    p.y = Math.round(p.y / texel) * texel;
+    const step = this.shadowRate ? texel * Math.max(1, Math.round(2 / texel)) : texel;
+    p.x = Math.round(p.x / step) * step;
+    p.y = Math.round(p.y / step) * step;
     const snapped = p.applyMatrix4(lightRot);
+    const sm = this.renderer.shadowMap;
+    if (!this.shadowRate) sm.autoUpdate = true;
+    else {
+      sm.autoUpdate = false;
+      this.shadowT += dt;
+      if (!snapped.equals(this.lastSnap) || this.shadowT >= 1 / this.shadowRate) {
+        sm.needsUpdate = true;
+        this.shadowT = 0;
+        this.lastSnap.copy(snapped);
+      }
+    }
     this.sun.target.position.copy(snapped);
     this.sun.position.copy(snapped).addScaledVector(this.sunDir, 200);
     this.sun.target.updateMatrixWorld();

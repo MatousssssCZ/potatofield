@@ -158,6 +158,7 @@ export class App {
     this.phys.sync();
     this.world.build(doc, gen);
     this.world.setMode('editor');
+    this.env.shadowRate = 0;
     this.env.apply(doc.environment, this.quality);
     const prevSettings = this.editor?.settings;
     this.editor = new Editor(this.camera, $<HTMLCanvasElement>('#view'), this.world, this.ed, this.history);
@@ -402,6 +403,7 @@ export class App {
     this.switches++;
     document.body.classList.replace('mode-editor', 'mode-play');
     this.world.setMode('play');
+    this.env.shadowRate = 20;
     const s = this.settings;
     this.session = new PlaySession(
       $<HTMLCanvasElement>('#view'),
@@ -481,6 +483,7 @@ export class App {
     $('#settings').classList.add('hidden');
     $('#controls').classList.add('hidden');
     this.world.setMode('editor');
+    this.env.shadowRate = 0;
     this.world.update(0);
     this.editor.attach();
     if (this.editorCam) this.editor.restoreCamera(this.editorCam);

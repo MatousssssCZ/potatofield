@@ -45,7 +45,23 @@ Změřené vlastnosti scény (počty, ne FPS):
 | Standardní | 368 (207) | 136 tis. | **159 MB** | 2048² | 1280×720 | ne |
 | Vysoká | 409 (217) | 145 tis. | **613 MB** | 4096² | 1280×720 (DPR až 2) | ano |
 
-Zjištění (seřazeno podle dopadu na i5-1335U s iGPU):
+**Po optimalizaci (2026-11-05):**
+
+| Kvalita | Draw calls – snímek s překreslením stínů / běžný snímek | Paměť textur | Pozn. |
+|---|---|---|---|
+| Nízká | 175 / 118 | **26 MB** (dříve 45) | 960×540 |
+| Standardní | 207 / 118 | **83 MB** (dříve 159) | výchozí pro integrovanou grafiku |
+| Vysoká | 228 / 128 | **310 MB** (dříve 613) | jen pro samostatnou kartu, DPR max 1,5 |
+
+Co se změnilo:
+- **Výchozí kvalita podle grafiky** (WEBGL_debug_renderer_info): integrovaná (Intel Iris Xe, AMD APU, Apple M) → Standardní,
+  samostatná karta → Vysoká, softwarový render / mobil → Nízká; dokud hráč kvalitu sám nezvolí. Dřív byla výchozí Vysoká.
+- **Normály a ORM v polovičním rozlišení** (barva v plném) – paměť textur na polovinu.
+- **Sloučení statického světa ve hře** podle materiálu v buňkách 40 m (ořez mimo zorné pole zůstává): na ulici 137 meshů → 44.
+- **Stíny ve hře 20× za s** (a při přesunu stínové kamery po 2 m) místo každého snímku; editor beze změny.
+- **Únik paměti**: každé spuštění testu ponechalo 2 textury kostí rukou – opraveno (20 přepnutí bez růstu).
+
+Původní zjištění (seřazeno podle dopadu na i5-1335U s iGPU):
 1. **Paměť textur** – 123 procedurálních textur (albedo + normála + ORM pro každý materiál v plném rozlišení profilu).
    Vysoká kvalita = 613 MB ve sdílené paměti iGPU; zároveň je **Vysoká výchozí nastavení**.
 2. **Draw calls** – 334 meshů / 126 materiálů bez slučování; stínový průchod přidává dalších ~160 volání každý snímek.

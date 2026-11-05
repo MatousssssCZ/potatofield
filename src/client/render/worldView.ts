@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { MapDocument, TerrainData } from '../../shared/map/schema';
 import type { GeneratedObject } from '../../world/registry';
 import { buildObjectGeometry } from './geometry';
@@ -56,6 +57,7 @@ export class WorldView {
 
   addObject(g: GeneratedObject) {
     const o = g.object;
+    if (this.batches.length) this.clearBatches(); // změna světa ruší sloučení (správnost má přednost)
     if (this.objects.has(o.id)) this.removeObject(o.id);
     if (g.missing) this.missing.set(o.id, g.missing);
     else this.missing.delete(o.id);
@@ -100,9 +102,79 @@ export class WorldView {
   setMode(mode: 'editor' | 'play') {
     this.mode = mode;
     for (const g of this.objects.values()) this.applyVisibility(g);
+    // Ve hře se svět nemění: statické díly se sloučí podle materiálu (méně draw calls ve scéně i ve stínech).
+    if (mode === 'play') this.buildBatches();
+    else this.clearBatches();
+  }
+
+  /** Sloučené statické meshe herního režimu a zdrojové meshe, které skrývají. */
+  private batches: THREE.Mesh[] = [];
+  private batchedSources: THREE.Mesh[] = [];
+  /** Velikost buňky slučování (m) – zachová ořez mimo zorné pole i po sloučení. */
+  static readonly BATCH_CELL = 40;
+
+  /**
+   * Sloučení přímých meshů objektů podle (materiál, vrhá stín, atributy, buňka mřížky).
+   * Pohyblivé části (figuríny terčů) jsou ve vnořených skupinách, a proto se neslučují.
+   */
+  buildBatches() {
+    this.clearBatches();
+    const groups = new Map<string, { mat: THREE.Material; cast: boolean; geos: THREE.BufferGeometry[]; srcs: THREE.Mesh[] }>();
+    const C = WorldView.BATCH_CELL;
+    for (const g of this.objects.values()) {
+      if (!g.visible) continue;
+      g.updateMatrixWorld(true);
+      for (const c of g.children) {
+        if (!(c instanceof THREE.Mesh) || !c.visible || Array.isArray(c.material)) continue;
+        const geo = c.geometry as THREE.BufferGeometry;
+        const sig = Object.keys(geo.attributes).sort().join(',') + (geo.index ? ':i' : ':n');
+        const key = `${c.material.uuid}|${c.castShadow ? 1 : 0}|${sig}|${Math.floor(g.position.x / C)},${Math.floor(g.position.z / C)}`;
+        let e = groups.get(key);
+        if (!e) groups.set(key, (e = { mat: c.material, cast: c.castShadow, geos: [], srcs: [] }));
+        e.geos.push(geo.clone().applyMatrix4(c.matrixWorld));
+        e.srcs.push(c);
+      }
+    }
+    for (const e of groups.values()) {
+      if (e.srcs.length < 2) {
+        for (const g of e.geos) g.dispose();
+        continue;
+      }
+      const merged = mergeGeometries(e.geos, false);
+      for (const g of e.geos) g.dispose();
+      if (!merged) continue;
+      merged.computeBoundingSphere();
+      const m = new THREE.Mesh(merged, e.mat);
+      m.castShadow = e.cast;
+      m.receiveShadow = true;
+      m.matrixAutoUpdate = false;
+      m.name = '__batch';
+      this.root.add(m);
+      this.batches.push(m);
+      for (const s of e.srcs) {
+        s.visible = false;
+        this.batchedSources.push(s);
+      }
+    }
+  }
+
+  clearBatches() {
+    for (const m of this.batches) {
+      m.geometry.dispose();
+      m.removeFromParent();
+    }
+    for (const s of this.batchedSources) s.visible = true;
+    this.batches = [];
+    this.batchedSources = [];
+  }
+
+  /** Počet sloučených meshů (diagnostika a testy). */
+  get batchStats() {
+    return { batches: this.batches.length, sources: this.batchedSources.length };
   }
 
   removeObject(id: string) {
+    if (this.batches.length) this.clearBatches();
     this.missing.delete(id);
     const g = this.objects.get(id);
     if (!g) return;
@@ -254,6 +326,7 @@ export class WorldView {
   }
 
   clear() {
+    this.clearBatches();
     for (const id of [...this.objects.keys()]) this.removeObject(id);
     if (this.terrainMesh) {
       this.terrainMesh.geometry.dispose();

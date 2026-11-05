@@ -89,6 +89,7 @@ Všechny číselné hodnoty jsou návrhy Potatofieldu (`proposed`), ne změřen�
 - Nabíjení po jednom: náboj se připíše v okamžiku vložení; stisk spouště s nábojem v zásobníku nabíjení přeruší (po prázdné zbrani se ještě dopumpuje). Prezentace čte fáze z časů pravidel a stavu akce, nikdy si munici nepočítá sama.
 - Rozpočty trojúhelníků (zadání autora): zbraň v první osobě 3 000–3 500 (bez rukou), u ostatních hráčů 1 000–1 300, vzdálená varianta 200–300. Generátory mají nastavitelný stupeň detailu (zkosení, zaoblení rohů, segmenty rotačních těles, vynechání drobných dílů jen u world modelů); pro každou zbraň je předpočítaný nejjemnější stupeň, který se vejde (`scripts/weapon-budget.ts --write` → `budgetTable.ts`), takže hra nic nehledá za běhu. Díly u oka (tubus kolimátoru, clony hledí) mají v první osobě vždy aspoň 20 segmentů.
 - World modely: LOD0 v rozpočtu 1 000–1 300, vzdálená varianta = siluety z řezů podél hlavně (nejvíc řezů do 300 trojúhelníků), za 120 m jen obrys dílů; přepnutí 25 / 120 m s hysterezí 2 m.
+- Výkon na integrované grafice: výchozí kvalita podle GPU (dokud ji hráč nezvolí), normály a ORM v polovičním rozlišení, ve hře sloučený statický svět podle materiálu v buňkách 40 m a stíny 20× za s. Editor slučování nepoužívá (objekty se mění a vybírají).
 - Kvalita grafiky už nemění rozlišení zbraně v první osobě (rozpočet je pevný); mění ruce, stíny a efekty.
 - Hawk Type 97 je označený neověřený návrh (zadání: bez reference blokovat k ověření, placeholder nevydávat za věrný model).
 

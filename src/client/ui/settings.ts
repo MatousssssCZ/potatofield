@@ -1,11 +1,13 @@
 import { CAMERA } from '../../shared/config/camera';
-import { QUALITY, type QualityProfile } from '../render/quality';
+import { QUALITY, detectQuality, type QualityProfile } from '../render/quality';
 import { FACTION_LABEL, KIT_LABEL, readyWeapons } from '../render/weapons/catalog';
 import { ACTION_LABELS, DEFAULT_BINDINGS, InputSystem, type Action } from '../runtime/input';
 
 /** Nastavení hráče (per-viewer pohodlí v localStorage; vše funguje i bez něj). */
 export interface Settings {
   quality: QualityProfile['id'];
+  /** Kvalitu zvolil hráč (jinak se doporučí podle grafiky zařízení). */
+  qualityChosen?: boolean;
   hFov: number;
   sensitivity: number;
   invertY: boolean;
@@ -18,7 +20,7 @@ export interface Settings {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  quality: 'high',
+  quality: 'standard',
   hFov: CAMERA.hFovDeg16x9,
   sensitivity: 2.5,
   invertY: false,
@@ -29,14 +31,20 @@ export const DEFAULT_SETTINGS: Settings = {
   weapon: 'm4a1',
 };
 
+/** Doporučení pro toto zařízení (zjišťuje se jednou za načtení stránky). */
+export const DETECTED = typeof document !== 'undefined' ? detectQuality() : { id: 'standard' as const, gpu: '' };
+
 export function loadSettings(): Settings {
+  let s: Settings = { ...DEFAULT_SETTINGS };
   try {
     const raw = localStorage.getItem('pf.settings');
-    if (raw) return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
+    if (raw) s = { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
   } catch {
     /* bez úložiště */
   }
-  return { ...DEFAULT_SETTINGS };
+  // Dokud hráč kvalitu sám nezvolí, platí doporučení podle grafiky (dřív výchozí Vysoká).
+  if (!s.qualityChosen) s.quality = DETECTED.id;
+  return s;
 }
 
 export function saveSettings(s: Settings) {
@@ -102,11 +110,16 @@ export function buildSettingsUI(s: Settings, onChange: () => void) {
   sel.value = s.quality;
   sel.addEventListener('change', () => {
     s.quality = sel.value as QualityProfile['id'];
+    s.qualityChosen = true;
     saveSettings(s);
     location.reload();
   });
   ql.append(qs, sel);
   root.appendChild(ql);
+  const rec = document.createElement('div');
+  rec.className = 'note';
+  rec.textContent = `Doporučeno pro tento počítač: ${QUALITY[DETECTED.id].label}${DETECTED.gpu ? ` (${DETECTED.gpu.slice(0, 60)})` : ''}.`;
+  root.appendChild(rec);
   const wl = document.createElement('label');
   const wsp = document.createElement('span');
   wsp.textContent = 'Zbraň (vzhled)';

@@ -25,7 +25,8 @@ await page.waitForTimeout(4000);
 const r = await page.evaluate(() => {
   const a = window.__pf; const R = a.renderer; const scene = a.scene;
   R.info.autoReset = false; R.info.reset();
-  // jeden snímek včetně stínů
+  // snímek s překreslením stínové mapy (nejhorší případ)
+  R.shadowMap.needsUpdate = true;
   a.post.render(1 / 60);
   const main = { calls: R.info.render.calls, tris: R.info.render.triangles };
   // stínový průchod zvlášť: vypnout stíny a změřit rozdíl
@@ -52,7 +53,7 @@ const r = await page.evaluate(() => {
   }
   const top = [...byName.entries()].sort((x, y) => y[1].tris - x[1].tris).slice(0, 8).map(([k, v]) => `${k}: ${v.n} meshů, ${Math.round(v.tris)} tri`);
 
-  return { main, noShadow, meshes, casters, instanced, materials: mats.size, programs: R.info.programs?.length, geometries: R.info.memory.geometries, textures: R.info.memory.textures, texCount, texMB: +(texBytes / 1048576).toFixed(1), shadowMap: a.env?.sun?.shadow?.mapSize?.x, dpr: R.getPixelRatio(), canvas: [R.domElement.width, R.domElement.height], ao: a.post.enabled, top };
+  return { main, noShadow, meshes, casters, instanced, materials: mats.size, programs: R.info.programs?.length, geometries: R.info.memory.geometries, textures: R.info.memory.textures, texCount, texMB: +(texBytes / 1048576).toFixed(1), shadowMap: a.env?.sun?.shadow?.mapSize?.x, dpr: R.getPixelRatio(), canvas: [R.domElement.width, R.domElement.height], ao: a.post.enabled, batches: a.world.batchStats, shadowRate: a.env.shadowRate, top };
 });
 console.log(q, JSON.stringify(r, null, 1));
 // CPU profil JS (hlavní vlákno) – 4 s

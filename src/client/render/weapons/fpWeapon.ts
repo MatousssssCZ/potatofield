@@ -574,6 +574,9 @@ export class FPWeapon {
     this.root.removeFromParent();
     for (const g of [...this.geometries, this.casingGeo]) g.dispose();
     this.handGeo.dispose();
+    // Kostra skinned rukou drží vlastní texturu kostí – bez uvolnění by každé spuštění hry ponechalo 2 textury.
+    this.rightHand.mesh.skeleton.dispose();
+    this.leftHand.mesh.skeleton.dispose();
     this.flash.traverse((o) => (o as THREE.Mesh).geometry?.dispose());
     for (const m of this.materials) m.dispose();
     for (const t of this.textures) t.dispose();

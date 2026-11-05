@@ -41,6 +41,7 @@ Viz git historie; 20 testů pohybu, editor s gizmy, historie, IndexedDB, export/
 - [~] Hawk Type 97: **blokováno k ověření** – reference nebyla dostupná; model je označený neověřený návrh (viz docs/weapons/Hawk97.md)
 - [x] Krok 8 – world modely všech 12 zbraní ve 3P podle výbavy, LOD0/1/2 (siluety z řezů), hystereze přepnutí, sdílená mezipaměť; test 63 postav (LOD 25/18/20)
 - [x] Rozpočty autora: zbraň v první osobě 3 418–3 498 trojúhelníků, u ostatních hráčů 1 040–1 298, vzdálená varianta 264–300 – testy pro všech 12 zbraní; mířidla a near plane ověřené na zjednodušené geometrii
+- [x] Optimalizace klienta: výchozí kvalita podle GPU, textury −50 %, sloučení statického světa (draw calls ulice 368 → 118–207), stíny 20 Hz, oprava úniku textur kostí rukou
 - [ ] Pistole (rozpočet 1 500–2 000) – pistole zatím nejsou součástí arzenálu
 - [~] Postava vzdáleného hráče stále ~12 draw calls (instancing zbývá)
 - [~] 12 profilů rukou/rukávů existuje (rukavice, holé ruce s vyhrnutým rukávem, bezprsté), ruce potřebují doladit pózy

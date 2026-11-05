@@ -101,6 +101,28 @@ function dataTex(data: Uint8Array, size: number, srgb: boolean, anisotropy: numb
   return t;
 }
 
+/** Zmenšení 2× průměrem 2×2 (dlaždicová textura zůstane dlaždicová); u normál přenormalizace. */
+export function downsample(src: Uint8Array, size: number, normal: boolean): Uint8Array {
+  const h = size / 2;
+  const out = new Uint8Array(h * h * 4);
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < h; x++) {
+      const o = (y * h + x) * 4;
+      for (let c = 0; c < 4; c++) {
+        const a = ((2 * y) * size + 2 * x) * 4 + c, b = a + 4, d = a + size * 4, e = d + 4;
+        out[o + c] = (src[a] + src[b] + src[d] + src[e] + 2) >> 2;
+      }
+      if (normal) {
+        const nx = out[o] / 127.5 - 1, ny = out[o + 1] / 127.5 - 1, nz = out[o + 2] / 127.5 - 1;
+        const l = Math.hypot(nx, ny, nz) || 1;
+        out[o] = Math.round((nx / l + 1) * 127.5);
+        out[o + 1] = Math.round((ny / l + 1) * 127.5);
+        out[o + 2] = Math.round((nz / l + 1) * 127.5);
+      }
+    }
+  return out;
+}
+
 /** Generuje textury paralelně ve Web Workerech. */
 export async function generateTextures(
   ids: string[],
@@ -123,10 +145,13 @@ export async function generateTextures(
             w.onerror = (e) => reject(e);
             w.postMessage({ id, size, job: 0 });
           });
+          // Paměť: barva v plném rozlišení profilu, normála a ORM (AO/hrubost/kov) v polovičním –
+          // nízkofrekvenční mapy, rozdíl v obraze je malý a paměť textur klesne na polovinu.
+          const half = size >= 256 ? size / 2 : size;
           out.set(id, {
             map: dataTex(tex.albedo, size, true, anisotropy),
-            normalMap: dataTex(tex.normal, size, false, anisotropy),
-            orm: dataTex(tex.orm, size, false, anisotropy),
+            normalMap: dataTex(half < size ? downsample(tex.normal, size, true) : tex.normal, half, false, anisotropy),
+            orm: dataTex(half < size ? downsample(tex.orm, size, false) : tex.orm, half, false, anisotropy),
           });
           onProgress(++done, ids.length);
         }
