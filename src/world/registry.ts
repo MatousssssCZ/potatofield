@@ -1,11 +1,13 @@
-import type { MapDocument, MapObject } from '../shared/map/schema';
+import type { MapDocument, MapObject, TerrainData } from '../shared/map/schema';
+import { heightAt } from './terrain';
 import { laddersToWorld, partsToColliders, type ColliderDef, type LadderDef, type LadderLocal, type Part } from './parts';
 
 export interface ParamSpec {
   key: string;
   /** Český popisek pro UI. Interní klíč nezávisí na překladu. */
   label: string;
-  type: 'number' | 'int' | 'enum' | 'bool' | 'string';
+  /** 'points' = seznam bodů „x,z;x,z;…“ (lokálně, metry) – edituje se úchopy ve viewportu, ne polem. */
+  type: 'number' | 'int' | 'enum' | 'bool' | 'string' | 'points';
   min?: number;
   max?: number;
   step?: number;
@@ -15,6 +17,24 @@ export interface ParamSpec {
 }
 
 export type Params = Record<string, number | string | boolean>;
+
+/**
+ * Kontext generátoru: výška terénu pod bodem v lokálních souřadnicích objektu (relativně k jeho
+ * počátku, v jeho měřítku). Bez terénu (náhledy, testy) vrací 0. Stejná funkce na serveru i u
+ * klienta → kolize sedí.
+ */
+export interface GenContext {
+  ground(x: number, z: number): number;
+}
+
+export const FLAT: GenContext = { ground: () => 0 };
+
+/** Kam se doplněk přichytí při tažení: na stěnu (záda k ní) nebo na vodorovnou plochu (střechu). */
+export interface MountSpec {
+  kind: 'wall' | 'top';
+  /** Vzdálenost zadní plochy od počátku podél lokální +Z (strana ke zdi). */
+  back?: number;
+}
 
 export interface AssetDef {
   assetId: string;
@@ -28,7 +48,11 @@ export interface AssetDef {
   uniformScale?: { min: number; max: number };
   /** Rozměrové handly: osa gizma → parametr generátoru (mění parametry, ne mesh.scale). */
   sizeParams?: { x?: string; y?: string; z?: string };
-  generate(p: Params, seed: number, material: string): Part[];
+  generate(p: Params, seed: number, material: string, ctx: GenContext): Part[];
+  /** Generátor čte terén (např. plot kopíruje svah) – po změně terénu se přegeneruje. */
+  usesTerrain?(p: Params): boolean;
+  /** Doplněk se tažením přilepí na budovu (viz MountSpec). */
+  mount?: MountSpec;
   /** Žebříky objektu (pro simulaci lezení). */
   ladders?(p: Params): LadderLocal[];
   /** Popis výsledného rozměru pro UI (např. „5 polí, 6 sloupků“). */
@@ -80,7 +104,24 @@ function placeholderParts(): Part[] {
   return [{ shape: 'box', pos: [0, 0.5, 0], size: [1, 1, 1], material: 'debugMissing', collide: true }];
 }
 
-export function generateObject(o: MapObject): GeneratedObject {
+/** Kontext terénu pro objekt: lokální (x, z) → světové → výška terénu → lokální y. */
+export function terrainContext(o: MapObject, terrain?: TerrainData): GenContext {
+  if (!terrain) return FLAT;
+  const [px, py, pz] = o.transform.position;
+  const yaw = o.transform.rotation[1];
+  const s = o.transform.scale ?? 1;
+  const c = Math.cos(yaw), sn = Math.sin(yaw);
+  return {
+    ground(x, z) {
+      const lx = x * s, lz = z * s;
+      const wx = px + c * lx + sn * lz, wz = pz - sn * lx + c * lz;
+      const h = heightAt(terrain, wx, wz);
+      return h === null ? 0 : (h - py) / s;
+    },
+  };
+}
+
+export function generateObject(o: MapObject, terrain?: TerrainData): GeneratedObject {
   const def = registry.get(o.assetId);
   if (!def) return { object: o, parts: placeholderParts(), ladders: [], missing: `neznámý asset "${o.assetId}"` };
   if (o.generatorVersion > def.generatorVersion) {
@@ -93,11 +134,11 @@ export function generateObject(o: MapObject): GeneratedObject {
   }
   const material = o.material && def.materials.includes(o.material) ? o.material : def.defaultMaterial;
   const p = resolveParams(def, o.params);
-  return { object: o, parts: def.generate(p, o.seed, material), ladders: def.ladders ? laddersToWorld(o, def.ladders(p)) : [] };
+  return { object: o, parts: def.generate(p, o.seed, material, terrainContext(o, terrain)), ladders: def.ladders ? laddersToWorld(o, def.ladders(p)) : [] };
 }
 
 export function generateMap(doc: MapDocument): GeneratedObject[] {
-  return doc.objects.map(generateObject);
+  return doc.objects.map((o) => generateObject(o, doc.terrain));
 }
 
 export function collidersForMap(gen: GeneratedObject[]): ColliderDef[] {

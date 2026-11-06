@@ -223,6 +223,7 @@ export function validateMap(input: unknown, opts: { fileBytes?: number } = {}): 
       c.int(o.generatorVersion, `${p}.generatorVersion`, 1, 1000);
       c.int(o.seed, `${p}.seed`, 0, 0xffffffff);
       if (o.material !== undefined) c.id(o.material, `${p}.material`);
+      if (o.texBlur !== undefined) c.num(o.texBlur, `${p}.texBlur`, 0, 4);
       if (c.obj(o.transform, `${p}.transform`)) {
         c.vec3(o.transform.position, `${p}.transform.position`);
         c.vec3(o.transform.rotation, `${p}.transform.rotation`, 100);
@@ -234,7 +235,12 @@ export function validateMap(input: unknown, opts: { fileBytes?: number } = {}): 
         for (const k of keys) {
           const v = o.params[k];
           if (typeof v === 'number') c.num(v, `${p}.params.${k}`, -1e6, 1e6);
-          else if (typeof v === 'string') c.str(v, `${p}.params.${k}`, true);
+          else if (typeof v === 'string') {
+            if (k === 'points') {
+              if (v.length > MAP_LIMITS.maxPointsLength) c.err(`${p}.params.${k}`, 'příliš mnoho bodů');
+              else if (!/^[-0-9.,;e]*$/.test(v)) c.err(`${p}.params.${k}`, 'neplatný seznam bodů');
+            } else c.str(v, `${p}.params.${k}`, true);
+          }
           else if (typeof v !== 'boolean') c.err(`${p}.params.${k}`, 'nepodporovaný typ parametru');
         }
       }

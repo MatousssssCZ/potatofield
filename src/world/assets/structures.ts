@@ -1,6 +1,7 @@
 import { rng } from '../../shared/math';
 import type { Part } from '../parts';
 import { registerAsset, type Params } from '../registry';
+import { FOLLOW_PARAM, slopeBox } from './kit';
 
 const n = (p: Params, k: string) => p[k] as number;
 const b = (p: Params, k: string) => p[k] as boolean;
@@ -35,55 +36,68 @@ registerAsset({
     { key: 'maxSpacing', label: 'Max. rozteč sloupků', type: 'number', min: 1, max: 5, step: 0.25, unit: 'm', default: 2 },
     { key: 'startPost', label: 'Sloupek na začátku', type: 'bool', default: true },
     { key: 'endPost', label: 'Sloupek na konci', type: 'bool', default: true },
+    FOLLOW_PARAM,
   ],
+  usesTerrain: (p) => b(p, 'follow'),
   materials: ['paintedMetal', 'metal', 'wood'],
   defaultMaterial: 'metal',
   describe(p) {
     const l = fenceLayout(n(p, 'length'), n(p, 'maxSpacing'));
     return `${l.panels} polí, ${l.posts} sloupků po ${l.spacing.toFixed(2)} m`;
   },
-  generate(p, seed, material) {
+  generate(p, seed, material, ctx) {
     const L = n(p, 'length'), H = n(p, 'height');
     const fill = p.fill as string;
     const { panels, spacing } = fenceLayout(L, n(p, 'maxSpacing'));
     const parts: Part[] = [];
     const postW = 0.08;
+    // Výška terénu pod osou plotu (0 = rovina nebo vypnuté kopírování).
+    const g = (x: number) => (b(p, 'follow') ? ctx.ground(x, 0) : 0);
+    const gs = Array.from({ length: panels + 1 }, (_, i) => g(i * spacing));
+    const flat = gs.every((v) => Math.abs(v - gs[0]) < 0.01);
     // Plot vede od x = 0 do x = L (koncové body jsou na ose X → snadné napojování).
     for (let i = 0; i <= panels; i++) {
       if (i === 0 && !b(p, 'startPost')) continue;
       if (i === panels && !b(p, 'endPost')) continue;
-      parts.push({ shape: 'box', pos: [i * spacing, H / 2 + 0.05, 0], size: [postW, H + 0.1, postW], material, collide: true });
+      parts.push({ shape: 'box', pos: [i * spacing, gs[i] + H / 2 + 0.05, 0], size: [postW, H + 0.1, postW], material, collide: true });
     }
     const r = rng(seed);
     for (let i = 0; i < panels; i++) {
-      const cx = (i + 0.5) * spacing, w = spacing - postW;
+      const x0 = i * spacing, x1 = x0 + spacing, g0 = gs[i], g1 = gs[i + 1];
+      const cx = (x0 + x1) / 2, w = spacing - postW;
+      const at = (x: number) => g0 + ((x - x0) / spacing) * (g1 - g0);
+      // Vodorovný prvek panelu (latě, pletivo): šikmo podél terénu.
+      const rail = (y: number, h: number, t: number, z: number, mat: string, extra: Partial<Part> = {}) =>
+        slopeBox(x0 + postW / 2, at(x0 + postW / 2) + y - h / 2, x1 - postW / 2, at(x1 - postW / 2) + y - h / 2, 0, h, t, z, mat, extra);
       if (fill === 'mesh') {
-        parts.push({ shape: 'box', pos: [cx, H - 0.03, 0], size: [w, 0.04, 0.04], material: 'metal' });
-        parts.push({ shape: 'box', pos: [cx, 0.08, 0], size: [w, 0.03, 0.03], material: 'metal' });
-        parts.push({ shape: 'box', pos: [cx, H / 2 + 0.03, 0], size: [w, H - 0.1, 0.01], material: 'chainLink', castShadow: false });
+        parts.push(rail(H - 0.03, 0.04, 0.04, 0, 'metal'));
+        parts.push(rail(0.08, 0.03, 0.03, 0, 'metal'));
+        parts.push(rail(H / 2 + 0.03, H - 0.1, 0.01, 0, 'chainLink', { castShadow: false }));
       } else if (fill === 'planks') {
         const count = Math.max(2, Math.round(w / 0.16));
         for (let k = 0; k < count; k++) {
           const x = cx - w / 2 + (k + 0.5) * (w / count);
           const h = H * (0.94 + r() * 0.06);
-          parts.push({ shape: 'box', pos: [x, h / 2 + 0.02, 0.03], size: [w / count - 0.015, h, 0.025], material: 'wood' });
+          parts.push({ shape: 'box', pos: [x, at(x) + h / 2 + 0.02, 0.03], size: [w / count - 0.015, h, 0.025], material: 'wood' });
         }
-        parts.push({ shape: 'box', pos: [cx, H * 0.25, -0.01], size: [w, 0.08, 0.035], material: 'woodDark' });
-        parts.push({ shape: 'box', pos: [cx, H * 0.78, -0.01], size: [w, 0.08, 0.035], material: 'woodDark' });
+        parts.push(rail(H * 0.25, 0.08, 0.035, -0.01, 'woodDark'));
+        parts.push(rail(H * 0.78, 0.08, 0.035, -0.01, 'woodDark'));
       } else if (fill === 'sheet') {
-        parts.push({ shape: 'box', pos: [cx, H / 2 + 0.02, 0.02], size: [w, H - 0.04, 0.02], material: r() > 0.5 ? 'metalSheet' : 'metalSheetRust' });
+        parts.push(rail(H / 2 + 0.02, H - 0.04, 0.02, 0.02, r() > 0.5 ? 'metalSheet' : 'metalSheetRust'));
       } else {
         const count = Math.max(2, Math.round(w / 0.13));
         for (let k = 0; k < count; k++) {
           const x = cx - w / 2 + (k + 0.5) * (w / count);
-          parts.push({ shape: 'box', pos: [x, H / 2, 0], size: [0.02, H - 0.1, 0.02], material });
+          parts.push({ shape: 'box', pos: [x, at(x) + H / 2, 0], size: [0.02, H - 0.1, 0.02], material });
         }
-        parts.push({ shape: 'box', pos: [cx, H - 0.08, 0], size: [w, 0.04, 0.04], material });
-        parts.push({ shape: 'box', pos: [cx, 0.12, 0], size: [w, 0.04, 0.04], material });
+        parts.push(rail(H - 0.08, 0.04, 0.04, 0, material));
+        parts.push(rail(0.12, 0.04, 0.04, 0, material));
       }
     }
-    // Jedna souvislá kolize přes celou délku; pletivo a tyče propustí střely.
-    parts.push({ shape: 'box', pos: [L / 2, H / 2, 0], size: [L, H, 0.06], material, collide: true, render: false, moveOnly: fill === 'mesh' || fill === 'bars' });
+    // Kolize: na rovině jeden kvádr přes celou délku, ve svahu po polích. Pletivo a tyče propustí střely.
+    const moveOnly = fill === 'mesh' || fill === 'bars';
+    if (flat) parts.push({ shape: 'box', pos: [L / 2, gs[0] + H / 2, 0], size: [L, H, 0.06], material, collide: true, render: false, moveOnly });
+    else for (let i = 0; i < panels; i++) parts.push(slopeBox(i * spacing, gs[i], (i + 1) * spacing, gs[i + 1], 0.1, H, 0.06, 0, material, { collide: true, render: false, moveOnly }));
     return parts;
   },
 });
@@ -99,24 +113,39 @@ registerAsset({
     { key: 'height', label: 'Výška', type: 'number', min: 0.5, max: 5, step: 0.1, unit: 'm', default: 2.4 },
     { key: 'thickness', label: 'Tloušťka', type: 'number', min: 0.15, max: 0.6, step: 0.05, unit: 'm', default: 0.25 },
     { key: 'segment', label: 'Délka segmentu', type: 'number', min: 1, max: 4, step: 0.25, unit: 'm', default: 2 },
+    FOLLOW_PARAM,
   ],
+  usesTerrain: (p) => b(p, 'follow'),
   materials: ['concrete', 'concreteLight', 'plaster', 'plasterWarm', 'brick', 'sandstone'],
   defaultMaterial: 'concrete',
   describe(p) {
     const l = fenceLayout(n(p, 'length'), n(p, 'segment'));
     return `${l.panels} segmentů po ${l.spacing.toFixed(2)} m`;
   },
-  generate(p, _seed, material) {
+  generate(p, _seed, material, ctx) {
     const L = n(p, 'length'), H = n(p, 'height'), T = n(p, 'thickness');
     const { panels, spacing } = fenceLayout(L, n(p, 'segment'));
-    const parts: Part[] = [{ shape: 'box', pos: [L / 2, H / 2, 0], size: [L, H, T], material, collide: true }];
-    // Spáry mezi segmenty (lehce zapuštěné lišty) a zakončení s krycí deskou.
-    for (let i = 1; i < panels; i++) {
-      parts.push({ shape: 'box', pos: [i * spacing, H / 2, 0], size: [0.05, H - 0.02, T + 0.012], material: 'concreteDark' });
+    const g = (x: number) => (b(p, 'follow') ? ctx.ground(x, 0) : 0);
+    const gs = Array.from({ length: panels + 1 }, (_, i) => g(i * spacing));
+    const flat = gs.every((v) => Math.abs(v - gs[0]) < 0.01);
+    const parts: Part[] = [];
+    if (flat) {
+      const y = gs[0];
+      parts.push({ shape: 'box', pos: [L / 2, y + H / 2, 0], size: [L, H, T], material, collide: true });
+      for (let i = 1; i < panels; i++) parts.push({ shape: 'box', pos: [i * spacing, y + H / 2, 0], size: [0.05, H - 0.02, T + 0.012], material: 'concreteDark' });
+      parts.push({ shape: 'box', pos: [L / 2, y + H + 0.04, 0], size: [L + 0.06, 0.08, T + 0.08], material: 'concreteLight', collide: true });
+      parts.push({ shape: 'box', pos: [L / 2, y + 0.1, 0], size: [L + 0.02, 0.2, T + 0.06], material: 'concreteDark' });
+    } else {
+      // Ve svahu: segmenty šikmo podél terénu, pata 0,4 m pod zem (žádné mezery pod zdí).
+      for (let i = 0; i < panels; i++) {
+        const x0 = i * spacing, x1 = x0 + spacing, g0 = gs[i], g1 = gs[i + 1];
+        parts.push(slopeBox(x0, g0, x1, g1, 0.4, H, T, 0, material, { collide: true }));
+        parts.push(slopeBox(x0, g0 + H, x1, g1 + H, 0, 0.08, T + 0.08, 0, 'concreteLight', { collide: true }));
+        parts.push(slopeBox(x0, g0, x1, g1, 0.2, 0.2, T + 0.06, 0, 'concreteDark'));
+        if (i > 0) parts.push({ shape: 'box', pos: [x0, g0 + H / 2 - 0.2, 0], size: [0.05, H + 0.36, T + 0.012], material: 'concreteDark' });
+      }
     }
-    parts.push({ shape: 'box', pos: [L / 2, H + 0.04, 0], size: [L + 0.06, 0.08, T + 0.08], material: 'concreteLight', collide: true });
-    parts.push({ shape: 'box', pos: [L / 2, 0.1, 0], size: [L + 0.02, 0.2, T + 0.06], material: 'concreteDark' });
-    for (const x of [0, L]) parts.push({ shape: 'box', pos: [x, H / 2, 0], size: [0.3, H + 0.02, T + 0.1], material, collide: true });
+    for (const [x, y] of [[0, gs[0]], [L, gs[panels]]]) parts.push({ shape: 'box', pos: [x, y + H / 2 - 0.2, 0], size: [0.3, H + 0.42, T + 0.1], material, collide: true });
     return parts;
   },
 });
@@ -130,15 +159,23 @@ registerAsset({
   params: [
     { key: 'length', label: 'Délka', type: 'number', min: 0.5, max: 30, step: 0.25, unit: 'm', default: 3 },
     { key: 'height', label: 'Výška', type: 'number', min: 0.3, max: 1.4, step: 0.05, unit: 'm', default: 0.9 },
+    FOLLOW_PARAM,
   ],
+  usesTerrain: (p) => b(p, 'follow'),
   materials: ['brick', 'sandstone', 'concrete', 'plasterWarm'],
   defaultMaterial: 'sandstone',
-  generate(p, _seed, material) {
+  generate(p, _seed, material, ctx) {
     const L = n(p, 'length'), H = n(p, 'height');
-    return [
-      { shape: 'box', pos: [0, H / 2, 0], size: [L, H, 0.35], material, collide: true },
-      { shape: 'box', pos: [0, H + 0.03, 0], size: [L + 0.06, 0.06, 0.42], material: 'concreteLight', collide: true },
-    ];
+    const k = Math.max(1, Math.ceil(L / 2));
+    const g = (x: number) => (b(p, 'follow') ? ctx.ground(x, 0) : 0);
+    const parts: Part[] = [];
+    for (let i = 0; i < k; i++) {
+      const x0 = -L / 2 + (i / k) * L, x1 = -L / 2 + ((i + 1) / k) * L, g0 = g(x0), g1 = g(x1);
+      const below = Math.abs(g1 - g0) > 0.01 ? 0.3 : 0;
+      parts.push(slopeBox(x0, g0, x1, g1, below, H, 0.35, 0, material, { collide: true }));
+      parts.push(slopeBox(x0 - (i === 0 ? 0.03 : 0), g0 + H, x1 + (i === k - 1 ? 0.03 : 0), g1 + H, 0, 0.06, 0.42, 0, 'concreteLight', { collide: true }));
+    }
+    return parts;
   },
 });
 
@@ -214,6 +251,7 @@ registerAsset({
   assetId: 'struct.ladder',
   label: 'Žebřík',
   category: 'structures',
+  mount: { kind: 'wall', back: 0.05 },
   generatorVersion: 1,
   sizeParams: { y: 'height', x: 'width' },
   params: [
@@ -306,7 +344,7 @@ registerAsset({
 
 registerAsset({
   assetId: 'street.road',
-  label: 'Silnice',
+  label: 'Silnice – díl (rovinka, křižovatka)',
   category: 'street',
   generatorVersion: 1,
   sizeParams: { x: 'width', z: 'length' },

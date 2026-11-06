@@ -1,7 +1,7 @@
 import { rng } from '../../shared/math';
 import type { LadderLocal, Part } from '../parts';
 import { registerAsset, type Params } from '../registry';
-import { facade, openingFrame, wallWithOpenings } from './kit';
+import { FOLLOW_PARAM, facade, openingFrame, slopeBox, wallWithOpenings } from './kit';
 import { eulerYXZ, foliage, limb } from './nature';
 import { room, type RoomSpec } from './small';
 
@@ -36,12 +36,15 @@ registerAsset({
       ],
     },
     { key: 'endPillars', label: 'Pilíře na koncích', type: 'bool', default: true },
+    FOLLOW_PARAM,
   ],
+  usesTerrain: (p) => !!p.follow,
   materials: WALL_MATS,
   defaultMaterial: 'brick',
   describe: (p) => `${Math.max(1, Math.round(n(p, 'length') / n(p, 'spacing')))} polí; proražení je průchozí`,
-  generate(p, seed, material) {
+  generate(p, seed, material, ctx) {
     const L = n(p, 'length'), H = n(p, 'height'), t = 0.24;
+    const g = (x: number) => (p.follow ? ctx.ground(x, 0) : 0);
     const panels = Math.max(1, Math.round(L / n(p, 'spacing')));
     const sp = L / panels;
     const r = rng(seed);
@@ -50,9 +53,11 @@ registerAsset({
     const cap = material === 'brick' ? 'sandstone' : 'concreteLight';
     for (let i = 0; i < panels; i++) {
       const x0 = -L / 2 + i * sp, xc = x0 + sp / 2;
+      const g0 = g(x0), g1 = g(x0 + sp);
+      const below = Math.abs(g1 - g0) > 0.01 ? 0.4 : 0;
       if (i !== breach) {
-        parts.push({ shape: 'box', pos: [xc, H / 2, 0], size: [sp, H, t], material, collide: true });
-        parts.push({ shape: 'box', pos: [xc, H + 0.03, 0], size: [sp, 0.06, t + 0.06], material: cap });
+        parts.push(slopeBox(x0, g0, x0 + sp, g1, below, H, t, 0, material, { collide: true }));
+        parts.push(slopeBox(x0, g0 + H, x0 + sp, g1 + H, 0, 0.06, t + 0.06, 0, cap));
         continue;
       }
       // Proražené pole: zubaté pahýly po stranách, sutina na zemi, střed průchozí.
@@ -61,18 +66,21 @@ registerAsset({
       for (let c = 0; c < cols; c++) {
         const edge = Math.min(c, cols - 1 - c) / (cols / 2); // 0 u pilíře, 1 uprostřed
         const h = edge < 0.35 ? H * (1 - edge * 1.6 - r() * 0.25) : edge < 0.6 ? 0.25 + r() * 0.35 : 0;
-        if (h > 0.05) parts.push({ shape: 'box', pos: [x0 + (c + 0.5) * cw, h / 2, 0], size: [cw, h, t], material, collide: true });
+        const cx = x0 + (c + 0.5) * cw, gy = g(cx);
+        if (h > 0.05) parts.push({ shape: 'box', pos: [cx, gy + h / 2 - below / 2, 0], size: [cw, h + below, t], material, collide: true });
       }
       for (let k = 0; k < 10; k++) {
         const s = 0.12 + r() * 0.2;
-        parts.push({ shape: 'box', pos: [xc + (r() - 0.5) * sp * 0.8, s * 0.3, (r() - 0.3) * 1.4], rot: [r() * 0.5, r() * 3, r() * 0.5], size: [s * 1.8, s, s], material });
+        const dx = xc + (r() - 0.5) * sp * 0.8;
+        parts.push({ shape: 'box', pos: [dx, g(dx) + s * 0.3, (r() - 0.3) * 1.4], rot: [r() * 0.5, r() * 3, r() * 0.5], size: [s * 1.8, s, s], material });
       }
     }
     for (let i = 0; i <= panels; i++) {
       if (!p.endPillars && (i === 0 || i === panels)) continue;
       const x = -L / 2 + i * sp;
-      parts.push({ shape: 'box', pos: [x, (H + 0.15) / 2, 0], size: [0.42, H + 0.15, 0.42], material, collide: true });
-      parts.push({ shape: 'box', pos: [x, H + 0.21, 0], size: [0.5, 0.12, 0.5], material: cap });
+      const gy = g(x);
+      parts.push({ shape: 'box', pos: [x, gy + (H + 0.15) / 2 - 0.2, 0], size: [0.42, H + 0.55, 0.42], material, collide: true });
+      parts.push({ shape: 'box', pos: [x, gy + H + 0.21, 0], size: [0.5, 0.12, 0.5], material: cap });
     }
     return parts;
   },
@@ -87,27 +95,40 @@ registerAsset({
   params: [
     { key: 'length', label: 'Délka', type: 'number', min: 1, max: 30, step: 0.25, unit: 'm', default: 8 },
     { key: 'height', label: 'Výška', type: 'number', min: 0.4, max: 1.6, step: 0.05, unit: 'm', default: 0.8 },
+    FOLLOW_PARAM,
   ],
+  usesTerrain: (p) => !!p.follow,
   materials: ['stoneWall'],
   defaultMaterial: 'stoneWall',
   describe: () => 'kryt vleže a v podřepu',
-  generate(p, seed, material) {
+  generate(p, seed, material, ctx) {
     const L = n(p, 'length'), H = n(p, 'height'), W = 0.55;
     const r = rng(seed);
-    const parts: Part[] = [{ shape: 'box', pos: [0, (H - 0.12) / 2, 0], size: [L, H - 0.12, W], material, collide: true }];
-    // Zaoblená nepravidelná koruna z kamenů a zakulacené konce.
+    const g = (x: number) => (p.follow ? ctx.ground(x, 0) : 0);
+    const parts: Part[] = [];
+    // Tělo po úsecích (ve svahu šikmo), zaoblená nepravidelná koruna z kamenů.
+    const segs = Math.max(1, Math.ceil(L / 2));
+    for (let i = 0; i < segs; i++) {
+      const x0 = -L / 2 + (i / segs) * L, x1 = -L / 2 + ((i + 1) / segs) * L, g0 = g(x0), g1 = g(x1);
+      const below = Math.abs(g1 - g0) > 0.01 ? 0.3 : 0;
+      parts.push(slopeBox(x0, g0, x1, g1, below, H - 0.12, W, 0, material, { collide: true }));
+      parts.push(slopeBox(x0, g0 + H - 0.16, x1, g1 + H - 0.16, 0, 0.16, W * 0.9, 0, material, { collide: true, render: false }));
+    }
     const k = Math.max(2, Math.round(L / 0.55));
     for (let i = 0; i < k; i++) {
       const x = -L / 2 + ((i + 0.5) / k) * L;
-      parts.push({ shape: 'blob', pos: [x, H - 0.1 + (r() - 0.5) * 0.05, (r() - 0.5) * 0.06], size: [(L / k) * 1.25, 0.24, W * 0.95], seed: Math.floor(r() * 1e6), rough: 0.9, material, collide: false });
+      parts.push({ shape: 'blob', pos: [x, g(x) + H - 0.1 + (r() - 0.5) * 0.05, (r() - 0.5) * 0.06], size: [(L / k) * 1.25, 0.24, W * 0.95], seed: Math.floor(r() * 1e6), rough: 0.9, material, collide: false });
     }
     // Vyčnívající kameny na bocích (nerovný líc zdi).
     for (let i = 0; i < Math.round(L * 1.5); i++) {
       const s = 0.18 + r() * 0.16;
-      parts.push({ shape: 'blob', pos: [(r() - 0.5) * (L - 0.3), 0.12 + r() * (H - 0.35), (r() < 0.5 ? -1 : 1) * W * 0.46], size: [s * 1.5, s, s], seed: Math.floor(r() * 1e6), rough: 0.6, material });
+      const x = (r() - 0.5) * (L - 0.3);
+      parts.push({ shape: 'blob', pos: [x, g(x) + 0.12 + r() * (H - 0.35), (r() < 0.5 ? -1 : 1) * W * 0.46], size: [s * 1.5, s, s], seed: Math.floor(r() * 1e6), rough: 0.6, material });
     }
-    for (const s of [-1, 1]) parts.push({ shape: 'box', pos: [(s * (L - 0.1)) / 2, (H - 0.12) / 2, 0], size: [0.1, H - 0.12, W], material });
-    parts.push({ shape: 'box', pos: [0, H - 0.08, 0], size: [L, 0.16, W * 0.9], material, collide: true, render: false });
+    for (const s of [-1, 1]) {
+      const x = (s * (L - 0.1)) / 2;
+      parts.push({ shape: 'box', pos: [x, g(x) + (H - 0.12) / 2, 0], size: [0.1, H - 0.12, W], material });
+    }
     return parts;
   },
 });
@@ -261,6 +282,7 @@ registerAsset({
   assetId: 'street.roofTank',
   label: 'Nádrž na vodu (na nohách)',
   category: 'street',
+  mount: { kind: 'top' },
   generatorVersion: 1,
   uniformScale: { min: 0.6, max: 1.8 },
   params: [

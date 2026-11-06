@@ -8,7 +8,7 @@ import { add, quatFromEuler, quatMul, rotate, scale, type Q, type V3 } from '../
  *
  * Souřadnice dílu jsou v lokálním prostoru objektu. `size` jsou plné rozměry.
  */
-export type PartShape = 'box' | 'wedge' | 'cylinder' | 'label' | 'blob' | 'card';
+export type PartShape = 'box' | 'wedge' | 'cylinder' | 'label' | 'blob' | 'card' | 'strip';
 
 export interface Part {
   shape: PartShape;
@@ -39,6 +39,11 @@ export interface Part {
   taper?: number;
   /** Karta (oboustranný obdélník v rovině XY, délka podél +Y): průhyb konce k −Z v metrech. */
   bend?: number;
+  /**
+   * Pás (silnice, chodník, obrubník): lomená čára bodů (horní hrana, lokálně), šířka = size[0],
+   * tloušťka dolů = size[1]. Kolize po úsecích (kvádry).
+   */
+  path?: [number, number, number][];
 }
 
 export type HitSurface = 'concrete' | 'plaster' | 'metal' | 'wood' | 'sand' | 'dirt' | 'asphalt' | 'brick' | 'flesh' | 'fabric';
@@ -87,6 +92,23 @@ export function partsToColliders(o: MapObject, parts: Part[]): ColliderDef[] {
   const out: ColliderDef[] = [];
   for (const part of parts) {
     if (!part.collide || part.shape === 'label' || part.shape === 'card') continue;
+    if (part.shape === 'strip') {
+      const path = part.path ?? [];
+      for (let i = 0; i + 1 < path.length; i++) {
+        const a = path[i], b = path[i + 1];
+        const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
+        const hor = Math.hypot(dx, dz);
+        if (hor < 1e-4) continue;
+        const len = Math.hypot(hor, dy);
+        const lq = quatMul(quatFromEuler(0, Math.atan2(dx, dz), 0), quatFromEuler(Math.atan2(-dy, hor), 0, 0));
+        const wq = quatMul(q, lq);
+        const t = part.size[1];
+        const local = { x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2 - t / 2, z: (a[2] + b[2]) / 2 };
+        const center = add(pos, rotate(q, scale(local, s)));
+        out.push({ kind: 'box', center, rotation: wq, half: { x: (part.size[0] / 2) * s, y: (t / 2) * s, z: (len / 2 + 0.02) * s }, surface: surfaceOf(part.material), objectId: o.id, bulletOnly: part.bulletOnly, moveOnly: part.moveOnly });
+      }
+      continue;
+    }
     const pq = part.rot ? quatFromEuler(part.rot[0], part.rot[1], part.rot[2]) : { x: 0, y: 0, z: 0, w: 1 };
     const wq = quatMul(q, pq);
     const center = add(pos, rotate(q, scale({ x: part.pos[0], y: part.pos[1], z: part.pos[2] }, s)));

@@ -7,6 +7,7 @@ import './assets/props';
 import './assets/cover';
 import './assets/nature';
 import './assets/town';
+import './assets/roads';
 
 export * from './registry';
 export * from './parts';

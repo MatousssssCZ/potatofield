@@ -54,10 +54,11 @@ mapě** (assety, které mapa už obsahuje, s počtem). Klik vloží asset do st�
 
 | Akce | Ovládání |
 |---|---|
-| Volná kamera | držet **RMB** + W A S D, **Q/E** dolů/nahoru, **Shift** rychleji, kolečko při RMB = rychlost |
+| Volná kamera | držet **RMB** + W A S D, **Mezerník** nahoru, **Shift** dolů, kolečko při RMB = rychlost |
 | Přiblížení | kolečko |
 | Výběr | **LMB**; **Ctrl+LMB** přidat/odebrat; tažení LMB = výběr rámečkem; Esc zruší výběr |
-| Nástroje | **W** posun, **E** rotace (kolem svislé osy), **R** rozměry |
+| Úpravy (bez režimů) | **táhni objekt** = posun po terénu · **modrý prstenec** = rotace · **oranžové kostky** = rozměry (protilehlá strana drží) |
+| Ulice | v katalogu „Ulice (kreslená body)“: klikej body na terén, **Enter**/dvojklik hotovo, **Backspace** zpět, **Esc** zrušit; u vybrané ulice táhni zelené body, ◆ přidá bod, **Shift+klik** bod smaže |
 | Přichycení | mřížka 0,25/0,5/1/2 m (výchozí 0,5), rotace 15°/90°/volná; **Alt** dočasně vypne |
 | Operace | **F** zaměřit, **Delete** smazat, **Ctrl+D** duplikovat |
 | Historie | **Ctrl+Z** zpět, **Ctrl+Shift+Z** nebo **Ctrl+Y** znovu (jedno tažení = jedna položka) |
@@ -68,8 +69,15 @@ mapě** (assety, které mapa už obsahuje, s počtem). Klik vloží asset do st�
   skrytím (👁, jen editor) a zamčením (🔒).
 - **Vlastnosti** (vpravo): pozice, natočení, parametry generátoru s jednotkami a mezemi, materiál,
   skrytí v editoru / zamčení / skrytí ve hře. Bez výběru = vlastnosti mapy a prostředí (slunce, mlha).
-- **Rozměry (R)** mění parametry generátoru (např. šířku kvádru), nikdy jen natažení meshe; rekvizity
-  (bedna, sud) mají jednotné měřítko v mezích. Nejednotná změna rozměrů skupiny je zablokovaná.
+- **Všechno stojí na zemi**: vložený i přetažený objekt sedí na terénu (ve svahu se výška dorovná).
+  **Doplňky** (klimatizace, markýza, cedule, žebřík) se tažením přes budovu **přilepí na stěnu**
+  zády ke zdi; **nádrž** se přilepí na střechu.
+- **Rozměry** (oranžové kostky) mění parametry generátoru (např. délku plotu), nikdy jen natažení
+  meshe; rekvizity (bedna, sud) mají jednotné měřítko v mezích. Rozměry se mění po jednom objektu.
+- **Kopírovat terén**: plot, zdi, kamenná zídka a ulice jdou po svahu (volba v parametrech, výchozí
+  zapnuto); po úpravě terénu se samy přegenerují.
+- **Rozpití textury** (Vlastnosti → posuvník 0–4): rozmaže textury objektu jako v BF2. Tlačítky jde
+  použít na celou mapu nebo na všechny objekty stejného typu; bez výběru je posuvník pro celou mapu.
 - **Testovací spawn** (modrý marker) se vybírá a posouvá jako objekt. Před testem se ověří proti
   objemu hráče; leží-li v objektu nebo pod terénem, editor nabídne nejbližší volné místo.
 - **Mapa ▾**: nová mapa, uložené mapy, šablona střelnice, **import** a **export** JSON souboru.

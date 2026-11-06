@@ -277,8 +277,19 @@ export const sharedUniforms = {
  * Úprava standardního shaderu: velkoplošná variace barvy (proti viditelnému opakování)
  * a prach u paty objektu podle atributu `aBaseH` (výška nad podstavou objektu).
  */
-export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, macro: number) {
+export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, macro: number, blur = 0) {
   mat.onBeforeCompile = (sh) => {
+    // Rozpití textury: posun výběru mip úrovně (bias) u barvy, normály a ORM.
+    if (blur > 0) {
+      const b = blur.toFixed(2);
+      const biased = (chunk: string, maps: string[]) => maps.reduce((c, m) => c.replace(new RegExp(`texture2D\\( ${m}, ([^)]*)\\)`, 'g'), `texture2D( ${m}, $1, ${b} )`), chunk);
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <map_fragment>', biased(THREE.ShaderChunk.map_fragment, ['map']))
+        .replace('#include <normal_fragment_maps>', biased(THREE.ShaderChunk.normal_fragment_maps, ['normalMap']))
+        .replace('#include <roughnessmap_fragment>', biased(THREE.ShaderChunk.roughnessmap_fragment, ['roughnessMap']))
+        .replace('#include <metalnessmap_fragment>', biased(THREE.ShaderChunk.metalnessmap_fragment, ['metalnessMap']))
+        .replace('#include <aomap_fragment>', biased(THREE.ShaderChunk.aomap_fragment, ['aoMap']));
+    }
     sh.uniforms.uMacro = sharedUniforms.uMacro;
     sh.uniforms.uDustColor = sharedUniforms.uDustColor;
     sh.uniforms.uDust = { value: dust };
@@ -309,7 +320,7 @@ export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, m
         }`,
       );
   };
-  mat.customProgramCacheKey = () => `weather-${dust.toFixed(2)}-${macro.toFixed(2)}`;
+  mat.customProgramCacheKey = () => `weather-${dust.toFixed(2)}-${macro.toFixed(2)}-b${blur.toFixed(2)}`;
 }
 
 const LABEL_STYLES: Record<string, { bg: string; fg: string; font: string; border: boolean; glow?: number }> = {
@@ -323,8 +334,11 @@ export class MaterialLibrary {
   private cache = new Map<string, THREE.Material>();
   constructor(private textures: Map<string, TexSet>) {}
 
-  get(id: string): THREE.Material {
-    let m = this.cache.get(id);
+  /** Materiál podle ID; `blur` (0–4, po 0,5) = rozpití textury objektu (varianta materiálu). */
+  get(id: string, blur = 0): THREE.Material {
+    const q = Math.max(0, Math.min(4, Math.round(blur * 2) / 2));
+    const key = q ? `${id}|b${q}` : id;
+    let m = this.cache.get(key);
     if (m) return m;
     const def = MATERIALS[id] ?? MATERIALS.debugMissing;
     const tex = def.tex ? this.textures.get(def.tex) : undefined;
@@ -345,9 +359,9 @@ export class MaterialLibrary {
       sm.aoMapIntensity = 1;
     }
     if (def.emissive) sm.emissive = new THREE.Color(def.emissive);
-    patchWeathering(sm, def.dust ?? 0, def.macro ?? 0);
+    patchWeathering(sm, def.dust ?? 0, def.macro ?? 0, tex ? q : 0);
     sm.name = id;
-    this.cache.set(id, sm);
+    this.cache.set(key, sm);
     return sm;
   }
 

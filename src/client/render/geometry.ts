@@ -233,6 +233,50 @@ function addCard(b: Builder, part: Part, scale: number) {
   }
 }
 
+/** Pás podél lomené čáry: horní plocha, boky a čela. UV v metrech (u napříč, v podél). */
+function addStrip(b: Builder, part: Part, scale: number) {
+  const path = part.path ?? [];
+  if (path.length < 2) return;
+  const tile = tileOf(part.material);
+  const m = partMatrix(part, scale).clone();
+  const nm = _n.getNormalMatrix(m).clone();
+  const w = part.size[0] / 2, t = part.size[1];
+  const P = path.map((p) => new THREE.Vector3(...p));
+  // Normála napříč (vodorovně) v každém bodě z průměru sousedních tečen.
+  const side = P.map((_, i) => {
+    const a = P[Math.max(0, i - 1)], c = P[Math.min(P.length - 1, i + 1)];
+    const tx = c.x - a.x, tz = c.z - a.z;
+    const l = Math.hypot(tx, tz) || 1;
+    return new THREE.Vector3(-tz / l, 0, tx / l);
+  });
+  let acc = 0;
+  const vs: number[] = [0];
+  for (let i = 1; i < P.length; i++) vs.push((acc += Math.hypot(P[i].x - P[i - 1].x, P[i].z - P[i - 1].z)));
+  const L = P.map((p, i) => p.clone().addScaledVector(side[i], w));
+  const R = P.map((p, i) => p.clone().addScaledVector(side[i], -w));
+  const down = new THREE.Vector3(0, -t, 0);
+  const up = new THREE.Vector3(0, 1, 0);
+  const W = (v: THREE.Vector3) => v.clone().applyMatrix4(m);
+  const N = (v: THREE.Vector3) => v.clone().applyMatrix3(nm).normalize();
+  for (let i = 0; i + 1 < P.length; i++) {
+    const v0 = vs[i] / tile, v1 = vs[i + 1] / tile;
+    b.quad([W(R[i]), W(L[i]), W(L[i + 1]), W(R[i + 1])], N(up), [[0, v0], [(2 * w) / tile, v0], [(2 * w) / tile, v1], [0, v1]]);
+    if (t > 0.001) {
+      const sl = side[i].clone(), sr = side[i].clone().negate();
+      b.quad([W(L[i].clone().add(down)), W(L[i + 1].clone().add(down)), W(L[i + 1]), W(L[i])], N(sl), [[v0, 0], [v1, 0], [v1, t / tile], [v0, t / tile]]);
+      b.quad([W(R[i + 1].clone().add(down)), W(R[i].clone().add(down)), W(R[i]), W(R[i + 1])], N(sr), [[v1, 0], [v0, 0], [v0, t / tile], [v1, t / tile]]);
+    }
+  }
+  if (t > 0.001) {
+    for (const [i, dir] of [[0, -1], [P.length - 1, 1]] as const) {
+      const a = P[Math.min(P.length - 1, i + (dir > 0 ? 0 : 1))], c = P[Math.max(0, i - (dir > 0 ? 1 : 0))];
+      const n = new THREE.Vector3(a.x - c.x, 0, a.z - c.z).normalize().multiplyScalar(dir > 0 ? 1 : -1);
+      const quad = dir > 0 ? [L[i].clone().add(down), R[i].clone().add(down), R[i], L[i]] : [R[i].clone().add(down), L[i].clone().add(down), L[i], R[i]];
+      b.quad(quad.map(W), N(n), [[0, 0], [(2 * w) / tile, 0], [(2 * w) / tile, t / tile], [0, t / tile]]);
+    }
+  }
+}
+
 export interface ObjectGeometry {
   byMaterial: Map<string, { geometry: THREE.BufferGeometry; castShadow: boolean }>;
   labels: Array<{ text: string; style: string; matrix: THREE.Matrix4; w: number; h: number }>;
@@ -256,6 +300,7 @@ export function buildObjectGeometry(parts: Part[], scale = 1): ObjectGeometry {
     else if (p.shape === 'cylinder') addCylinder(e.b, p, scale);
     else if (p.shape === 'blob') addBlob(e.b, p, scale);
     else if (p.shape === 'card') addCard(e.b, p, scale);
+    else if (p.shape === 'strip') addStrip(e.b, p, scale);
   }
   const byMaterial = new Map<string, { geometry: THREE.BufferGeometry; castShadow: boolean }>();
   for (const [key, e] of builders) byMaterial.set(key, { geometry: e.b.build(), castShadow: e.cast });

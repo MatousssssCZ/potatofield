@@ -60,6 +60,8 @@ export interface MapObject {
   material?: string;
   /** Skryto ve hře (explicitní herní viditelnost; skrytí v editoru je zvlášť). */
   gameHidden?: boolean;
+  /** Rozpití (rozmazání) textur objektu: 0 = ostré, 4 = velmi rozpité (mip bias). */
+  texBlur?: number;
   /** Volná metadata editoru (skupina, zámek), hra je ignoruje. */
   editor?: { group?: string; locked?: boolean; hidden?: boolean; name?: string };
 }
@@ -154,6 +156,8 @@ export const MAP_LIMITS = {
   maxZones: 256,
   maxScenarios: 16,
   maxStringLength: 200,
+  /** Parametr typu body (ulice): „x,z;x,z;…“ – až ~280 bodů. */
+  maxPointsLength: 4000,
   maxParams: 64,
 } as const;
 

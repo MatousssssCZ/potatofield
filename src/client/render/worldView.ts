@@ -73,7 +73,7 @@ export class WorldView {
     const geo = buildObjectGeometry(g.parts);
     for (const [key, { geometry, castShadow }] of geo.byMaterial) {
       const matId = key.split('|')[0];
-      const mesh = new THREE.Mesh(geometry, this.mats.get(matId));
+      const mesh = new THREE.Mesh(geometry, this.mats.get(matId, o.texBlur ?? 0));
       mesh.castShadow = castShadow;
       mesh.receiveShadow = true;
       mesh.userData.objectId = o.id;

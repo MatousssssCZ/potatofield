@@ -6,7 +6,7 @@ import { spreadOf } from '../shared/sim/weapon';
 import type { MapDocument } from '../shared/map/schema';
 import { validateMap } from '../shared/map/validate';
 import { PhysicsWorld, initRapier } from '../shared/physics/world';
-import { generateObject, partsToColliders, collidersForMap, generateMap, type LadderDef } from '../world';
+import { generateObject, partsToColliders, collidersForMap, generateMap, getAsset, resolveParams, type LadderDef } from '../world';
 import { buildEmptyMap } from '../world/maps/empty';
 import { buildRangeMap } from '../world/maps/range';
 import { buildStreetMap } from '../world/maps/street';
@@ -290,23 +290,31 @@ export class App {
   }
 
   /** Promítne změny dokumentu do renderu a kolizí (jen dotčené objekty). */
+  /** Přegeneruje jeden objekt (render, kolize, žebříky) z aktuálního dokumentu a terénu. */
+  private regenObject(id: string) {
+    const now = this.ed.getObject(id);
+    this.world.removeObject(id);
+    this.phys.removeObject(id);
+    this.ladders.delete(id);
+    if (!now) return;
+    const g = generateObject(now, this.ed.doc.terrain);
+    this.world.addObject(g);
+    if (g.ladders.length && !now.gameHidden) this.ladders.set(now.id, g.ladders);
+    if (!now.gameHidden) this.phys.addColliders(partsToColliders(now, g.parts));
+  }
+
   private applyChanges(changes: Change[]) {
     for (const c of changes) {
-      if (c.kind === 'object') {
-        const now = this.ed.getObject(c.id);
-        this.world.removeObject(c.id);
-        this.phys.removeObject(c.id);
-        this.ladders.delete(c.id);
-        if (now) {
-          const g = generateObject(now);
-          this.world.addObject(g);
-          if (g.ladders.length && !now.gameHidden) this.ladders.set(now.id, g.ladders);
-          if (!now.gameHidden) this.phys.addColliders(partsToColliders(now, g.parts));
-        }
-      } else if (c.kind === 'terrain') {
+      if (c.kind === 'object') this.regenObject(c.id);
+      else if (c.kind === 'terrain') {
         // Render i kolize terénu se aktualizují spolu (i při undo) – test nikdy nepoběží se starým colliderem.
         this.world.updateTerrain(this.ed.doc.terrain);
         this.phys.setTerrain(this.ed.doc.terrain);
+        // Ploty, zdi a ulice, které kopírují terén, se přegenerují.
+        for (const o of this.ed.doc.objects) {
+          const def = getAsset(o.assetId);
+          if (def?.usesTerrain?.(resolveParams(def, o.params))) this.regenObject(o.id);
+        }
       } else if (c.kind === 'entity') {
         this.editor.markers.rebuild(this.ed.doc);
         this.flags.rebuild(this.ed.doc.controlPoints);
@@ -847,13 +855,6 @@ export class App {
     $('#tb-net').addEventListener('click', () => this.showMenu());
     $('#tb-undo').addEventListener('click', () => this.editor.undo());
     $('#tb-redo').addEventListener('click', () => this.editor.redo());
-    for (const b of document.querySelectorAll<HTMLButtonElement>('.tool')) {
-      b.addEventListener('click', () => this.editor.setTool(b.dataset.tool as never));
-    }
-    $('#tb-space').addEventListener('click', () => {
-      this.editor.settings.space = this.editor.settings.space === 'world' ? 'local' : 'world';
-      this.editor.setTool(this.editor.tool);
-    });
     $('#tb-check').addEventListener('click', () => void this.checkMap());
     $('#tb-map').addEventListener('click', () => void this.mapMenu());
     $<HTMLSelectElement>('#st-grid').addEventListener('change', (e) => {
@@ -909,8 +910,6 @@ export class App {
 
   renderStatus() {
     if (!this.editor || !this.saver) return;
-    for (const b of document.querySelectorAll<HTMLButtonElement>('.tool')) b.classList.toggle('on', b.dataset.tool === this.editor.tool);
-    $('#tb-space').textContent = this.editor.settings.space === 'world' ? 'Osy: svět' : 'Osy: lokální';
     const sv = $('#st-save');
     sv.className = `save ${this.saver.state}`;
     sv.textContent =
@@ -922,7 +921,9 @@ export class App {
     $('#st-snap').textContent = this.editor.snapDisabled ? 'Přichycení VYPNUTO (Alt)' : '';
     $('#st-speed').textContent = `Kamera ${this.editor.settings.flySpeed.toFixed(0)} m/s`;
     $('#st-count').textContent = `${this.ed.doc.objects.length} objektů · výběr ${this.editor.selection.size}`;
-    $('#st-hint').textContent = 'F5 testovat · Ctrl+Z/Y historie · Ctrl+D duplikovat · Del smazat · F zaměřit';
+    $('#st-hint').textContent = this.editor.drawingRoad
+      ? 'Kreslení ulice: klik = bod · Enter / dvojklik = hotovo · Backspace = zpět o bod · Esc = zrušit'
+      : 'Táhni objekt = posun · modrý prstenec = rotace · oranžové kostky = rozměry · F5 testovat · Ctrl+Z/Y · Ctrl+D · Del · F zaměřit';
   }
 
   private async checkMap() {

@@ -1,44 +1,57 @@
 import * as THREE from 'three';
-import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import type { MapObject, Transform } from '../../shared/map/schema';
-import { getAsset, resolveParams } from '../../world/registry';
+import { generateObject, getAsset, resolveParams, type AssetDef } from '../../world/registry';
+import { formatPoints, parsePoints, type Pt } from '../../world/assets/roads';
+import { buildObjectGeometry } from '../render/geometry';
 import type { WorldView } from '../render/worldView';
 import { cmds, type Command, type EditorDoc, type History } from './editorDoc';
 import { MarkerView, markerId } from './markers';
 import { applyBrush, heightAt, readRegion, unionRegion, type Brush, type Region } from '../../world/terrain';
 
-export type Tool = 'translate' | 'rotate' | 'scale';
 export const TEST_SPAWN_ID = '__testSpawn';
 
 export interface EditorSettings {
   grid: number;
   rotSnapDeg: number; // 0 = volná
-  space: 'local' | 'world';
   flySpeed: number;
 }
 
 const r4 = (v: number) => Math.round(v * 10000) / 10000;
 
+type V3 = [number, number, number];
+
+/** Úchop gizma ve viewportu. */
+interface HandleInfo {
+  kind: 'rotate' | 'size' | 'uniform' | 'point' | 'addPoint';
+  axis?: 'x' | 'y' | 'z';
+  sign?: 1 | -1;
+  index?: number;
+}
+
+type Drag =
+  | { kind: 'move'; gp0: THREE.Vector3; starts: Map<string, { pos: V3; rotY: number }>; mount: boolean }
+  | { kind: 'rotate'; center: THREE.Vector3; a0: number; starts: Map<string, { pos: V3; rotY: number }>; delta: number }
+  | { kind: 'size'; id: string; axis: 'x' | 'y' | 'z'; sign: 1 | -1; origin: THREE.Vector3; dir: THREE.Vector3; ext: number; opp: number; f: number; uniform: boolean }
+  | { kind: 'point'; id: string; index: number; pts: Pt[] };
+
 /**
- * Editor ve viewportu: volná kamera, výběr, gizma a transformace.
- * Všechny změny mapy jdou přes History (undo/redo). Listenery se registrují
+ * Editor ve viewportu: volná kamera, výběr a jednotná manipulace bez režimů.
+ * Klik vybere, tažení objektu ho posune po terénu (všechno stojí na zemi; doplňky typu klimatizace
+ * se přilepí na stěnu, nádrž na střechu). Kolem výběru je prstenec rotace a úchopy rozměrů,
+ * u ulice úchopy bodů. Všechny změny mapy jdou přes History (undo/redo). Listenery se registrují
  * přes `on()` a `detach()` je všechny odebere (přepínání do hry je nehromadí).
  */
 export class Editor {
   readonly root = new THREE.Group();
   readonly selection = new Set<string>();
-  tool: Tool = 'translate';
-  settings: EditorSettings = { grid: 0.5, rotSnapDeg: 15, space: 'world', flySpeed: 12 };
+  settings: EditorSettings = { grid: 0.5, rotSnapDeg: 15, flySpeed: 12 };
   onSelection: () => void = () => {};
   onToast: (msg: string, kind?: 'info' | 'warn') => void = () => {};
   onStatus: () => void = () => {};
 
-  private tc: TransformControls;
-  private tcHelper: THREE.Object3D;
-  private pivot = new THREE.Object3D();
-  private pivotStart = new THREE.Matrix4();
-  private startMats = new Map<string, THREE.Matrix4>();
-  private dragging = false;
+  private handles = new THREE.Group();
+  private drag: Drag | null = null;
+  private pressed: { x: number; y: number; ctrl: boolean; id: string | null; started: boolean } | null = null;
   private grid: THREE.GridHelper | null = null;
   private boxes = new Map<string, THREE.Box3Helper>();
   readonly spawnMarker: THREE.Group;
@@ -51,6 +64,8 @@ export class Editor {
   brushPoint: THREE.Vector3 | null = null;
   private brushRing: THREE.Line;
   private pointerNdc = new THREE.Vector2(9, 9);
+  /** Kreslení nové ulice: body ve světě, náhled. */
+  private roadDraft: { assetId: string; pts: THREE.Vector3[]; line: THREE.Line; dots: THREE.Group } | null = null;
 
   // kamera
   private yaw = 0;
@@ -58,8 +73,6 @@ export class Editor {
   private flying = false;
   private keys = new Set<string>();
   private altHeld = false;
-  // výběr rámečkem
-  private down: { x: number; y: number; ctrl: boolean; button: number } | null = null;
   private rectEl: HTMLDivElement;
   private raycaster = new THREE.Raycaster();
   private listeners: Array<[EventTarget, string, EventListener]> = [];
@@ -73,16 +86,8 @@ export class Editor {
     private history: History,
   ) {
     this.root.name = 'editorRoot';
-    this.tc = new TransformControls(camera, canvas);
-    this.tc.setSize(0.9);
-    this.tcHelper = this.tc.getHelper();
-    this.root.add(this.tcHelper);
-    this.root.add(this.pivot);
-    this.tc.addEventListener('dragging-changed', (e) => (this.dragging = Boolean((e as unknown as { value: boolean }).value)));
-    this.tc.addEventListener('mouseDown', () => this.beginDrag());
-    this.tc.addEventListener('objectChange', () => this.previewDrag());
-    this.tc.addEventListener('mouseUp', () => this.endDrag());
-    this.tc.disconnect();
+    this.handles.name = 'handles';
+    this.root.add(this.handles);
     this.spawnMarker = makeSpawnMarker();
     this.root.add(this.spawnMarker);
     this.root.add(this.markers.root);
@@ -95,7 +100,6 @@ export class Editor {
     this.rectEl.className = 'select-rect hidden';
     canvas.parentElement!.appendChild(this.rectEl);
     this.rebuildGrid();
-    this.applyTool();
     camera.position.set(0, 18, 28);
     this.yaw = 0;
     this.pitch = -0.55;
@@ -111,10 +115,10 @@ export class Editor {
   attach() {
     if (this.attached) return;
     this.attached = true;
-    this.tc.connect(this.canvas);
     this.on(this.canvas, 'pointerdown', ((e: PointerEvent) => this.pointerDown(e)) as EventListener);
     this.on(window, 'pointermove', ((e: PointerEvent) => this.pointerMove(e)) as EventListener);
     this.on(window, 'pointerup', ((e: PointerEvent) => this.pointerUp(e)) as EventListener);
+    this.on(this.canvas, 'dblclick', (() => this.roadDraft && this.finishRoad()) as EventListener);
     this.on(this.canvas, 'wheel', ((e: WheelEvent) => this.wheel(e)) as EventListener);
     this.on(this.canvas, 'contextmenu', ((e: Event) => e.preventDefault()) as EventListener);
     this.on(window, 'keydown', ((e: KeyboardEvent) => this.keyDown(e)) as EventListener);
@@ -131,10 +135,10 @@ export class Editor {
   detach() {
     for (const [t, ev, fn] of this.listeners) t.removeEventListener(ev, fn);
     this.listeners = [];
-    this.tc.disconnect();
     this.attached = false;
     this.clearKeys();
     this.flying = false;
+    this.cancelRoad();
     this.root.visible = false;
   }
 
@@ -173,10 +177,11 @@ export class Editor {
       if (this.keys.has('KeyS')) v.z += 1;
       if (this.keys.has('KeyA')) v.x -= 1;
       if (this.keys.has('KeyD')) v.x += 1;
-      if (this.keys.has('KeyE')) v.y += 1;
-      if (this.keys.has('KeyQ')) v.y -= 1;
+      // Mezerník nahoru, Shift dolů (Q/E zůstávají jako záloha).
+      if (this.keys.has('Space') || this.keys.has('KeyE')) v.y += 1;
+      if (this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') || this.keys.has('KeyQ')) v.y -= 1;
       if (v.lengthSq() > 0) {
-        v.normalize().multiplyScalar(this.settings.flySpeed * (this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') ? 3 : 1) * dt);
+        v.normalize().multiplyScalar(this.settings.flySpeed * dt);
         const yawQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(this.pitch, this.yaw, 0, 'YXZ'));
         const up = v.y;
         v.y = 0;
@@ -188,10 +193,10 @@ export class Editor {
     this.applyCamera();
     this.updateBrush(dt);
     this.markers.update(performance.now() / 1000);
-    // Pivot sleduje výběr, když se zrovna netáhne (např. po undo).
-    if (!this.dragging) this.placePivot();
+    if (!this.drag) this.layoutHandles();
+    this.scaleHandles();
     for (const [id, h] of this.boxes) {
-      const g = id === TEST_SPAWN_ID ? this.spawnMarker : this.world.objects.get(id);
+      const g = this.groupOf(id);
       if (g) h.box.setFromObject(g);
     }
   }
@@ -199,7 +204,7 @@ export class Editor {
   frameSelection() {
     const box = new THREE.Box3();
     for (const id of this.selection) {
-      const g = id === TEST_SPAWN_ID ? this.spawnMarker : this.world.objects.get(id);
+      const g = this.groupOf(id);
       if (g) box.expandByObject(g);
     }
     if (box.isEmpty()) return;
@@ -224,7 +229,18 @@ export class Editor {
       this.updateSnap();
     }
     if (this.flying) {
+      if (e.code === 'Space') e.preventDefault();
       this.keys.add(e.code);
+      return;
+    }
+    if (this.roadDraft) {
+      if (e.code === 'Enter') this.finishRoad();
+      else if (e.code === 'Escape') this.cancelRoad(true);
+      else if (e.code === 'Backspace') {
+        e.preventDefault();
+        this.roadDraft.pts.pop();
+        this.redrawDraft();
+      }
       return;
     }
     const ctrl = e.ctrlKey || e.metaKey;
@@ -246,15 +262,6 @@ export class Editor {
     }
     if (ctrl) return;
     switch (e.code) {
-      case 'KeyW':
-        this.setTool('translate');
-        break;
-      case 'KeyE':
-        this.setTool('rotate');
-        break;
-      case 'KeyR':
-        this.setTool('scale');
-        break;
       case 'KeyF':
         this.frameSelection();
         break;
@@ -264,7 +271,8 @@ export class Editor {
         this.deleteSelection();
         break;
       case 'Escape':
-        this.select([], false);
+        if (this.drag) this.cancelDrag();
+        else this.select([], false);
         break;
     }
   }
@@ -284,13 +292,30 @@ export class Editor {
       return;
     }
     if (e.button !== 0) return;
+    this.pointerNdc = this.ndc(e.clientX, e.clientY);
     if (this.terrainMode) {
       this.beginStroke(e.shiftKey);
       return;
     }
-    // Klik na gizmo nevybírá objekt za ním.
-    if (this.tc.axis !== null || this.dragging) return;
-    this.down = { x: e.clientX, y: e.clientY, ctrl: e.ctrlKey || e.metaKey, button: 0 };
+    if (this.roadDraft) {
+      const p = this.groundAtPointer();
+      if (p) {
+        this.roadDraft.pts.push(this.snapXZ(p));
+        this.redrawDraft();
+      }
+      return;
+    }
+    // 1) Úchopy gizma mají přednost před objekty za nimi.
+    const h = this.pickHandle();
+    if (h) {
+      this.beginHandle(h.info, h.point, e.shiftKey);
+      return;
+    }
+    // 2) Objekt: výběr hned, tažení až po posunu myši o pár pixelů.
+    const { id } = this.pick(e.clientX, e.clientY);
+    const ctrl = e.ctrlKey || e.metaKey;
+    if (id && !ctrl && !this.selection.has(id)) this.select([id], false);
+    this.pressed = { x: e.clientX, y: e.clientY, ctrl, id, started: false };
   }
 
   private pointerMove(e: PointerEvent) {
@@ -300,15 +325,29 @@ export class Editor {
       this.pitch = THREE.MathUtils.clamp(this.pitch - e.movementY * 0.0025, -1.55, 1.55);
       return;
     }
-    if (this.down) {
-      const dx = e.clientX - this.down.x, dy = e.clientY - this.down.y;
-      if (Math.hypot(dx, dy) > 5) {
-        const r = this.canvas.getBoundingClientRect();
-        const x0 = Math.min(e.clientX, this.down.x) - r.left, y0 = Math.min(e.clientY, this.down.y) - r.top;
-        Object.assign(this.rectEl.style, { left: `${x0}px`, top: `${y0}px`, width: `${Math.abs(dx)}px`, height: `${Math.abs(dy)}px` });
-        this.rectEl.classList.remove('hidden');
-      }
+    if (this.roadDraft) {
+      this.redrawDraft();
+      return;
     }
+    if (this.drag) {
+      this.previewDrag();
+      return;
+    }
+    const d = this.pressed;
+    if (!d) return;
+    const dx = e.clientX - d.x, dy = e.clientY - d.y;
+    if (Math.hypot(dx, dy) <= 5) return;
+    if (d.id && !d.ctrl && this.selection.has(d.id)) {
+      this.pressed = null;
+      this.beginMove(this.ndc(d.x, d.y));
+      this.previewDrag();
+      return;
+    }
+    const r = this.canvas.getBoundingClientRect();
+    const x0 = Math.min(e.clientX, d.x) - r.left, y0 = Math.min(e.clientY, d.y) - r.top;
+    Object.assign(this.rectEl.style, { left: `${x0}px`, top: `${y0}px`, width: `${Math.abs(dx)}px`, height: `${Math.abs(dy)}px` });
+    this.rectEl.classList.remove('hidden');
+    d.started = true;
   }
 
   private pointerUp(e: PointerEvent) {
@@ -322,13 +361,17 @@ export class Editor {
       this.endStroke();
       return;
     }
-    if (e.button !== 0 || !this.down) return;
-    const d = this.down;
-    this.down = null;
+    if (e.button !== 0) return;
+    if (this.drag) {
+      this.endDrag();
+      return;
+    }
+    const d = this.pressed;
+    this.pressed = null;
+    if (!d) return;
     this.rectEl.classList.add('hidden');
-    const moved = Math.hypot(e.clientX - d.x, e.clientY - d.y) > 5;
-    if (moved) this.rectSelect(d.x, d.y, e.clientX, e.clientY, d.ctrl);
-    else this.clickSelect(e.clientX, e.clientY, d.ctrl);
+    if (d.started) this.rectSelect(d.x, d.y, e.clientX, e.clientY, d.ctrl);
+    else this.clickSelect(d.id, d.ctrl);
   }
 
   private wheel(e: WheelEvent) {
@@ -370,8 +413,7 @@ export class Editor {
     return { id: null, point: null };
   }
 
-  private clickSelect(cx: number, cy: number, ctrl: boolean) {
-    const { id } = this.pick(cx, cy);
+  private clickSelect(id: string | null, ctrl: boolean) {
     if (ctrl) {
       if (id) {
         const next = new Set(this.selection);
@@ -432,39 +474,11 @@ export class Editor {
       this.root.add(h);
       this.boxes.set(id, h);
     }
-    this.placePivot();
-    const movable = [...this.selection].filter((id) => id === TEST_SPAWN_ID || markerId.parse(id) || !this.ed.getObject(id)?.editor?.locked);
-    if (movable.length > 0) this.tc.attach(this.pivot);
-    else this.tc.detach();
-    this.applyTool();
+    if (!this.drag) this.buildHandles();
   }
 
-  // ---------------- gizmo ----------------
-
-  setTool(t: Tool) {
-    this.tool = t;
-    this.applyTool();
-    this.onStatus();
-  }
-
-  private applyTool() {
-    this.tc.setMode(this.tool);
-    const multi = this.selection.size > 1;
-    this.tc.setSpace(this.tool === 'scale' ? 'local' : this.settings.space);
-    // Rotace jen kolem svislé osy (městská stavebnice); X/Z by rozbily parametrické stavby.
-    this.tc.showX = this.tool !== 'rotate';
-    this.tc.showZ = this.tool !== 'rotate';
-    this.tc.showY = true;
-    const only = [...this.selection][0];
-    if (this.tool === 'scale' && (multi || only === TEST_SPAWN_ID || only?.startsWith('sp:'))) this.tc.detach();
-    this.updateSnap();
-  }
-
+  /** Přichycení na mřížku a rotace: Alt dočasně vypne. */
   updateSnap() {
-    const off = this.altHeld;
-    this.tc.setTranslationSnap(off ? null : this.settings.grid);
-    this.tc.setRotationSnap(off || this.settings.rotSnapDeg === 0 ? null : THREE.MathUtils.degToRad(this.settings.rotSnapDeg));
-    this.tc.setScaleSnap(null);
     this.onStatus();
   }
 
@@ -509,169 +523,600 @@ export class Editor {
     return this.ed.getObject(id)?.transform;
   }
 
-  private placePivot() {
-    const ids = [...this.selection];
-    if (ids.length === 0) return;
-    const c = new THREE.Vector3();
-    let n = 0;
-    for (const id of ids) {
-      const t = this.transformOf(id);
-      if (!t) continue;
-      c.add(new THREE.Vector3(...t.position));
-      n++;
-    }
-    if (!n) return;
-    c.divideScalar(n);
-    this.pivot.position.copy(c);
-    const t0 = this.transformOf(ids[0]);
-    if (ids.length === 1 && t0) this.pivot.rotation.set(0, t0.rotation[1], 0);
-    else this.pivot.rotation.set(0, 0, 0);
-    this.pivot.scale.set(1, 1, 1);
-    this.pivot.updateMatrixWorld();
-  }
-
   private groupOf(id: string): THREE.Object3D | undefined {
     if (id === TEST_SPAWN_ID) return this.spawnMarker;
     if (markerId.parse(id)) return this.markers.objectFor(id);
     return this.world.objects.get(id);
   }
 
-  private beginDrag() {
-    this.pivot.updateMatrixWorld();
-    this.pivotStart.copy(this.pivot.matrixWorld);
-    this.startMats.clear();
-    for (const id of this.selection) {
+  private movable(): string[] {
+    return [...this.selection].filter((id) => id === TEST_SPAWN_ID || markerId.parse(id) || !this.ed.getObject(id)?.editor?.locked);
+  }
+
+  // ---------------- terén a paprsky ----------------
+
+  /** Výška terénu (0 mimo terén). */
+  groundY(x: number, z: number): number {
+    return heightAt(this.ed.doc.terrain, x, z) ?? 0;
+  }
+
+  /** Bod na terénu pod kurzorem (nebo na rovině y = 0 mimo terén). */
+  private groundAtPointer(ndc = this.pointerNdc): THREE.Vector3 | null {
+    this.raycaster.setFromCamera(ndc, this.camera);
+    const mesh = this.world.terrain;
+    if (mesh) {
+      const h = this.raycaster.intersectObject(mesh, false)[0];
+      if (h) return h.point.clone();
+    }
+    const p = new THREE.Vector3();
+    return this.raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), p) ? p : null;
+  }
+
+  private snapXZ(p: THREE.Vector3): THREE.Vector3 {
+    if (this.altHeld) return p;
+    const g = this.settings.grid;
+    const x = Math.round(p.x / g) * g, z = Math.round(p.z / g) * g;
+    return new THREE.Vector3(x, this.groundY(x, z), z);
+  }
+
+  // ---------------- úchopy (gizmo) ----------------
+
+  private handleMat = {
+    rotate: new THREE.MeshBasicMaterial({ color: '#4fc3ff', depthTest: false, transparent: true, opacity: 0.85 }),
+    size: new THREE.MeshBasicMaterial({ color: '#ffb23e', depthTest: false }),
+    uniform: new THREE.MeshBasicMaterial({ color: '#ff7a3e', depthTest: false }),
+    point: new THREE.MeshBasicMaterial({ color: '#7dff8a', depthTest: false }),
+    addPoint: new THREE.MeshBasicMaterial({ color: '#d8ffe0', depthTest: false, transparent: true, opacity: 0.7 }),
+  };
+
+  /** Lokální obálka objektu z jeho geometrie (bez měřítka skupiny). */
+  private localBounds(id: string): THREE.Box3 | null {
+    const g = this.world.objects.get(id);
+    if (!g) return null;
+    const box = new THREE.Box3();
+    for (const c of g.children) {
+      const m = c as THREE.Mesh;
+      if (!m.geometry || m.name === '__batch') continue;
+      m.geometry.computeBoundingBox();
+      const b = m.geometry.boundingBox!.clone().applyMatrix4(m.matrix);
+      box.union(b);
+    }
+    return box.isEmpty() ? null : box;
+  }
+
+  private buildHandles() {
+    for (const c of [...this.handles.children]) {
+      c.removeFromParent();
+      (c as THREE.Mesh).geometry?.dispose();
+    }
+    const ids = this.movable();
+    if (!ids.length || this.terrainMode) return;
+    const add = (geo: THREE.BufferGeometry, mat: THREE.Material, info: HandleInfo) => {
+      const m = new THREE.Mesh(geo, mat);
+      m.renderOrder = 30;
+      m.userData.handle = info;
+      this.handles.add(m);
+      return m;
+    };
+    // Prstenec rotace (u CP a zón bez natočení se nekreslí).
+    const rotatable = ids.some((id) => !id.startsWith('cp:'));
+    if (rotatable) {
+      const ring = add(new THREE.TorusGeometry(1, 0.035, 6, 64), this.handleMat.rotate, { kind: 'rotate' });
+      ring.rotation.x = Math.PI / 2;
+      ring.userData.ring = true;
+    }
+    if (ids.length !== 1) return;
+    const id = ids[0];
+    const o = this.ed.getObject(id);
+    const def = o && getAsset(o.assetId);
+    if (!o || !def) return;
+    const cube = () => new THREE.BoxGeometry(1, 1, 1);
+    if (def.sizeParams) {
+      for (const axis of ['x', 'z', 'y'] as const) {
+        if (!def.sizeParams[axis]) continue;
+        for (const sign of axis === 'y' ? ([1] as const) : ([1, -1] as const)) add(cube(), this.handleMat.size, { kind: 'size', axis, sign });
+      }
+    } else if (def.uniformScale) add(cube(), this.handleMat.uniform, { kind: 'uniform', axis: 'y', sign: 1 });
+    const ps = def.params.find((q) => q.type === 'points');
+    if (ps) {
+      const pts = parsePoints(String(resolveParams(def, o.params)[ps.key]));
+      pts.forEach((_, i) => add(new THREE.SphereGeometry(1, 14, 10), this.handleMat.point, { kind: 'point', index: i }));
+      for (let i = 0; i <= pts.length; i++) add(new THREE.OctahedronGeometry(1), this.handleMat.addPoint, { kind: 'addPoint', index: i });
+    }
+    this.layoutHandles();
+  }
+
+  /** Rozmístí úchopy podle aktuální polohy výběru. */
+  private layoutHandles() {
+    const ids = this.movable();
+    if (!ids.length || !this.handles.children.length) return;
+    const center = new THREE.Vector3();
+    let radius = 1;
+    const box = new THREE.Box3();
+    for (const id of ids) {
       const g = this.groupOf(id);
-      if (g) {
-        g.updateMatrixWorld();
-        this.startMats.set(id, g.matrixWorld.clone());
+      if (g) box.expandByObject(g);
+    }
+    if (!box.isEmpty()) {
+      box.getCenter(center);
+      const s = box.getSize(new THREE.Vector3());
+      radius = Math.max(0.8, Math.hypot(s.x, s.z) / 2 + 0.4);
+    }
+    const t0 = this.transformOf(ids[0]);
+    const pivot = ids.length === 1 && t0 ? new THREE.Vector3(...t0.position) : new THREE.Vector3(center.x, box.isEmpty() ? 0 : box.min.y, center.z);
+    const o = ids.length === 1 ? this.ed.getObject(ids[0]) : undefined;
+    const g = o ? this.world.objects.get(o.id) : undefined;
+    const lb = o ? this.localBounds(o.id) : null;
+    const def = o ? getAsset(o.assetId) : undefined;
+    let pts: Pt[] = [];
+    if (o && def) {
+      const ps = def.params.find((q) => q.type === 'points');
+      if (ps) pts = parsePoints(String(resolveParams(def, o.params)[ps.key]));
+    }
+    for (const c of this.handles.children) {
+      const info = c.userData.handle as HandleInfo;
+      if (info.kind === 'rotate') {
+        // Rotace kolem středu obálky (u plotu tedy kolem jeho středu, ne kolem konce).
+        if (box.isEmpty()) c.position.set(pivot.x, pivot.y + 0.08, pivot.z);
+        else c.position.set(center.x, box.min.y + 0.08, center.z);
+        c.userData.radius = radius;
+      } else if ((info.kind === 'size' || info.kind === 'uniform') && g && lb) {
+        const lc = lb.getCenter(new THREE.Vector3());
+        const local = lc.clone();
+        if (info.kind === 'uniform') local.set(lb.max.x, lb.max.y, lb.max.z);
+        else local[info.axis!] = info.sign! > 0 ? lb.max[info.axis!] : lb.min[info.axis!];
+        if (info.axis === 'y' && info.kind === 'size') local.y = lb.max.y + 0.15;
+        c.position.copy(local.applyMatrix4(g.matrixWorld));
+      } else if ((info.kind === 'point' || info.kind === 'addPoint') && o && pts.length) {
+        const i = info.index!;
+        let lp: Pt;
+        if (info.kind === 'point') lp = pts[i];
+        else if (i === 0) lp = extend(pts[0], pts[1]);
+        else if (i === pts.length) lp = extend(pts[pts.length - 1], pts[pts.length - 2]);
+        else lp = [(pts[i - 1][0] + pts[i][0]) / 2, (pts[i - 1][1] + pts[i][1]) / 2];
+        const w = this.localToWorld(o, lp);
+        c.position.set(w.x, this.groundY(w.x, w.z) + 0.35, w.z);
       }
     }
   }
 
-  /** Lehký náhled během tažení: pohybují se jen existující meshe, nic se negeneruje. */
+  /** Úchopy drží stálou velikost na obrazovce. */
+  private scaleHandles() {
+    for (const c of this.handles.children) {
+      const d = c.position.distanceTo(this.camera.position);
+      const k = d * 0.012;
+      const info = c.userData.handle as HandleInfo;
+      if (info.kind === 'rotate') {
+        const r = c.userData.radius ?? 1;
+        // Tloušťka prstence stálá na obrazovce; geometrie se mění jen při větší změně.
+        const tube = Math.min(0.2, (k * 0.35) / r);
+        if (Math.abs(tube - (c.userData.tube ?? 0)) > tube * 0.15) {
+          (c as THREE.Mesh).geometry.dispose();
+          (c as THREE.Mesh).geometry = new THREE.TorusGeometry(1, tube, 6, 64);
+          c.userData.tube = tube;
+        }
+        c.scale.setScalar(r);
+      } else if (info.kind === 'point') c.scale.setScalar(k * 0.9);
+      else if (info.kind === 'addPoint') c.scale.setScalar(k * 0.6);
+      else c.scale.setScalar(k * 1.1);
+    }
+  }
+
+  private pickHandle(): { info: HandleInfo; point: THREE.Vector3 } | null {
+    if (!this.handles.children.length) return null;
+    this.raycaster.setFromCamera(this.pointerNdc, this.camera);
+    const hits = this.raycaster.intersectObjects(this.handles.children, false);
+    // Body a rozměry mají přednost před prstencem (leží uvnitř něj).
+    hits.sort((a, b) => Number((a.object.userData.handle as HandleInfo).kind === 'rotate') - Number((b.object.userData.handle as HandleInfo).kind === 'rotate') || a.distance - b.distance);
+    const h = hits[0];
+    return h ? { info: h.object.userData.handle as HandleInfo, point: h.object.position.clone() } : null;
+  }
+
+  private localToWorld(o: MapObject, p: Pt): THREE.Vector3 {
+    const [px, , pz] = o.transform.position;
+    const yaw = o.transform.rotation[1], s = o.transform.scale ?? 1;
+    const c = Math.cos(yaw), sn = Math.sin(yaw);
+    return new THREE.Vector3(px + (c * p[0] + sn * p[1]) * s, 0, pz + (-sn * p[0] + c * p[1]) * s);
+  }
+
+  private worldToLocal(o: MapObject, w: THREE.Vector3): Pt {
+    const [px, , pz] = o.transform.position;
+    const yaw = o.transform.rotation[1], s = o.transform.scale ?? 1;
+    const c = Math.cos(yaw), sn = Math.sin(yaw);
+    const dx = (w.x - px) / s, dz = (w.z - pz) / s;
+    return [r4(c * dx - sn * dz), r4(sn * dx + c * dz)];
+  }
+
+  // ---------------- tažení ----------------
+
+  private startStates(ids: string[]) {
+    const m = new Map<string, { pos: V3; rotY: number }>();
+    for (const id of ids) {
+      const t = this.transformOf(id);
+      if (t) m.set(id, { pos: [...t.position] as V3, rotY: t.rotation[1] });
+    }
+    return m;
+  }
+
+  private beginMove(ndc: THREE.Vector2) {
+    const ids = this.movable();
+    const gp0 = this.groundAtPointer(ndc);
+    if (!ids.length || !gp0) return;
+    const one = ids.length === 1 ? this.ed.getObject(ids[0]) : undefined;
+    const mount = !!(one && getAsset(one.assetId)?.mount);
+    this.drag = { kind: 'move', gp0, starts: this.startStates(ids), mount };
+    this.handles.visible = false;
+  }
+
+  private beginHandle(info: HandleInfo, point: THREE.Vector3, shift: boolean) {
+    const ids = this.movable();
+    if (info.kind === 'rotate') {
+      const ring = this.handles.children.find((c) => (c.userData.handle as HandleInfo).kind === 'rotate')!;
+      const center = ring.position.clone();
+      const gp = this.groundAtPointer() ?? point;
+      this.drag = { kind: 'rotate', center, a0: Math.atan2(gp.x - center.x, gp.z - center.z), starts: this.startStates(ids), delta: 0 };
+      return;
+    }
+    const id = ids[0];
+    const o = this.ed.getObject(id);
+    if (!o) return;
+    const def = getAsset(o.assetId)!;
+    if (info.kind === 'point' || info.kind === 'addPoint') {
+      const ps = def.params.find((q) => q.type === 'points')!;
+      const pts = parsePoints(String(resolveParams(def, o.params)[ps.key]));
+      if (info.kind === 'point' && shift) {
+        if (pts.length <= 2) return this.onToast('Ulice musí mít aspoň 2 body.', 'warn');
+        pts.splice(info.index!, 1);
+        this.history.execute(cmds.update(this.ed, id, (x) => (x.params[ps.key] = formatPoints(pts)), 'Smazat bod ulice'));
+        return;
+      }
+      let index = info.index!;
+      if (info.kind === 'addPoint') {
+        const lp = this.worldToLocal(o, point);
+        pts.splice(index, 0, lp);
+      }
+      this.drag = { kind: 'point', id, index, pts };
+      this.handles.visible = info.kind === 'point';
+      void index;
+      return;
+    }
+    // Rozměry: tažení po ose úchopu (lokální osa natočená do světa).
+    const g = this.world.objects.get(id);
+    const lb = this.localBounds(id);
+    if (!g || !lb) return;
+    const axis = info.axis!, sign = info.sign!;
+    const uniform = info.kind === 'uniform';
+    const local = new THREE.Vector3(axis === 'x' ? 1 : 0, axis === 'y' ? 1 : 0, axis === 'z' ? 1 : 0).multiplyScalar(sign);
+    const dir = uniform ? new THREE.Vector3(0, 1, 0) : local.applyQuaternion(g.quaternion).normalize();
+    const ext = (lb.max[axis] - lb.min[axis]) * g.scale.x;
+    const opp = sign > 0 ? lb.min[axis] : lb.max[axis];
+    this.drag = { kind: 'size', id, axis, sign, origin: point.clone(), dir, ext: Math.max(0.05, ext), opp, f: 1, uniform };
+    this.handles.visible = false;
+  }
+
+  /** Vzdálenost podél přímky (origin, dir) k bodu na paprsku myši, který je jí nejblíž. */
+  private alongAxis(origin: THREE.Vector3, dir: THREE.Vector3): number {
+    this.raycaster.setFromCamera(this.pointerNdc, this.camera);
+    const r = this.raycaster.ray;
+    const w0 = origin.clone().sub(r.origin);
+    const a = dir.dot(dir), b = dir.dot(r.direction), c = r.direction.dot(r.direction);
+    const d = dir.dot(w0), e = r.direction.dot(w0);
+    const den = a * c - b * b;
+    if (Math.abs(den) < 1e-6) return 0;
+    return (b * e - c * d) / den;
+  }
+
+  /** Místo na budově pro doplněk (stěna / střecha) pod kurzorem, nebo null. */
+  private mountHit(id: string, def: AssetDef): { pos: THREE.Vector3; yaw?: number } | null {
+    this.raycaster.setFromCamera(this.pointerNdc, this.camera);
+    const hits = this.raycaster.intersectObject(this.world.root, true);
+    for (const h of hits) {
+      let o: THREE.Object3D | null = h.object;
+      while (o && !o.userData.objectId) o = o.parent;
+      const hid = o?.userData.objectId as string | undefined;
+      if (!hid || hid === id || hid === '__terrain' || !isVisible(h.object) || !h.face) continue;
+      const n = h.face.normal.clone().transformDirection(h.object.matrixWorld);
+      if (def.mount!.kind === 'wall' && Math.abs(n.y) < 0.4) {
+        n.y = 0;
+        n.normalize();
+        const p = h.point.clone().addScaledVector(n, def.mount!.back ?? 0);
+        if (!this.altHeld) p.y = Math.round(p.y / 0.25) * 0.25;
+        // Žebřík stojí patou na zemi.
+        if (def.assetId === 'struct.ladder') p.y = this.groundY(p.x, p.z);
+        return { pos: p, yaw: Math.atan2(-n.x, -n.z) };
+      }
+      if (def.mount!.kind === 'top' && n.y > 0.6) return { pos: h.point.clone() };
+      return null;
+    }
+    return null;
+  }
+
+  /** Lehký náhled během tažení: pohybují se existující meshe (ulice se přegeneruje). */
   private previewDrag() {
-    this.pivot.updateMatrixWorld();
-    if (this.tool === 'scale') {
-      const id = [...this.selection][0];
-      const g = this.groupOf(id);
-      const start = this.startMats.get(id);
-      if (g && start) {
-        const s = this.pivot.scale;
-        const base = new THREE.Vector3();
-        start.decompose(new THREE.Vector3(), new THREE.Quaternion(), base);
-        g.scale.set(base.x * Math.max(0.01, s.x), base.y * Math.max(0.01, s.y), base.z * Math.max(0.01, s.z));
+    const d = this.drag;
+    if (!d) return;
+    if (d.kind === 'move') {
+      const gp = this.groundAtPointer();
+      if (!gp) return;
+      if (d.mount) {
+        const [id] = [...d.starts.keys()];
+        const def = getAsset(this.ed.getObject(id)!.assetId)!;
+        const m = this.mountHit(id, def);
+        const g = this.groupOf(id);
+        if (m && g) {
+          g.position.copy(m.pos);
+          if (m.yaw !== undefined) g.rotation.set(0, m.yaw, 0);
+          g.updateMatrixWorld(true);
+          g.userData.mounted = true;
+          return;
+        }
+        if (g) g.userData.mounted = false;
+      }
+      let dx = gp.x - d.gp0.x, dz = gp.z - d.gp0.z;
+      // Přichycení: první objekt na mřížku, ostatní stejný posun (zachová rozestavení).
+      const first = d.starts.values().next().value!;
+      if (!this.altHeld) {
+        const g = this.settings.grid;
+        dx = Math.round((first.pos[0] + dx) / g) * g - first.pos[0];
+        dz = Math.round((first.pos[2] + dz) / g) * g - first.pos[2];
+      }
+      for (const [id, s] of d.starts) {
+        const g = this.groupOf(id);
+        if (!g) continue;
+        const x = s.pos[0] + dx, z = s.pos[2] + dz;
+        // Výška kopíruje terén: objekt na zemi zůstane na zemi, objekt nad zemí drží odstup.
+        const y = s.pos[1] + this.groundY(x, z) - this.groundY(s.pos[0], s.pos[2]);
+        g.position.set(x, y, z);
+        g.rotation.set(0, s.rotY, 0);
+        g.updateMatrixWorld(true);
       }
       return;
     }
-    const delta = this.pivot.matrixWorld.clone().multiply(this.pivotStart.clone().invert());
-    for (const [id, m0] of this.startMats) {
-      const g = this.groupOf(id);
-      if (!g) continue;
-      const m = delta.clone().multiply(m0);
-      m.decompose(g.position, g.quaternion, g.scale);
-      g.updateMatrixWorld(true);
+    if (d.kind === 'rotate') {
+      const gp = this.groundAtPointer();
+      if (!gp) return;
+      let delta = Math.atan2(gp.x - d.center.x, gp.z - d.center.z) - d.a0;
+      const snap = this.settings.rotSnapDeg;
+      if (snap && !this.altHeld) delta = Math.round(delta / THREE.MathUtils.degToRad(snap)) * THREE.MathUtils.degToRad(snap);
+      d.delta = delta;
+      const c = Math.cos(delta), s = Math.sin(delta);
+      for (const [id, st] of d.starts) {
+        const g = this.groupOf(id);
+        if (!g) continue;
+        const rx = st.pos[0] - d.center.x, rz = st.pos[2] - d.center.z;
+        g.position.set(d.center.x + c * rx + s * rz, st.pos[1], d.center.z - s * rx + c * rz);
+        g.rotation.set(0, st.rotY + delta, 0);
+        g.updateMatrixWorld(true);
+      }
+      return;
     }
+    if (d.kind === 'size') {
+      const g = this.world.objects.get(d.id);
+      const o = this.ed.getObject(d.id);
+      if (!g || !o) return;
+      const t = this.alongAxis(d.origin, d.dir);
+      d.f = Math.max(0.05, (d.ext + t) / d.ext);
+      const base = o.transform.scale ?? 1;
+      if (d.uniform) g.scale.setScalar(base * d.f);
+      else {
+        g.scale.set(base, base, base);
+        g.scale[d.axis] = base * d.f;
+        // Protilehlá stěna zůstává na místě.
+        const shift = new THREE.Vector3();
+        shift[d.axis] = d.opp * (1 - d.f) * base;
+        shift.applyQuaternion(g.quaternion);
+        g.position.set(...o.transform.position).add(shift);
+      }
+      g.updateMatrixWorld(true);
+      return;
+    }
+    if (d.kind === 'point') {
+      const o = this.ed.getObject(d.id);
+      const gp = this.groundAtPointer();
+      if (!o || !gp) return;
+      d.pts[d.index] = this.worldToLocal(o, this.snapXZ(gp));
+      const def = getAsset(o.assetId)!;
+      const key = def.params.find((q) => q.type === 'points')!.key;
+      const tmp: MapObject = { ...o, params: { ...o.params, [key]: formatPoints(d.pts) } };
+      this.world.addObject(generateObject(tmp, this.ed.doc.terrain));
+      const h = this.handles.children.find((c) => (c.userData.handle as HandleInfo).kind === 'point' && (c.userData.handle as HandleInfo).index === d.index);
+      if (h) h.position.set(gp.x, gp.y + 0.35, gp.z);
+    }
+  }
+
+  private cancelDrag() {
+    const d = this.drag;
+    this.drag = null;
+    this.handles.visible = true;
+    if (!d) return;
+    for (const id of d.kind === 'move' || d.kind === 'rotate' ? d.starts.keys() : [d.id]) {
+      const o = this.ed.getObject(id);
+      if (o) this.world.addObject(generateObject(o, this.ed.doc.terrain));
+    }
+    this.editorRefreshMarkers();
+    this.buildHandles();
+  }
+
+  private editorRefreshMarkers() {
+    this.markers.rebuild(this.ed.doc);
+    this.updateSpawnMarker();
   }
 
   /** Dokončení tažení = jedna položka historie, finální přegenerování a kolize. */
   private endDrag() {
+    const d = this.drag!;
+    this.drag = null;
+    this.handles.visible = true;
     const changes: Command['changes'] = [];
-    if (this.tool === 'scale') {
-      const id = [...this.selection][0];
-      const s = this.pivot.scale.clone();
-      const g = this.groupOf(id);
-      const mk = markerId.parse(id ?? '');
-      if (mk && mk.collection !== 'spawnPoints') {
-        const c = cmds.entity(this.ed, mk.collection, mk.id, (e) => {
-          const x = e as unknown as Record<string, unknown>;
-          if (mk.collection === 'zones') {
-            const he = x.halfExtents as number[];
-            x.halfExtents = [r4(Math.max(0.5, he[0] * s.x)), r4(Math.max(0.5, he[1] * s.y)), r4(Math.max(0.5, he[2] * s.z))];
-          } else {
-            x.radius = r4(THREE.MathUtils.clamp((x.radius as number) * (s.x + s.z) / 2, 1, 100));
-            x.height = r4(THREE.MathUtils.clamp((x.height as number) * s.y, 1, 50));
-          }
-        }, 'Rozměry markeru');
-        changes.push(...c.changes);
-        const g = this.groupOf(id);
-        if (g) g.scale.set(1, 1, 1);
-      } else if (id && id !== TEST_SPAWN_ID) {
-        const c = this.scaleCommand(id, s);
-        if (c) changes.push(...c.changes);
-        else if (g && this.startMats.get(id)) this.startMats.get(id)!.decompose(g.position, g.quaternion, g.scale);
-      }
-      this.pivot.scale.set(1, 1, 1);
-    } else {
-      for (const id of this.selection) {
+    let label = 'Posun';
+    if (d.kind === 'move' || d.kind === 'rotate') {
+      label = d.kind === 'move' ? 'Posun' : 'Rotace';
+      for (const id of d.starts.keys()) {
         const g = this.groupOf(id);
         if (!g) continue;
-        const e = new THREE.Euler().setFromQuaternion(g.quaternion, 'XYZ');
-        const pos: [number, number, number] = [r4(g.position.x), r4(g.position.y), r4(g.position.z)];
-        const rot: [number, number, number] = [r4(e.x), r4(normAngle(e.y)), r4(e.z)];
-        const mk = markerId.parse(id);
-        if (id === TEST_SPAWN_ID) {
-          const before = this.ed.doc.testSpawn;
-          changes.push({ kind: 'testSpawn', before, after: { position: pos, rotation: [0, rot[1], 0] } });
-        } else if (mk) {
-          const c = cmds.entity(this.ed, mk.collection, mk.id, (e) => {
-            const x = e as unknown as Record<string, unknown>;
-            if (mk.collection === 'zones') {
-              x.center = pos;
-              x.yaw = rot[1];
-            } else {
-              x.position = pos;
-              if (mk.collection === 'spawnPoints') x.yaw = rot[1];
-            }
-          }, 'Posun markeru');
-          changes.push(...c.changes);
-        } else {
-          const c = cmds.update(this.ed, id, (o) => {
-            o.transform.position = pos;
-            o.transform.rotation = rot;
-          });
-          changes.push(...c.changes);
-        }
+        const pos: V3 = [r4(g.position.x), r4(g.position.y), r4(g.position.z)];
+        const rotY = r4(normAngle(new THREE.Euler().setFromQuaternion(g.quaternion, 'YXZ').y));
+        const st = d.starts.get(id)!;
+        if (pos.every((v, i) => Math.abs(v - st.pos[i]) < 1e-4) && Math.abs(rotY - normAngle(st.rotY)) < 1e-4) continue;
+        if (g.userData.mounted) label = 'Přilepit na budovu';
+        changes.push(...this.transformChanges(id, pos, rotY));
       }
+    } else if (d.kind === 'size') {
+      const c = this.sizeCommand(d);
+      if (c) {
+        changes.push(...c.changes);
+        label = c.label;
+      }
+    } else if (d.kind === 'point') {
+      const o = this.ed.getObject(d.id)!;
+      const def = getAsset(o.assetId)!;
+      const key = def.params.find((q) => q.type === 'points')!.key;
+      changes.push(...cmds.update(this.ed, d.id, (x) => (x.params[key] = formatPoints(d.pts)), 'Bod ulice').changes);
+      label = 'Bod ulice';
     }
-    const label = this.tool === 'translate' ? 'Posun' : this.tool === 'rotate' ? 'Rotace' : 'Rozměry';
     if (changes.length) this.history.execute({ label, changes });
-    this.placePivot();
+    else this.cancelDrag();
+    this.buildHandles();
   }
 
-  /** Převod tažení rozměrového handlu na parametry generátoru (přichycené na mřížku a meze). */
-  private scaleCommand(id: string, s: THREE.Vector3): Command | null {
-    const o = this.ed.getObject(id);
+  private transformChanges(id: string, pos: V3, rotY: number): Command['changes'] {
+    const mk = markerId.parse(id);
+    if (id === TEST_SPAWN_ID) return [{ kind: 'testSpawn', before: this.ed.doc.testSpawn, after: { position: pos, rotation: [0, rotY, 0] } }];
+    if (mk)
+      return cmds.entity(this.ed, mk.collection, mk.id, (e) => {
+        const x = e as unknown as Record<string, unknown>;
+        if (mk.collection === 'zones') {
+          x.center = pos;
+          x.yaw = rotY;
+        } else {
+          x.position = pos;
+          if (mk.collection === 'spawnPoints') x.yaw = rotY;
+        }
+      }, 'Posun markeru').changes;
+    return cmds.update(this.ed, id, (o) => {
+      o.transform.position = pos;
+      o.transform.rotation = [0, rotY, 0];
+    }).changes;
+  }
+
+  /** Převod tažení rozměrového úchopu na parametry generátoru (mřížka, meze) a dorovnání polohy. */
+  private sizeCommand(d: Extract<Drag, { kind: 'size' }>): Command | null {
+    const o = this.ed.getObject(d.id);
     if (!o) return null;
     const def = getAsset(o.assetId);
     if (!def) return null;
-    if (def.sizeParams) {
-      const p = resolveParams(def, o.params);
-      const next: Record<string, number> = {};
-      for (const axis of ['x', 'y', 'z'] as const) {
-        const key = def.sizeParams[axis];
-        if (!key) continue;
-        const f = s[axis];
-        if (Math.abs(f - 1) < 1e-4) continue;
-        const spec = def.params.find((q) => q.key === key)!;
-        let v = (p[key] as number) * f;
-        if (spec.type === 'int') v = Math.round(v); // moduly / patra: jen celé počty
-        else if (!this.altHeld) v = Math.max(this.settings.grid, Math.round(v / this.settings.grid) * this.settings.grid);
-        v = THREE.MathUtils.clamp(v, spec.min ?? 0, spec.max ?? 1e6);
-        next[key] = r4(v);
-      }
-      const c = cmds.update(this.ed, id, (obj) => Object.assign(obj.params, next), 'Rozměry');
-      if (def.describe) this.onToast(`${def.label}: ${def.describe({ ...p, ...next })}`);
-      return c;
+    if (Math.abs(d.f - 1) < 1e-3) return null;
+    if (d.uniform && def.uniformScale) {
+      const v = THREE.MathUtils.clamp(r4((o.transform.scale ?? 1) * d.f), def.uniformScale.min, def.uniformScale.max);
+      return cmds.update(this.ed, d.id, (x) => (x.transform.scale = v), 'Měřítko');
     }
-    if (def.uniformScale) {
-      const f = (s.x + s.y + s.z) / 3;
-      const cur = o.transform.scale ?? 1;
-      const v = THREE.MathUtils.clamp(r4(cur * f), def.uniformScale.min, def.uniformScale.max);
-      return cmds.update(this.ed, id, (obj) => (obj.transform.scale = v), 'Měřítko');
+    const key = def.sizeParams?.[d.axis];
+    if (!key) return null;
+    const p = resolveParams(def, o.params);
+    const spec = def.params.find((q) => q.key === key)!;
+    let v = (p[key] as number) * d.f;
+    if (spec.type === 'int') v = Math.round(v);
+    else if (!this.altHeld) v = Math.max(this.settings.grid, Math.round(v / this.settings.grid) * this.settings.grid);
+    v = r4(THREE.MathUtils.clamp(v, spec.min ?? 0, spec.max ?? 1e6));
+    // Nová obálka → posun, aby protilehlá strana zůstala na místě.
+    const next: MapObject = { ...structuredClone(o), params: { ...o.params, [key]: v } };
+    const geo = buildObjectGeometry(generateObject(next, this.ed.doc.terrain).parts);
+    const nb = new THREE.Box3();
+    for (const { geometry } of geo.byMaterial.values()) {
+      geometry.computeBoundingBox();
+      nb.union(geometry.boundingBox!);
+      geometry.dispose();
     }
-    this.onToast(`${def.label}: rozměry tohoto typu nelze měnit.`, 'warn');
-    return null;
+    const pos = [...o.transform.position] as V3;
+    if (d.axis !== 'y' && !nb.isEmpty()) {
+      const nopp = d.sign > 0 ? nb.min[d.axis] : nb.max[d.axis];
+      const shift = new THREE.Vector3();
+      shift[d.axis] = (d.opp - nopp) * (o.transform.scale ?? 1);
+      shift.applyEuler(new THREE.Euler(0, o.transform.rotation[1], 0));
+      pos[0] = r4(pos[0] + shift.x);
+      pos[2] = r4(pos[2] + shift.z);
+    }
+    if (def.describe) this.onToast(`${def.label}: ${def.describe({ ...p, [key]: v })}`);
+    return cmds.update(this.ed, d.id, (x) => {
+      x.params[key] = v;
+      x.transform.position = pos;
+    }, 'Rozměry');
+  }
+
+  // ---------------- kreslení ulice ----------------
+
+  /** Začne kreslit ulici: klikání přidává body, Enter / dvojklik dokončí, Esc zruší. */
+  startRoad(assetId: string) {
+    this.cancelRoad();
+    this.select([], false);
+    const line = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: '#7dff8a', depthTest: false }));
+    line.renderOrder = 25;
+    line.raycast = () => {};
+    const dots = new THREE.Group();
+    this.root.add(line, dots);
+    this.roadDraft = { assetId, pts: [], line, dots };
+    this.onToast('Kreslení ulice: klikej body na terén (rovinka = 2 body, zatáčka = víc bodů). Enter nebo dvojklik dokončí, Backspace vrátí bod, Esc zruší.');
+    this.onStatus();
+  }
+
+  get drawingRoad() {
+    return this.roadDraft !== null;
+  }
+
+  private redrawDraft() {
+    const r = this.roadDraft;
+    if (!r) return;
+    const cur = this.groundAtPointer();
+    const pts = [...r.pts, ...(cur ? [this.snapXZ(cur)] : [])].map((p) => p.clone().setY(p.y + 0.3));
+    r.line.geometry.dispose();
+    r.line.geometry = new THREE.BufferGeometry().setFromPoints(pts);
+    for (const c of [...r.dots.children]) {
+      c.removeFromParent();
+      (c as THREE.Mesh).geometry.dispose();
+    }
+    for (const p of r.pts) {
+      const m = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.2, p.distanceTo(this.camera.position) * 0.01), 10, 8), this.handleMat.point);
+      m.position.copy(p).setY(p.y + 0.3);
+      m.renderOrder = 30;
+      r.dots.add(m);
+    }
+  }
+
+  private cancelRoad(toast = false) {
+    const r = this.roadDraft;
+    if (!r) return;
+    this.roadDraft = null;
+    r.line.removeFromParent();
+    r.line.geometry.dispose();
+    for (const c of r.dots.children) (c as THREE.Mesh).geometry.dispose();
+    r.dots.removeFromParent();
+    if (toast) this.onToast('Kreslení ulice zrušeno.');
+    this.onStatus();
+  }
+
+  private finishRoad() {
+    const r = this.roadDraft;
+    if (!r) return;
+    // Dvojklik přidá stejný bod dvakrát – duplicity pryč.
+    const pts = r.pts.filter((p, i) => i === 0 || p.distanceTo(r.pts[i - 1]) > 0.3);
+    const assetId = r.assetId;
+    this.cancelRoad();
+    if (pts.length < 2) return this.onToast('Ulice potřebuje aspoň 2 body.', 'warn');
+    const def = getAsset(assetId)!;
+    const o0 = pts[0];
+    const local = pts.map((p) => [r4(p.x - o0.x), r4(p.z - o0.z)] as Pt);
+    const key = def.params.find((q) => q.type === 'points')!.key;
+    const obj: MapObject = {
+      id: this.ed.newId(),
+      assetId,
+      generatorVersion: def.generatorVersion,
+      transform: { position: [r4(o0.x), r4(o0.y), r4(o0.z)], rotation: [0, 0, 0] },
+      params: { ...resolveParams(def, {}), [key]: formatPoints(local) },
+      seed: (Math.random() * 0xffffffff) >>> 0,
+      material: def.defaultMaterial,
+    };
+    this.history.execute(cmds.insert(this.ed, [obj], `Nakreslit: ${def.label}`));
+    this.select([obj.id], false);
   }
 
   // ---------------- operace ----------------
@@ -741,6 +1186,7 @@ export class Editor {
   insertAsset(assetId: string) {
     const def = getAsset(assetId);
     if (!def) return;
+    if (def.params.some((q) => q.type === 'points')) return this.startRoad(assetId);
     const r = this.canvas.getBoundingClientRect();
     const hit = this.pick(r.left + r.width / 2, r.top + r.height / 2, true);
     let p = hit.point;
@@ -754,7 +1200,8 @@ export class Editor {
       id: this.ed.newId(),
       assetId,
       generatorVersion: def.generatorVersion,
-      transform: { position: [r4(Math.round(p.x / g) * g), r4(Math.max(0, p.y)), r4(Math.round(p.z / g) * g)], rotation: [0, 0, 0] },
+      // Všechno stojí na zemi (doplňky se pak tažením přilepí na budovu).
+      transform: { position: [r4(Math.round(p.x / g) * g), r4(this.groundY(Math.round(p.x / g) * g, Math.round(p.z / g) * g)), r4(Math.round(p.z / g) * g)], rotation: [0, 0, 0] },
       params: resolveParams(def, {}),
       seed: (Math.random() * 0xffffffff) >>> 0,
       material: def.defaultMaterial,
@@ -776,6 +1223,7 @@ export class Editor {
 
   setTerrainMode(on: boolean) {
     this.terrainMode = on;
+    this.cancelRoad();
     if (on) this.select([], false);
     this.brushRing.visible = false;
     this.onStatus();
@@ -848,8 +1296,6 @@ export class Editor {
 
   dispose() {
     this.detach();
-    this.tc.detach();
-    this.tc.dispose();
     this.rectEl.remove();
     this.selection.clear();
     this.refreshSelectionVisuals();
@@ -859,6 +1305,13 @@ export class Editor {
     });
     this.root.removeFromParent();
   }
+}
+
+/** Bod 6 m za koncem ulice (úchop „přidat bod na konec“). */
+function extend(end: Pt, prev: Pt): Pt {
+  const dx = end[0] - prev[0], dz = end[1] - prev[1];
+  const l = Math.hypot(dx, dz) || 1;
+  return [end[0] + (dx / l) * 6, end[1] + (dz / l) * 6];
 }
 
 function normAngle(a: number) {

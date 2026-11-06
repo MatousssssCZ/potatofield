@@ -40,6 +40,7 @@ registerAsset({
   assetId: 'street.acUnit',
   label: 'Klimatizace',
   category: 'street',
+  mount: { kind: 'wall', back: 0.175 },
   generatorVersion: 1,
   params: [],
   materials: ['acUnit'],
@@ -60,6 +61,7 @@ registerAsset({
   assetId: 'street.sign',
   label: 'Nápis / cedule',
   category: 'street',
+  mount: { kind: 'wall', back: 0.03 },
   generatorVersion: 1,
   sizeParams: { x: 'width' },
   params: [
@@ -85,6 +87,7 @@ registerAsset({
   assetId: 'street.awning',
   label: 'Markýza',
   category: 'street',
+  mount: { kind: 'wall', back: 0 },
   generatorVersion: 1,
   sizeParams: { x: 'width', z: 'depth' },
   params: [

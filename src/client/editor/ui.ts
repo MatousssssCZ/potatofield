@@ -345,6 +345,10 @@ function paramControl(spec: ParamSpec, value: number | string | boolean, commit:
     s.addEventListener('change', () => commit(s.value));
     return s;
   }
+  if (spec.type === 'points') {
+    const count = String(value).split(';').filter(Boolean).length;
+    return el('span', { class: 'meta' }, `${count} bodů – táhni zelené úchopy ve viewportu`);
+  }
   if (spec.type === 'string') {
     const t = el('input', { type: 'text', maxlength: '60' }) as HTMLInputElement;
     t.value = String(value);
@@ -354,6 +358,25 @@ function paramControl(spec: ParamSpec, value: number | string | boolean, commit:
   return numInput(value as number, { min: spec.min, max: spec.max, step: spec.step ?? (spec.type === 'int' ? 1 : 0.05), unit: spec.unit }, (v) =>
     commit(spec.type === 'int' ? Math.round(v) : v),
   );
+}
+
+/** Posuvník rozpití textury (0 ostré – 4 velmi rozpité). */
+function blurControl(value: number, commit: (v: number) => void) {
+  const wrap = el('span', { class: 'blur-ctl' });
+  const r = el('input', { type: 'range', min: '0', max: '4', step: '0.5' }) as HTMLInputElement;
+  r.value = String(value);
+  const out = el('span', { class: 'meta' }, value ? value.toFixed(1) : 'ostré');
+  r.addEventListener('input', () => (out.textContent = Number(r.value) ? Number(r.value).toFixed(1) : 'ostré'));
+  r.addEventListener('change', () => commit(Number(r.value)));
+  wrap.append(r, out);
+  return wrap;
+}
+
+/** Nastaví rozpití textury hromadně (jedna položka historie). */
+function setBlur(ed: EditorDoc, history: History, ids: string[], v: number, label: string) {
+  const targets = ids.filter((id) => (ed.getObject(id)?.texBlur ?? 0) !== v);
+  if (!targets.length) return;
+  history.execute(cmds.updateMany(ed, targets, (o) => (o.texBlur = v || undefined), label));
 }
 
 export function renderInspector(
@@ -383,7 +406,9 @@ export function renderInspector(
   }
   if (sel.length > 1) {
     root.appendChild(el('h3', {}, `Vybráno ${sel.length} objektů`));
-    root.appendChild(el('div', { class: 'note' }, 'Hromadný posun a rotace gizmem kolem společného středu. Nejednotná změna rozměrů různorodé skupiny není v této verzi podporována – měňte rozměry po jednom objektu.'));
+    root.appendChild(el('div', { class: 'note' }, 'Táhni kterýkoli vybraný objekt = posun všech po terénu, modrý prstenec = rotace kolem společného středu. Rozměry se mění po jednom objektu.'));
+    const objs = sel.filter((s) => ed.getObject(s));
+    if (objs.length) root.appendChild(prop('Rozpití textur', 'vybrané objekty', blurControl(ed.getObject(objs[0])?.texBlur ?? 0, (v) => setBlur(ed, history, objs, v, 'Rozpití textur'))));
     const row = el('div', { class: 'btnrow' });
     const d = el('button', {}, 'Duplikovat (Ctrl+D)');
     d.addEventListener('click', () => editor.duplicate());
@@ -463,6 +488,15 @@ export function renderInspector(
     root.appendChild(prop('Materiál', undefined, s));
   }
 
+  root.appendChild(prop('Rozpití textury', '0 ostré – 4 rozpité', blurControl(o.texBlur ?? 0, (v) => setBlur(ed, history, [id], v, 'Rozpití textury'))));
+  const blurRow = el('div', { class: 'btnrow' });
+  const allBlur = el('button', { title: 'Nastaví stejné rozpití textury všem objektům na mapě' }, 'Použít rozpití na celou mapu');
+  allBlur.addEventListener('click', () => setBlur(ed, history, ed.doc.objects.map((x) => x.id), o.texBlur ?? 0, 'Rozpití textur celé mapy'));
+  const sameBlur = el('button', { title: 'Jen objekty stejného typu' }, `Na všechny „${def?.label ?? o.assetId}“`);
+  sameBlur.addEventListener('click', () => setBlur(ed, history, ed.doc.objects.filter((x) => x.assetId === o.assetId).map((x) => x.id), o.texBlur ?? 0, 'Rozpití textur typu'));
+  blurRow.append(allBlur, sameBlur);
+  root.appendChild(blurRow);
+
   root.appendChild(el('div', { class: 'sec' }, 'Viditelnost'));
   const chk = (label: string, sub: string, val: boolean, fn: (v: boolean) => void) => {
     const c = el('input', { type: 'checkbox' }) as HTMLInputElement;
@@ -499,6 +533,12 @@ function renderMapProps(root: HTMLElement, ed: EditorDoc, history: History) {
     if (v && v !== doc.name) history.execute({ label: 'Název mapy', changes: [{ kind: 'name', before: doc.name, after: v }] });
   });
   root.appendChild(prop('Název', undefined, nm));
+
+  const blurs = doc.objects.map((o) => o.texBlur ?? 0);
+  const same = blurs.every((b) => b === blurs[0]);
+  root.appendChild(
+    prop('Rozpití textur', same ? 'všechny objekty' : 'všechny objekty (teď různé)', blurControl(same ? (blurs[0] ?? 0) : 0, (v) => setBlur(ed, history, doc.objects.map((o) => o.id), v, 'Rozpití textur celé mapy'))),
+  );
 
   root.appendChild(el('div', { class: 'sec' }, 'Prostředí'));
   const env = doc.environment;

@@ -70,3 +70,20 @@ export function openingFrame(f: Facade, o: Opening, wallThick: number, trim: str
   parts.push(fbox(f, o.u, o.top - 0.01, -wallThick / 2, [o.width, 0.02, wallThick], trim));
   return parts;
 }
+
+/** Parametr „kopírovat terén“ pro liniové stavby (plot, zdi). */
+export const FOLLOW_PARAM = { key: 'follow', label: 'Kopírovat terén', type: 'bool' as const, default: true };
+
+/**
+ * Šikmý kvádr mezi body podél osy X: od (x0, y0) do (x1, y1), spodní hrana `below` pod linií,
+ * výška `h` nad ní, tloušťka `t`, střed v z. Na rovině je to obyčejný kvádr (rot 0).
+ */
+export function slopeBox(x0: number, y0: number, x1: number, y1: number, below: number, h: number, t: number, z: number, material: string, extra: Partial<Part> = {}): Part {
+  const dx = x1 - x0, dy = y1 - y0;
+  const ang = Math.atan2(dy, dx);
+  const len = Math.hypot(dx, dy);
+  const mid = (y0 + y1) / 2 + (h - below) / 2;
+  const part: Part = { shape: 'box', pos: [(x0 + x1) / 2, mid, z], size: [len, h + below, t], material, ...extra };
+  if (Math.abs(ang) > 1e-6) part.rot = [0, 0, ang];
+  return part;
+}
