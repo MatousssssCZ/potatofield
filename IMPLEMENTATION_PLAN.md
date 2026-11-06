@@ -85,3 +85,7 @@ Viz git historie; 20 testů pohybu, editor s gizmy, historie, IndexedDB, export/
 - [ ] Lidský test čitelnosti HUD a ovládání; měření FPS na i5-1335U
 - [x] Sniper: modely M24 a SVD (FP 3 500 / 3 392, world 1 298 / 1 236 trojúhelníků), puškohled 10× mil-dot a PSO-1 4×, cyklus závěru a nabíjení po jednom (M24); classa odemčena
 - [x] Ladění po testu: měkké textury (BF2), poškození pádem, fyzické vlajky s výškou podle postupu a návratem do klidu, katalog editoru s náhledy a sekcí Použito na mapě
+- [x] Nasazení ve stylu BF2 (zadání Nasazeni_Vybava_UI): taktická obrazovka, mapa se zoomem a značkami, potvrzené čekání, zneplatnění s důvodem, Enter / M, testy přechodů (`tests/deployIntent.test.ts`)
+- [x] Výbava v boji: sloty z dat kitu, číslice + kolečko, overlay; pistole M9 / PM, nůž, tříštivý granát, dýmovnice, lékárna, defibrilátor, zásobování – vše serverové (`tests/inventory.test.ts`, `tests/grenades.test.ts`, `tests/pilot.test.ts`)
+- [ ] Animace hodu / sekání / léčení u vzdálených vojáků (3. osoba drží předmět, ale akci nepřehrává)
+- [ ] Lidský test nasazení a výbavy; hodnoty granátů a nástrojů (N) po playtestu

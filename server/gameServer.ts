@@ -536,6 +536,7 @@ export class GameServer {
       const list = events.filter((e) => {
         if (e.type === 'hit') return e.owner === c.id || e.target === c.id;
         if (e.type === 'fall') return e.id === c.id;
+        if (e.type === 'heal') return e.id === c.id || e.target === c.id;
         return true;
       });
       if (list.length) this.send(c, { t: 'events', list });
@@ -577,7 +578,8 @@ export class GameServer {
     const cq = this.sim.conquest;
     const o: RemoteTuple[] = [];
     for (const pl of this.sim.players.values()) if (pl.id !== c.id) o.push(this.remoteCache?.get(pl.id) ?? encodeRemote(this.remote(pl)));
-    const spawns = cq && !p.alive ? this.sim.spawnOptions(p.team).map((s) => s.id) : [];
+    // Dostupná místa i zaživa (plánování příštího nasazení); o nasazení stejně rozhoduje server.
+    const spawns = cq ? this.sim.spawnOptions(p.team).map((s) => s.id) : [];
     const sq = mem?.squad ? this.team.squads.get(mem.squad) : undefined;
     const canSquad = !!sq && sq.leader !== c.id && !mem!.joinedWhileDead && !!this.sim.players.get(sq.leader)?.alive && (!cq || cq.cps.some((x) => x.owner === p.team));
     this.send(c, {

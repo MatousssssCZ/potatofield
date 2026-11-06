@@ -6,6 +6,7 @@ import type { ItemHooks } from './items';
 import type { MatchSim, SimPlayer } from './match';
 import type { V3 } from '../math';
 import { switchTo } from './inventory';
+import { rulesOf } from '../config/arsenal';
 
 /**
  * Akce nestřelných položek na serveru (autorita): nůž (útok zblízka), granáty, nástroje.
@@ -21,6 +22,13 @@ export const ITEM_RULES = {
   smoke: { fuse: 1.5, duration: 25, radius: 5.5 },
   /** Odraz granátu (koeficient restituce a tření). */
   bounce: { restitution: 0.35, friction: 0.7, radius: 0.05 },
+  /** Nástroje: dosah a výseč cíle před hráčem (jinak sám sebe). */
+  tool: { reach: 2.0, coneDeg: 50 },
+  /** Lékárna: HP/s; defibrilátor: zásah elektrodami, nabití po úspěchu / minutí. */
+  medkit: { hpPerSec: 25 },
+  defib: { zapAt: 0.35, miss: 0.8, recharge: 1.6 },
+  /** Zásobování: náboje za sekundu (podíl zásobníku) a granát za 2,5 s. */
+  ammo: { magsPerSec: 0.7, grenadeEvery: 2.5 },
 } as const;
 
 export interface Grenade {
@@ -54,6 +62,8 @@ export function itemHooksFor(sim: MatchSim, p: SimPlayer): ItemHooks {
       const pressed = (input.pressed & BTN.FIRE) !== 0;
       if (kind === 'knife') knife(sim, p, ws, pressed, t);
       else if (kind === 'frag' || kind === 'smoke') throwItem(sim, p, ws, pressed, t, kind);
+      else if (kind === 'defib') defib(sim, p, ws, pressed, t);
+      else if (kind === 'medkit' || kind === 'ammo') supply(sim, p, ws, (input.held & BTN.FIRE) !== 0, t, kind);
     },
   };
 }
@@ -227,4 +237,112 @@ function explode(sim: MatchSim, n: Grenade) {
     sim.events.push({ type: 'hit', owner: n.owner, target: v.id, damage: dmg, zone: 'torso', hp: v.hp });
     if (v.hp <= 0) sim.down(v, n.owner);
   }
+}
+
+/** Spolubojovník před hráčem v dosahu nástroje (nejbližší ve výseči), volitelně filtr. */
+export function toolTarget(sim: MatchSim, p: SimPlayer, ws: WeaponState, ok: (o: SimPlayer) => boolean): SimPlayer | null {
+  const R = ITEM_RULES.tool;
+  const eye = eyePosition(sim.cfg, p.state);
+  const aim = aimAngles(p.state, ws);
+  const dir = dirFromAngles(aim.yaw, 0);
+  const cos = Math.cos((R.coneDeg * Math.PI) / 180);
+  let best: { o: SimPlayer; d: number } | null = null;
+  for (const o of sim.players.values()) {
+    if (o === p || o.team !== p.team || !ok(o)) continue;
+    const to = { x: o.state.pos.x - eye.x, y: 0, z: o.state.pos.z - eye.z };
+    const dh = Math.hypot(to.x, to.z);
+    if (dh > R.reach + 0.4 || Math.abs(o.state.pos.y - p.state.pos.y) > 1.5) continue;
+    if (dh > 0.35 && (to.x * dir.x + to.z * dir.z) / dh < cos) continue;
+    if (!best || dh < best.d) best = { o, d: dh };
+  }
+  return best?.o ?? null;
+}
+
+/** Defibrilátor: klik → elektrody k vyřazenému spolubojovníkovi před sebou → oživení. */
+function defib(sim: MatchSim, p: SimPlayer, ws: WeaponState, pressed: boolean, t: number) {
+  const R = ITEM_RULES.defib;
+  if (ws.action === 'use') {
+    if (ws.shellsLoaded === 0 && t >= ws.actionStart + R.zapAt - 1e-9) {
+      ws.shellsLoaded = 1;
+      const v = toolTarget(sim, p, ws, (o) => o.downed);
+      if (v) {
+        sim.revive(v, p);
+        ws.actionEnd = ws.actionStart + R.recharge;
+      }
+      sim.events.push({ type: 'defib', id: p.id, target: v?.id ?? null });
+    }
+    if (t >= ws.actionEnd - 1e-9) ws.action = 'idle';
+    return;
+  }
+  if (pressed && (ws.action === 'idle' || ws.action === 'sprintOut')) {
+    ws.action = 'use';
+    ws.actionStart = t;
+    ws.actionEnd = t + R.miss;
+    ws.shellsLoaded = 0;
+    ws.shotSeq++;
+  }
+}
+
+const acc = new WeakMap<SimPlayer, { heal: number; ammo: number; nade: number }>();
+
+/**
+ * Lékárna / zásobování: držet spoušť → spolubojovník před sebou (jinak sám sebe) průběžně
+ * dostává zdraví / munici. Doplní jen do výchozího maxima kitu (nevytváří nic navíc).
+ */
+function supply(sim: MatchSim, p: SimPlayer, ws: WeaponState, held: boolean, t: number, kind: 'medkit' | 'ammo') {
+  const dt = 1 / sim.cfg.tickRate;
+  if (!held || ws.action === 'equip') {
+    if (ws.action === 'use') ws.action = 'idle';
+    return;
+  }
+  const needs = kind === 'medkit' ? (o: SimPlayer) => o.alive && o.hp < 100 : (o: SimPlayer) => o.alive && !!o.inv && needsAmmo(o);
+  const target = toolTarget(sim, p, ws, needs) ?? (needs(p) ? p : null);
+  if (!target) {
+    if (ws.action === 'use') ws.action = 'idle';
+    return;
+  }
+  if (ws.action !== 'use') {
+    ws.action = 'use';
+    ws.actionStart = t;
+    ws.actionEnd = t + 1;
+  }
+  ws.actionEnd = t + 1; // trvá, dokud se drží
+  const a = acc.get(p) ?? { heal: 0, ammo: 0, nade: 0 };
+  acc.set(p, a);
+  if (kind === 'medkit') {
+    a.heal += ITEM_RULES.medkit.hpPerSec * dt;
+    const n = Math.floor(a.heal);
+    if (n > 0) {
+      a.heal -= n;
+      target.hp = Math.min(100, target.hp + n);
+      sim.events.push({ type: 'heal', id: p.id, target: target.id, hp: target.hp });
+    }
+  } else {
+    a.nade += dt;
+    for (const it of target.inv!.items) {
+      const st = target.inv!.states[it.slot];
+      if (it.kind === 'primary' || it.kind === 'pistol') {
+        const r = rulesOf(it.id);
+        const per = r.magazine * ITEM_RULES.ammo.magsPerSec * dt;
+        a.ammo += per;
+        const n = Math.floor(a.ammo);
+        if (n > 0 && st.reserve < r.reserve) {
+          a.ammo -= n;
+          st.reserve = Math.min(r.reserve, st.reserve + n);
+        }
+      } else if (it.max !== undefined && st.mag < it.max && a.nade >= ITEM_RULES.ammo.grenadeEvery) {
+        a.nade = 0;
+        st.mag++;
+      }
+    }
+  }
+}
+
+function needsAmmo(o: SimPlayer) {
+  for (const it of o.inv!.items) {
+    const st = o.inv!.states[it.slot];
+    if ((it.kind === 'primary' || it.kind === 'pistol') && st.reserve < rulesOf(it.id).reserve) return true;
+    if (it.max !== undefined && st.mag < it.max) return true;
+  }
+  return false;
 }

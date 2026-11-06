@@ -10,7 +10,7 @@ import type { PhysicsWorld } from '../physics/world';
 import type { LadderDef } from '../../world/parts';
 import { hitboxOf, stepProjectiles, type Hitbox, type ImpactEvent, type Projectile } from './ballistics';
 import { cpSpawnable, createConquest, insideCP, stepConquest, ticketForDeath, type ConquestEvent, type ConquestState } from './conquest';
-import { BTN, emptyInput, sanitizeInput, type InputFrame } from './input';
+import { emptyInput, sanitizeInput, type InputFrame } from './input';
 import { PlayerController, createPlayerState, type PlayerState } from './player';
 import { createWeaponState, stepWeapon, type WeaponState } from './weapon';
 
@@ -76,6 +76,8 @@ export type SimEvent =
   | { type: 'downed'; id: string; killer: string | null; lifeId: number }
   | { type: 'fall'; id: string; damage: number; hp: number }
   | { type: 'throw'; id: string; kind: 'frag' | 'smoke' }
+  | { type: 'defib'; id: string; target: string | null }
+  | { type: 'heal'; id: string; target: string; hp: number }
   | { type: 'explosion'; key: string; pos: V3; owner: string }
   | { type: 'smoke'; key: string; pos: V3; until: number; radius: number }
   | { type: 'revive'; id: string; by: string; lifeId: number }
@@ -325,7 +327,7 @@ export class MatchSim {
   }
 
   /** Oživení medikem: stejný život (lifeId), HP podle pravidel pilotu, pozice těla. */
-  private revive(v: SimPlayer, by: SimPlayer) {
+  revive(v: SimPlayer, by: SimPlayer) {
     v.downed = false;
     v.alive = true;
     v.hp = PILOT.reviveHp;
@@ -379,21 +381,7 @@ export class MatchSim {
       if (p.downed && this.time >= p.downedUntil - 1e-9) this.finalizeDowned(p, 'weapon');
       if (!p.alive) continue;
       // Oživení: medik drží E u vyřazeného spoluhráče (E se pak nepředá žebříku).
-      const target = this.reviveCandidate(p, input);
-      if (target) {
-        if (p.reviveTarget !== target.id) p.reviveHeld = 0;
-        p.reviveTarget = target.id;
-        p.reviveHeld += 1 / this.cfg.tickRate;
-        input = { ...input, held: input.held & ~BTN.USE, pressed: input.pressed & ~BTN.USE };
-        if (p.reviveHeld >= PILOT.reviveHold - 1e-9) {
-          this.revive(target, p);
-          p.reviveTarget = null;
-          p.reviveHeld = 0;
-        }
-      } else {
-        p.reviveTarget = null;
-        p.reviveHeld = 0;
-      }
+      // Oživení je jen defibrilátorem (položka medika, viz matchItems) – E zůstává žebříku.
       p.state.tick = this.tick;
       p.ctrl.step(p.state, input);
       if (p.state.pos.y < -50) {
@@ -513,19 +501,6 @@ export class MatchSim {
   }
 
   /** Vyřazený spoluhráč v dosahu medika, který drží E (jinak null). */
-  private reviveCandidate(p: SimPlayer, input: InputFrame): SimPlayer | null {
-    if (!(input.held & BTN.USE) || arsenalEntry(p.weaponId)?.kit !== 'medic') return null;
-    let best: SimPlayer | null = null, bd: number = PILOT.reviveRange;
-    for (const o of this.players.values()) {
-      if (!o.downed || o.team !== p.team || o === p) continue;
-      const d = Math.hypot(o.state.pos.x - p.state.pos.x, o.state.pos.y - p.state.pos.y, o.state.pos.z - p.state.pos.z);
-      if (d <= bd) {
-        bd = d;
-        best = o;
-      }
-    }
-    return best;
-  }
 
   dispose() {
     for (const p of this.players.values()) p.ctrl.dispose();

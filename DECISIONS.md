@@ -117,6 +117,15 @@ Všechny číselné hodnoty jsou návrhy Potatofieldu (`proposed`), ne změřen�
 - Vlajky jsou vlastní stylizované (barvy frakcí + hvězdy), ne převzaté znaky. Stožár je jen vizuální, bez kolize.
 - Náhledy katalogu se kreslí hlavním rendererem do rohu plátna před snímkem scény (2 na snímek), drží se jen v paměti stránky.
 
+## Nasazení a výbava (zadání Nasazeni_Vybava_UI)
+- Záměr nasazení drží klient (`DeployIntent`): server neumí rezervovaný požadavek, proto se po potvrzení během odpočtu odešle jednou až po dosažení způsobilosti; server rozhoduje o všem (čas, kit, místo). Opožděné odmítnutí mimo odesílání se ignoruje (bez ID požadavku v protokolu).
+- Cíle nasazení = body / základny / velitel čety; server sám vybere volné místo v oblasti. Server posílá dostupná místa i živému hráči (plánování příštího nasazení).
+- Inventář: `p.weapon` je stav aktivního slotu, ostatní sloty si drží vlastní stav (zásobník, rezerva, počet). Přepnutí zruší rozběhnuté přebíjení bez připsání nábojů. Klávesa 3 už nepřepíná režim střelby (jen B).
+- Oživení jen defibrilátorem (rozhodnutí uživatele); podržení E zrušeno.
+- Granáty a nástroje jsou serverové; hodnoty (zpoždění 3,2 s, dosah 9 m, 150 poškození s poklesem, lékárna 25 HP/s, zásobování 0,7 zásobníku/s, granát / 2,5 s) jsou návrhy (N).
+- Kouř je vizuální; zakrývá jen identifikaci nepřítele (jméno), ne simulaci zásahů.
+- Ruce vzdálených vojáků: pistole v natažených pažích, předměty před tělem (animace hodu / sekání u vzdálených vojáků zatím chybí).
+
 ## Dočasné / placeholdery
 - Hawk Type 97 čeká na ověřenou referenci; ostatní modely mají rozměry jako umělecký odhad.
 - Vojáci jsou vlastní skinned modely (20 kostí, procedurální animace, LOD); obličeje a výstroj jsou stylizované podle textu zadání, ne podle referenčních obrázků (nebyly přiloženy).

@@ -104,8 +104,17 @@ bílou vlajku dole, při zabírání stoupá vlajka nového týmu; bez hráčů 
 cyklus závěru) a SVD (MEC, PSO-1 4×). Při plném míření se obraz přepne do puškohledu; citlivost
 myši klesá se zvětšením.
 
-**Nasazení:** taktická obrazovka – vlevo classa a výbava, vpravo mapa se spawny (klik vybere),
-dole Nasadit (nedostupné tlačítko říká proč). Odmítnutí serverem i ztráta spawnu se vysvětlí.
+**Nasazení (Enter):** jedna taktická obrazovka jako v BF2 – vlevo classy v řádcích a výbava kitu
+(silueta, mířidla, sloty), vpravo mapa (sever nahoru, zoom kolečkem / +−, posun tažením, Celá mapa),
+na které se klikem vybírá vlajka, základna nebo velitel čety (terén nikdy); stejný výběr nabízí
+rozbalovací „Místo nasazení“ dole. Nasazuje jen tlačítko Nasadit: během odpočtu potvrdí čekání
+(„Čekáš na nasazení: …“, Zrušit čekání), server pak nasadí jednou. Ztráta bodu, smrt leadera,
+změna výběru, oživení nebo nové kolo čekání zruší s vysvětlením – nikdy tiché přesměrování.
+
+**Výbava v boji:** čísla 1–9 a kolečko přepínají sloty kitu (s tasením, bez obcházení reloadu);
+overlay vpravo nad municí ukáže siluety, klávesy a skutečné počty. Nůž (útok zblízka), pistole,
+tříštivý granát (výbuch po 3,2 s, kryt chrání), dýmovnice (25 s clona), lékárna, defibrilátor
+(jediný způsob oživení) a zásobování (munice a granáty do maxima kitu).
 
 **Velitel:** v pauze (Esc → Velitel, nebo C) se lze ucházet o roli; velitel posílá četám rozkazy
 klikem do mapy a používá UAV a sken s obnovou ze serveru. Každý příkaz má stav Odesláno →
@@ -131,10 +140,14 @@ Potvrzeno / Odmítnuto podle odpovědi serveru. Shoz zásob chybí (hra nemá sy
 | Dřep | levý Ctrl (držet; v nastavení lze přepínání) |
 | Leh | Z (fyzická klávesa vlevo dole – na české klávesnici popsaná **Y**) |
 | Střelba / míření / přebití | LMB / RMB (přepínač) / R – přebíjet lze i za sprintu |
-| Režim střelby | 3 nebo B (auto/semi) |
+| Výbava (sloty) | 1 nůž · 2 pistole · 3 primární · 4 tříštivý granát · 5+ výbava classy (dýmovnice / lékárna, defibrilátor / zásobování); kolečko = další / předchozí |
+| Režim střelby | B (jen podle skutečných režimů zbraně) |
+| Nasazení (výbava, místo, čekání) | Enter |
+| Taktická mapa | M |
 | Žebřík | E nastoupit, W/S lézt, Space pustit |
 | Pauza (Pokračovat / Nasazení / Nastavení / Ovládání / Odpojit) | Esc |
-| Oživit (medik) / vzdát pomoc (vyřazený) | držet E / držet G |
+| Oživit (medik, defibrilátor) / vzdát pomoc (vyřazený) | LMB s defibrilátorem / držet G |
+| Léčit (lékárna) / doplnit munici (zásobování) | držet LMB |
 | Zpět do editoru | F5 (nebo z menu) |
 | Dev panel | F3 nebo klávesa pod Esc |
 

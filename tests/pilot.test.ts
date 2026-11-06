@@ -57,16 +57,24 @@ describe('pilot: vyřazení, oživení, vzdání pomoci', () => {
     expect(b.kills).toBe(1); // ne podruhé
   });
 
-  it('medik drží E u vyřazeného: oživení se stejným životem a 50 HP, bez ticketu a druhé smrti', async () => {
+  const act = (m: MatchSim, id: string, f: { pressed?: number; held?: number; slot?: number }, n = 1) => {
+    for (let i = 0; i < n; i++) m.step(new Map([...m.players.keys()].map((k) => [k, k === id ? { ...emptyInput(m.tick), held: f.held ?? 0, pressed: i === 0 ? (f.pressed ?? 0) : 0, slot: i === 0 ? (f.slot ?? 0) : 0 } : emptyInput(m.tick)])));
+  };
+
+  it('medik oživí defibrilátorem: stejný život, 50 HP, bez ticketu a druhé smrti', async () => {
     const { m, a, med, b } = await setup();
     a.ctrl.place(a.state, { x: -38, y: 0.02, z: 3 }, 0);
-    med.ctrl.place(med.state, { x: -38, y: 0.02, z: 4 }, 0);
+    med.ctrl.place(med.state, { x: -38, y: 0.02, z: 4.2 }, 0);
     step(m, 5);
     const life = a.lifeId;
     const t0 = m.conquest!.tickets.teamA;
     m.down(a, b.id);
+    act(m, 'med', { slot: 6 });
+    act(m, 'med', {}, 50);
+    expect(med.weapon.weaponId).toBe('defib');
     m.events = [];
-    step(m, Math.round(PILOT.reviveHold * 60) + 2, { med: BTN.USE });
+    act(m, 'med', { pressed: BTN.FIRE });
+    act(m, 'med', {}, 40);
     expect(a.alive).toBe(true);
     expect(a.hp).toBe(PILOT.reviveHp);
     expect(a.lifeId).toBe(life);
@@ -76,13 +84,34 @@ describe('pilot: vyřazení, oživení, vzdání pomoci', () => {
     expect(m.events.filter((e) => e.type === 'revive')).toHaveLength(1);
   });
 
-  it('jen medik a jen spoluhráč; puštění E průběh vynuluje', async () => {
-    const { m, a, b } = await setup();
+  it('E už neoživuje; nepřítel ani defibrilátor mimo dosah neoživí', async () => {
+    const { m, a, med, b } = await setup();
     a.ctrl.place(a.state, { x: 0, y: 0.02, z: 0 }, 0);
-    b.ctrl.place(b.state, { x: 0, y: 0.02, z: 1 }, 0);
+    med.ctrl.place(med.state, { x: 0, y: 0.02, z: 1 }, 0);
+    b.ctrl.place(b.state, { x: 0.5, y: 0.02, z: 1 }, 0);
     m.down(a, null);
-    step(m, 90, { b: BTN.USE }); // nepřítel (a ne medik)
+    act(m, 'med', { held: BTN.USE }, 90); // držení E nic neudělá
     expect(a.downed).toBe(true);
+    med.ctrl.place(med.state, { x: 0, y: 0.02, z: 5 }, 0); // 5 m – mimo dosah
+    act(m, 'med', { slot: 6 });
+    act(m, 'med', {}, 50);
+    act(m, 'med', { pressed: BTN.FIRE });
+    act(m, 'med', {}, 40);
+    expect(a.downed).toBe(true);
+  });
+
+  it('lékárna léčí spoluhráče před sebou (držet), zásobování doplní rezervu jen do maxima', async () => {
+    const { m, a, med } = await setup();
+    a.ctrl.place(a.state, { x: -38, y: 0.02, z: 3 }, 0);
+    med.ctrl.place(med.state, { x: -38, y: 0.02, z: 4.2 }, 0);
+    a.hp = 40;
+    act(m, 'med', { slot: 5 });
+    act(m, 'med', {}, 40);
+    expect(med.weapon.weaponId).toBe('medkit');
+    act(m, 'med', { held: BTN.FIRE, pressed: BTN.FIRE }, 60);
+    expect(a.hp).toBeGreaterThan(55);
+    act(m, 'med', { held: BTN.FIRE }, 200);
+    expect(a.hp).toBe(100);
   });
 
   it('vzdát pomoc: okamžitá definitivní smrt, ticket jednou', async () => {

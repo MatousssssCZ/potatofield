@@ -541,6 +541,7 @@ export class App {
       const b = bindingsOf(this.settings)[`SLOT${slot}` as 'SLOT1'];
       return b?.length ? keyLabel(b[0]) : '—';
     };
+    this.session.game.slotKey = this.session.game.hud.slots.bindLabel;
     const net = netDriver instanceof NetDriver ? netDriver : null;
     if (net) {
       this.teamUi = new TeamUi(net, inp, this.ed.doc);

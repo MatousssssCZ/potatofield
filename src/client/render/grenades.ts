@@ -167,8 +167,9 @@ export class GrenadeRenderer {
       p.size0 = 1;
       p.size1 = 3.5 + Math.random() * 2;
       p.fadeIn = 0.05;
-      const g = 0.32 + Math.random() * 0.12;
-      (p.sprite.material as THREE.SpriteMaterial).color.setRGB(g * 1.05, g, g * 0.9);
+      // Tmavý kouř výbuchu (lineární barva – na obrazovce středně šedohnědý).
+      const g = 0.07 + Math.random() * 0.05;
+      (p.sprite.material as THREE.SpriteMaterial).color.setRGB(g * 1.1, g, g * 0.85);
       (p.sprite.material as THREE.SpriteMaterial).rotation = Math.random() * Math.PI * 2;
     }
     for (let i = 0; i < 14; i++) {

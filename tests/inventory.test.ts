@@ -156,3 +156,21 @@ describe('nůž a pistole', () => {
     expect(prim.mag).toBe(pm);
   });
 });
+
+describe('zásobování', () => {
+  it('support doplní rezervu sobě (bez spoluhráče) jen do maxima kitu a granát po 2,5 s', async () => {
+    const { m, p } = await setup('m249');
+    tick(m, 60);
+    const prim = p.inv!.states[3];
+    prim.reserve = 0;
+    p.inv!.states[4].mag = 0;
+    tick(m, 1, { slot: 5 });
+    tick(m, 40);
+    expect(p.weapon.weaponId).toBe('ammo');
+    tick(m, 60, { held: BTN.FIRE, pressed: BTN.FIRE });
+    expect(prim.reserve).toBeGreaterThan(0);
+    tick(m, 60 * 10, { held: BTN.FIRE });
+    expect(prim.reserve).toBe(rulesOf('m249').reserve);
+    expect(p.inv!.states[4].mag).toBe(2);
+  });
+});

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { CAMERA, adsVFov, vFovFromH16x9 } from '../../shared/config/camera';
 import { MOVEMENT, type MovementConfig } from '../../shared/config/movement';
 import { PF_MG } from '../../shared/config/weapon';
-import { PILOT, arsenalEntry, rulesOf, type Kit } from '../../shared/config/arsenal';
+import { PILOT, rulesOf, type Kit } from '../../shared/config/arsenal';
 import type { PhysicsWorld } from '../../shared/physics/world';
 import { TacticalMap, type Footprint } from '../ui/tactical';
 import { resolveView } from '../../shared/sim/inventory';
@@ -23,7 +23,7 @@ import { isItemModel } from '../render/weapons/items';
 import type { WorldView } from '../render/worldView';
 import { Hud } from '../ui/hud';
 import type { GameAudio } from './audio';
-import type { GameDriver } from './driver';
+import type { GameDriver, PlayerView } from './driver';
 import type { InputSystem } from './input';
 import { SoldierPool } from '../render/soldier';
 import { GrenadeRenderer } from '../render/grenades';
@@ -145,17 +145,40 @@ export class Game {
   }
 
   /** Kontextová interakce: medik u vyřazeného spoluhráče. */
+  /** Popisek klávesy slotu (přemapování se projeví i v nápovědě). */
+  slotKey: (slot: number) => string = (s) => String(s);
+
+  /**
+   * Kontextová výzva podle aktivní položky: medik u vyřazeného spolubojovníka (defibrilátor /
+   * jak ho vzít), léčení a zásobování – jen nápověda, výsledek rozhoduje server.
+   */
   private interaction() {
     const me = this.driver.local();
-    if (!me?.alive || arsenalEntry(me.weapon.weaponId)?.kit !== 'medic') return null;
-    let best: { name: string; d: number } | null = null;
-    for (const r of this.driver.remotes()) {
-      if (r.team !== me.team || r.life !== 'downed') continue;
-      const d = Math.hypot(r.state.pos.x - me.state.pos.x, r.state.pos.y - me.state.pos.y, r.state.pos.z - me.state.pos.z);
-      if (d <= PILOT.reviveRange && (!best || d < best.d)) best = { name: r.name, d };
+    if (!me?.alive || !me.inv) return null;
+    const active = me.inv.items.find((i) => i.slot === me.inv!.active);
+    const near = (pred: (r: PlayerView) => boolean, range = 2.4) => {
+      let best: { name: string; d: number } | null = null;
+      for (const r of this.driver.remotes()) {
+        if (r.team !== me.team || !pred(r)) continue;
+        const d = Math.hypot(r.state.pos.x - me.state.pos.x, r.state.pos.z - me.state.pos.z);
+        if (d <= range && Math.abs(r.state.pos.y - me.state.pos.y) < 1.5 && (!best || d < best.d)) best = { name: r.name, d };
+      }
+      return best;
+    };
+    const defib = me.inv.items.find((i) => i.kind === 'defib');
+    if (defib) {
+      const down = near((r) => r.life === 'downed');
+      if (down) return { text: active?.kind === 'defib' ? t('hud.revive', { name: down.name }) : t('hud.defibHint', { key: this.slotKey(defib.slot), name: down.name }), progress: 0 };
     }
-    if (!best) return null;
-    return { text: me.reviveProgress > 0 ? t('hud.reviving', { name: best.name }) : t('hud.revive', { name: best.name }), progress: me.reviveProgress };
+    if (active?.kind === 'medkit') {
+      const hurt = near((r) => r.alive && r.hp < 100);
+      return { text: hurt ? t('hud.heal', { name: hurt.name }) : me.hp < 100 ? t('hud.healSelf') : t('hud.healNone'), progress: 0 };
+    }
+    if (active?.kind === 'ammo') {
+      const mate = near((r) => r.alive);
+      return { text: mate ? t('hud.resupply', { name: mate.name }) : t('hud.resupplySelf'), progress: 0 };
+    }
+    return null;
   }
 
   /** Identifikace nepřítele: po 0,6 s souvislého zamíření, jen při přímé viditelnosti. */
@@ -313,6 +336,9 @@ export class Game {
         this.shake = Math.max(this.shake, clamp(1 - d / 22, 0, 1));
       } else if (e.type === 'smoke') {
         this.audio.hiss(new THREE.Vector3(e.pos.x, e.pos.y, e.pos.z).distanceTo(eye));
+      } else if (e.type === 'defib') {
+        if (e.id === this.driver.localId || e.target === this.driver.localId) this.audio.mech(e.target ? 'bolt' : 'shell');
+        if (e.target && e.id === this.driver.localId) this.hud.system(t('sys.revived', { name: this.driver.remotes().find((r) => r.id === e.target)?.name ?? '' }), this.now);
       } else if (e.type === 'throw') {
         if (e.id === this.driver.localId) this.audio.mech('cover');
       } else if (e.type === 'fall') {

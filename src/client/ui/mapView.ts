@@ -270,6 +270,7 @@ export class MapView {
         g.stroke();
       }
     }
+    const labels: Array<[number, number, number, number]> = [];
     for (const m of this.markers) {
       const [x, y] = this.toScreen(m);
       const sel = m.id === this.selected, hov = m.id === this.hover;
@@ -300,11 +301,16 @@ export class MapView {
       const name = [m.letter, m.label].filter(Boolean).join(' · ');
       if (name) {
         g.font = `${sel ? 700 : 600} 12px "Barlow Semi Condensed", sans-serif`;
+        // Popisky se nepřekrývají: posun dolů, dokud nekoliduje s již položeným.
+        const w = g.measureText(name).width;
+        let ly = y;
+        for (let k = 0; k < 6 && labels.some(([lx, lyy, lw, lh]) => x + 14 < lx + lw && x + 14 + w > lx && ly - 7 < lyy + lh && ly + 7 > lyy); k++) ly += 15;
+        labels.push([x + 14, ly - 7, w, 14]);
         g.lineWidth = 3;
         g.strokeStyle = 'rgba(21,27,27,0.85)';
-        g.strokeText(name, x + 14, y);
+        g.strokeText(name, x + 14, ly);
         g.fillStyle = sel ? accent : '#e5e7d8';
-        g.fillText(name, x + 14, y);
+        g.fillText(name, x + 14, ly);
       }
     }
     // Měřítko (50 m) vlevo dole.
