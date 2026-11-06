@@ -297,7 +297,7 @@ export class App {
     this.phys.removeObject(id);
     this.ladders.delete(id);
     if (!now) return;
-    const g = generateObject(now, this.ed.doc.terrain);
+    const g = generateObject(now, this.ed.doc.terrain, this.ed.doc.objects);
     this.world.addObject(g);
     if (g.ladders.length && !now.gameHidden) this.ladders.set(now.id, g.ladders);
     if (!now.gameHidden) this.phys.addColliders(partsToColliders(now, g.parts));
@@ -305,7 +305,12 @@ export class App {
 
   private applyChanges(changes: Change[]) {
     for (const c of changes) {
-      if (c.kind === 'object') this.regenObject(c.id);
+      if (c.kind === 'object') {
+        this.regenObject(c.id);
+        // Kreslená silnice: přepočítat i ostatní (křižovatky se mohly objevit nebo zmizet).
+        const kind = (c.after ?? c.before)?.assetId;
+        if (kind === 'street.roadPath') for (const o of this.ed.doc.objects) if (o.assetId === 'street.roadPath' && o.id !== c.id) this.regenObject(o.id);
+      }
       else if (c.kind === 'terrain') {
         // Render i kolize terénu se aktualizují spolu (i při undo) – test nikdy nepoběží se starým colliderem.
         this.world.updateTerrain(this.ed.doc.terrain);

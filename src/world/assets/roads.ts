@@ -1,5 +1,6 @@
 import type { Part } from '../parts';
-import { registerAsset, type Params } from '../registry';
+import type { MapObject } from '../../shared/map/schema';
+import { getAsset, registerAsset, resolveParams, type GenContext, type Params } from '../registry';
 
 /**
  * Kreslená ulice: body (lokálně x,z) → hladká křivka (Catmull-Rom) → asfaltový pás, obrubníky,
@@ -78,6 +79,91 @@ function lengthOf(c: Pt[]) {
   return s;
 }
 
+
+/** Rozměry silnice pro křížení: šířka vozovky a vnější polovina včetně chodníku. */
+interface RoadInfo {
+  id: string;
+  curve: Pt[];
+  W: number;
+  outer: number;
+}
+
+function infoFor(p: Params, id: string, curve: Pt[]): RoadInfo {
+  const W = n(p, 'width');
+  return { id, curve, W, outer: W / 2 + (p.sidewalk ? 0.2 + n(p, 'sidewalkWidth') : 0) };
+}
+
+/** Ostatní kreslené silnice mapy převedené do lokálních souřadnic této silnice. */
+function neighborRoads(ctx: GenContext): RoadInfo[] {
+  const out: RoadInfo[] = [];
+  for (const o of ctx.neighbors ?? []) {
+    if (o.assetId !== 'street.roadPath' || !ctx.toLocal) continue;
+    const def = getAsset(o.assetId)!;
+    const q = resolveParams(def, o.params);
+    const local = sampleCurve(parsePoints(String(q.points)), 1.5);
+    out.push(infoFor(q, o.id, local.map((pt) => ctx.toLocal!(...toWorld(o, pt)))));
+  }
+  return out;
+}
+
+function toWorld(o: MapObject, p: Pt): Pt {
+  const [px, , pz] = o.transform.position;
+  const yaw = o.transform.rotation[1], s = o.transform.scale ?? 1;
+  const c = Math.cos(yaw), sn = Math.sin(yaw);
+  return [px + (c * p[0] + sn * p[1]) * s, pz + (-sn * p[0] + c * p[1]) * s];
+}
+
+interface Junction {
+  /** Vzdálenost podél této silnice. */
+  s: number;
+  /** |sin| úhlu křížení (min. 0,25 – ostré úhly se neprodlužují donekonečna). */
+  sin: number;
+  other: RoadInfo;
+  /** Hlavní silnice (nižší ID) drží asfalt i chodníky přes křižovatku. */
+  primary: boolean;
+}
+
+export function findJunctions(own: Pt[], selfId: string, others: RoadInfo[]): Junction[] {
+  const out: Junction[] = [];
+  for (const o of others) {
+    let acc = 0;
+    for (let i = 0; i + 1 < own.length; i++) {
+      const a = own[i], b = own[i + 1];
+      const rx = b[0] - a[0], rz = b[1] - a[1];
+      const len = Math.hypot(rx, rz);
+      for (let j = 0; j + 1 < o.curve.length; j++) {
+        const c = o.curve[j], d = o.curve[j + 1];
+        const sx = d[0] - c[0], sz = d[1] - c[1];
+        const den = rx * sz - rz * sx;
+        if (Math.abs(den) < 1e-9) continue;
+        const t = ((c[0] - a[0]) * sz - (c[1] - a[1]) * sx) / den;
+        const u = ((c[0] - a[0]) * rz - (c[1] - a[1]) * rx) / den;
+        if (t < 0 || t > 1 || u < 0 || u > 1) continue;
+        const sin = Math.max(0.25, Math.abs(den) / (len * Math.hypot(sx, sz)));
+        const sAt = acc + t * len;
+        // Jeden průsečík na křížení (sousední úseky ho mohou najít dvakrát).
+        if (!out.some((q) => q.other === o && Math.abs(q.s - sAt) < 1)) out.push({ s: sAt, sin, other: o, primary: selfId < o.id });
+      }
+      acc += len;
+    }
+  }
+  return out;
+}
+
+/** Části křivky mimo vyřezané úseky [s0, s1]. */
+function keep(c: Pt[], cuts: Array<[number, number]>): Pt[][] {
+  const total = lengthOf(c);
+  const merged = cuts.map(([a, b]) => [Math.max(0, a), Math.min(total, b)] as [number, number]).filter(([a, b]) => b > a).sort((x, y) => x[0] - y[0]);
+  const out: Pt[][] = [];
+  let cur = 0;
+  for (const [a, b] of merged) {
+    if (a - cur > 0.05) out.push(slice(c, cur, a));
+    cur = Math.max(cur, b);
+  }
+  if (total - cur > 0.05) out.push(slice(c, cur, total));
+  return out.filter((x) => x.length >= 2);
+}
+
 registerAsset({
   assetId: 'street.roadPath',
   label: 'Ulice (kreslená body)',
@@ -115,25 +201,50 @@ registerAsset({
     const W = n(p, 'width');
     const c = sampleCurve(pts, 1.5);
     const follow = !!p.follow;
-    // Různé ulice o pár milimetrů jinak vysoko → křižovatky se neblikají (z-fighting).
+    // Různé ulice o pár milimetrů jinak vysoko → překryvy neblikají (z-fighting).
     const lift = 0.04 + (seed % 7) * 0.003;
     const y = (q: Pt) => (follow ? ctx.ground(q[0], q[1]) : 0);
     const path = (curve: Pt[], dy: number): [number, number, number][] => curve.map((q) => [q[0], y(q) + dy, q[1]]);
-    const parts: Part[] = [{ shape: 'strip', pos: [0, 0, 0], size: [W, 0.25, 0], path: path(c, lift), material, castShadow: false }];
+    // Křižovatky s ostatními kreslenými silnicemi: hlavní silnice (nižší ID) jde vcelku,
+    // vedlejší přeruší asfalt v ploše hlavní vozovky a chodníky až za chodníky hlavní.
+    const self = infoFor(p, ctx.selfId ?? '', c);
+    const junctions = findJunctions(c, self.id, neighborRoads(ctx));
+    const asphaltCuts: Array<[number, number]> = [], walkCuts: Array<[number, number]> = [], lineCuts: Array<[number, number]> = [];
+    for (const j of junctions) {
+      const h = (d: number) => [j.s - d / j.sin, j.s + d / j.sin] as [number, number];
+      if (!j.primary) asphaltCuts.push(h(j.other.W / 2 - 0.05));
+      walkCuts.push(h(j.primary ? j.other.W / 2 : j.other.outer));
+      lineCuts.push(h(j.other.outer + 1));
+    }
+    const parts: Part[] = [];
+    for (const piece of keep(c, asphaltCuts)) parts.push({ shape: 'strip', pos: [0, 0, 0], size: [W, 0.25, 0], path: path(piece, lift + (junctions.some((j) => j.primary) ? 0.004 : 0)), material, castShadow: false });
     if (p.sidewalk) {
       const sw = n(p, 'sidewalkWidth'), curb = 0.15;
-      for (const s of [-1, 1]) {
-        parts.push({ shape: 'strip', pos: [0, 0, 0], size: [0.2, curb + 0.3, 0], path: path(offsetCurve(c, s * (W / 2 + 0.1)), lift + curb), material: 'concreteLight', collide: true, castShadow: false });
-        parts.push({ shape: 'strip', pos: [0, 0, 0], size: [sw, curb + 0.3, 0], path: path(offsetCurve(c, s * (W / 2 + 0.2 + sw / 2)), lift + curb - 0.01), material: 'paving', collide: true, castShadow: false });
-      }
+      for (const piece of keep(c, walkCuts))
+        for (const s of [-1, 1]) {
+          parts.push({ shape: 'strip', pos: [0, 0, 0], size: [0.2, curb + 0.3, 0], path: path(offsetCurve(piece, s * (W / 2 + 0.1)), lift + curb), material: 'concreteLight', collide: true, castShadow: false });
+          parts.push({ shape: 'strip', pos: [0, 0, 0], size: [sw, curb + 0.3, 0], path: path(offsetCurve(piece, s * (W / 2 + 0.2 + sw / 2)), lift + curb - 0.01), material: 'paving', collide: true, castShadow: false });
+        }
     }
     const lines = p.lines as string;
     if (lines !== 'none' && material === 'asphalt') {
+      const line = (curve: Pt[], w = 0.14) => curve.length >= 2 && parts.push({ shape: 'strip', pos: [0, 0, 0], size: [w, 0, 0], path: path(curve, lift + 0.012), material: 'paint', castShadow: false });
+      for (const piece of keep(c, lineCuts)) {
+        const total = lengthOf(piece);
+        if (lines === 'dashed') for (let s = 1; s < total - 1; s += 6) line(slice(piece, s, Math.min(total - 1, s + 3)));
+        else line(piece);
+        if (lines === 'edges') for (const s of [-1, 1]) line(offsetCurve(piece, s * (W / 2 - 0.35)));
+      }
+      // Přechody pro chodce na ramenech křižovatky (pruhy podél silnice, napříč vozovkou).
       const total = lengthOf(c);
-      const line = (curve: Pt[]) => parts.push({ shape: 'strip', pos: [0, 0, 0], size: [0.14, 0, 0], path: path(curve, lift + 0.008), material: 'paint', castShadow: false });
-      if (lines === 'dashed') for (let s = 1; s < total - 1; s += 6) line(slice(c, s, Math.min(total - 1, s + 3)));
-      else line(c);
-      if (lines === 'edges') for (const s of [-1, 1]) line(offsetCurve(c, s * (W / 2 - 0.35)));
+      for (const j of junctions) {
+        const d = (j.primary ? j.other.W / 2 : j.other.outer) / j.sin + 0.6;
+        for (const [s0, s1] of [[j.s + d, j.s + d + 3], [j.s - d - 3, j.s - d]] as const) {
+          if (s0 < 0.5 || s1 > total - 0.5) continue;
+          const seg = slice(c, s0, s1);
+          for (let k = -W / 2 + 0.6; k <= W / 2 - 0.5; k += 1.0) line(offsetCurve(seg, k), 0.5);
+        }
+      }
     }
     return parts;
   },

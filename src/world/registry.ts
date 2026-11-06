@@ -25,6 +25,12 @@ export type Params = Record<string, number | string | boolean>;
  */
 export interface GenContext {
   ground(x: number, z: number): number;
+  /** ID generovaného objektu (např. pořadí silnic na křižovatce). */
+  selfId?: string;
+  /** Ostatní objekty mapy (silnice hledají křížení). */
+  neighbors?: MapObject[];
+  /** Světové (x, z) → lokální souřadnice tohoto objektu. */
+  toLocal?(x: number, z: number): [number, number];
 }
 
 export const FLAT: GenContext = { ground: () => 0 };
@@ -105,13 +111,22 @@ function placeholderParts(): Part[] {
 }
 
 /** Kontext terénu pro objekt: lokální (x, z) → světové → výška terénu → lokální y. */
-export function terrainContext(o: MapObject, terrain?: TerrainData): GenContext {
-  if (!terrain) return FLAT;
+export function terrainContext(o: MapObject, terrain?: TerrainData, neighbors?: MapObject[]): GenContext {
   const [px, py, pz] = o.transform.position;
   const yaw = o.transform.rotation[1];
   const s = o.transform.scale ?? 1;
   const c = Math.cos(yaw), sn = Math.sin(yaw);
+  const base = {
+    selfId: o.id,
+    neighbors: neighbors?.filter((x) => x.id !== o.id && !x.gameHidden),
+    toLocal(x: number, z: number): [number, number] {
+      const dx = (x - px) / s, dz = (z - pz) / s;
+      return [c * dx - sn * dz, sn * dx + c * dz];
+    },
+  };
+  if (!terrain) return { ...base, ground: () => 0 };
   return {
+    ...base,
     ground(x, z) {
       const lx = x * s, lz = z * s;
       const wx = px + c * lx + sn * lz, wz = pz - sn * lx + c * lz;
@@ -121,7 +136,7 @@ export function terrainContext(o: MapObject, terrain?: TerrainData): GenContext 
   };
 }
 
-export function generateObject(o: MapObject, terrain?: TerrainData): GeneratedObject {
+export function generateObject(o: MapObject, terrain?: TerrainData, neighbors?: MapObject[]): GeneratedObject {
   const def = registry.get(o.assetId);
   if (!def) return { object: o, parts: placeholderParts(), ladders: [], missing: `neznámý asset "${o.assetId}"` };
   if (o.generatorVersion > def.generatorVersion) {
@@ -134,11 +149,11 @@ export function generateObject(o: MapObject, terrain?: TerrainData): GeneratedOb
   }
   const material = o.material && def.materials.includes(o.material) ? o.material : def.defaultMaterial;
   const p = resolveParams(def, o.params);
-  return { object: o, parts: def.generate(p, o.seed, material, terrainContext(o, terrain)), ladders: def.ladders ? laddersToWorld(o, def.ladders(p)) : [] };
+  return { object: o, parts: def.generate(p, o.seed, material, terrainContext(o, terrain, neighbors)), ladders: def.ladders ? laddersToWorld(o, def.ladders(p)) : [] };
 }
 
 export function generateMap(doc: MapDocument): GeneratedObject[] {
-  return doc.objects.map((o) => generateObject(o, doc.terrain));
+  return doc.objects.map((o) => generateObject(o, doc.terrain, doc.objects));
 }
 
 export function collidersForMap(gen: GeneratedObject[]): ColliderDef[] {

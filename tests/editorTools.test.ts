@@ -63,6 +63,29 @@ describe('kreslená ulice', () => {
   });
 });
 
+describe('křižovatky kreslených silnic', () => {
+  it('dvě křížící se silnice: hlavní jde vcelku, vedlejší přeruší asfalt a chodníky, přibudou přechody', () => {
+    const a = { ...obj('street.roadPath', { points: '-30,0;30,0' }), id: 'a' };
+    const b = { ...obj('street.roadPath', { points: '0,-30;0,30' }), id: 'b' };
+    const all = [a, b];
+    const ga = generateObject(a, undefined, all), gb = generateObject(b, undefined, all);
+    const count = (g: ReturnType<typeof generateObject>, m: string) => g.parts.filter((p) => p.material === m).length;
+    expect(count(ga, 'asphalt')).toBe(1);
+    expect(count(gb, 'asphalt')).toBe(2);
+    // Chodníky: bez křížení 2 pásy, s křížením 4 (každá strana rozdělena).
+    expect(count(ga, 'paving')).toBe(4);
+    expect(count(gb, 'paving')).toBe(4);
+    // Vedlejší chodník končí až za chodníkem hlavní silnice (žádný překryv).
+    const walkB = gb.parts.filter((p) => p.material === 'paving');
+    for (const w of walkB) for (const q of w.path!) expect(Math.abs(q[2])).toBeGreaterThanOrEqual(3.5 + 0.2 + 2.2 - 0.01);
+    // Přechody (široké pásy barvy) na obou silnicích.
+    expect(ga.parts.filter((p) => p.material === 'paint' && p.size[0] === 0.5).length).toBeGreaterThan(0);
+    expect(gb.parts.filter((p) => p.material === 'paint' && p.size[0] === 0.5).length).toBeGreaterThan(0);
+    // Bez sousedů žádná křižovatka.
+    expect(count(generateObject(b), 'asphalt')).toBe(1);
+  });
+});
+
 describe('ploty a zdi po terénu', () => {
   it('kontext terénu respektuje polohu a natočení objektu', () => {
     const t = slope();

@@ -918,7 +918,7 @@ export class Editor {
       const def = getAsset(o.assetId)!;
       const key = def.params.find((q) => q.type === 'points')!.key;
       const tmp: MapObject = { ...o, params: { ...o.params, [key]: formatPoints(d.pts) } };
-      this.world.addObject(generateObject(tmp, this.ed.doc.terrain));
+      this.world.addObject(generateObject(tmp, this.ed.doc.terrain, this.ed.doc.objects));
       const h = this.handles.children.find((c) => (c.userData.handle as HandleInfo).kind === 'point' && (c.userData.handle as HandleInfo).index === d.index);
       if (h) h.position.set(gp.x, gp.y + 0.35, gp.z);
     }
@@ -931,7 +931,7 @@ export class Editor {
     if (!d) return;
     for (const id of d.kind === 'move' || d.kind === 'rotate' ? d.starts.keys() : [d.id]) {
       const o = this.ed.getObject(id);
-      if (o) this.world.addObject(generateObject(o, this.ed.doc.terrain));
+      if (o) this.world.addObject(generateObject(o, this.ed.doc.terrain, this.ed.doc.objects));
     }
     this.editorRefreshMarkers();
     this.buildHandles();
@@ -1020,7 +1020,7 @@ export class Editor {
     v = r4(THREE.MathUtils.clamp(v, spec.min ?? 0, spec.max ?? 1e6));
     // Nová obálka → posun, aby protilehlá strana zůstala na místě.
     const next: MapObject = { ...structuredClone(o), params: { ...o.params, [key]: v } };
-    const geo = buildObjectGeometry(generateObject(next, this.ed.doc.terrain).parts);
+    const geo = buildObjectGeometry(generateObject(next, this.ed.doc.terrain, this.ed.doc.objects).parts);
     const nb = new THREE.Box3();
     for (const { geometry } of geo.byMaterial.values()) {
       geometry.computeBoundingBox();

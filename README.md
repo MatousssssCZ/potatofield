@@ -58,7 +58,7 @@ mapě** (assety, které mapa už obsahuje, s počtem). Klik vloží asset do st�
 | Přiblížení | kolečko |
 | Výběr | **LMB**; **Ctrl+LMB** přidat/odebrat; tažení LMB = výběr rámečkem; Esc zruší výběr |
 | Úpravy (bez režimů) | **táhni objekt** = posun po terénu · **modrý prstenec** = rotace · **oranžové kostky** = rozměry (protilehlá strana drží) |
-| Ulice | v katalogu „Ulice (kreslená body)“: klikej body na terén, **Enter**/dvojklik hotovo, **Backspace** zpět, **Esc** zrušit; u vybrané ulice táhni zelené body, ◆ přidá bod, **Shift+klik** bod smaže |
+| Ulice | v katalogu „Ulice (kreslená body)“: klikej body na terén, **Enter**/dvojklik hotovo, **Backspace** zpět, **Esc** zrušit; u vybrané ulice táhni zelené body, ◆ přidá bod, **Shift+klik** bod smaže; kde se dvě kreslené ulice překříží, vznikne **křižovatka** sama (přerušené chodníky a čáry, přechody); ulice kopíruje terén |
 | Přichycení | mřížka 0,25/0,5/1/2 m (výchozí 0,5), rotace 15°/90°/volná; **Alt** dočasně vypne |
 | Operace | **F** zaměřit, **Delete** smazat, **Ctrl+D** duplikovat |
 | Historie | **Ctrl+Z** zpět, **Ctrl+Shift+Z** nebo **Ctrl+Y** znovu (jedno tažení = jedna položka) |
