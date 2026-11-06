@@ -31,6 +31,8 @@ export interface Settings {
   colorblind: Colorblind;
   netDiag: boolean;
   showFps: boolean;
+  /** Měkké textury ve stylu BF2 (nižší rozlišení, rozmazání); změna znovu načte stránku. */
+  softTextures: boolean;
   /** Vlastní klávesy (jen změněné akce). */
   bindings: Partial<Record<Action, string[]>>;
   /** Vzhled zbraně ve volném testu editoru (výbavu jinak určuje nasazení). */
@@ -58,6 +60,7 @@ export const DEFAULT_SETTINGS: Settings = {
   colorblind: 'none',
   netDiag: false,
   showFps: false,
+  softTextures: true,
   bindings: {},
   weapon: 'm4a1',
 };
@@ -215,6 +218,7 @@ export class SettingsView {
         settingRow(t('set.bob'), slider('bob', 0, 1, 0.05, pct)),
         settingRow(t('set.landingKick'), check('landingKick')),
         settingRow(t('set.fullscreen'), check('fullscreen')),
+        settingRow(t('set.softTextures'), check('softTextures'), t('set.softTexturesHint')),
         settingRow(t('set.fps'), check('showFps')),
       );
     } else if (this.cat === 'audio') {
@@ -298,7 +302,7 @@ export class SettingsView {
         this.onClose?.();
       }, 'pf-btn'),
       button(t('common.apply'), () => {
-        const reload = this.work.quality !== this.current().quality;
+        const reload = this.work.quality !== this.current().quality || this.work.softTextures !== this.current().softTextures;
         if (this.work.lang && this.work.lang !== lang()) setLang(this.work.lang);
         this.apply(structuredClone(this.work), reload);
         this.note = t('set.applied');

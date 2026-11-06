@@ -171,7 +171,7 @@ export class App {
     const anis = Math.min(this.quality.anisotropy, r.capabilities.getMaxAnisotropy());
     const [, textures] = await Promise.all([
       initRapier(),
-      generateTextures(TEXTURE_IDS, this.quality.textureSize, anis, (d, n) => progress(0.05 + (d / n) * 0.8, `Generuji materiály ${d}/${n}`)),
+      generateTextures(TEXTURE_IDS, this.quality.textureSize, anis, (d, n) => progress(0.05 + (d / n) * 0.8, `Generuji materiály ${d}/${n}`), this.settings.softTextures),
     ]);
     sharedUniforms.uMacro.value = makeMacroNoise();
     this.mats = new MaterialLibrary(textures);

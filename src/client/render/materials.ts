@@ -123,12 +123,46 @@ export function downsample(src: Uint8Array, size: number, normal: boolean): Uint
   return out;
 }
 
-/** Generuje textury paralelně ve Web Workerech. */
+/**
+ * Dlaždicové rozmazání (oddělitelný filtr 1-2-1, s přetečením přes okraj – textura zůstane
+ * dlaždicová). `passes` = počet průchodů (2 ≈ Gauss s poloměrem ~1,4 texelu).
+ */
+export function blurTile(src: Uint8Array, size: number, passes: number, normal = false): Uint8Array<ArrayBuffer> {
+  let a: Uint8Array = src, b: Uint8Array = new Uint8Array(src.length);
+  for (let p = 0; p < passes; p++) {
+    for (const horiz of [true, false]) {
+      for (let y = 0; y < size; y++)
+        for (let x = 0; x < size; x++) {
+          const i0 = horiz ? y * size + ((x + size - 1) % size) : ((y + size - 1) % size) * size + x;
+          const i1 = y * size + x;
+          const i2 = horiz ? y * size + ((x + 1) % size) : ((y + 1) % size) * size + x;
+          for (let c = 0; c < 4; c++) b[i1 * 4 + c] = (a[i0 * 4 + c] + 2 * a[i1 * 4 + c] + a[i2 * 4 + c] + 2) >> 2;
+        }
+      [a, b] = [b, a];
+    }
+  }
+  if (normal)
+    for (let i = 0; i < a.length; i += 4) {
+      const nx = a[i] / 127.5 - 1, ny = a[i + 1] / 127.5 - 1, nz = a[i + 2] / 127.5 - 1;
+      const l = Math.hypot(nx, ny, nz) || 1;
+      a[i] = Math.round((nx / l + 1) * 127.5);
+      a[i + 1] = Math.round((ny / l + 1) * 127.5);
+      a[i + 2] = Math.round((nz / l + 1) * 127.5);
+    }
+  return new Uint8Array(a);
+}
+
+/**
+ * Generuje textury paralelně ve Web Workerech. `soft` = měkký vzhled ve stylu BF2: barva
+ * v polovičním rozlišení s jemným rozmazáním, normála a ORM ve čtvrtinovém (rozmazané),
+ * nižší anizotropie – povrchy jsou méně „ostré“ a do dálky splývají.
+ */
 export async function generateTextures(
   ids: string[],
   size: number,
   anisotropy: number,
   onProgress: (done: number, total: number) => void,
+  soft = false,
 ): Promise<Map<string, TexSet>> {
   const out = new Map<string, TexSet>();
   const workers = Math.max(1, Math.min(navigator.hardwareConcurrency || 4, 8, ids.length));
@@ -147,6 +181,23 @@ export async function generateTextures(
           });
           // Paměť: barva v plném rozlišení profilu, normála a ORM (AO/hrubost/kov) v polovičním –
           // nízkofrekvenční mapy, rozdíl v obraze je malý a paměť textur klesne na polovinu.
+          if (soft) {
+            const aSize = Math.max(128, size / 2), nSize = Math.max(64, size / 4);
+            let albedo = tex.albedo, normal = tex.normal, orm = tex.orm;
+            for (let s = size; s > aSize; s /= 2) albedo = downsample(albedo, s, false);
+            for (let s = size; s > nSize; s /= 2) {
+              normal = downsample(normal, s, true);
+              orm = downsample(orm, s, false);
+            }
+            const an = Math.min(anisotropy, 4);
+            out.set(id, {
+              map: dataTex(blurTile(albedo, aSize, 1), aSize, true, an),
+              normalMap: dataTex(blurTile(normal, nSize, 1, true), nSize, false, an),
+              orm: dataTex(blurTile(orm, nSize, 1), nSize, false, an),
+            });
+            onProgress(++done, ids.length);
+            continue;
+          }
           const half = size >= 256 ? size / 2 : size;
           out.set(id, {
             map: dataTex(tex.albedo, size, true, anisotropy),
