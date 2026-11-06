@@ -87,6 +87,23 @@ export class EnvironmentRig {
   readonly sun = new THREE.DirectionalLight('#ffffff', 3);
   readonly hemi = new THREE.HemisphereLight('#ffffff', '#886644', 0.5);
   readonly fog = new THREE.FogExp2('#cdbb9c', 0.003);
+  /** Opar na obloze: kopule barvy mlhy přes oblohu (u obzoru plná, k zenitu řidší). */
+  private haze = new THREE.Mesh(
+    new THREE.SphereGeometry(900, 32, 16),
+    new THREE.ShaderMaterial({
+      uniforms: { uColor: { value: new THREE.Color('#cdbb9c') }, uHaze: { value: 0.25 } },
+      vertexShader: 'varying vec3 vDir; void main() { vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+      fragmentShader:
+        'uniform vec3 uColor; uniform float uHaze; varying vec3 vDir;' +
+        'void main() { float up = vDir.y; float a = uHaze * mix(1.0, 0.45 + 0.55 * uHaze, smoothstep(0.0, 0.6, up)); if (up < 0.0) a = max(a, uHaze); gl_FragColor = vec4(uColor, clamp(a, 0.0, 1.0));\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}',
+      side: THREE.BackSide,
+      transparent: false,
+      blending: THREE.NormalBlending,
+      depthWrite: false,
+      depthTest: false,
+      fog: false,
+    }),
+  );
   private sunDir = new THREE.Vector3(0, 1, 0);
   private envRT: THREE.WebGLRenderTarget | null = null;
   private shadowRange = 45;
@@ -109,7 +126,18 @@ export class EnvironmentRig {
   ) {
     this.sky.scale.setScalar(4000);
     this.sky.frustumCulled = false;
+    this.sky.renderOrder = -2;
     scene.add(this.sky);
+    // Opar se kreslí hned po obloze a před vším ostatním (bez zápisu hloubky).
+    this.haze.renderOrder = -1;
+    this.haze.frustumCulled = false;
+    // Kopule vždy kolem kamery (v editoru se kamera vzdaluje od „focus“ bodu).
+    this.haze.onBeforeRender = (_r, _s, cam) => {
+      this.haze.position.copy(cam.position);
+      this.haze.updateMatrixWorld();
+    };
+    (this.haze.material as THREE.ShaderMaterial).transparent = false;
+    scene.add(this.haze);
     scene.add(this.sun);
     scene.add(this.sun.target);
     scene.add(this.hemi);
@@ -135,8 +163,13 @@ export class EnvironmentRig {
     this.hemi.groundColor.set(look.hemiGround);
     this.hemi.intensity = look.hemiIntensity * env.ambientIntensity;
     this.fog.color.set(env.fogColor);
-    // FogExp2: f = exp(−(d·density)²) → 50 % při d = √ln2 / density.
-    this.fog.density = Math.sqrt(Math.LN2) / env.fogHalfDistance;
+    // FogExp2: f = exp(−(d·density)²) → 50 % při d = √ln2 / density. Vypnutá mlha = hustota 0.
+    const fogOn = env.fogEnabled !== false;
+    this.fog.density = fogOn ? Math.sqrt(Math.LN2) / env.fogHalfDistance : 0;
+    const hz = this.haze.material as THREE.ShaderMaterial;
+    hz.uniforms.uColor.value.set(env.fogColor);
+    hz.uniforms.uHaze.value = fogOn ? (env.skyHaze ?? 0.25) : 0;
+    this.haze.visible = fogOn && (env.skyHaze ?? 0.25) > 0.001;
     this.renderer.toneMappingExposure = look.exposure;
 
     // Stíny dle profilu kvality (nemění herní viditelnost ani kryty).

@@ -206,6 +206,8 @@ export function validateMap(input: unknown, opts: { fileBytes?: number } = {}): 
     c.num(e.sunIntensity, 'environment.sunIntensity', 0, 10);
     c.color(e.fogColor, 'environment.fogColor');
     c.num(e.fogHalfDistance, 'environment.fogHalfDistance', 30, 5000);
+    if (e.fogEnabled !== undefined && typeof e.fogEnabled !== 'boolean') c.err('environment.fogEnabled', 'očekáváno ano/ne');
+    if (e.skyHaze !== undefined) c.num(e.skyHaze, 'environment.skyHaze', 0, 1);
     c.num(e.ambientIntensity, 'environment.ambientIntensity', 0, 4);
   }
 

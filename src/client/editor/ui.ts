@@ -561,11 +561,34 @@ function renderMapProps(root: HTMLElement, ed: EditorDoc, history: History) {
   col.value = env.sunColor;
   col.addEventListener('change', () => setEnv('Barva slunce', { sunColor: col.value }));
   root.appendChild(prop('Barva slunce', undefined, col));
-  root.appendChild(prop('Mlha (50 %)', '30–5000 m', numInput(env.fogHalfDistance, { min: 30, max: 5000, step: 10, unit: 'm' }, (v) => setEnv('Mlha', { fogHalfDistance: v }))));
+  root.appendChild(el('div', { class: 'sec' }, 'Mlha'));
+  const fogOn = el('input', { type: 'checkbox' }) as HTMLInputElement;
+  fogOn.checked = env.fogEnabled !== false;
+  fogOn.addEventListener('change', () => setEnv(fogOn.checked ? 'Zapnout mlhu' : 'Vypnout mlhu', { fogEnabled: fogOn.checked }));
+  root.appendChild(prop('Mlha zapnutá', 'vizuálně i pro viditelnost na dálku', fogOn));
+  const fogPreset = el('select') as HTMLSelectElement;
+  const FOG_PRESETS: Record<string, { label: string; patch: Partial<EnvironmentProfile> }> = {
+    custom: { label: 'Vlastní…', patch: {} },
+    light: { label: 'Lehký opar', patch: { fogEnabled: true, fogHalfDistance: 600, fogColor: '#d6cdb8', skyHaze: 0.15 } },
+    dusty: { label: 'Prašná mlha (pouštní)', patch: { fogEnabled: true, fogHalfDistance: 170, fogColor: '#cdb38a', skyHaze: 0.55 } },
+    sandstorm: { label: 'Písečná bouře', patch: { fogEnabled: true, fogHalfDistance: 50, fogColor: '#c2a274', skyHaze: 0.9 } },
+    morning: { label: 'Ranní mlha', patch: { fogEnabled: true, fogHalfDistance: 80, fogColor: '#c9cfd3', skyHaze: 0.7 } },
+    smoke: { label: 'Kouř nad městem', patch: { fogEnabled: true, fogHalfDistance: 160, fogColor: '#9c968c', skyHaze: 0.6 } },
+  };
+  for (const [v, d] of Object.entries(FOG_PRESETS)) fogPreset.appendChild(el('option', { value: v }, d.label));
+  fogPreset.value = 'custom';
+  fogPreset.addEventListener('change', () => {
+    const d = FOG_PRESETS[fogPreset.value];
+    if (d && fogPreset.value !== 'custom') setEnv(`Mlha: ${d.label}`, d.patch);
+  });
+  root.appendChild(prop('Předvolba mlhy', 'nastaví hustotu, barvu a opar', fogPreset));
+  root.appendChild(prop('Hustota (50 % ve vzdálenosti)', '30–5000 m · menší = hustší', numInput(env.fogHalfDistance, { min: 30, max: 5000, step: 10, unit: 'm' }, (v) => setEnv('Mlha', { fogHalfDistance: v }))));
   const fc = el('input', { type: 'color' }) as HTMLInputElement;
   fc.value = env.fogColor;
   fc.addEventListener('change', () => setEnv('Barva mlhy', { fogColor: fc.value }));
   root.appendChild(prop('Barva mlhy', undefined, fc));
+  root.appendChild(prop('Opar na obloze', '0 čisté nebe – 1 nebe v mlze', numInput(env.skyHaze ?? 0.25, { min: 0, max: 1, step: 0.05 }, (v) => setEnv('Opar na obloze', { skyHaze: v }))));
+  root.appendChild(el('div', { class: 'sec' }, 'Světlo'));
   root.appendChild(prop('Okolní světlo', '0–4', numInput(env.ambientIntensity, { min: 0, max: 4, step: 0.05 }, (v) => setEnv('Okolní světlo', { ambientIntensity: v }))));
   const reset = el('button', {}, 'Výchozí prostředí');
   reset.addEventListener('click', () => setEnv('Výchozí prostředí', { ...DEFAULT_ENVIRONMENT }));

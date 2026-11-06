@@ -46,6 +46,10 @@ export interface EnvironmentProfile {
   fogColor: string;
   /** Vzdálenost, na které mlha dosáhne zhruba 50 % (m). Herní, nemění se profilem kvality. */
   fogHalfDistance: number;
+  /** Mlha zapnutá (chybí = zapnutá; starší mapy). */
+  fogEnabled?: boolean;
+  /** Opar přes oblohu barvou mlhy 0–1 (BF2 prašný opar zakryje i nebe). Chybí = 0,25. */
+  skyHaze?: number;
   ambientIntensity: number;
 }
 

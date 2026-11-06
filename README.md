@@ -68,7 +68,7 @@ mapě** (assety, které mapa už obsahuje, s počtem). Klik vloží asset do st�
 - **Katalog** (vlevo): klik vloží objekt doprostřed pohledu. Záložka **Scéna** = seznam objektů se
   skrytím (👁, jen editor) a zamčením (🔒).
 - **Vlastnosti** (vpravo): pozice, natočení, parametry generátoru s jednotkami a mezemi, materiál,
-  skrytí v editoru / zamčení / skrytí ve hře. Bez výběru = vlastnosti mapy a prostředí (slunce, mlha).
+  skrytí v editoru / zamčení / skrytí ve hře. Bez výběru = vlastnosti mapy a prostředí (slunce, **mlha**: zapnutí, předvolby lehký opar / prašná mlha / písečná bouře / ranní mlha / kouř, hustota, barva a opar na obloze).
 - **Všechno stojí na zemi**: vložený i přetažený objekt sedí na terénu (ve svahu se výška dorovná).
   **Doplňky** (klimatizace, markýza, cedule, žebřík) se tažením přes budovu **přilepí na stěnu**
   zády ke zdi; **nádrž** se přilepí na střechu.
