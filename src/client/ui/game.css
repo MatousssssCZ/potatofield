@@ -1381,3 +1381,53 @@ body.mode-play .tui-log {
   gap: 16px;
   align-items: baseline;
 }
+
+/* Overlay výbavy (vpravo nad municí). */
+.h-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+  min-width: 300px;
+}
+.h-slots.hidden {
+  display: none;
+}
+.h-slot {
+  display: grid;
+  grid-template-columns: 22px 84px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 3px 8px;
+  background: rgba(21, 27, 27, 0.6);
+  border-left: 3px solid transparent;
+  font-weight: 600;
+}
+.h-slot.on {
+  border-left-color: var(--pf-accent);
+  background: rgba(216, 198, 106, 0.18);
+}
+.h-slot.req {
+  outline: 1px dashed var(--pf-accent);
+}
+.h-slot.spent {
+  opacity: 0.45;
+}
+.h-slot-key {
+  display: inline-grid;
+  place-items: center;
+  height: 20px;
+  border: 1px solid rgba(229, 231, 216, 0.35);
+  font-size: 0.8em;
+}
+.h-slot-sil {
+  width: 84px;
+  height: 26px;
+}
+.h-slot-sil.none {
+  visibility: hidden;
+}
+.h-slot-count {
+  color: var(--pf-dim);
+  font-size: 0.9em;
+}

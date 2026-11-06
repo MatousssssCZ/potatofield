@@ -29,7 +29,7 @@ import { TeamUi } from './ui/teamUi';
 import type { WsLike } from '../shared/net/client';
 import type { GameDriver } from './runtime/driver';
 import type { Team } from '../shared/map/schema';
-import { SettingsView, applyUiSettings, bindingsOf, controlsView, loadSettings, saveSettings, type Settings } from './ui/settings';
+import { SettingsView, applyUiSettings, bindingsOf, controlsView, keyLabel, loadSettings, saveSettings, type Settings } from './ui/settings';
 import { MainMenu, type Phase } from './ui/mainMenu';
 import { PauseMenu } from './ui/pause';
 import { TeamScreens, scoreboard } from './ui/teamScreens';
@@ -537,6 +537,10 @@ export class App {
     game.onLeave = () => this.exitPlay();
     const inp = this.session.input;
     inp.bindings = bindingsOf(s);
+    this.session.game.hud.slots.bindLabel = (slot) => {
+      const b = bindingsOf(this.settings)[`SLOT${slot}` as 'SLOT1'];
+      return b?.length ? keyLabel(b[0]) : '—';
+    };
     const net = netDriver instanceof NetDriver ? netDriver : null;
     if (net) {
       this.teamUi = new TeamUi(net, inp, this.ed.doc);

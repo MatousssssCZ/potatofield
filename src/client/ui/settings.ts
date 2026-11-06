@@ -119,10 +119,23 @@ export const ACTION_KEY: Record<Action, StringKey> = {
   FIRE: 'act.fire',
   ADS: 'act.aim',
   RELOAD: 'act.reload',
-  SLOT3: 'act.slot3',
+  SLOT1: 'act.slotN',
+  SLOT2: 'act.slotN',
+  SLOT3: 'act.slotN',
+  SLOT4: 'act.slotN',
+  SLOT5: 'act.slotN',
+  SLOT6: 'act.slotN',
+  SLOT7: 'act.slotN',
+  SLOT8: 'act.slotN',
+  SLOT9: 'act.slotN',
   MODE: 'act.fireMode',
   USE: 'act.use',
 };
+
+/** Popisek akce (sloty výbavy: „Slot N“). */
+export function actionLabel(a: Action) {
+  return a.startsWith('SLOT') ? t('act.slotN', { n: a.slice(4) }) : t(ACTION_KEY[a]);
+}
 
 /** Pevné klávesy UI (nepřemapovatelné v pilotu) – pro přehled ovládání. */
 export const UI_KEYS: Array<[StringKey, string]> = [
@@ -241,7 +254,7 @@ export class SettingsView {
             this.rebinding = null;
             if (code === 'Escape') return this.render();
             const clash = owner(code, a);
-            if (clash) this.note = t('set.conflict', { key: keyLabel(code), action: t(ACTION_KEY[clash]) });
+            if (clash) this.note = t('set.conflict', { key: keyLabel(code), action: actionLabel(clash) });
             else {
               this.note = '';
               w.bindings[a] = [code];
@@ -253,7 +266,7 @@ export class SettingsView {
             window.addEventListener('mousedown', onKey as EventListener, true);
           }, 0);
         }, `pf-btn pf-key${this.rebinding === a ? ' on' : ''}`);
-        return settingRow(t(ACTION_KEY[a]), btn);
+        return settingRow(actionLabel(a), btn);
       });
       body = h('div', { class: 'pf-set-body' },
         settingRow(t('set.sens'), slider('sensitivity', 0.2, 8, 0.05, (v) => v.toFixed(2))),
@@ -319,7 +332,7 @@ export function controlsView(s: Settings) {
   const b = bindingsOf(s);
   return h('div', { class: 'pf-controls' },
     h('table', { class: 'pf-table' }, h('tbody', {},
-      ...(Object.keys(DEFAULT_BINDINGS) as Action[]).map((a) => h('tr', {}, h('td', {}, t(ACTION_KEY[a])), h('td', { class: 'num' }, h('span', { class: 'pf-key static' }, b[a].map(keyLabel).join(', '))))),
+      ...(Object.keys(DEFAULT_BINDINGS) as Action[]).map((a) => h('tr', {}, h('td', {}, actionLabel(a)), h('td', { class: 'num' }, h('span', { class: 'pf-key static' }, b[a].map(keyLabel).join(', '))))),
       ...UI_KEYS.map(([k, key]) => h('tr', {}, h('td', {}, t(k)), h('td', { class: 'num' }, h('span', { class: 'pf-key static' }, key)))),
     )),
     h('p', { class: 'pf-dim' }, t('set.layoutNote')),

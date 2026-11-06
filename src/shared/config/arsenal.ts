@@ -1,5 +1,5 @@
 import type { Team } from '../map/schema';
-import { PF_MG, PF_PUMP, PF_RIFLE, PF_SEMISHOT, PF_SNIPER, type WeaponConfig } from './weapon';
+import { PF_MG, PF_PISTOL, PF_PUMP, PF_RIFLE, PF_SEMISHOT, PF_SNIPER, itemConfig, type WeaponConfig } from './weapon';
 
 /**
  * Arzenál: 12 primárních zbraní ve třech frakcích a čtyřech classách (pevné sestavy).
@@ -84,8 +84,32 @@ export function arsenalEntry(id: string | undefined | null): ArsenalEntry | unde
   return ARSENAL.find((w) => w.id === id);
 }
 
+/** Pistole frakcí (slot 2). */
+export const SIDEARMS: Record<string, { name: string; rules: WeaponConfig }> = {
+  m9: { name: 'M9', rules: PF_PISTOL },
+  pm: { name: 'PM', rules: PF_PISTOL },
+  qsz92: { name: 'QSZ-92', rules: PF_PISTOL },
+};
+
+/** Tasení nestřelných položek (s). Návrh (N). */
+export const ITEM_EQUIP: Record<string, number> = { knife: 0.3, frag: 0.45, smoke: 0.45, medkit: 0.5, defib: 0.6, ammo: 0.5 };
+const itemRules = new Map<string, WeaponConfig>();
+
 export function rulesOf(id: string | undefined | null): WeaponConfig {
-  return arsenalEntry(id)?.rules ?? PF_RIFLE;
+  const a = arsenalEntry(id);
+  if (a) return a.rules;
+  if (id && SIDEARMS[id]) return SIDEARMS[id].rules;
+  if (id && ITEM_EQUIP[id] !== undefined) {
+    let r = itemRules.get(id);
+    if (!r) itemRules.set(id, (r = itemConfig(id, ITEM_EQUIP[id])));
+    return r;
+  }
+  return PF_RIFLE;
+}
+
+/** Střelná zbraň (primární nebo pistole) – simuluje ji `stepWeapon`. */
+export function isGun(id: string | undefined | null) {
+  return !!arsenalEntry(id) || (!!id && !!SIDEARMS[id]);
 }
 
 export function weaponFor(faction: Faction, kit: Kit): ArsenalEntry {

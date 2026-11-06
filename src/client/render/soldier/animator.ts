@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { BONES, LOWER_ARM, SHIN, THIGH, UPPER_ARM, aimBone, solveTwoBone, type BoneName } from './rig';
+import type { WeaponAction } from '../../../shared/sim/weapon';
 
 /**
  * Procedurální animace vzdáleného vojáka ve vrstvách (žádný root motion – polohu určuje controller):
@@ -21,7 +22,7 @@ export interface AnimInput {
   grounded: boolean;
   sprinting: boolean;
   ads: number;
-  action: 'equip' | 'idle' | 'reload' | 'sprintOut';
+  action: WeaponAction;
   actionStart: number;
   actionEnd: number;
   shotSeq: number;

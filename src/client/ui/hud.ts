@@ -1,13 +1,14 @@
 import type { MapDocument, SpawnPoint, Team } from '../../shared/map/schema';
 import type { ConquestState } from '../../shared/sim/conquest';
-import { PILOT, arsenalEntry, type Faction, type Kit } from '../../shared/config/arsenal';
+import { PILOT, arsenalEntry, isGun, rulesOf, type Faction, type Kit } from '../../shared/config/arsenal';
 import type { ContactInfo, OrderInfo, SquadInfo } from '../../shared/net/protocol';
 import type { PlayerView } from '../runtime/driver';
 import { drawSilhouette } from './silhouette';
-import { t } from './i18n';
+import { t, type StringKey } from './i18n';
 import { button, fmtTime, h } from './kit';
 import { DeployScreen } from './deploy';
 import { MapView } from './mapView';
+import { SlotOverlay } from './slots';
 import { TacticalMap } from './tactical';
 
 /**
@@ -47,6 +48,7 @@ export class Hud {
   private sysmsg: Array<{ el: HTMLElement; until: number }> = [];
   private hitUntil = 0;
   readonly deploy = new DeployScreen();
+  readonly slots = new SlotOverlay();
   /** Mapa na M: jen prohlížení (žádné nasazení), stejné značky jako obrazovka nasazení. */
   private mapView = new MapView();
   private mapOverlay = h('div', { class: 'pf-screen pf-mapover hidden', role: 'dialog' });
@@ -103,7 +105,7 @@ export class Hud {
     mk('h-br', 'h-br');
     this.silhouette = mk('h-sil', 'h-sil', 'canvas') as HTMLCanvasElement;
     mk('h-ammo', 'h-ammo tnum');
-    this.els['h-br'].append(this.silhouette, this.els['h-ammo']);
+    this.els['h-br'].append(this.slots.root, this.silhouette, this.els['h-ammo']);
     mk('h-hit', 'h-hit');
     mk('h-hurt', 'h-hurt');
     mk('h-center', 'h-center');
@@ -172,6 +174,7 @@ export class Hud {
     const e = this.els;
     const now = c.now;
     e['h-hit'].style.opacity = now < this.hitUntil ? '1' : '0';
+    this.slots.update(c.me?.alive ? c.me.inv : null, now);
     e['h-hurt'].style.opacity = now < this.hurtUntil ? String(this.hurtAmount * Math.min(1, (this.hurtUntil - now) / 0.35)) : '0';
     for (const list of [this.killfeed, this.sysmsg]) {
       for (const k of list) if (now > k.until) k.el.remove();
@@ -214,7 +217,15 @@ export class Hud {
       const w = me.weapon;
       this.drawSilhouette(w.weaponId);
       const act = w.action === 'reload' ? t('hud.reloading') : w.action === 'equip' ? t('hud.equip') : '';
-      e['h-ammo'].replaceChildren(h('b', {}, String(w.mag)), h('span', {}, `/ ${w.reserve}`), h('small', {}, `${w.mode === 'auto' ? 'AUTO' : 'SEMI'}${act ? ` · ${act}` : ''}`));
+      const it = me.inv?.items.find((x) => x.slot === me.inv!.active);
+      if (isGun(w.weaponId)) {
+        // Režim jen podle skutečných možností zbraně.
+        const modes = rulesOf(w.weaponId).modes;
+        e['h-ammo'].replaceChildren(h('b', {}, String(w.mag)), h('span', {}, `/ ${w.reserve}`), h('small', {}, `${modes.length > 1 || w.mode === 'auto' ? (w.mode === 'auto' ? 'AUTO' : 'SEMI') : 'SEMI'}${act ? ` · ${act}` : ''}`));
+      } else {
+        const name = it ? t(`item.${it.kind}` as StringKey) : w.weaponId;
+        e['h-ammo'].replaceChildren(it?.max !== undefined ? h('b', {}, String(w.mag)) : h('span'), h('small', {}, `${name}${act ? ` · ${act}` : ''}`));
+      }
       e['h-br'].classList.toggle('hidden', false);
     } else e['h-br'].classList.toggle('hidden', true);
 

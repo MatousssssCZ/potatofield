@@ -226,3 +226,33 @@ export const PF_SNIPER: WeaponConfig = {
   recoil: { pitchDeg: 2.6, yawDeg: 0.4, recoveryDelay: 0.35, recoveryDegPerSec: 6 },
   spread: { ...PF_MG.spread, standDeg: 2.0, crouchDeg: 1.4, proneDeg: 0.8, adsMultiplier: 0.04, movementDeg: 2.5, perShotDeg: 0.4, firingMaxDeg: 1.0 },
 };
+
+/** Pistole (USMC M9, MEC PM): poloautomatická záložní zbraň, rychlé tasení. Návrh (N). */
+export const PF_PISTOL: WeaponConfig = {
+  meta: { id: 'weapon.pf-pistol', version: 1, status: 'proposed' },
+  name: 'PF-Pistol',
+  modes: ['semi'],
+  fireInterval: 0.14,
+  magazine: 12,
+  reserve: 48,
+  reloadPartial: 1.7,
+  reloadEmpty: 2.1,
+  equipTime: 0.35,
+  sprintOutTime: 0.18,
+  damage: { near: 26, nearRange: 15, far: 14, farRange: 50 },
+  headMultiplier: 2.0,
+  limbMultiplier: 0.75,
+  projectileSpeed: 380,
+  projectileGravity: 9.81,
+  projectileLifetime: 1.5,
+  recoil: { pitchDeg: 1.1, yawDeg: 0.35, recoveryDelay: 0.1, recoveryDegPerSec: 9 },
+  spread: { ...PF_RIFLE.spread, standDeg: 0.9, crouchDeg: 0.7, proneDeg: 0.6, adsMultiplier: 0.45, movementDeg: 1.2, perShotDeg: 0.35, firingMaxDeg: 1.6 },
+};
+
+/**
+ * Profil nestřelných položek (nůž, granáty, nástroje): jen časování tasení a sprint-out –
+ * zbraňová simulace se pro ně nevolá (řeší je `stepItem`). Hodnoty tasení podle druhu (N).
+ */
+export function itemConfig(id: string, equipTime: number): WeaponConfig {
+  return { ...PF_PISTOL, meta: { id: `item.${id}`, version: 1, status: 'proposed' }, name: id, magazine: 0, reserve: 0, equipTime, sprintOutTime: 0.15 };
+}

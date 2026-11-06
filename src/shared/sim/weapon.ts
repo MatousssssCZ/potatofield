@@ -12,7 +12,8 @@ import { eyePosition, type PlayerState } from './player';
  * Logika zbraně (sdílená klientem i serverem). Čtyři oddělené jevy:
  * směr zamíření (myš + zbývající recoil), kamerový recoil, rozptyl (kužel), kosmetické kopnutí (jen render).
  */
-export type WeaponAction = 'equip' | 'idle' | 'reload' | 'sprintOut';
+/** Akce aktivní položky: zbraně (equip, reload, sprintOut), položky (throw = hod, use = nástroj, attack = nůž). */
+export type WeaponAction = 'equip' | 'idle' | 'reload' | 'sprintOut' | 'throw' | 'use' | 'attack';
 
 export interface WeaponState {
   mode: 'semi' | 'auto';
@@ -172,8 +173,8 @@ export function stepWeapon(
     ws.lastLandSeen = ps.lastLandAt;
   }
 
-  // Režim střelby: opětovný stisk 3 (aktivní primární) nebo B. Sloty 1/2 a kolečko bez akce.
-  if (pressed(BTN.SLOT3) || pressed(BTN.MODE)) {
+  // Režim střelby: samostatná akce (B), ne klávesa slotu – jen podle skutečných režimů zbraně.
+  if (pressed(BTN.MODE)) {
     if (w.modes.length > 1) ws.mode = ws.mode === 'auto' ? 'semi' : 'auto';
   }
 

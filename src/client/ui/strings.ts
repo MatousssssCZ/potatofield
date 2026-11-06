@@ -289,6 +289,7 @@ const cs = {
   'sys.neutral': 'Bod {cp} je neutrální',
   'sys.kitRejected': 'Výbava odmítnuta: {reason}',
   'act.slot3': 'Primární zbraň',
+  'act.slotN': 'Výbava – slot {n}',
   'act.radio': 'Rádio',
   'act.order': 'Rozkaz čety',
   'set.bob': 'Pohupování kamery',
@@ -357,6 +358,7 @@ const cs = {
   'map.neutral': 'Neutrální',
   'map.available': 'Lze nasadit',
   'act.deploy': 'Nasazení',
+  'slot.spent': 'vyčerpáno',
 } as const;
 
 export type StringKey = keyof typeof cs;
@@ -648,6 +650,7 @@ const en: Record<StringKey, string> = {
   'sys.neutral': '{cp} is neutral',
   'sys.kitRejected': 'Equipment rejected: {reason}',
   'act.slot3': 'Primary weapon',
+  'act.slotN': 'Equipment – slot {n}',
   'act.radio': 'Radio',
   'act.order': 'Squad order',
   'set.bob': 'Camera bob',
@@ -716,6 +719,7 @@ const en: Record<StringKey, string> = {
   'map.neutral': 'Neutral',
   'map.available': 'Can deploy',
   'act.deploy': 'Deploy screen',
+  'slot.spent': 'spent',
 };
 
 export const STRINGS: Record<'cs' | 'en', Record<StringKey, string>> = { cs, en };

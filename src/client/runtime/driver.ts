@@ -7,6 +7,7 @@ import { clonePlayerState, type PlayerState } from '../../shared/sim/player';
 import type { WeaponState } from '../../shared/sim/weapon';
 import type { LadderDef } from '../../world/parts';
 import { PILOT, type Faction, type Kit } from '../../shared/config/arsenal';
+import { invView, type InvView } from '../../shared/sim/inventory';
 
 /** Pohled prezentace na hráče (lokálního i vzdáleného). */
 export interface PlayerView {
@@ -30,6 +31,10 @@ export interface PlayerView {
   revives: number;
   /** Pořadí života (mění se při nasazení; oživení ho zachová). Jen u vlastního hráče. */
   lifeId?: number;
+  /** Primární zbraň kitu (vzhled vojáka); `weapon.weaponId` je právě aktivní položka. */
+  primary?: string;
+  /** Inventář (sloty, skutečné počty) – jen u vlastního hráče. */
+  inv?: InvView | null;
 }
 
 /**
@@ -104,6 +109,8 @@ export class OfflineDriver implements GameDriver {
       reviveProgress: p.reviveTarget ? p.reviveHeld / PILOT.reviveHold : 0,
       revives: p.revives,
       lifeId: p.lifeId,
+      primary: p.weaponId,
+      inv: p.inv ? invView(p.inv) : null,
     };
   }
 

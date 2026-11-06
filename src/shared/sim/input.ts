@@ -8,7 +8,6 @@ export const BTN = {
   FIRE: 1 << 4,
   ADS: 1 << 5,
   RELOAD: 1 << 6,
-  SLOT3: 1 << 7,
   MODE: 1 << 8,
   USE: 1 << 9,
 } as const;
@@ -29,7 +28,12 @@ export interface InputFrame {
   held: number;
   /** Nové stisky od minulého ticku (edge). */
   pressed: number;
+  /** Požadavek na výbavu v tomto ticku: 0 nic, 1–15 slot, SLOT_NEXT / SLOT_PREV (kolečko). */
+  slot?: number;
 }
+
+export const SLOT_NEXT = 30;
+export const SLOT_PREV = 31;
 
 export const emptyInput = (tick = 0, seq = 0): InputFrame => ({
   seq,
@@ -40,6 +44,7 @@ export const emptyInput = (tick = 0, seq = 0): InputFrame => ({
   lookDPitch: 0,
   held: 0,
   pressed: 0,
+  slot: 0,
 });
 
 /** Ořízne vstup do platných mezí (server i klient používají stejnou funkci). */
@@ -52,7 +57,8 @@ export function sanitizeInput(i: InputFrame, maxLookPerTick = Math.PI): InputFra
     moveZ: Math.round(c(i.moveZ, 1)),
     lookDYaw: c(i.lookDYaw, maxLookPerTick),
     lookDPitch: c(i.lookDPitch, maxLookPerTick),
-    held: i.held & 0x3ff,
-    pressed: i.pressed & 0x3ff,
+    held: i.held & 0x37f,
+    pressed: i.pressed & 0x37f,
+    slot: Number.isInteger(i.slot) && (i.slot as number) >= 0 && (i.slot as number) <= 31 ? (i.slot as number) : 0,
   };
 }

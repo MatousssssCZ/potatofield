@@ -1,10 +1,12 @@
-import { BTN, type ButtonName, type InputFrame } from '../../shared/sim/input';
+import { BTN, SLOT_NEXT, SLOT_PREV, type ButtonName, type InputFrame } from '../../shared/sim/input';
 
 /**
  * Vstup hry. Klávesy se mapují podle fyzického `KeyboardEvent.code` (nezávisle
  * na rozložení); popisky se zobrazují podle aktuálního rozložení klávesnice.
  */
-export type Action = ButtonName | 'FORWARD' | 'BACK' | 'LEFT' | 'RIGHT';
+export type SlotAction = 'SLOT1' | 'SLOT2' | 'SLOT3' | 'SLOT4' | 'SLOT5' | 'SLOT6' | 'SLOT7' | 'SLOT8' | 'SLOT9';
+export type Action = ButtonName | 'FORWARD' | 'BACK' | 'LEFT' | 'RIGHT' | SlotAction;
+export const SLOT_ACTIONS: SlotAction[] = ['SLOT1', 'SLOT2', 'SLOT3', 'SLOT4', 'SLOT5', 'SLOT6', 'SLOT7', 'SLOT8', 'SLOT9'];
 
 export const DEFAULT_BINDINGS: Record<Action, string[]> = {
   FORWARD: ['KeyW'],
@@ -18,9 +20,17 @@ export const DEFAULT_BINDINGS: Record<Action, string[]> = {
   FIRE: ['Mouse0'],
   ADS: ['Mouse2'],
   RELOAD: ['KeyR'],
-  SLOT3: ['Digit3'],
   MODE: ['KeyB'],
   USE: ['KeyE'],
+  SLOT1: ['Digit1'],
+  SLOT2: ['Digit2'],
+  SLOT3: ['Digit3'],
+  SLOT4: ['Digit4'],
+  SLOT5: ['Digit5'],
+  SLOT6: ['Digit6'],
+  SLOT7: ['Digit7'],
+  SLOT8: ['Digit8'],
+  SLOT9: ['Digit9'],
 };
 
 export const ACTION_LABELS: Record<Action, string> = {
@@ -35,9 +45,17 @@ export const ACTION_LABELS: Record<Action, string> = {
   FIRE: 'Střelba',
   ADS: 'Míření',
   RELOAD: 'Přebití',
-  SLOT3: 'Primární zbraň / režim',
   MODE: 'Režim střelby',
   USE: 'Použít (žebřík)',
+  SLOT1: 'Slot 1',
+  SLOT2: 'Slot 2',
+  SLOT3: 'Slot 3',
+  SLOT4: 'Slot 4',
+  SLOT5: 'Slot 5',
+  SLOT6: 'Slot 6',
+  SLOT7: 'Slot 7',
+  SLOT8: 'Slot 8',
+  SLOT9: 'Slot 9',
 };
 
 export interface InputSettings {
@@ -102,6 +120,10 @@ export class InputSystem {
     on(window, 'mousedown', ((e: MouseEvent) => this.mouse(e, true)) as EventListener);
     on(window, 'mouseup', ((e: MouseEvent) => this.mouse(e, false)) as EventListener);
     on(window, 'mousemove', ((e: MouseEvent) => this.mouseMove(e)) as EventListener);
+    // Kolečko: předchozí / další výbava – jen se zamčenou myší (zoom mapy zbraň nepřepne).
+    on(window, 'wheel', ((e: WheelEvent) => {
+      if (this.locked && e.deltaY) this.wheel += Math.sign(e.deltaY);
+    }) as EventListener, { passive: true });
     on(window, 'blur', () => this.clear());
     on(document, 'visibilitychange', () => this.clear());
     on(document, 'pointerlockchange', () => {
@@ -212,8 +234,18 @@ export class InputSystem {
     return this.bindings[a].some((c) => set.has(c));
   }
 
+  private wheel = 0;
+
   /** Sestaví vstup jednoho ticku a spotřebuje stisky a pohyb myši. */
   consumeTick(tick: number): InputFrame {
+    // Výbava: číselná klávesa = přímý slot, jinak kolečko (dolů = další). Jeden požadavek na tick.
+    let slot = 0;
+    for (let i = 0; i < SLOT_ACTIONS.length; i++) if (this.act(SLOT_ACTIONS[i], this.pressedCodes)) {
+      slot = i + 1;
+      break;
+    }
+    if (!slot && this.wheel) slot = this.wheel > 0 ? SLOT_NEXT : SLOT_PREV;
+    this.wheel = 0;
     let held = 0, pressed = 0;
     for (const k of Object.keys(BTN) as ButtonName[]) {
       if (this.act(k, this.held)) held |= BTN[k];
@@ -240,6 +272,7 @@ export class InputSystem {
       lookDPitch: dpitch,
       held,
       pressed,
+      slot,
     };
   }
 

@@ -5,7 +5,7 @@ import type { CommandInfo, ContactInfo, OrderInfo, RemoteState, ServerMsg, Squad
 import { createConquest, type ConquestState } from '../../shared/sim/conquest';
 import type { InputFrame } from '../../shared/sim/input';
 import { MOVEMENT } from '../../shared/config/movement';
-import { DEFAULT_FACTIONS, rulesOf, type Faction } from '../../shared/config/arsenal';
+import { DEFAULT_FACTIONS, isGun, rulesOf, type Faction } from '../../shared/config/arsenal';
 import type { Team } from '../../shared/map/schema';
 import type { SimEvent } from '../../shared/sim/match';
 import { PlayerController, clonePlayerState, createPlayerState, type PlayerState } from '../../shared/sim/player';
@@ -131,7 +131,8 @@ export class NetDriver implements GameDriver {
     if (!this.ctrl || !this.state || !this.weapon || !this.phys) return;
     this.ctrl.step(this.state, f);
     // Predikce akcí zbraně (projektily rozhoduje server; lokálně jen prezentace).
-    stepWeapon(rulesOf(this.weapon.weaponId), MOVEMENT, this.state, this.weapon, f, { playerId: this.localId, lifeId: 0, seed: 0, phys: this.phys });
+    // Predikce jen u střelných zbraní (výbava se předpovídá až z potvrzení serveru).
+    if (isGun(this.weapon.weaponId)) stepWeapon(rulesOf(this.weapon.weaponId), MOVEMENT, this.state, this.weapon, f, { playerId: this.localId, lifeId: 0, seed: 0, phys: this.phys });
   }
 
   step(input: InputFrame) {
@@ -155,7 +156,7 @@ export class NetDriver implements GameDriver {
       if (!this.state) return null;
     }
     const me = s!.me;
-    return { id: this.localId, name: 'Ty', team: me.team, state: this.state!, weapon: this.weapon!, hp: me.hp, alive: me.alive, respawnAt: me.respawnAt, zone: me.zone, kills: me.kills, deaths: me.deaths, life: me.alive ? 'alive' : me.downed ? 'downed' : 'dead', downedLeft: me.downedLeft, reviveProgress: me.reviveProgress, revives: me.revives, lifeId: me.lifeId };
+    return { id: this.localId, name: 'Ty', team: me.team, state: this.state!, weapon: this.weapon!, hp: me.hp, alive: me.alive, respawnAt: me.respawnAt, zone: me.zone, kills: me.kills, deaths: me.deaths, life: me.alive ? 'alive' : me.downed ? 'downed' : 'dead', downedLeft: me.downedLeft, reviveProgress: me.reviveProgress, revives: me.revives, lifeId: me.lifeId, inv: me.inv, primary: me.inv?.items.find((i) => i.slot === 3)?.id };
   }
 
   /** Interpolace vzdálených hráčů v čase (serverTime − 100 ms). */
@@ -184,13 +185,14 @@ export class NetDriver implements GameDriver {
       st.grounded = o.grounded;
       st.sprinting = o.sprinting;
       st.ladder = o.ladder;
-      const w = createWeaponState(rulesOf(o.weapon), 0, o.weapon);
+      const item = o.item ?? o.weapon;
+      const w = createWeaponState(rulesOf(item), 0, item);
       w.adsProgress = L(p.ads, o.ads);
       w.action = o.action;
       w.actionStart = o.actionStart;
       w.actionEnd = o.actionEnd;
       w.shotSeq = o.shotSeq;
-      return { id: o.id, name: o.name, team: o.team, state: st, weapon: w, hp: 100, alive: o.alive, respawnAt: 0, zone: null, kills: 0, deaths: 0, life: o.life, downedLeft: 0, reviveProgress: 0, revives: 0 };
+      return { id: o.id, name: o.name, team: o.team, primary: o.weapon, state: st, weapon: w, hp: 100, alive: o.alive, respawnAt: 0, zone: null, kills: 0, deaths: 0, life: o.life, downedLeft: 0, reviveProgress: 0, revives: 0 };
     });
   }
 

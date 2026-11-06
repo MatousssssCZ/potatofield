@@ -3,6 +3,7 @@ import { WebSocketServer, type WebSocket } from 'ws';
 import type { MapDocument, Team } from '../src/shared/map/schema';
 import { validateMap } from '../src/shared/map/validate';
 import { PhysicsWorld } from '../src/shared/physics/world';
+import { invView } from '../src/shared/sim/inventory';
 import { NET, PROTOCOL_VERSION, RADIO_TEXT, encodeRemote, mapHash, parseClientMsg, type ClientMsg, type RemoteState, type RemoteTuple, type ServerMsg } from '../src/shared/net/protocol';
 import { TeamLayer } from '../src/shared/net/team';
 import { PILOT, type Faction } from '../src/shared/config/arsenal';
@@ -565,6 +566,7 @@ export class GameServer {
       ladder: s.ladder,
       squad: this.team.members.get(p.id)?.squad ?? null,
       weapon: p.weaponId,
+      item: p.weapon.weaponId,
       life: p.alive ? 'alive' : p.downed ? 'downed' : 'dead',
     };
   }
@@ -583,7 +585,7 @@ export class GameServer {
       tick: this.sim.tick,
       time: this.sim.time,
       ack: c.lastSeq,
-      me: { state: { ...p.state, blocked: [] }, weapon: p.weapon, hp: p.hp, alive: p.alive, respawnAt: p.respawnAt, zone: p.zone, kills: p.kills, deaths: p.deaths, team: p.team, squad: mem?.squad ?? null, canSquadSpawn: canSquad, downed: p.downed, downedLeft: p.downed ? r3(Math.max(0, p.downedUntil - this.sim.time)) : 0, reviveProgress: p.reviveTarget ? r3(p.reviveHeld / PILOT.reviveHold) : 0, revives: p.revives, lifeId: p.lifeId },
+      me: { state: { ...p.state, blocked: [] }, weapon: p.weapon, hp: p.hp, alive: p.alive, respawnAt: p.respawnAt, zone: p.zone, kills: p.kills, deaths: p.deaths, team: p.team, squad: mem?.squad ?? null, canSquadSpawn: canSquad, downed: p.downed, downedLeft: p.downed ? r3(Math.max(0, p.downedUntil - this.sim.time)) : 0, reviveProgress: p.reviveTarget ? r3(p.reviveHeld / PILOT.reviveHold) : 0, revives: p.revives, lifeId: p.lifeId, inv: p.inv ? invView(p.inv) : null },
       others: [],
       o,
       cps: cq ? cq.cps.map((x) => ({ id: x.id, owner: x.owner, p: r3(x.p), activity: x.activity })) : null,

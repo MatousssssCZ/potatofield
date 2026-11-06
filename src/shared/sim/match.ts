@@ -1,6 +1,8 @@
 import { MOVEMENT, type MovementConfig } from '../config/movement';
 import { PF_RIFLE, type WeaponConfig } from '../config/weapon';
-import { DEFAULT_FACTIONS, PILOT, arsenalEntry, fallDamage, rulesOf, weaponFor, type Faction, type Kit } from '../config/arsenal';
+import { DEFAULT_FACTIONS, PILOT, arsenalEntry, fallDamage, isGun, rulesOf, weaponFor, type Faction, type Kit } from '../config/arsenal';
+import { activeItem, createInventory, resolveRequest, switchTo, type Inventory } from './inventory';
+import { stepItem, type ItemHooks } from './items';
 import type { MapDocument, SpawnPoint, Team, Zone } from '../map/schema';
 import type { V3 } from '../math';
 import type { PhysicsWorld } from '../physics/world';
@@ -44,6 +46,8 @@ export interface SimPlayer {
   downedCause: 'weapon' | 'fall';
   /** Čas posledního zpracovaného dopadu (poškození pádem jednou na dopad). */
   landSeen: number;
+  /** Inventář kitu (sloty); `weapon` je stav aktivního slotu. Null před prvním nasazením. */
+  inv: Inventory | null;
   /** Medik: koho právě oživuje a jak dlouho drží (s). */
   reviveTarget: string | null;
   reviveHeld: number;
@@ -175,6 +179,7 @@ export class MatchSim {
       downedBy: null,
       downedCause: 'weapon',
       landSeen: -1e9,
+      inv: null,
       reviveTarget: null,
       reviveHeld: 0,
       revives: 0,
@@ -255,7 +260,10 @@ export class MatchSim {
     p.state.tick = this.tick;
     p.ctrl.place(p.state, pos, yaw);
     if (weaponId) p.weaponId = weaponId;
-    p.weapon = createWeaponState(rulesOf(p.weaponId), this.time, p.weaponId);
+    // Kit podle frakce a classy primární zbraně: sloty 1 nůž, 2 pistole, 3 primární, 4+ výbava.
+    const ent = arsenalEntry(p.weaponId);
+    p.inv = createInventory(this.conquest ? this.factionOf(p.team) : (ent?.faction ?? this.factionOf(p.team)), ent?.kit ?? 'assault', this.time);
+    p.weapon = p.inv.states[3];
     p.hp = MAX_HP;
     p.alive = true;
     p.lifeId++;
@@ -347,6 +355,11 @@ export class MatchSim {
     if (this.conquest) for (const e of ticketForDeath(this.conquest, p.team)) this.events.push({ kind: 'conquest', ...e } as SimEvent);
   }
 
+  /** Akce nestřelných položek hráče (nůž, granáty, nástroje) – doplňují je další etapy. */
+  protected itemHooks(_p: SimPlayer): ItemHooks | null {
+    return null;
+  }
+
   /** Jeden simulační tick se vstupy hráčů (chybějící vstup = neutrální, bez držené střelby). */
   step(inputs: Map<string, InputFrame>) {
     const dt = 1 / this.cfg.tickRate;
@@ -393,7 +406,15 @@ export class MatchSim {
           }
         }
       }
-      const shots = ended ? [] : stepWeapon(rulesOf(p.weaponId), this.cfg, p.state, p.weapon, input, { playerId: p.id, lifeId: p.lifeId, team: p.team, seed: p.seed, phys: this.phys });
+      // Výbava: požadavek na slot (číslo / kolečko) – přepnutí s tasením, bez obcházení pravidel.
+      if (p.inv && input.slot) {
+        const target = resolveRequest(p.inv, input.slot);
+        if (target !== null && switchTo(p.inv, target, p.state.tick / this.cfg.tickRate)) p.weapon = p.inv.states[target];
+      }
+      let shots: ReturnType<typeof stepWeapon> = [];
+      if (ended) shots = [];
+      else if (isGun(p.weapon.weaponId)) shots = stepWeapon(rulesOf(p.weapon.weaponId), this.cfg, p.state, p.weapon, input, { playerId: p.id, lifeId: p.lifeId, team: p.team, seed: p.seed, phys: this.phys });
+      else if (p.inv) stepItem(activeItem(p.inv).kind, this.cfg, p.state, p.weapon, input, this.itemHooks(p));
       for (const s of shots) {
         this.projectiles.push(s);
         const l = Math.hypot(s.vel.x, s.vel.y, s.vel.z);

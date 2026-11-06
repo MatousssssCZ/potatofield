@@ -5,6 +5,7 @@ import { PF_MG } from '../../shared/config/weapon';
 import { PILOT, arsenalEntry, rulesOf, type Kit } from '../../shared/config/arsenal';
 import type { PhysicsWorld } from '../../shared/physics/world';
 import { TacticalMap, type Footprint } from '../ui/tactical';
+import { resolveView } from '../../shared/sim/inventory';
 import { ScopeView } from '../ui/scope';
 import { t } from '../ui/i18n';
 import type { NetDriver } from './netDriver';
@@ -212,7 +213,9 @@ export class Game {
       this.prev = me ? clonePlayerState(me.state) : null;
       const raw = this.input.consumeTick(me?.state.tick ?? 0);
       // V menu / mrtvý: žádné bojové akce, jen pohled zůstává.
-      const input = this.active && me?.alive ? raw : { ...raw, held: 0, pressed: 0, moveX: 0, moveZ: 0, lookDYaw: me?.alive ? raw.lookDYaw : 0, lookDPitch: me?.alive ? raw.lookDPitch : 0 };
+      const input = this.active && me?.alive ? raw : { ...raw, held: 0, pressed: 0, slot: 0, moveX: 0, moveZ: 0, lookDYaw: me?.alive ? raw.lookDYaw : 0, lookDPitch: me?.alive ? raw.lookDPitch : 0 };
+      // Volba výbavy: overlay hned ukáže požadovanou položku, server přechod potvrdí.
+      if (input.slot && me?.inv) this.hud.slots.request(resolveView(me.inv, input.slot), this.now);
       this.driver.step(input);
       this.acc -= dt;
       steps++;

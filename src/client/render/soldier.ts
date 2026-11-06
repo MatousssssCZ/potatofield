@@ -138,7 +138,7 @@ export class SoldierPool {
       else if (d > LOD_DIST[0] + 2 && d < LOD_DIST[1] - 2) lod = 1;
       if (this.forceLod >= 0) lod = this.forceLod;
       const wid = p.weapon.weaponId || 'm4a1';
-      const lk = soldierLook(wid, p.team);
+      const lk = soldierLook(p.primary ?? wid, p.team);
       const key = `${lk.faction}:${lk.variant}`;
       if (key !== s.look || lod !== s.lod) {
         s.mesh.geometry = soldierGeometry(lk.faction, lk.variant, lod);
