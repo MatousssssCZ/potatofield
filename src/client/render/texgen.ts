@@ -429,6 +429,147 @@ function produce(seed: number, col: string): Recipe {
   };
 }
 
+
+// ---------------- Příroda (vlastní procedurální recepty) ----------------
+
+/** Shluk listů na kartě (alfa výřez): drobné protáhlé lístky, okraj karty se rozpadá do mezer. */
+function leafCard(seed: number, base: string, dark: string, light: string): Recipe {
+  const b = hex(base), d = hex(dark), l = hex(light);
+  return (u, v) => {
+    const cu = u - 0.5, cv = v - 0.5;
+    const edge = Math.hypot(cu * 1.15, cv) * 2; // 0 střed, 1 okraj
+    const wob = fbm(u, v, 4, 3, seed + 3);
+    const mask = smooth(1.05, 0.8, edge + (wob - 0.5) * 0.5);
+    // Lístky: Worley buňky protažené podle náhodného úhlu buňky.
+    const w = worley(u * 1.0, v * 1.0, 16, seed);
+    const ang = w.id * Math.PI;
+    const w2 = worley(u + Math.cos(ang) * 0.006, v + Math.sin(ang) * 0.006, 16, seed);
+    const leaf = smooth(0.62, 0.4, w.d * 0.6 + w2.d * 0.4);
+    const gap = smooth(0.06, 0.0, w.d2 - w.d); // úzké mezery mezi lístky
+    const a = leaf * mask * (1 - gap * 0.8);
+    const shade = 0.55 + 0.45 * (1 - edge) + (w.id - 0.5) * 0.3;
+    let c = mixc(d, b, clamp01(shade));
+    c = mixc(c, l, smooth(0.7, 1.0, w.id) * 0.5);
+    const vein = 1 - smooth(0.0, 0.05, Math.abs(w.d - w2.d));
+    return { c: mulc(c, 0.9 + vein * 0.1), h: 0.5 + leaf * 0.4 - w.d * 0.3, r: 0.75, m: 0, ao: 0.65 + 0.35 * clamp01(shade), a: a > 0.35 ? 1 : 0 };
+  };
+}
+
+/** Hustá koruna (neprůhledná): tmavé dutiny a světlejší vrchní lístky. */
+function crown(seed: number, base: string, dark: string, light: string): Recipe {
+  const b = hex(base), d = hex(dark), l = hex(light);
+  return (u, v) => {
+    const w = worley(u, v, 30, seed);
+    const big = fbm(u, v, 4, 4, seed + 2);
+    const leaf = smooth(0.5, 0.2, w.d);
+    const hole = smooth(0.55, 0.75, big) * (1 - leaf);
+    let c = mixc(d, b, leaf * (0.7 + w.id * 0.5));
+    c = mixc(c, l, smooth(0.75, 1.0, w.id) * leaf * 0.6);
+    c = mulc(c, 1 - hole * 0.5);
+    return { c, h: 0.4 + leaf * 0.5 - hole * 0.3, r: 0.8, m: 0, ao: 1 - hole * 0.6 - (1 - leaf) * 0.25 };
+  };
+}
+
+/** Palmový list (alfa): řapík u báze, středové žebro, šikmé lístky zužující se ke špičce. */
+function palmFrond(seed: number): Recipe {
+  const g = hex('#8a9a48'), dry = hex('#b29a5e'), rib = hex('#a49e6a');
+  return (u, v) => {
+    const x = Math.abs(u - 0.5) * 2; // 0 žebro, 1 okraj karty
+    const env = v < 0.14 ? 0 : Math.pow(Math.sin(Math.PI * Math.min(1, (v - 0.14) / 0.86)), 0.55) * (1 - 0.25 * v);
+    const ribW = 0.05 * (1 - v * 0.7);
+    const isRib = x < ribW ? 1 : 0;
+    const k = mod(v * 16 - x * 5 + (u < 0.5 ? 0.37 : 0), 1);
+    const leaflet = k < 0.72 ? 1 : 0;
+    const tipFray = fbm(u, v, 12, 3, seed) * 0.25;
+    const inLeaf = x < env * (1 - tipFray) ? leaflet : 0;
+    const a = Math.max(isRib, inLeaf);
+    const n = fbm(u, v, 8, 3, seed + 4);
+    let c = mixc(g, dry, smooth(0.55, 0.85, n) * 0.6 + smooth(0.6, 1, x / Math.max(0.01, env)) * 0.35);
+    c = isRib ? rib : mulc(c, 0.8 + (1 - Math.abs(k - 0.31) * 3) * 0.25);
+    return { c, h: 0.5 + inLeaf * 0.2 + isRib * 0.3, r: 0.7, m: 0, ao: 1, a };
+  };
+}
+
+/** Kůra listnatého stromu: svislé brázdy. */
+function bark(seed: number, base: string): Recipe {
+  const b = hex(base);
+  return (u, v) => {
+    const f = ridge(u, v * 0.25, 6, 5, seed);
+    const n = fbm(u, v, 4, 4, seed + 2);
+    const lichen = smooth(0.62, 0.75, fbm(u, v, 5, 4, seed + 7));
+    let c = mulc(b, 0.6 + f * 0.5 + n * 0.2);
+    c = mixc(c, hex('#8f9172'), lichen * 0.4);
+    return { c, h: f, r: 0.95, m: 0, ao: 0.6 + f * 0.4 };
+  };
+}
+
+/** Kmen palmy: řady šupin po opadaných listech. */
+function palmBark(seed: number): Recipe {
+  const b = hex('#7d6a50'), d = hex('#4e4030');
+  return (u, v) => {
+    const row = v * 10;
+    const ri = Math.floor(row), rf = row - ri;
+    const off = ri % 2 ? 0.5 / 6 : 0;
+    const cu = mod((u + off) * 6, 1);
+    const scale = smooth(0.0, 0.25, rf) * (1 - Math.abs(cu - 0.5) * 1.2);
+    const n = fbm(u, v, 6, 4, seed);
+    const c = mixc(d, b, clamp01(scale + n * 0.3));
+    return { c, h: scale * 0.8 + n * 0.2, r: 0.95, m: 0, ao: 0.5 + scale * 0.5 };
+  };
+}
+
+/** Skála / balvan: šedohnědý kámen s puklinami a lišejníkem. */
+function rock(seed: number, base: string): Recipe {
+  const b = hex(base);
+  return (u, v) => {
+    const m = fbm(u, v, 3, 6, seed);
+    const fine = fbm(u, v, 24, 3, seed + 1);
+    const crack = 1 - smooth(0.0, 0.03, ridge(u, v, 3, 5, seed + 4));
+    const strata = Math.sin((v + m * 0.3) * Math.PI * 14) * 0.5 + 0.5;
+    const lichen = smooth(0.66, 0.74, fbm(u, v, 6, 4, seed + 9));
+    let c = mulc(b, 0.7 + m * 0.45 + fine * 0.15 + strata * 0.06);
+    c = mixc(c, hex('#a7a07a'), lichen * 0.35);
+    c = mulc(c, 1 - crack * 0.5);
+    return { c, h: m * 0.6 + fine * 0.3 - crack * 0.4, r: 0.9, m: 0, ao: 1 - crack * 0.5 };
+  };
+}
+
+/** Zídka z lomového kamene: nepravidelné kameny ve spárách. */
+function stoneWall(seed: number): Recipe {
+  return (u, v) => {
+    const w = worley(u * 1.0, v * 1.6, 5, seed);
+    const joint = smooth(0.0, 0.1, w.d2 - w.d);
+    const tone = 0.75 + w.id * 0.4;
+    const n = fbm(u, v, 16, 3, seed + 3);
+    let c = mulc(mixc(hex('#b8a888'), hex('#8a8070'), w.id), tone * (0.85 + n * 0.3));
+    c = mixc(hex('#4f473a'), c, joint);
+    return { c, h: joint * (0.7 + n * 0.3) - (1 - w.d) * 0.1, r: 0.92, m: 0, ao: 0.45 + joint * 0.55 };
+  };
+}
+
+/** Dlažba náměstí: velká pole s diagonálním vzorem a modrými vložkami v křížení. */
+function plazaTile(seed: number): Recipe {
+  const base = hex('#bfae8c'), line = hex('#e3d6b6'), blue = hex('#4f7480'), grout = hex('#8a7c62');
+  return (u, v) => {
+    const n = fbm(u, v, 4, 4, seed);
+    const grain = vnoise(u * 300, v * 300, 300, seed + 1);
+    // Hrubá síť 4×4 polí a diagonály v každém poli.
+    const gx = mod(u * 4, 1), gy = mod(v * 4, 1);
+    const grid = Math.min(Math.abs(gx - 0.5), Math.abs(gy - 0.5));
+    const diag = Math.min(Math.abs(gx - gy), Math.abs(gx + gy - 1)) / Math.SQRT2;
+    const stripe = 1 - smooth(0.012, 0.022, Math.min(grid, diag));
+    const node = Math.max(Math.abs(gx - 0.5), Math.abs(gy - 0.5)) < 0.035 ? 1 : 0;
+    // Drobné spáry dlaždic 0,25 pole.
+    const fx = mod(u * 16, 1), fy = mod(v * 16, 1);
+    const seam = 1 - smooth(0.0, 0.03, Math.min(fx, 1 - fx, fy, 1 - fy));
+    let c = mulc(base, 0.88 + n * 0.2 + (grain - 0.5) * 0.06);
+    c = mixc(c, line, stripe * 0.85);
+    c = mixc(c, blue, node);
+    c = mixc(c, grout, seam * 0.5);
+    return { c, h: 0.6 - seam * 0.3 + stripe * 0.05, r: 0.85 - node * 0.3, m: 0, ao: 1 - seam * 0.3 };
+  };
+}
+
 export const RECIPES: Record<string, { recipe: () => Recipe; normalStrength: number }> = {
   plaster: { recipe: () => plaster('#d8c8a8', '#a68e6a', 11), normalStrength: 2.2 },
   plasterWarm: { recipe: () => plaster('#d9b98a', '#9c7a55', 23), normalStrength: 2.2 },
@@ -473,6 +614,18 @@ export const RECIPES: Record<string, { recipe: () => Recipe; normalStrength: num
   burntMetal: { recipe: () => paintedMetal(401, '#3b3530', 0.5), normalStrength: 2.5 },
   hescoFill: { recipe: () => canvas(411, '#a6906a'), normalStrength: 3 },
   rubber: { recipe: () => concrete('#2a2a29', 421, false), normalStrength: 1.5 },
+  leafOlive: { recipe: () => leafCard(431, '#8a9466', '#4a5232', '#b4ba8c'), normalStrength: 2 },
+  leafGreen: { recipe: () => leafCard(441, '#5f7a34', '#2c3a18', '#8da452'), normalStrength: 2 },
+  leafDry: { recipe: () => leafCard(451, '#9a8a55', '#5a4c2c', '#c2ad72'), normalStrength: 2 },
+  crownOlive: { recipe: () => crown(461, '#7a845c', '#3a412a', '#a6ac82'), normalStrength: 4 },
+  crownGreen: { recipe: () => crown(471, '#56702f', '#25331a', '#86a04c'), normalStrength: 4 },
+  palmFrond: { recipe: () => palmFrond(481), normalStrength: 2 },
+  bark: { recipe: () => bark(491, '#6e604d'), normalStrength: 5 },
+  palmBark: { recipe: () => palmBark(501), normalStrength: 5 },
+  rock: { recipe: () => rock(511, '#9b9282'), normalStrength: 4 },
+  rockWarm: { recipe: () => rock(521, '#a8916f'), normalStrength: 4 },
+  stoneWall: { recipe: () => stoneWall(531), normalStrength: 5 },
+  plazaTile: { recipe: () => plazaTile(541), normalStrength: 2 },
 };
 
 /** sRGB kódování lineární hodnoty. */

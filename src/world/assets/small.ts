@@ -20,7 +20,7 @@ function entrySides(v: string): Side[] {
   return v === 'front' ? ['front'] : v === 'side' ? ['right'] : v === 'back' ? ['back'] : ['front', 'right'];
 }
 
-interface RoomSpec {
+export interface RoomSpec {
   W: number;
   D: number;
   H: number;
@@ -33,7 +33,7 @@ interface RoomSpec {
   doorH: number;
 }
 
-function room(s: RoomSpec): Part[] {
+export function room(s: RoomSpec): Part[] {
   const parts: Part[] = [];
   // Vnější rozměr W×D; stěny jdou dovnitř o tloušťku t.
   for (const side of ['front', 'back', 'left', 'right'] as Side[]) {

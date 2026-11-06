@@ -74,6 +74,19 @@ export const MATERIALS: Record<string, MatDef> = {
   lamp: { tile: 1, tint: '#efe6c8', emissive: '#4a4030', roughness: 0.4 },
   gunMetal: { tex: 'metal', tile: 0.35, tint: '#9a9ca0', metalness: 0.55, roughness: 0.9 },
   gunPolymer: { tex: 'paintedMetal', tile: 0.4, tint: '#8f927a' },
+  leafOlive: { tex: 'leafOlive', tile: 1, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 },
+  leafGreen: { tex: 'leafGreen', tile: 1, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 },
+  leafDry: { tex: 'leafDry', tile: 1, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 },
+  crownOlive: { tex: 'crownOlive', tile: 1.4, macro: 0.4 },
+  crownGreen: { tex: 'crownGreen', tile: 1.4, macro: 0.4 },
+  palmFrond: { tex: 'palmFrond', tile: 1, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.85 },
+  bark: { tex: 'bark', tile: 1.2, dust: 0.4, macro: 0.3 },
+  palmBark: { tex: 'palmBark', tile: 1.0, dust: 0.4, macro: 0.2 },
+  rock: { tex: 'rock', tile: 2.5, dust: 0.4, macro: 0.5 },
+  rockWarm: { tex: 'rockWarm', tile: 2.5, dust: 0.4, macro: 0.5 },
+  stoneWall: { tex: 'stoneWall', tile: 1.6, dust: 0.5, macro: 0.4 },
+  plazaTile: { tex: 'plazaTile', tile: 8, dust: 0.0, macro: 0.4 },
+  water: { tile: 1, tint: '#3f5752', roughness: 0.06, metalness: 0.0, envMapIntensity: 1.6 },
   debugMissing: { tile: 1, tint: '#ff00ff', emissive: '#550055', roughness: 0.5 },
 };
 
@@ -303,6 +316,7 @@ const LABEL_STYLES: Record<string, { bg: string; fg: string; font: string; borde
   label: { bg: '#e9e1cc', fg: '#2c2a24', font: '"Arial Narrow", Arial, sans-serif', border: true },
   labelHotel: { bg: '#8a2a20', fg: '#f6e7b8', font: 'Georgia, "Times New Roman", serif', border: false, glow: 0.25 },
   labelSign: { bg: '#24456a', fg: '#f1ead6', font: '"Trebuchet MS", Arial, sans-serif', border: true },
+  labelRoad: { bg: '#1f5a3a', fg: '#f2f2ea', font: '"Arial Narrow", Arial, sans-serif', border: true },
 };
 
 export class MaterialLibrary {

@@ -19,7 +19,7 @@ export type Params = Record<string, number | string | boolean>;
 export interface AssetDef {
   assetId: string;
   label: string;
-  category: 'primitives' | 'cover' | 'range' | 'markers' | 'structures' | 'buildings' | 'street';
+  category: 'primitives' | 'cover' | 'range' | 'markers' | 'structures' | 'buildings' | 'street' | 'nature';
   generatorVersion: number;
   params: ParamSpec[];
   materials: string[];

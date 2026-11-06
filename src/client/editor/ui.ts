@@ -8,6 +8,7 @@ import { renderMarkerInspector, renderScenarios, type GameUiState } from './uiGa
 
 const CATEGORY_LABELS: Record<AssetDef['category'], string> = {
   buildings: 'Budovy',
+  nature: 'Příroda',
   structures: 'Konstrukce',
   street: 'Ulice',
   cover: 'Kryty',
@@ -50,6 +51,16 @@ const MATERIAL_LABELS: Record<string, string> = {
   fabricSand: 'Plátno',
   paint: 'Barva',
   target: 'Terč',
+  rock: 'Kámen šedý',
+  rockWarm: 'Kámen teplý',
+  stoneWall: 'Lomový kámen',
+  plazaTile: 'Dlažba se vzorem',
+  bark: 'Kůra',
+  leafOlive: 'Olivové listí',
+  leafGreen: 'Zelené listí',
+  leafDry: 'Suché listí',
+  crownOlive: 'Olivová koruna',
+  crownGreen: 'Zelená koruna',
 };
 
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, attrs: Record<string, string> = {}, text?: string) => {

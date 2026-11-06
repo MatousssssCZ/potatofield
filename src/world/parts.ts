@@ -1,4 +1,5 @@
 import type { MapObject } from '../shared/map/schema';
+import { blobPoints } from './blob';
 import { add, quatFromEuler, quatMul, rotate, scale, type Q, type V3 } from '../shared/math';
 
 /**
@@ -7,7 +8,7 @@ import { add, quatFromEuler, quatMul, rotate, scale, type Q, type V3 } from '../
  *
  * Souřadnice dílu jsou v lokálním prostoru objektu. `size` jsou plné rozměry.
  */
-export type PartShape = 'box' | 'wedge' | 'cylinder' | 'label';
+export type PartShape = 'box' | 'wedge' | 'cylinder' | 'label' | 'blob' | 'card';
 
 export interface Part {
   shape: PartShape;
@@ -31,6 +32,13 @@ export interface Part {
   moveOnly?: boolean;
   /** Vrhá stín (výchozí ano). */
   castShadow?: boolean;
+  /** Blob: semínko deformace a hrbolatost (0–1). Tvar = deformovaná koule s rozměry `size`. */
+  seed?: number;
+  rough?: number;
+  /** Válec: poměr horního poloměru ke spodnímu (zúžení kmene), výchozí 1. */
+  taper?: number;
+  /** Karta (oboustranný obdélník v rovině XY, délka podél +Y): průhyb konce k −Z v metrech. */
+  bend?: number;
 }
 
 export type HitSurface = 'concrete' | 'plaster' | 'metal' | 'wood' | 'sand' | 'dirt' | 'asphalt' | 'brick' | 'flesh' | 'fabric';
@@ -66,6 +74,8 @@ export function surfaceOf(material: string): HitSurface {
   if (material.startsWith('brick')) return 'brick';
   if (material.startsWith('plaster')) return 'plaster';
   if (material.startsWith('sand')) return 'sand';
+  if (material.startsWith('bark') || material.startsWith('palm') || material.startsWith('leaf')) return 'wood';
+  if (material.startsWith('rock') || material.startsWith('stone')) return 'concrete';
   if (material.startsWith('asphalt')) return 'asphalt';
   if (material.startsWith('fabric') || material.startsWith('target')) return 'fabric';
   return 'concrete';
@@ -76,7 +86,7 @@ export function partsToColliders(o: MapObject, parts: Part[]): ColliderDef[] {
   const { q, pos, s } = objectFrame(o);
   const out: ColliderDef[] = [];
   for (const part of parts) {
-    if (!part.collide || part.shape === 'label') continue;
+    if (!part.collide || part.shape === 'label' || part.shape === 'card') continue;
     const pq = part.rot ? quatFromEuler(part.rot[0], part.rot[1], part.rot[2]) : { x: 0, y: 0, z: 0, w: 1 };
     const wq = quatMul(q, pq);
     const center = add(pos, rotate(q, scale({ x: part.pos[0], y: part.pos[1], z: part.pos[2] }, s)));
@@ -104,6 +114,13 @@ export function partsToColliders(o: MapObject, parts: Part[]): ColliderDef[] {
         bulletOnly: part.bulletOnly,
         moveOnly: part.moveOnly,
       });
+    } else if (part.shape === 'blob') {
+      const pts: number[] = [];
+      for (const v of blobPoints(part.seed ?? 1, part.rough ?? 0.5)) {
+        const w = add(center, rotate(wq, { x: v[0] * half.x, y: v[1] * half.y, z: v[2] * half.z }));
+        pts.push(w.x, w.y, w.z);
+      }
+      out.push({ kind: 'hull', center, rotation: wq, half, points: pts, surface, objectId: o.id, bulletOnly: part.bulletOnly, moveOnly: part.moveOnly });
     } else if (part.shape === 'wedge') {
       const pts: number[] = [];
       for (const lp of wedgeLocalPoints(half)) {

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { Part } from '../../world/parts';
 import { tileOf } from './materials';
+import { blobRadius, icosphere } from '../../world/blob';
 
 /**
  * Převádí díly objektu na render geometrii v lokálním prostoru objektu.
@@ -133,7 +134,7 @@ function addCylinder(b: Builder, part: Part, scale: number) {
   const tile = tileOf(part.material);
   const m = partMatrix(part, scale).clone();
   const nm = _n.getNormalMatrix(m).clone();
-  const r = part.size[0] / 2, hy = part.size[1] / 2;
+  const r = part.size[0] / 2, hy = part.size[1] / 2, tp = part.taper ?? 1;
   const seg = Math.max(10, Math.min(32, Math.round(r * 40)));
   const circ = 2 * Math.PI * r;
   const base = b.vcount;
@@ -143,7 +144,7 @@ function addCylinder(b: Builder, part: Part, scale: number) {
     const n = new THREE.Vector3(nx, 0, nz).applyMatrix3(nm).normalize();
     const u = ((i / seg) * circ) / tile;
     b.vert(new THREE.Vector3(nx * r, -hy, nz * r).applyMatrix4(m), n, [u, (part.pos[1] - hy) / tile]);
-    b.vert(new THREE.Vector3(nx * r, hy, nz * r).applyMatrix4(m), n, [u, (part.pos[1] + hy) / tile]);
+    b.vert(new THREE.Vector3(nx * r * tp, hy, nz * r * tp).applyMatrix4(m), n, [u, (part.pos[1] + hy) / tile]);
   }
   for (let i = 0; i < seg; i++) {
     const a = base + i * 2;
@@ -155,13 +156,80 @@ function addCylinder(b: Builder, part: Part, scale: number) {
     b.vert(new THREE.Vector3(0, side * hy, 0).applyMatrix4(m), n, [0, 0]);
     for (let i = 0; i <= seg; i++) {
       const a = (i / seg) * Math.PI * 2;
-      const x = Math.cos(a) * r, z = Math.sin(a) * r;
+      const rr = side > 0 ? r * tp : r;
+      const x = Math.cos(a) * rr, z = Math.sin(a) * rr;
       b.vert(new THREE.Vector3(x, side * hy, z).applyMatrix4(m), n, [x / tile, z / tile]);
     }
     for (let i = 0; i < seg; i++) {
       if (side > 0) b.idx.push(c, c + 2 + i, c + 1 + i);
       else b.idx.push(c, c + 1 + i, c + 2 + i);
     }
+  }
+}
+
+/** Deformovaná koule (kámen, koruna stromu). UV krabicovou projekcí podle normály stěny, v metrech. */
+function addBlob(b: Builder, part: Part, scale: number) {
+  const tile = tileOf(part.material);
+  const m = partMatrix(part, scale).clone();
+  const nm = _n.getNormalMatrix(m).clone();
+  const hx = part.size[0] / 2, hy = part.size[1] / 2, hz = part.size[2] / 2;
+  const { verts, faces } = icosphere(2);
+  const seed = part.seed ?? 1, rough = part.rough ?? 0.5;
+  const P = verts.map((d) => {
+    const r = blobRadius(d, seed, rough);
+    return new THREE.Vector3(d[0] * r * hx, d[1] * r * hy, d[2] * r * hz);
+  });
+  // Hladké normály: součet normál stěn u sdíleného vrcholu.
+  const N = P.map(() => new THREE.Vector3());
+  const fn = faces.map(([a, c, d]) => {
+    const n = new THREE.Vector3().subVectors(P[c], P[a]).cross(new THREE.Vector3().subVectors(P[d], P[a]));
+    if (n.dot(P[a]) < 0) n.negate();
+    N[a].add(n);
+    N[c].add(n);
+    N[d].add(n);
+    return n.normalize();
+  });
+  for (const n of N) n.normalize();
+  const off = new THREE.Vector3(part.pos[0], part.pos[1], part.pos[2]);
+  faces.forEach((f, i) => {
+    const n = fn[i];
+    const ax = Math.abs(n.x), ay = Math.abs(n.y), az = Math.abs(n.z);
+    const uv = (p: THREE.Vector3): [number, number] => {
+      const q = p.clone().add(off);
+      if (ay >= ax && ay >= az) return [q.x / tile, q.z / tile];
+      if (ax >= az) return [q.z / tile, q.y / tile];
+      return [q.x / tile, q.y / tile];
+    };
+    // Pořadí vrcholů tak, aby přední strana mířila ven.
+    const order = new THREE.Vector3().subVectors(P[f[1]], P[f[0]]).cross(new THREE.Vector3().subVectors(P[f[2]], P[f[0]])).dot(P[f[0]]) >= 0 ? f : [f[0], f[2], f[1]];
+    const base = b.vcount;
+    for (const k of order) b.vert(P[k].clone().applyMatrix4(m), N[k].clone().applyMatrix3(nm).normalize(), uv(P[k]));
+    b.idx.push(base, base + 1, base + 2);
+  });
+}
+
+/**
+ * Karta: oboustranný pruh v rovině XY od y = 0 (kotva v `pos`) do y = size[1], šířka size[0].
+ * `bend` prohne konec k −Z (list palmy). UV 0–1 přes celou kartu (textura = jeden list).
+ */
+function addCard(b: Builder, part: Part, scale: number) {
+  const m = partMatrix(part, scale).clone();
+  const nm = _n.getNormalMatrix(m).clone();
+  const w = part.size[0] / 2, h = part.size[1], bend = part.bend ?? 0;
+  const seg = bend ? 5 : 1;
+  const base = b.vcount;
+  for (let i = 0; i <= seg; i++) {
+    const t = i / seg;
+    const y = t * h * (1 - 0.15 * Math.abs(bend) / Math.max(h, 0.01) * t);
+    const z = -bend * t * t;
+    // Normála kolmo k tečně prohnutí.
+    const n = new THREE.Vector3(0, 2 * bend * t, h).normalize().applyMatrix3(nm).normalize();
+    b.vert(new THREE.Vector3(-w, y, z).applyMatrix4(m), n, [0, t]);
+    b.vert(new THREE.Vector3(w, y, z).applyMatrix4(m), n, [1, t]);
+  }
+  for (let i = 0; i < seg; i++) {
+    const a = base + i * 2;
+    b.idx.push(a, a + 1, a + 3, a, a + 3, a + 2);
   }
 }
 
@@ -186,6 +254,8 @@ export function buildObjectGeometry(parts: Part[], scale = 1): ObjectGeometry {
     if (p.shape === 'box') addBox(e.b, p, scale);
     else if (p.shape === 'wedge') addWedge(e.b, p, scale);
     else if (p.shape === 'cylinder') addCylinder(e.b, p, scale);
+    else if (p.shape === 'blob') addBlob(e.b, p, scale);
+    else if (p.shape === 'card') addCard(e.b, p, scale);
   }
   const byMaterial = new Map<string, { geometry: THREE.BufferGeometry; castShadow: boolean }>();
   for (const [key, e] of builders) byMaterial.set(key, { geometry: e.b.build(), castShadow: e.cast });
