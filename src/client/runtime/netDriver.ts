@@ -5,7 +5,7 @@ import type { CommandInfo, ContactInfo, OrderInfo, RemoteState, ServerMsg, Squad
 import { createConquest, type ConquestState } from '../../shared/sim/conquest';
 import type { InputFrame } from '../../shared/sim/input';
 import { MOVEMENT } from '../../shared/config/movement';
-import { rulesOf, type Faction } from '../../shared/config/arsenal';
+import { DEFAULT_FACTIONS, rulesOf, type Faction } from '../../shared/config/arsenal';
 import type { Team } from '../../shared/map/schema';
 import type { SimEvent } from '../../shared/sim/match';
 import { PlayerController, clonePlayerState, createPlayerState, type PlayerState } from '../../shared/sim/player';
@@ -218,6 +218,10 @@ export class NetDriver implements GameDriver {
   }
   giveUp() {
     this.net.send({ t: 'giveup' });
+  }
+
+  teamFactions(): Record<Team, Faction> {
+    return this.factions ?? DEFAULT_FACTIONS;
   }
 
   faction(): Faction | null {

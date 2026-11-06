@@ -49,6 +49,8 @@ export interface GameDriver {
   requestSpawn(spawnId: string | null, weaponId?: string | null): string | null;
   /** Frakce týmu lokálního hráče (výběr výbavy) – null = volný test, libovolná frakce. */
   faction(): Faction | null;
+  /** Frakce obou týmů (vlajky na bodech). */
+  teamFactions(): Record<Team, Faction>;
   /** Vyřazený hráč vzdá pomoc (definitivní smrt; autorita ji potvrdí). */
   giveUp(): void;
   dummies(): Array<{ id: string; offset: number; down: boolean }>;
@@ -74,6 +76,10 @@ export class OfflineDriver implements GameDriver {
 
   giveUp() {
     this.sim.giveUp(this.localId);
+  }
+
+  teamFactions(): Record<Team, Faction> {
+    return { teamA: this.sim.factionOf('teamA'), teamB: this.sim.factionOf('teamB') };
   }
 
   faction() {

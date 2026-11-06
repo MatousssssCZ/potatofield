@@ -37,6 +37,8 @@ import { PILOT } from '../shared/config/arsenal';
 import { h } from './ui/kit';
 import { applyStatic, onLang, t } from './ui/i18n';
 import type { Footprint } from './ui/tactical';
+import { FlagSystem } from './render/flags';
+import { DEFAULT_FACTIONS } from '../shared/config/arsenal';
 import { PROTOCOL_VERSION } from '../shared/net/protocol';
 import { insecureFromHttps } from './ui/servers';
 
@@ -77,6 +79,7 @@ export class App {
   readonly audio = new GameAudio();
   private colliderLines: THREE.LineSegments | null = null;
   menu: MainMenu | null = null;
+  readonly flags = new FlagSystem();
   pause: PauseMenu | null = null;
   private sbEl: HTMLElement | null = null;
   private sbT = 0;
@@ -174,6 +177,7 @@ export class App {
     this.mats = new MaterialLibrary(textures);
     this.world = new WorldView(this.mats, textures);
     this.scene.add(this.world.root);
+    this.scene.add(this.flags.root);
     this.scene.add(this.camera);
     this.env = new EnvironmentRig(r, this.scene);
     this.post = new PostPipeline(r, this.scene, this.camera, this.quality);
@@ -245,6 +249,7 @@ export class App {
     this.phys.addColliders(collidersForMap(gen.filter((g) => !g.object.gameHidden)));
     this.phys.sync();
     this.world.build(doc, gen);
+    this.flags.rebuild(doc.controlPoints);
     this.world.setMode('editor');
     this.env.shadowRate = 0;
     this.env.apply(doc.environment, this.quality);
@@ -301,6 +306,7 @@ export class App {
         this.phys.setTerrain(this.ed.doc.terrain);
       } else if (c.kind === 'entity') {
         this.editor.markers.rebuild(this.ed.doc);
+        this.flags.rebuild(this.ed.doc.controlPoints);
       } else if (c.kind === 'testSpawn') this.editor.updateSpawnMarker();
       else if (c.kind === 'environment') this.env.apply(this.ed.doc.environment, this.quality);
       else if (c.kind === 'name') $('#tb-mapname').textContent = this.ed.doc.name;
@@ -1002,6 +1008,7 @@ export class App {
         this.renderUI();
       }
     }
+    this.updateFlags(dt);
     this.env.update(this.camera.position, dt);
     this.post.render(dt);
     this.frameTimes.push(dt * 1000);
@@ -1013,6 +1020,15 @@ export class App {
     }
     requestAnimationFrame(this.loop);
   };
+
+  /** Vlajky: ve hře ze stavu bodů (autorita), v editoru a volném testu výchozí vlastník. */
+  private updateFlags(dt: number) {
+    const d = this.session?.game.driver;
+    const cq = d?.conquest();
+    if (d && cq) return this.flags.update(dt, cq.cps, d.teamFactions());
+    const states = this.ed.doc.controlPoints.map((c) => ({ id: c.id, p: c.defaultOwner === 'teamA' ? 1 : c.defaultOwner === 'teamB' ? -1 : 0 }));
+    this.flags.update(dt, states, DEFAULT_FACTIONS, true);
+  }
 
   /** Počty pro kontrolu úniků při přepínání (entity, listenery, prostředky). */
   counts() {
