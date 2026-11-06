@@ -185,6 +185,8 @@ export type ServerMsg =
       command: CommandInfo;
       spawns: string[];
       scores: Array<{ id: string; name: string; team: Team; kills: number; deaths: number; revives: number; ping: number; squad: string | null }>;
+      /** Granáty: [id, druh 0 = tříštivý / 1 = dýmovnice, x, y, z, konec kouře (0 = nehoří)]. */
+      nades: Array<[string, 0 | 1, number, number, number, number]>;
     }
   | { t: 'events'; list: SimEvent[] }
   | { t: 'chat'; id: string; from: string; name: string; ch: ChatChannel | 'system'; text: string; time: number }

@@ -26,6 +26,7 @@ import type { GameAudio } from './audio';
 import type { GameDriver } from './driver';
 import type { InputSystem } from './input';
 import { SoldierPool } from '../render/soldier';
+import { GrenadeRenderer } from '../render/grenades';
 
 export interface GameSettings {
   hFov: number;
@@ -55,6 +56,9 @@ export class Game {
   readonly effects: Effects;
   readonly hud: Hud;
   readonly soldiers: SoldierPool;
+  readonly nades: GrenadeRenderer;
+  /** Otřes kamery (výbuch v blízkosti) 0–1. */
+  private shake = 0;
   stats = { simSteps: 0, droppedSteps: 0 };
   settings: GameSettings = { hFov: CAMERA.hFovDeg16x9, bob: 1, landingKick: true };
   active = false;
@@ -92,6 +96,8 @@ export class Game {
     scene.add(this.effects.root);
     this.soldiers = new SoldierPool(quality.id);
     scene.add(this.soldiers.root);
+    this.nades = new GrenadeRenderer(quality.id === 'low' ? 220 : 420);
+    scene.add(this.nades.root);
     this.hud = new Hud();
     this.hud.reset();
     this.hud.onSpawn = (id, weaponId) => {
@@ -161,6 +167,7 @@ export class Game {
     }
     const eye = this.camera.position;
     const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
+    const smokes = this.driver.grenades().filter((n) => n.kind === 'smoke' && n.smokeUntil > this.simTime).map((n) => new THREE.Vector3(n.pos.x, n.pos.y + 1.6, n.pos.z));
     let best: { id: string; name: string; d: number } | null = null;
     for (const r of this.driver.remotes()) {
       if (!r.alive || r.team === me.team) continue;
@@ -175,6 +182,8 @@ export class Game {
         const hit = this.phys.castRay({ x: eye.x, y: eye.y, z: eye.z }, { x: c.x / d, y: c.y / d, z: c.z / d }, d - 0.6);
         if (hit) continue;
       }
+      // Kouřová clona zakryje identifikaci (úsečka oko → cíl prochází koulí kouře).
+      if (smokes.some((s) => segmentHitsSphere(eye, c, d, s, 4.5))) continue;
       if (!best || d < best.d) best = { id: r.id, name: r.name, d };
     }
     if (!best || best.id !== this.identId) {
@@ -239,6 +248,8 @@ export class Game {
     this.soldiers.update(this.driver.remotes(), frameDt, this.simTime, this.camera.position, this.camera);
     this.updateCamera(frameDt, this.acc / dt);
     this.effects.update(frameDt);
+    this.nades.sync(this.driver.grenades(), this.simTime, frameDt);
+    this.nades.update(frameDt);
     this.hudT += frameDt;
     if (this.hudT > 0.05) {
       const hdt = this.hudT;
@@ -293,6 +304,17 @@ export class Game {
         const p = new THREE.Vector3(e.point.x, e.point.y, e.point.z);
         this.effects.impact(p, new THREE.Vector3(e.normal.x, e.normal.y, e.normal.z), e.surface);
         this.audio.impact(e.surface, p.distanceTo(eye));
+      } else if (e.type === 'explosion') {
+        const p = new THREE.Vector3(e.pos.x, e.pos.y, e.pos.z);
+        this.nades.explode(p);
+        const d = p.distanceTo(eye);
+        const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
+        this.audio.explosion(d, clamp(p.clone().sub(eye).normalize().dot(right), -1, 1));
+        this.shake = Math.max(this.shake, clamp(1 - d / 22, 0, 1));
+      } else if (e.type === 'smoke') {
+        this.audio.hiss(new THREE.Vector3(e.pos.x, e.pos.y, e.pos.z).distanceTo(eye));
+      } else if (e.type === 'throw') {
+        if (e.id === this.driver.localId) this.audio.mech('cover');
       } else if (e.type === 'fall') {
         // Tvrdý dopad: tupý zvuk a krátké zčervenání okraje obrazu (poškození pádem).
         if (e.id === this.driver.localId) {
@@ -382,6 +404,14 @@ export class Game {
     const right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
     cam.position.copy(eye).addScaledVector(right, bobX);
     cam.position.y += bobY - kick;
+    // Otřes po výbuchu: krátké chvění, rychle doznívá (kosmetika, simulaci nemění).
+    if (this.shake > 0.001) {
+      const a = this.shake * this.shake;
+      cam.position.x += (Math.random() - 0.5) * 0.05 * a;
+      cam.position.y += (Math.random() - 0.5) * 0.05 * a;
+      cam.rotation.z += (Math.random() - 0.5) * 0.03 * a;
+      this.shake *= Math.exp(-frameDt * 5);
+    }
 
     // FOV: H@16:9 → vertikální; ADS = optické přiblížení 1,35× (prezentace, ne optika kolimátoru).
     // Puškohled: po dokončení ADS se obraz přepne do zaměřovače se zvětšením optiky; během
@@ -416,10 +446,18 @@ export class Game {
     this.fp.dispose();
     this.effects.dispose();
     this.soldiers.dispose();
+    this.nades.dispose();
     this.scope?.dispose();
     this.hud.dispose();
     this.driver.dispose();
     this.world.updateDummies([]);
     void this.scene;
   }
+}
+
+/** Prochází úsečka z `a` ve směru `dir` (délka `len`) koulí? */
+function segmentHitsSphere(a: THREE.Vector3, dir: THREE.Vector3, len: number, c: THREE.Vector3, r: number) {
+  const d = dir.clone().normalize();
+  const t = THREE.MathUtils.clamp(c.clone().sub(a).dot(d), 0, len);
+  return a.clone().addScaledVector(d, t).distanceToSquared(c) < r * r;
 }

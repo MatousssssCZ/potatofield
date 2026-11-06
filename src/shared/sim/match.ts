@@ -3,7 +3,7 @@ import { PF_RIFLE, type WeaponConfig } from '../config/weapon';
 import { DEFAULT_FACTIONS, PILOT, arsenalEntry, fallDamage, isGun, rulesOf, weaponFor, type Faction, type Kit } from '../config/arsenal';
 import { activeItem, createInventory, resolveRequest, switchTo, type Inventory } from './inventory';
 import { stepItem, type ItemHooks } from './items';
-import { itemHooksFor } from './matchItems';
+import { itemHooksFor, stepGrenades, type Grenade } from './matchItems';
 import type { MapDocument, SpawnPoint, Team, Zone } from '../map/schema';
 import type { V3 } from '../math';
 import type { PhysicsWorld } from '../physics/world';
@@ -75,6 +75,9 @@ export type SimEvent =
   | { type: 'death'; id: string; killer: string | null; cause: 'weapon' | 'zone' | 'fall' | 'giveup'; lifeId: number }
   | { type: 'downed'; id: string; killer: string | null; lifeId: number }
   | { type: 'fall'; id: string; damage: number; hp: number }
+  | { type: 'throw'; id: string; kind: 'frag' | 'smoke' }
+  | { type: 'explosion'; key: string; pos: V3; owner: string }
+  | { type: 'smoke'; key: string; pos: V3; until: number; radius: number }
   | { type: 'revive'; id: string; by: string; lifeId: number }
   | { type: 'spawn'; id: string; lifeId: number; spawnId: string | null }
   | { type: 'dummyDown'; id: string }
@@ -357,6 +360,9 @@ export class MatchSim {
   }
 
   /** Akce nestřelných položek hráče (nůž, granáty, nástroje) – doplňují je další etapy. */
+  /** Granáty ve vzduchu / na zemi a hořící dýmovnice. */
+  grenades: Grenade[] = [];
+
   protected itemHooks(p: SimPlayer): ItemHooks | null {
     return itemHooksFor(this, p);
   }
@@ -424,6 +430,7 @@ export class MatchSim {
     }
     this.tick++;
     const t = this.time;
+    stepGrenades(this, dt);
     // Figuríny (pohyb z času, sražené se po 3 s zvednou).
     for (const d of this.dummies) if (d.downUntil > 0 && t >= d.downUntil) {
       d.downUntil = -1;
@@ -487,6 +494,7 @@ export class MatchSim {
   restart() {
     this.conquest = this.opts.conquest ? createConquest(this.doc, this.opts.scenarioId) : null;
     this.projectiles.length = 0;
+    this.grenades = [];
     for (const d of this.dummies) {
       d.hp = MAX_HP;
       d.downUntil = -1;

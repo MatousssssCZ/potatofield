@@ -91,6 +91,21 @@ export class GameAudio {
     this.burst({ gain: 0.18, decay: 0.45, lp: 1400, hp: 120, delay: 0.02, rate: 0.6 });
   }
 
+  /** Výbuch granátu: zpoždění podle vzdálenosti, hluboký úder a dlouhý dozvuk (tlumený dálkou). */
+  explosion(distance: number, pan: number) {
+    const att = Math.max(0.06, Math.min(1.2, 30 / (distance + 12)));
+    const delay = Math.min(0.8, distance / 343);
+    this.burst({ gain: att, decay: 0.35, lp: Math.max(700, 4200 - distance * 40), hp: 40, rate: 0.55, delay, pan });
+    this.thump(38, att * 1.1, 0.6, delay);
+    this.burst({ gain: att * 0.35, decay: 1.6, lp: 600, hp: 40, rate: 0.35, delay: delay + 0.05, pan });
+  }
+
+  /** Syčení dýmovnice / cvaknutí páky při hodu. */
+  hiss(distance: number) {
+    const att = Math.max(0.02, Math.min(0.3, 6 / (distance + 6)));
+    this.burst({ gain: att, decay: 1.2, lp: 6000, hp: 1800, rate: 1.3 });
+  }
+
   /** Mechanika: pumpa, vložení náboje, víko (krátké kovové cvaknutí). */
   mech(kind: 'pump' | 'shell' | 'cover' | 'bolt') {
     if (kind === 'bolt') {

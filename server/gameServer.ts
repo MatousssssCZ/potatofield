@@ -601,6 +601,7 @@ export class GameServer {
       command: { ...this.team.command[p.team], uav: this.team.command[p.team].uav },
       spawns,
       // Skóre stačí 1×/s (šetří přenos); ostatní data každý snapshot.
+      nades: this.sim.grenades.map((n) => [n.id, n.kind === 'frag' ? 0 : 1, r3(n.pos.x), r3(n.pos.y), r3(n.pos.z), r3(n.smokeUntil)] as [string, 0 | 1, number, number, number, number]),
       scores: this.snapCount % NET.snapshotHz !== 1 ? [] : [...this.sim.players.values()].map((o) => ({ id: o.id, name: o.name, team: o.team, kills: o.kills, deaths: o.deaths, revives: o.revives, ping: this.clients.get(o.id)?.ping ?? 0, squad: o.team === p.team ? (this.team.members.get(o.id)?.squad ?? null) : null })),
     });
   }

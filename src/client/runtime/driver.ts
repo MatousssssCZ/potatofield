@@ -10,6 +10,13 @@ import { PILOT, type Faction, type Kit } from '../../shared/config/arsenal';
 import { invView, type InvView } from '../../shared/sim/inventory';
 
 /** Pohled prezentace na hráče (lokálního i vzdáleného). */
+export interface GrenadeView {
+  id: string;
+  kind: 'frag' | 'smoke';
+  pos: { x: number; y: number; z: number };
+  smokeUntil: number;
+}
+
 export interface PlayerView {
   id: string;
   name: string;
@@ -61,6 +68,8 @@ export interface GameDriver {
   /** Vyřazený hráč vzdá pomoc (definitivní smrt; autorita ji potvrdí). */
   giveUp(): void;
   dummies(): Array<{ id: string; offset: number; down: boolean }>;
+  /** Granáty ve světě (let, na zemi) a hořící dýmovnice (konec kouře v čase simulace). */
+  grenades(): GrenadeView[];
   restart(): void;
   dispose(): void;
   /** Statistika sítě (RTT, korekce) – offline null. */
@@ -142,6 +151,10 @@ export class OfflineDriver implements GameDriver {
     const w = weaponId ?? (p && this.weapon && !this.sim.checkWeapon(p.team, this.weapon) ? this.weapon : null);
     return this.sim.requestSpawn(this.localId, spawnId, w);
   }
+  grenades(): GrenadeView[] {
+    return this.sim.grenades.map((n) => ({ id: n.id, kind: n.kind, pos: n.pos, smokeUntil: n.smokeUntil }));
+  }
+
   dummies() {
     const t = this.sim.time;
     return this.sim.dummies.map((d) => ({ id: d.id, offset: dummyOffset(t, d.amp, d.speed), down: d.downUntil > 0 }));

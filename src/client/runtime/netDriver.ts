@@ -12,7 +12,7 @@ import { PlayerController, clonePlayerState, createPlayerState, type PlayerState
 import { createWeaponState, stepWeapon, type WeaponState } from '../../shared/sim/weapon';
 import { angleDiff } from '../../shared/math';
 import type { LadderDef } from '../../world/parts';
-import type { GameDriver, PlayerView } from './driver';
+import type { GameDriver, GrenadeView, PlayerView } from './driver';
 
 /**
  * Síťový driver: predikce vlastního pohybu a akcí zbraně stejným kódem jako server,
@@ -238,6 +238,9 @@ export class NetDriver implements GameDriver {
   }
   dummies() {
     return (this.net.lastSnap?.dummies ?? []).map((d) => ({ id: d.id, offset: 0, down: d.down }));
+  }
+  grenades(): GrenadeView[] {
+    return (this.net.lastSnap?.nades ?? []).map(([id, k, x, y, z, until]) => ({ id, kind: k === 0 ? 'frag' : 'smoke', pos: { x, y, z }, smokeUntil: until }));
   }
   restart() {
     /* restart řídí server/admin */
