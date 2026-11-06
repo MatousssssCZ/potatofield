@@ -84,3 +84,4 @@ Viz git historie; 20 testů pohybu, editor s gizmy, historie, IndexedDB, export/
 - [~] Velká mapa (M) – taktická mapa je v nasazení a u velitele, samostatná obrazovka M chybí
 - [ ] Lidský test čitelnosti HUD a ovládání; měření FPS na i5-1335U
 - [x] Sniper: modely M24 a SVD (FP 3 500 / 3 392, world 1 298 / 1 236 trojúhelníků), puškohled 10× mil-dot a PSO-1 4×, cyklus závěru a nabíjení po jednom (M24); classa odemčena
+- [x] Ladění po testu: měkké textury (BF2), poškození pádem, fyzické vlajky s výškou podle postupu a návratem do klidu, katalog editoru s náhledy a sekcí Použito na mapě

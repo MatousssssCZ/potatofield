@@ -3,6 +3,7 @@ import { allAssets, getAsset, resolveParams, type AssetDef, type ParamSpec } fro
 import { cmds, type EditorDoc, type History } from './editorDoc';
 import { TEST_SPAWN_ID, type Editor } from './editor';
 import { markerId } from './markers';
+import { markerIcon, type Thumbnails } from './thumbnails';
 import { renderMarkerInspector, renderScenarios, type GameUiState } from './uiGame';
 
 const CATEGORY_LABELS: Record<AssetDef['category'], string> = {
@@ -116,46 +117,128 @@ const MARKER_ITEMS: Array<{ id: string; label: string }> = [
   { id: 'marker.zone', label: 'Zakázaná zóna' },
 ];
 
-export function buildCatalog(onPick: (assetId: string) => void) {
+const MARKER_KIND: Record<string, 'flag' | 'spawnA' | 'spawnB' | 'zone'> = { 'marker.flag': 'flag', 'marker.spawnA': 'spawnA', 'marker.spawnB': 'spawnB', 'marker.zone': 'zone' };
+
+/**
+ * Katalog jako v editoru nábytku: vyhledávání, kategorie z rozbalovací nabídky, mřížka dlaždic
+ * s náhledovými obrázky a sekce „Použito na mapě“ (assety, které mapa už obsahuje, podle počtu).
+ * Klik vloží asset do středu pohledu. Vrací `refresh()` – volat po změně mapy.
+ */
+export function buildCatalog(onPick: (assetId: string) => void, deps: { thumbs: Thumbnails; used: () => Map<string, number> }) {
   const list = document.getElementById('cat-list')!;
   const search = document.getElementById('cat-search') as HTMLInputElement;
+  let sel = document.getElementById('cat-cat') as HTMLSelectElement | null;
+  if (!sel) {
+    sel = el('select', { id: 'cat-cat', title: 'Kategorie' }) as HTMLSelectElement;
+    search.after(sel);
+  }
+  const select = sel;
+  let cat = (() => {
+    try {
+      return localStorage.getItem('pf.catalog.cat') || 'all';
+    } catch {
+      return 'all';
+    }
+  })();
+  let usedKey = '';
+  const markerIcons = new Map<string, string>();
+
+  const tile = (id: string, label: string, tag: string, title: string, img: (cb: (url: string) => void) => void) => {
+    const b = el('button', { class: 'cat-tile', title });
+    const pic = el('img', { alt: '', draggable: 'false' }) as HTMLImageElement;
+    pic.decoding = 'async';
+    img((url) => {
+      if (url) pic.src = url;
+      else pic.classList.add('none');
+    });
+    b.append(pic, el('span', { class: 'lbl' }, label));
+    if (tag) b.append(el('small', { class: 'tag' }, tag));
+    b.addEventListener('click', () => onPick(id));
+    return b;
+  };
+  const assetTile = (a: AssetDef, tag = '') =>
+    tile(a.assetId, a.label, tag || (a.sizeParams ? 'param.' : a.uniformScale ? 'rekvizita' : ''), `${a.label} (${a.assetId}) – klik vloží do středu pohledu`, (cb) => deps.thumbs.request(a.assetId, cb));
+  const markerTile = (m: { id: string; label: string }) =>
+    tile(m.id, m.label, 'marker', `${m.label} – klik vloží do středu pohledu`, (cb) => {
+      let u = markerIcons.get(m.id);
+      if (!u) markerIcons.set(m.id, (u = markerIcon(MARKER_KIND[m.id])));
+      cb(u);
+    });
+  const section = (title: string, tiles: HTMLElement[]) => {
+    const g = el('div', { class: 'cat-group' });
+    const grid = el('div', { class: 'cat-grid' });
+    grid.append(...tiles);
+    g.append(el('h4', {}, title), grid);
+    return g;
+  };
+
+  const renderSelect = (used: Map<string, number>) => {
+    const counts = new Map<string, number>();
+    for (const a of allAssets()) counts.set(a.category, (counts.get(a.category) ?? 0) + 1);
+    const opts: Array<[string, string]> = [
+      ['all', 'Vše'],
+      ['used', `Použito na mapě (${used.size})`],
+      ['markers', 'Herní markery'],
+      ...[...counts].map(([c, n]) => [c, `${CATEGORY_LABELS[c as AssetDef['category']] ?? c} (${n})`] as [string, string]),
+    ];
+    select.replaceChildren(...opts.map(([v, l]) => el('option', { value: v }, l)));
+    if (!opts.some(([v]) => v === cat)) cat = 'all';
+    select.value = cat;
+  };
+
   const render = () => {
     const q = search.value.trim().toLowerCase();
+    const match = (label: string, id: string) => !q || label.toLowerCase().includes(q) || id.includes(q);
+    const used = deps.used();
+    usedKey = [...used].map(([k, v]) => `${k}:${v}`).join(',');
+    renderSelect(used);
     list.replaceChildren();
-    const groups = new Map<string, AssetDef[]>();
-    for (const a of allAssets()) {
-      if (q && !a.label.toLowerCase().includes(q) && !a.assetId.includes(q)) continue;
-      const arr = groups.get(a.category) ?? [];
-      arr.push(a);
-      groups.set(a.category, arr);
+    const assets = allAssets().filter((a) => match(a.label, a.assetId));
+    if (cat === 'all' || cat === 'used') {
+      const tiles = [...used]
+        .sort((x, y) => y[1] - x[1])
+        .map(([id, n]) => [getAsset(id), n] as const)
+        .filter(([a]) => a && match(a.label, a.assetId))
+        .map(([a, n]) => assetTile(a!, `×${n}`));
+      if (tiles.length) list.appendChild(section('Použito na mapě', tiles));
+      else if (cat === 'used') list.appendChild(el('div', { class: 'note' }, q ? 'Nic nenalezeno.' : 'Na mapě zatím nic není.'));
     }
-    const mk = MARKER_ITEMS.filter((m) => !q || m.label.toLowerCase().includes(q));
-    if (mk.length) {
-      const g = el('div', { class: 'cat-group' });
-      g.appendChild(el('h4', {}, 'Herní markery'));
-      for (const m of mk) {
-        const b = el('button', { class: 'cat-item' });
-        b.append(el('span', {}, m.label), el('small', {}, 'marker'));
-        b.addEventListener('click', () => onPick(m.id));
-        g.appendChild(b);
-      }
-      list.appendChild(g);
+    if (cat === 'all' || cat === 'markers') {
+      const mk = MARKER_ITEMS.filter((m) => match(m.label, m.id));
+      if (mk.length) list.appendChild(section('Herní markery', mk.map(markerTile)));
     }
-    for (const [cat, items] of groups) {
-      const g = el('div', { class: 'cat-group' });
-      g.appendChild(el('h4', {}, CATEGORY_LABELS[cat as AssetDef['category']] ?? cat));
-      for (const a of items) {
-        const b = el('button', { class: 'cat-item', title: `${a.assetId} – klik vloží do středu pohledu` });
-        b.append(el('span', {}, a.label), el('small', {}, a.sizeParams ? 'param.' : a.uniformScale ? 'rekvizita' : ''));
-        b.addEventListener('click', () => onPick(a.assetId));
-        g.appendChild(b);
+    if (cat !== 'used' && cat !== 'markers') {
+      const groups = new Map<string, AssetDef[]>();
+      for (const a of assets) {
+        if (cat !== 'all' && a.category !== cat) continue;
+        const arr = groups.get(a.category) ?? [];
+        arr.push(a);
+        groups.set(a.category, arr);
       }
-      list.appendChild(g);
+      for (const [c, items] of groups) list.appendChild(section(CATEGORY_LABELS[c as AssetDef['category']] ?? c, items.map((a) => assetTile(a))));
     }
     if (!list.childElementCount) list.appendChild(el('div', { class: 'note' }, 'Nic nenalezeno.'));
   };
+  select.addEventListener('change', () => {
+    cat = select.value;
+    try {
+      localStorage.setItem('pf.catalog.cat', cat);
+    } catch {
+      /* ignorovat */
+    }
+    list.scrollTop = 0;
+    render();
+  });
   search.addEventListener('input', render);
   render();
+  return {
+    /** Po změně mapy: překreslit jen když se změnilo, co mapa používá. */
+    refresh() {
+      const used = deps.used();
+      const key = [...used].map(([k, v]) => `${k}:${v}`).join(',');
+      if (key !== usedKey) render();
+    },
+  };
 }
 
 // ---------------- Seznam scény ----------------

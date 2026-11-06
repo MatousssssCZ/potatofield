@@ -94,6 +94,28 @@ export class WorldView {
     this.objects.set(o.id, group);
   }
 
+  /**
+   * Samostatný model objektu pro náhled v katalogu (stejné materiály a geometrie jako ve scéně,
+   * mimo scénu a bez registrace). Volající po vykreslení uvolní geometrie (`disposePreview`).
+   */
+  previewGroup(g: GeneratedObject): THREE.Group {
+    const group = new THREE.Group();
+    const geo = buildObjectGeometry(g.parts);
+    for (const [key, { geometry }] of geo.byMaterial) group.add(new THREE.Mesh(geometry, this.mats.get(key.split('|')[0])));
+    for (const l of geo.labels) {
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(l.w, l.h), this.mats.label(l.text, l.style));
+      mesh.applyMatrix4(l.matrix);
+      group.add(mesh);
+    }
+    if (g.object.assetId === 'range.target') this.addTargetFigure(group, g.object.params);
+    group.updateMatrixWorld(true);
+    return group;
+  }
+
+  static disposePreview(g: THREE.Group) {
+    g.traverse((o) => (o as THREE.Mesh).geometry?.dispose());
+  }
+
   private applyVisibility(g: THREE.Object3D) {
     g.visible = this.mode === 'editor' ? !g.userData.editorHidden : !g.userData.gameHidden;
   }

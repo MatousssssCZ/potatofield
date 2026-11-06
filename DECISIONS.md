@@ -110,6 +110,13 @@ Všechny číselné hodnoty jsou návrhy Potatofieldu (`proposed`), ne změřen�
 - Minimapa je orientovaná na sever (podle zadání), staré otáčivé minimapy týmového UI se nekreslí.
 - Silueta zbraně v HUD je boční průmět skutečného world modelu, ne ikona.
 
+## Gameplay a vzhled (ladění po prvním testu)
+- Měkké textury (výchozí): barva v polovičním rozlišení profilu s jemným rozmazáním, normála a ORM ve čtvrtinovém, anizotropie max 4 – vzhled blíž BF2, méně paměti. Přepínač v Nastavení → Obraz.
+- Poškození pádem z rychlosti dopadu přepočtené na výšku (gravitace hry 18 m/s²): 3,5 m bez zranění, 12 m smrtelné → vyřazení (medik může oživit). Hodnoty N.
+- Bod bez hráčů se vrací do klidu vlastníka (vlastněný nahoru, neutrální dolů) za 20 s celé dráhy; dřív postup zůstával stát.
+- Vlajky jsou vlastní stylizované (barvy frakcí + hvězdy), ne převzaté znaky. Stožár je jen vizuální, bez kolize.
+- Náhledy katalogu se kreslí hlavním rendererem do rohu plátna před snímkem scény (2 na snímek), drží se jen v paměti stránky.
+
 ## Dočasné / placeholdery
 - Hawk Type 97 čeká na ověřenou referenci; ostatní modely mají rozměry jako umělecký odhad.
 - Vojáci jsou vlastní skinned modely (20 kostí, procedurální animace, LOD); obličeje a výstroj jsou stylizované podle textu zadání, ne podle referenčních obrázků (nebyly přiloženy).

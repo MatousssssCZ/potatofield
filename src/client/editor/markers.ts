@@ -92,6 +92,11 @@ export class MarkerView {
   private addCP(cp: ControlPoint) {
     const f = makeFlag();
     f.setOwner(cp.defaultOwner);
+    // Viditelnou vlajku kreslí FlagSystem (stejná jako ve hře); tento stožár slouží jen k výběru kliknutím.
+    f.group.traverse((o) => {
+      const m = (o as THREE.Mesh).material as THREE.Material | undefined;
+      if (m) m.visible = false;
+    });
     f.group.position.set(...cp.position);
     tag(f.group, markerId.cp(cp.id));
     this.root.add(f.group);

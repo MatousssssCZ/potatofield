@@ -38,6 +38,7 @@ import { h } from './ui/kit';
 import { applyStatic, onLang, t } from './ui/i18n';
 import type { Footprint } from './ui/tactical';
 import { FlagSystem } from './render/flags';
+import { Thumbnails } from './editor/thumbnails';
 import { DEFAULT_FACTIONS } from '../shared/config/arsenal';
 import { PROTOCOL_VERSION } from '../shared/net/protocol';
 import { insecureFromHttps } from './ui/servers';
@@ -80,6 +81,8 @@ export class App {
   private colliderLines: THREE.LineSegments | null = null;
   menu: MainMenu | null = null;
   readonly flags = new FlagSystem();
+  private thumbs: Thumbnails | null = null;
+  private catalog: { refresh(): void } | null = null;
   pause: PauseMenu | null = null;
   private sbEl: HTMLElement | null = null;
   private sbT = 0;
@@ -701,7 +704,8 @@ export class App {
   // ---------------- UI ----------------
 
   private bindUI() {
-    buildCatalog((id) => {
+    this.thumbs = new Thumbnails();
+    this.catalog = buildCatalog((id) => {
       if (id.startsWith('marker.')) {
         const r = $('#view').getBoundingClientRect();
         const hit = this.editor.pick(r.left + r.width / 2, r.top + r.height / 2, true).point;
@@ -711,6 +715,13 @@ export class App {
         if (this.editor.terrainMode) this.editor.setTerrainMode(false);
         this.editor.insertAsset(id);
       }
+    }, {
+      thumbs: this.thumbs,
+      used: () => {
+        const m = new Map<string, number>();
+        for (const o of this.ed.doc.objects) m.set(o.assetId, (m.get(o.assetId) ?? 0) + 1);
+        return m;
+      },
     });
     $('#tb-vis-vol').addEventListener('click', () => {
       const on = !this.editor.markers.showVolumes;
@@ -810,6 +821,7 @@ export class App {
     });
     if (!$('[data-body="terrain"]').classList.contains('hidden')) renderTerrainPanel($('#terrain-panel'), this.editor, () => (this.uiDirty = true));
     if (!$('[data-body="scene"]').classList.contains('hidden')) renderSceneList(this.ed, this.history, this.editor);
+    this.catalog?.refresh();
     $<HTMLButtonElement>('#tb-undo').disabled = !this.history.canUndo;
     $<HTMLButtonElement>('#tb-redo').disabled = !this.history.canRedo;
     $('#tb-undo').title = this.history.undoLabel ? `Zpět: ${this.history.undoLabel} (Ctrl+Z)` : 'Zpět (Ctrl+Z)';
@@ -1002,6 +1014,8 @@ export class App {
       if (this.teamUi) this.teamUi.update(this.session.game.driver.local(), this.session.game.driver.remotes());
       this.renderScoreboard(dt);
     } else {
+      // Náhledy katalogu: po dvou na snímek, jen v editoru (vykreslí se do rohu, scéna je přepíše).
+      if (this.thumbs?.pending) this.thumbs.pump(this.renderer, this.world, 2);
       this.editor.update(dt);
       if (this.uiDirty) {
         this.uiDirty = false;

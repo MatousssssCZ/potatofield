@@ -48,6 +48,10 @@ Screenshoty UI se skutečným lokálním serverem: `node scripts/ui-shots.mjs 19
 
 ## Editor
 
+**Katalog** (levý panel) funguje jako katalog nábytku: dlaždice s náhledovými obrázky (vykreslenými
+stejnými materiály jako ve hře), kategorie z rozbalovací nabídky, vyhledávání a sekce **Použito na
+mapě** (assety, které mapa už obsahuje, s počtem). Klik vloží asset do středu pohledu.
+
 | Akce | Ovládání |
 |---|---|
 | Volná kamera | držet **RMB** + W A S D, **Q/E** dolů/nahoru, **Shift** rychleji, kolečko při RMB = rychlost |
@@ -93,7 +97,10 @@ mapu, hráče, kapacitu, pravidla a verzi.
 
 **Pilot (výchozí):** USMC × MEC, 8 proti 8, classy Assault / Medic / Support / Sniper, 100 HP bez
 regenerace. Zásah do 0 HP = **vyřazení** (15 s, lze oživit medikem – podržet E 1 s – na 50 HP, nebo
-vzdát pomoc podržením G). Sniper: M24 (USMC, puškohled 10× mil-dot, opakovačka – po každé ráně
+vzdát pomoc podržením G). Pád z výšky zraňuje (do ~3,5 m bez zranění, od ~12 m vyřazení). Na každém kontrolním
+bodu stojí stožár s vlajkou: vlajka vlastníka je nahoře, při neutralizaci klesá, neutrální bod má
+bílou vlajku dole, při zabírání stoupá vlajka nového týmu; bez hráčů se rozpracovaný postup pomalu
+(20 s) vrací do klidu. Sniper: M24 (USMC, puškohled 10× mil-dot, opakovačka – po každé ráně
 cyklus závěru) a SVD (MEC, PSO-1 4×). Při plném míření se obraz přepne do puškohledu; citlivost
 myši klesá se zvětšením.
 
