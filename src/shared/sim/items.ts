@@ -33,5 +33,10 @@ export function stepItem(kind: string, mv: MovementConfig, ps: PlayerState, ws: 
       ws.actionEnd = t + 0.15;
     }
   }
+  // Na žebříku žádné akce (nůž, hod, lékárna, defibrilátor) – ruce drží žebřík.
+  if (ps.ladder) {
+    ws.blockReason = 'na žebříku';
+    return;
+  }
   hooks?.act(kind, ws, input, t);
 }

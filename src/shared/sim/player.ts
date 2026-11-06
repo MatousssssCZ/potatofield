@@ -5,7 +5,16 @@ import { MOVE_QUERY_GROUPS, type PhysicsWorld } from '../physics/world';
 import { BTN, type InputFrame } from './input';
 import type { LadderDef } from '../../world/parts';
 
-export const LADDER = { speed: 2.2, reach: 0.95, exitForward: 0.6, detachPush: 1.6 } as const;
+export const LADDER = {
+  speed: 2.2,
+  reach: 0.95,
+  exitForward: 0.6,
+  detachPush: 1.6,
+  /** Pohled níž než tento úhel (rad) = W leze dolů (jako BF2). */
+  lookDown: -0.3,
+  /** Po seskoku / sestupu se na žebřík znovu samo nenastoupí (ticky). */
+  cooldownTicks: 30,
+} as const;
 
 /**
  * Stav pěšáka. Čistá data (kopírovatelná pro rollback/replay a síť).
@@ -47,6 +56,8 @@ export interface PlayerState {
   blocked: string[];
   /** ID žebříku, na kterém hráč visí (null = nelezé). */
   ladder: string | null;
+  /** Ticky do dalšího automatického nástupu na žebřík (po seskoku/sestupu). */
+  ladderCooldown: number;
 }
 
 export function createPlayerState(cfg: MovementConfig, pos: V3, yaw = 0): PlayerState {
@@ -74,6 +85,7 @@ export function createPlayerState(cfg: MovementConfig, pos: V3, yaw = 0): Player
     weaponBlocksSprint: false,
     blocked: [],
     ladder: null,
+    ladderCooldown: 0,
   };
 }
 
@@ -210,7 +222,10 @@ export class PlayerController {
   }
 
   /**
-   * Lezení: E nastoupí (zespodu i shora), W/S nahoru/dolů, Space pustí.
+   * Lezení jako v BF2: k žebříku stačí dojít (zespodu jít proti němu, shora sejít přes hranu)
+   * a nastoupí se samo; E nastoupí také. Směr lezení volí pohled: W s pohledem nahoru/rovně
+   * leze nahoru, s pohledem dolů dolů (S obráceně). Nahoře se samo vystoupí, dole samo sleze,
+   * Space seskočí. Na žebříku se nestřílí (zbraně kontrolují `ladder`).
    * Vrací true, pokud tento tick obsloužil žebřík (normální pohyb se přeskočí).
    */
   private stepLadder(s: PlayerState, input: InputFrame, t: number, dt: number): boolean {
@@ -218,14 +233,18 @@ export class PlayerController {
     const standH = cfg.stances.stand.height;
     const pressed = (b: number) => (input.pressed & b) !== 0;
     if (!s.ladder) {
-      // Nástup: dosah k bodu před žebříkem a pohled zhruba k žebříku.
+      const manual = pressed(BTN.USE);
+      if (!manual && (s.ladderCooldown > 0 || input.moveZ <= 0 || s.stance === 'prone')) return false;
+      // Směr chůze ve světě (dopředu podle pohledu).
       const fw = forwardOf(s.yaw);
       for (const L of this.ladders) {
         const top = L.base.y + L.height;
         const front = this.ladderPoint(L, s.pos.y);
         const dist = Math.hypot(front.x - s.pos.x, front.z - s.pos.z);
         const facingDot = fw.x * L.facing.x + fw.z * L.facing.z;
-        if (dist < LADDER.reach && s.pos.y >= L.base.y - 0.4 && s.pos.y <= top - 0.6 && facingDot > 0.2) {
+        // Zespodu: jde proti žebříku a nedívá se dolů (jinak by se po sestupu hned znovu chytil).
+        const upIntent = manual || s.pitch > LADDER.lookDown;
+        if (dist < LADDER.reach && s.pos.y >= L.base.y - 0.4 && s.pos.y <= top - 0.6 && facingDot > (manual ? 0.2 : 0.5) && upIntent) {
           if (!this.fits(standH, s.yaw, front)) {
             s.blocked.push('žebřík: není místo');
             return false;
@@ -234,9 +253,9 @@ export class PlayerController {
           s.pos = front;
           break;
         }
-        // Nástup shora: hráč stojí na hraně nad žebříkem a dívá se ven (k lezci).
+        // Shora: hráč stojí na hraně nad žebříkem a jde ven přes hranu (k lezci).
         const topPt = { x: L.base.x + L.facing.x * LADDER.exitForward, z: L.base.z + L.facing.z * LADDER.exitForward };
-        if (Math.hypot(topPt.x - s.pos.x, topPt.z - s.pos.z) < LADDER.reach && Math.abs(s.pos.y - top) < 0.45 && facingDot < -0.2) {
+        if (Math.hypot(topPt.x - s.pos.x, topPt.z - s.pos.z) < LADDER.reach && Math.abs(s.pos.y - top) < 0.45 && facingDot < (manual ? -0.2 : -0.5)) {
           const p = this.ladderPoint(L, top - standH + 0.3);
           if (!this.fits(standH, s.yaw, p)) {
             s.blocked.push('žebřík: není místo pro sestup');
@@ -264,22 +283,32 @@ export class PlayerController {
     }
     s.sprinting = false;
     s.blocked.push('na žebříku: bez střelby a míření');
-    if (pressed(BTN.JUMP)) {
-      // Pustit se: malý odraz od žebříku, dál běžná fyzika.
+    const detach = () => {
       s.ladder = null;
+      s.ladderCooldown = LADDER.cooldownTicks;
+    };
+    if (pressed(BTN.JUMP)) {
+      // Seskok: malý odraz od žebříku, dál běžná fyzika (pád z výšky zraní).
+      detach();
       s.vel = { x: -L.facing.x * LADDER.detachPush, y: 0, z: -L.facing.z * LADDER.detachPush };
       s.takeoffSpeed = LADDER.detachPush;
       s.grounded = false;
       return false;
     }
+    // Směr podle pohledu: čelem k žebříku = dívat se dolů znamená dolů; zády (sestup shora) =
+    // W leze dolů, pokud se hráč výrazně nedívá nahoru.
+    const fw = forwardOf(s.yaw);
+    const facingDot = fw.x * L.facing.x + fw.z * L.facing.z;
+    const lookSign = facingDot >= 0 ? (s.pitch < LADDER.lookDown ? -1 : 1) : s.pitch > 0.4 ? 1 : -1;
+    const dir = Math.max(-1, Math.min(1, input.moveZ)) * lookSign;
     const top = L.base.y + L.height;
-    const climb = Math.max(-1, Math.min(1, input.moveZ)) * LADDER.speed * dt;
+    const climb = dir * LADDER.speed * dt;
     let y = s.pos.y + climb;
-    if (input.moveZ > 0 && y >= top - 0.25) {
+    if (dir > 0 && y >= top - 0.25) {
       // Výstup nahoře: jen když se tělo vejde – jinak zůstat (neprojít zdí ani stropem).
       const exit = { x: L.base.x + L.facing.x * LADDER.exitForward, y: top + 0.02, z: L.base.z + L.facing.z * LADDER.exitForward };
       if (this.fits(standH, s.yaw, exit)) {
-        s.ladder = null;
+        detach();
         s.pos = exit;
         s.vel = { x: 0, y: 0, z: 0 };
         s.grounded = false;
@@ -289,15 +318,17 @@ export class PlayerController {
       s.blocked.push('žebřík: výstup blokován');
       y = Math.min(y, top - 0.25);
     }
-    if (y <= L.base.y) {
+    // Dole: u země se sleze samo (žádný seskok potřeba).
+    if (dir < 0 && y <= L.base.y + 0.05) {
       y = L.base.y;
-      if (input.moveZ < 0) {
-        s.ladder = null;
+      {
+        detach();
         s.pos = this.ladderPoint(L, y);
         this.applyPose(s);
         return true;
       }
     }
+    y = Math.max(L.base.y, y);
     const next = this.ladderPoint(L, y);
     if (this.fits(standH, s.yaw, next)) s.pos = next;
     else s.blocked.push('žebřík: překážka');
@@ -336,7 +367,8 @@ export class PlayerController {
     s.pitch = clamp(s.pitch + input.lookDPitch, -pl, pl);
 
     // --- Žebřík (sdílený stav pohybu, žádný teleport editoru) ---
-    if (s.ladder || pressed(BTN.USE)) {
+    if (s.ladderCooldown > 0) s.ladderCooldown--;
+    if (this.ladders.length) {
       if (this.stepLadder(s, input, t, dt)) {
         s.tick++;
         return;

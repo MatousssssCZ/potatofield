@@ -134,7 +134,7 @@ describe('schody, žebřík, most', () => {
     expect(steep.size[2]).toBeGreaterThanOrEqual(steep.size[1]);
   });
 
-  it('žebřík: E nastoupí, W vyleze, bezpečný výstup na střechu, Space pustí', async () => {
+  const ladderScene = async () => {
     // Zeď/střecha 4 m vysoká za žebříkem (na straně +Z žebříku → hráč přichází od −Z).
     const ladder = obj('struct.ladder', { height: 4 }, [0, 0, -3], Math.PI);
     const roof = obj('prim.box', { width: 6, height: 4, depth: 6 }, [0, 0, -6.03]);
@@ -143,16 +143,52 @@ describe('schody, žebřík, most', () => {
     const s = new Sim(phys, { x: 0, y: 0, z: -1.5 }, 0);
     s.ctrl.ladders = laddersForMap(gen);
     s.settle();
+    return s;
+  };
+
+  it('žebřík jako BF2: dojít k němu = nastoupí samo, W s pohledem rovně vyleze na střechu', async () => {
+    const s = await ladderScene();
     s.run(30, { moveZ: 1 });
-    s.run(1, { held: BTN.USE });
     expect(s.s.ladder).not.toBeNull();
-    s.run(3 * 60, { moveZ: 1 });
+    for (let i = 0; i < 4 * 60 && s.s.ladder; i++) s.run(1, { moveZ: 1 });
     expect(s.s.ladder).toBeNull();
     s.run(30, {});
     expect(s.s.pos.y).toBeGreaterThan(3.95);
     expect(s.s.grounded).toBe(true);
     expect(s.s.pos.z).toBeLessThan(-3.2); // stojí na střeše, ne ve zdi
     expect(s.ctrl.fits(1.8, s.s.yaw, s.s.pos)).toBe(true);
+  });
+
+  it('pohled dolů + W = lezení dolů, u země sleze samo a hned znovu nenastoupí', async () => {
+    const s = await ladderScene();
+    s.run(30, { moveZ: 1 });
+    s.run(60, { moveZ: 1 });
+    const y = s.s.pos.y;
+    expect(y).toBeGreaterThan(1);
+    s.run(1, { lookDPitch: -0.6 });
+    s.run(20, { moveZ: 1 });
+    expect(s.s.pos.y).toBeLessThan(y);
+    s.run(120, { moveZ: 1 });
+    expect(s.s.ladder).toBeNull();
+    expect(s.s.pos.y).toBeLessThan(0.1);
+    s.run(60, { moveZ: 1 }); // stále W s pohledem dolů → zpět nenastoupí
+    expect(s.s.ladder).toBeNull();
+  });
+
+  it('ze střechy: přejít přes hranu k žebříku = nastoupí a sleze dolů; Space seskočí', async () => {
+    const s = await ladderScene();
+    // Na střechu (výstup), otočit se k hraně (k +Z, kde je žebřík) a jít.
+    s.run(30, { moveZ: 1 });
+    for (let i = 0; i < 4 * 60 && s.s.ladder; i++) s.run(1, { moveZ: 1 });
+    s.run(40, {});
+    s.run(1, { lookDYaw: Math.PI });
+    s.run(60, { moveZ: 1 });
+    expect(s.s.ladder).not.toBeNull();
+    const y = s.s.pos.y;
+    s.run(30, { moveZ: 1 });
+    expect(s.s.pos.y).toBeLessThan(y); // zády k žebříku: W leze dolů
+    s.run(1, { pressed: BTN.JUMP, held: BTN.JUMP });
+    expect(s.s.ladder).toBeNull();
   });
 
   it('žebřík s blokovaným výstupem: hráč neprojde stropem a zůstane na žebříku', async () => {
@@ -165,7 +201,6 @@ describe('schody, žebřík, most', () => {
     s.ctrl.ladders = laddersForMap(gen);
     s.settle();
     s.run(30, { moveZ: 1 });
-    s.run(1, { held: BTN.USE });
     s.run(4 * 60, { moveZ: 1 });
     expect(s.s.ladder).not.toBeNull();
     expect(s.s.blocked.join()).toMatch(/výstup blokován/);

@@ -262,7 +262,7 @@ registerAsset({
   materials: ['metal', 'paintedMetal'],
   defaultMaterial: 'paintedMetal',
   describe(p) {
-    return `${Math.floor(n(p, 'height') / 0.3)} příček · E nastoupit, W/S lézt, Space pustit`;
+    return `${Math.floor(n(p, 'height') / 0.3)} příček · dojdi k němu = nastoupí, pohled nahoru/dolů + W = směr, Space seskočí`;
   },
   // Žebřík stojí v z = 0 (u zdi na straně +Z), lezec přichází z −Z.
   ladders(p) {

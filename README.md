@@ -152,7 +152,7 @@ Potvrzeno / Odmítnuto podle odpovědi serveru. Shoz zásob chybí (hra nemá sy
 | Režim střelby | B (jen podle skutečných režimů zbraně) |
 | Nasazení (výbava, místo, čekání) | Enter |
 | Taktická mapa | M |
-| Žebřík | E nastoupit, W/S lézt, Space pustit |
+| Žebřík | dojít k němu (zespodu i ze střechy přes hranu) = nastoupí samo; W s pohledem nahoru/rovně leze nahoru, s pohledem dolů dolů; u země a nahoře vystoupí samo; Space seskočí; na žebříku se nestřílí (E nastoupí také) |
 | Pauza (Pokračovat / Nasazení / Nastavení / Ovládání / Odpojit) | Esc |
 | Oživit (medik, defibrilátor) / vzdát pomoc (vyřazený) | LMB s defibrilátorem / držet G |
 | Léčit (lékárna) / doplnit munici (zásobování) | držet LMB |
