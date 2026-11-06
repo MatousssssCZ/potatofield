@@ -65,6 +65,8 @@ export interface WeaponModel {
   cycle: 'none' | 'pump' | 'bolt';
   /** Strana, kam odchází schránka/zásobník při přebití (+1 vpravo, −1 vlevo, 0 dolů). */
   magSide: number;
+  /** Pistole: závěr (chargingHandle) při výstřelu cykluje a po posledním náboji zůstane vzadu. */
+  slideCycle?: boolean;
   triangles: number;
 }
 

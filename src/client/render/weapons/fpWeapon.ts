@@ -102,6 +102,7 @@ export class FPWeapon {
   /** Závěr / přebíjení právě zaměstnává ruku → puškohled se nepoužívá (hra ukáže zbraň). */
   busy = false;
   private busyBlend = 0;
+  private slideAt = -10;
   /** Pásové přebití: úhel víka a posun schránky (prostor zbraně). */
   private coverAngle = 0;
   private boxOffset = new THREE.Vector3();
@@ -291,7 +292,10 @@ export class FPWeapon {
     const lh = this.leftHand.root;
     lh.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(lx, ly, lz));
     const pumpTravel = this.model.moving.pump?.travel?.z ?? 0;
-    const base = new THREE.Vector3(-0.05, P.gripLeft.y - 0.032, P.gripLeft.z + 0.012 + this.pumpPos * pumpTravel);
+    // Pistole: podpůrná ruka obepíná pravou zleva zespodu (držení oběma rukama), ne předpažbí.
+    const base = this.model.slideCycle
+      ? new THREE.Vector3(-0.022, P.gripRight.y - 0.03, P.gripRight.z + 0.05)
+      : new THREE.Vector3(-0.05, P.gripLeft.y - 0.032, P.gripLeft.z + 0.012 + this.pumpPos * pumpTravel);
     const magPos = new THREE.Vector3(-0.05, P.magazineSocket.y - 0.11, P.magazineSocket.z + 0.01);
     const below = new THREE.Vector3(-0.08, -0.36, 0.02);
     // Prázdné přebití: záchyt závěru vlevo (AR), nebo natažení páky závěru (AK/bullpup – levá ruka přes zbraň).
@@ -334,7 +338,7 @@ export class FPWeapon {
       if (emptyBolt) target.lerp(bolt, boltT);
       target.lerp(base, home);
       this.leftHand.setPose(toMag > 0.5 && home < 0.5 && boltT < 0.5 ? POSES.magazine : POSES.handguard, 0.25);
-    } else this.leftHand.setPose(POSES.handguard, 0.3);
+    } else this.leftHand.setPose(this.model.slideCycle ? POSES.grip : POSES.handguard, 0.3);
     lh.position.copy(target);
   }
 
@@ -388,6 +392,7 @@ export class FPWeapon {
         this.flash.rotation.z = Math.random() * Math.PI;
         this.flash.scale.setScalar(0.85 + Math.random() * 0.4);
         if (this.showCasings && this.model.cycle === 'none') this.ejectCasing();
+        if (this.model.slideCycle) this.slideAt = this.time;
         if (this.model.cycle === 'bolt') {
           this.boltStart = this.time + 0.12;
           this.boltSound = 0;
@@ -437,7 +442,15 @@ export class FPWeapon {
     const [p0, p1, p2, p3] = belt ? [0.88, 0.91, 0.92, 0.95] : [0.72, 0.78, 0.8, 0.83];
     const pull = empty && this.model.emptyAction === 'chargingHandle' ? THREE.MathUtils.smoothstep(reloadT, p0, p1) * (1 - THREE.MathUtils.smoothstep(reloadT, p2, p3)) : 0;
     this.handlePull = pull;
-    if (this.handle && this.model.moving.chargingHandle && this.model.cycle !== 'bolt') this.handle.position.copy(this.model.moving.chargingHandle.pivot).addScaledVector(this.model.moving.chargingHandle.travel ?? new THREE.Vector3(), pull);
+    let slide = pull;
+    if (this.model.slideCycle) {
+      // Pistole: závěr cykluje při výstřelu; po posledním náboji zůstane vzadu (záchyt) do přebití.
+      const u = (this.time - this.slideAt) / 0.07;
+      const pulse = u >= 0 && u <= 1 ? Math.sin(Math.PI * u) : 0;
+      const locked = ws && ws.mag === 0 && (ws.action !== 'reload' || reloadT < 0.75) ? 1 : 0;
+      slide = Math.max(pulse, locked);
+    }
+    if (this.handle && this.model.moving.chargingHandle && this.model.cycle !== 'bolt') this.handle.position.copy(this.model.moving.chargingHandle.pivot).addScaledVector(this.model.moving.chargingHandle.travel ?? new THREE.Vector3(), slide);
     this.placeHands(reloadT, empty);
 
     // Prezentace (meze N ze zadání „Pohyb vojáků“, kap. 11): bob hip ≤ 8 mm svisle / 5 mm bokem,

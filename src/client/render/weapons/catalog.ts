@@ -5,6 +5,7 @@ import { buildQBB95, buildQBZ95 } from './bullpup';
 import { buildM249, buildPKM } from './belt';
 import { buildHawk97, buildR870 } from './shotgun';
 import { buildM24, buildSVD } from './sniper';
+import { buildM9, buildPM } from './pistol';
 import type { WeaponModel } from './types';
 import { BUDGET_TABLE } from './budgetTable';
 import { FULL_DETAIL, withDetail } from './meshkit';
@@ -52,9 +53,23 @@ export const WEAPON_DEFS: WeaponDef[] = ARSENAL.map((a) => ({
   verified: BUILD[a.id]?.verified ?? true,
 }));
 
+/**
+ * Pistole (slot 2) – modely mimo arzenál primárních zbraní. Ruce podle nositele (předává hra);
+ * rozpočet v první osobě 1 500–2 000 trojúhelníků.
+ */
+export const SIDEARM_DEFS: WeaponDef[] = [
+  { id: 'm9', name: 'M9', faction: 'usmc', kit: 'assault', hands: 'usmcAssault', build: buildM9, verified: true },
+  { id: 'pm', name: 'PM', faction: 'mec', kit: 'assault', hands: 'mecAssault', build: buildPM, verified: true },
+];
+
 export function weaponDef(id: string): WeaponDef {
-  const d = WEAPON_DEFS.find((w) => w.id === id && w.build);
+  const d = WEAPON_DEFS.find((w) => w.id === id && w.build) ?? SIDEARM_DEFS.find((w) => w.id === id);
   return d ?? WEAPON_DEFS[0];
+}
+
+/** Má položka vlastní 3D model zbraně (primární nebo pistole)? */
+export function hasGunModel(id: string) {
+  return WEAPON_DEFS.some((w) => w.id === id && w.build) || SIDEARM_DEFS.some((w) => w.id === id);
 }
 
 /**

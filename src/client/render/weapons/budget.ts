@@ -22,4 +22,7 @@ export const WEAPON_BUDGET = {
   firstPerson: { min: 3000, max: 3500 },
   world: { min: 1000, max: 1300 },
   worldFar: { min: 200, max: 300 },
+  /** Pistole: vlastní pohled 1 500–2 000; na ostatních hráčích (N) 350–600. */
+  pistolFirstPerson: { min: 1500, max: 2000 },
+  pistolWorld: { min: 350, max: 600 },
 } as const;

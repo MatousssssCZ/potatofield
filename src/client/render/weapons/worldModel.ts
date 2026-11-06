@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { buildWorldLod0 } from './catalog';
+import { SIDEARM_DEFS, buildWorldLod0 } from './catalog';
+import { isItemModel, itemGeometry } from './items';
 import { WEAPON_BUDGET } from './budget';
 
 /**
@@ -18,6 +19,7 @@ export interface WorldWeapon {
   magazineSocket: THREE.Vector3;
   /** Zadní konec pažby (z) – opření o rameno. */
   stockZ: number;
+  hold: 'rifle' | 'pistol' | 'item';
 }
 
 const tri = (g: THREE.BufferGeometry) => (g.index ? g.index.count : g.getAttribute('position').count) / 3;
@@ -71,6 +73,14 @@ export function worldWeapon(id: string, quality: 'low' | 'standard' | 'high'): W
   const key = `${id}:${quality}`;
   const hit = cache.get(key);
   if (hit) return hit;
+  if (isItemModel(id)) {
+    // Nestřelná položka v ruce: jedna geometrie (malá), vzdálené LOD jen obalové kvádry.
+    const g0 = itemGeometry(id).clone();
+    const far = mergeGeometries(slices(g0, 1), false)!;
+    const w: WorldWeapon = { lods: [g0, far, far.clone()], triangles: [tri(g0), tri(far), tri(far)], muzzle: new THREE.Vector3(0, 0.1, -0.05), gripRight: new THREE.Vector3(), gripLeft: new THREE.Vector3(id === 'defib' ? -0.09 : -0.03, -0.02, 0.02), magazineSocket: new THREE.Vector3(), stockZ: 0.05, hold: 'item' };
+    cache.set(key, w);
+    return w;
+  }
   void quality; // rozpočet world modelu je pevný (1 000–1 300 / 200–300 trojúhelníků)
   const m = buildWorldLod0(id);
   // Díly v klidové poloze (pohyblivé díly posunuté na svůj pivot). Volný náboj brokovnice se nezobrazuje.
@@ -112,6 +122,7 @@ export function worldWeapon(id: string, quality: 'low' | 'standard' | 'high'): W
     gripLeft: (m.points.pumpGrip ?? m.points.gripLeft).clone(),
     magazineSocket: m.points.magazineSocket.clone(),
     stockZ: lod0.boundingBox!.max.z,
+    hold: SIDEARM_DEFS.some((d) => d.id === id) ? 'pistol' : 'rifle',
   };
   cache.set(key, w);
   return w;

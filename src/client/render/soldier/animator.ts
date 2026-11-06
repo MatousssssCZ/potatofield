@@ -37,6 +37,8 @@ export interface WeaponFrame {
   gripLeft: THREE.Vector3;
   magazineSocket: THREE.Vector3;
   stockZ: number;
+  /** Držení: puška u ramene (výchozí), pistole v natažených rukou, předmět v ruce před tělem. */
+  hold?: 'rifle' | 'pistol' | 'item';
 }
 
 /** Návrhové parametry (N). */
@@ -173,9 +175,17 @@ export class SoldierAnimator {
     const shoulder = new THREE.Vector3(0.13 - inp.ads * 0.07, 0.13 + inp.ads * 0.03, -0.07).applyMatrix4(B.spine2.matrixWorld);
     const wq = new THREE.Quaternion().setFromEuler(new THREE.Euler(clamp(inp.pitch, -1.25, 1.25) * (1 - sprint) - sprint * 0.75 - rl * 0.35 + this.kick * 0.06, inp.yaw + sprint * 0.55 + rl * 0.15, -rl * 0.5, 'YXZ'));
     weapon.quaternion.copy(wq);
-    const back = new THREE.Vector3(0, 0, wf.stockZ - 0.03 + this.kick * 0.04 + sprint * 0.12).applyQuaternion(wq);
-    const low = new THREE.Vector3(-0.02 * sprint, -0.03 * (1 - inp.ads) - 0.06 * sprint - rl * 0.04, 0).applyQuaternion(wq);
-    weapon.position.copy(shoulder).sub(back).add(low);
+    if (!wf.hold || wf.hold === 'rifle') {
+      const back = new THREE.Vector3(0, 0, wf.stockZ - 0.03 + this.kick * 0.04 + sprint * 0.12).applyQuaternion(wq);
+      const low = new THREE.Vector3(-0.02 * sprint, -0.03 * (1 - inp.ads) - 0.06 * sprint - rl * 0.04, 0).applyQuaternion(wq);
+      weapon.position.copy(shoulder).sub(back).add(low);
+    } else {
+      // Pistole v natažených pažích před obličejem / předmět v pravé ruce před hrudníkem.
+      const pistol = wf.hold === 'pistol';
+      const reach = (pistol ? 0.4 + inp.ads * 0.08 : 0.28) * (1 - sprint * 0.4) - this.kick * 0.03;
+      const off = new THREE.Vector3(pistol ? -0.1 : 0.0, pistol ? -0.05 : -0.2, -reach).applyQuaternion(wq);
+      weapon.position.copy(shoulder).add(off);
+    }
     weapon.updateMatrixWorld(true);
     weapon.visible = this.lie < 0.3;
 

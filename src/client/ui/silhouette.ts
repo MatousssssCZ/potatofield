@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { worldWeapon } from '../render/weapons/worldModel';
+import { isItemModel, itemGeometry } from '../render/weapons/items';
 
 /**
  * Silueta předmětu z jeho skutečné geometrie (boční průmět, ústí vlevo) – pro panel výbavy,
@@ -16,6 +17,7 @@ export function registerSilhouette(id: string, geo: () => THREE.BufferGeometry) 
 function geometryOf(id: string): THREE.BufferGeometry | null {
   const c = custom.get(id);
   if (c) return c();
+  if (isItemModel(id)) return itemGeometry(id);
   try {
     return worldWeapon(id, 'low').lods[0];
   } catch {

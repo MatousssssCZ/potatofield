@@ -3,6 +3,7 @@ import { PF_RIFLE, type WeaponConfig } from '../config/weapon';
 import { DEFAULT_FACTIONS, PILOT, arsenalEntry, fallDamage, isGun, rulesOf, weaponFor, type Faction, type Kit } from '../config/arsenal';
 import { activeItem, createInventory, resolveRequest, switchTo, type Inventory } from './inventory';
 import { stepItem, type ItemHooks } from './items';
+import { itemHooksFor } from './matchItems';
 import type { MapDocument, SpawnPoint, Team, Zone } from '../map/schema';
 import type { V3 } from '../math';
 import type { PhysicsWorld } from '../physics/world';
@@ -356,8 +357,8 @@ export class MatchSim {
   }
 
   /** Akce nestřelných položek hráče (nůž, granáty, nástroje) – doplňují je další etapy. */
-  protected itemHooks(_p: SimPlayer): ItemHooks | null {
-    return null;
+  protected itemHooks(p: SimPlayer): ItemHooks | null {
+    return itemHooksFor(this, p);
   }
 
   /** Jeden simulační tick se vstupy hráčů (chybějící vstup = neutrální, bez držené střelby). */

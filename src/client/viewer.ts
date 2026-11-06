@@ -7,10 +7,13 @@ import { reloadDuration } from '../shared/config/weapon';
 import { rulesOf } from '../shared/config/arsenal';
 import { FPWeapon } from './render/weapons/fpWeapon';
 import { HAND_LOOKS } from './render/weapons/hands';
-import { FACTION_LABEL, KIT_LABEL, WEAPON_DEFS, weaponDef } from './render/weapons/catalog';
+import { FACTION_LABEL, KIT_LABEL, SIDEARM_DEFS, WEAPON_DEFS, weaponDef } from './render/weapons/catalog';
 
 /** Interní prohlížeč zbraní a rukou (vývojová scéna). */
-const WEAPONS = WEAPON_DEFS.map((w) => ({ id: w.id, label: `${FACTION_LABEL[w.faction]} ${KIT_LABEL[w.kit]} – ${w.name}${w.build ? (w.verified ? '' : ' (neověřený návrh)') : ' (čeká)'}`, ready: !!w.build }));
+const WEAPONS = [
+  ...WEAPON_DEFS.map((w) => ({ id: w.id, label: `${FACTION_LABEL[w.faction]} ${KIT_LABEL[w.kit]} – ${w.name}${w.build ? (w.verified ? '' : ' (neověřený návrh)') : ' (čeká)'}`, ready: !!w.build })),
+  ...SIDEARM_DEFS.map((w) => ({ id: w.id, label: `${FACTION_LABEL[w.faction]} pistole – ${w.name}`, ready: true })),
+];
 
 const $ = <T extends HTMLElement>(s: string) => document.querySelector(s) as T;
 const canvas = $<HTMLCanvasElement>('#c');

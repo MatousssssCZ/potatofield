@@ -17,6 +17,9 @@ import { aimAngles, spreadOf } from '../../shared/sim/weapon';
 import { Effects } from '../render/effects';
 import type { QualityProfile } from '../render/quality';
 import { FPWeapon } from '../render/weapons/fpWeapon';
+import { weaponDef } from '../render/weapons/catalog';
+import { FPItem } from '../render/weapons/fpItem';
+import { isItemModel } from '../render/weapons/items';
 import type { WorldView } from '../render/worldView';
 import { Hud } from '../ui/hud';
 import type { GameAudio } from './audio';
@@ -47,7 +50,7 @@ export class Game {
   private kickT = 1;
   private kickAmp = 0;
   private lastLandSeen = -1;
-  fp: FPWeapon;
+  fp: FPWeapon | FPItem;
   private fpId: string;
   readonly effects: Effects;
   readonly hud: Hud;
@@ -185,7 +188,17 @@ export class Game {
 
   /** Zbraň v první osobě podle výbavy (přestaví se, když server potvrdí jinou zbraň). */
   private makeFp(weaponId: string) {
-    const fp = new FPWeapon(weaponId, null, this.quality.id);
+    // Ruce podle nositele (frakce + classa primární zbraně), ne podle aktivní položky.
+    const prim = this.driver.local()?.primary;
+    const hands = prim ? weaponDef(prim).hands : null;
+    // Nestřelné položky (nůž, granáty, nástroje) mají vlastní zobrazení s rukama.
+    if (isItemModel(weaponId)) {
+      const it = new FPItem(weaponId, hands ?? 'usmcAssault', this.quality.id);
+      it.onMech = (k) => this.audio.mech(k);
+      this.camera.add(it.root);
+      return it;
+    }
+    const fp = new FPWeapon(weaponId, hands, this.quality.id);
     fp.showCasings = this.quality.id !== 'low';
     fp.onMech = (k) => this.audio.mech(k);
     fp.onShot = () => this.audio.shot(rulesOf(weaponId).pellets ? 'shotgun' : rulesOf(weaponId) === PF_MG ? 'mg' : 'rifle');

@@ -93,3 +93,66 @@ describe('výbava: sloty a přepínání', () => {
     expect(p.inv!.active).toBe(3);
   });
 });
+
+describe('nůž a pistole', () => {
+  async function duel() {
+    const d = buildEmptyMap('knife', 64, 2);
+    const phys = await PhysicsWorld.create();
+    phys.setTerrain(d.terrain);
+    const m = new MatchSim(phys, d, { conquest: false });
+    const a = m.addPlayer('a', 'teamA');
+    const b = m.addPlayer('b', 'teamB');
+    m.requestSpawn('a', null, 'm4a1');
+    m.requestSpawn('b', null, 'ak101');
+    a.ctrl.place(a.state, { x: 0, y: 0.02, z: 0 }, 0);
+    b.ctrl.place(b.state, { x: 0, y: 0.02, z: -1.2 }, 0);
+    const step = (n: number, f: { pressed?: number; slot?: number } = {}) => {
+      for (let i = 0; i < n; i++) m.step(new Map([['a', { ...emptyInput(m.tick), pressed: i === 0 ? (f.pressed ?? 0) : 0, slot: i === 0 ? (f.slot ?? 0) : 0 }], ['b', emptyInput(m.tick)]]));
+    };
+    step(40);
+    step(1, { slot: 1 });
+    step(30);
+    return { m, a, b, step };
+  }
+
+  it('nůž: soupeř těsně před hráčem je vyřazen jedním útokem', async () => {
+    const { a, b, step } = await duel();
+    expect(a.weapon.weaponId).toBe('knife');
+    step(1, { pressed: BTN.FIRE });
+    expect(a.weapon.action).toBe('attack');
+    step(20);
+    expect(b.downed).toBe(true);
+    expect(a.kills).toBe(1);
+  });
+
+  it('nůž: soupeř za zády ani daleko zásah nedostane', async () => {
+    const { a, b, step } = await duel();
+    b.ctrl.place(b.state, { x: 0, y: 0.02, z: 1.2 }, 0); // za zády
+    step(1, { pressed: BTN.FIRE });
+    step(40);
+    expect(b.alive).toBe(true);
+    b.ctrl.place(b.state, { x: 0, y: 0.02, z: -4 }, 0); // daleko
+    step(1, { pressed: BTN.FIRE });
+    step(40);
+    expect(b.hp).toBe(100);
+    void a;
+  });
+
+  it('pistole má vlastní zásobník a rezervu; primární zbraň si stav drží', async () => {
+    const { a, step } = await duel();
+    step(1, { slot: 3 });
+    step(40);
+    const prim = a.weapon;
+    for (let i = 0; i < 3; i++) step(8, { pressed: BTN.FIRE });
+    const pm = prim.mag;
+    step(1, { slot: 2 });
+    step(40);
+    expect(a.weapon.weaponId).toBe('m9');
+    expect(a.weapon.mag).toBe(rulesOf('m9').magazine);
+    step(8, { pressed: BTN.FIRE });
+    expect(a.weapon.mag).toBe(rulesOf('m9').magazine - 1);
+    step(1, { slot: 3 });
+    expect(a.weapon).toBe(prim);
+    expect(prim.mag).toBe(pm);
+  });
+});
