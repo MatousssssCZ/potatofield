@@ -129,3 +129,40 @@ describe('pilot: server 8 proti 8', () => {
     expect([...server.sim.players.values()].every((p) => !p.alive)).toBe(true);
   });
 });
+
+describe('pilot: poškození pádem', () => {
+  const drop = async (h: number) => {
+    const { m, a } = await setup();
+    // Dopadnout ze spawnu, pak pád z výšky h nad terénem.
+    step(m, 30);
+    const g = a.state.pos.y;
+    a.ctrl.place(a.state, { x: a.state.pos.x, y: g + h, z: a.state.pos.z }, 0);
+    const events: string[] = [];
+    for (let i = 0; i < 240; i++) {
+      step(m, 1);
+      for (const e of m.events) if (e.type === 'fall' || e.type === 'downed') events.push(e.type);
+      m.events.length = 0;
+    }
+    return { a, events };
+  };
+
+  it('skok a pád z 3 m bez zranění', async () => {
+    const { a, events } = await drop(3);
+    expect(a.hp).toBe(PILOT.maxHp);
+    expect(events).toEqual([]);
+  });
+
+  it('pád z 7 m zraní (jednou na dopad), hráč žije', async () => {
+    const { a, events } = await drop(7);
+    expect(a.alive).toBe(true);
+    expect(a.hp).toBeLessThan(PILOT.maxHp);
+    expect(a.hp).toBeGreaterThan(40);
+    expect(events).toEqual(['fall']);
+  });
+
+  it('pád z 14 m vyřadí (medik může oživit); po vypršení smrt s příčinou pád', async () => {
+    const { a, events } = await drop(14);
+    expect(a.downed).toBe(true);
+    expect(events).toEqual(['fall', 'downed']);
+  });
+});

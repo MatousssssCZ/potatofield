@@ -277,7 +277,14 @@ export class Game {
         const p = new THREE.Vector3(e.point.x, e.point.y, e.point.z);
         this.effects.impact(p, new THREE.Vector3(e.normal.x, e.normal.y, e.normal.z), e.surface);
         this.audio.impact(e.surface, p.distanceTo(eye));
+      } else if (e.type === 'fall') {
+        // Tvrdý dopad: tupý zvuk a krátké zčervenání okraje obrazu (poškození pádem).
+        if (e.id === this.driver.localId) {
+          this.audio.impact('dirt', 0);
+          this.hud.damage(this.now, e.damage);
+        }
       } else if (e.type === 'hit') {
+        if (e.target === this.driver.localId) this.hud.damage(this.now, e.damage);
         if (e.owner === this.driver.localId) {
           this.hud.hitmarker(this.now);
           this.audio.hitmarker();

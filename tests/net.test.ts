@@ -117,7 +117,8 @@ describe('síť – autoritativní server a dva klienti', () => {
     const frozen = cp.p;
     await run(60);
     expect(sim.players.has(b.id)).toBe(false);
-    expect(cp.p).toBe(frozen);
+    // Odpojený hráč nezabírá: postup nepokračuje, jen se pomalu vrací do klidu.
+    expect(Math.abs(cp.p)).toBeLessThan(Math.abs(frozen));
   });
 
   it('týmová izolace: týmový chat, kontakty a čety nepřítel nedostane; squad chat jen četa', async () => {

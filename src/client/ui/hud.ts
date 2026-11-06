@@ -89,6 +89,7 @@ export class Hud {
     mk('h-ammo', 'h-ammo tnum');
     this.els['h-br'].append(this.silhouette, this.els['h-ammo']);
     mk('h-hit', 'h-hit');
+    mk('h-hurt', 'h-hurt');
     mk('h-center', 'h-center');
     mk('h-zone', 'h-zone hidden');
     mk('h-downed', 'h-downed hidden');
@@ -121,6 +122,14 @@ export class Hud {
     parts[3].style.left = `${r}px`;
   }
 
+  /** Vlastní zranění: červený okraj obrazu úměrný poškození, rychle mizí. */
+  damage(now: number, amount: number) {
+    this.hurtUntil = now + 0.35 + Math.min(0.6, amount / 100);
+    this.hurtAmount = Math.min(1, 0.35 + amount / 80);
+  }
+  private hurtUntil = 0;
+  private hurtAmount = 0;
+
   hitmarker(now: number) {
     this.hitUntil = now + 0.15;
   }
@@ -145,6 +154,7 @@ export class Hud {
     const e = this.els;
     const now = c.now;
     e['h-hit'].style.opacity = now < this.hitUntil ? '1' : '0';
+    e['h-hurt'].style.opacity = now < this.hurtUntil ? String(this.hurtAmount * Math.min(1, (this.hurtUntil - now) / 0.35)) : '0';
     for (const list of [this.killfeed, this.sysmsg]) {
       for (const k of list) if (now > k.until) k.el.remove();
       list.splice(0, list.length, ...list.filter((k) => now <= k.until));
@@ -428,7 +438,7 @@ export class Hud {
     window.removeEventListener('keydown', this.onKey, true);
     window.removeEventListener('keyup', this.onKeyUp, true);
     this.deploy.dispose();
-    for (const id of ['h-tl', 'h-tr', 'h-bl', 'h-br', 'h-hit', 'h-center', 'h-zone', 'h-downed', 'h-end']) document.getElementById(id)?.remove();
+    for (const id of ['h-tl', 'h-tr', 'h-bl', 'h-br', 'h-hit', 'h-hurt', 'h-center', 'h-zone', 'h-downed', 'h-end']) document.getElementById(id)?.remove();
   }
 }
 

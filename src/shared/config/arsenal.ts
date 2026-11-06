@@ -54,7 +54,20 @@ export const PILOT = {
   reviveRange: 1.6,
   /** Vzdát pomoc: podržení klávesy (s) – jen UI, server přijme zprávu. */
   giveUpHold: 1.0,
+  /**
+   * Poškození pádem podle výšky pádu (m), počítané z rychlosti dopadu: do `fallSafe` bez
+   * zranění, pak lineárně, od `fallLethal` smrtelný pád (vyřazení – medik může oživit). (N)
+   */
+  fallSafe: 3.5,
+  fallLethal: 12,
 } as const;
+
+/** Poškození pádem z rychlosti dopadu (m/s) a gravitace (m/s²). */
+export function fallDamage(landSpeed: number, gravity: number): number {
+  const h = (landSpeed * landSpeed) / (2 * gravity);
+  if (h <= PILOT.fallSafe) return 0;
+  return Math.min(PILOT.maxHp, Math.round(((h - PILOT.fallSafe) / (PILOT.fallLethal - PILOT.fallSafe)) * PILOT.maxHp));
+}
 
 export const KITS: Kit[] = ['assault', 'medic', 'support', 'engineer', 'sniper'];
 export const FACTION_LABEL: Record<Faction, string> = { usmc: 'USMC', mec: 'MEC', pla: 'PLA' };

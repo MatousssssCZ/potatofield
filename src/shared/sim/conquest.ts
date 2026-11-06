@@ -29,6 +29,8 @@ export interface ConquestState {
   timeLimit: number;
   captureTime: number;
   neutralizeTime: number;
+  /** Bez hráčů v bodu se rozpracovaný postup pomalu vrací do klidu vlastníka (celá dráha za N s). */
+  returnTime: number;
   bleedInterval: number;
   respawnDelay: number;
   bleedAcc: Record<Team, number>;
@@ -76,6 +78,7 @@ export function createConquest(doc: MapDocument, scenarioId?: string): ConquestS
     timeLimit: sc?.timeLimit ?? 1200,
     captureTime: sc?.captureTime ?? 10,
     neutralizeTime: sc?.neutralizeTime ?? 10,
+    returnTime: 20,
     bleedInterval: sc?.bleedInterval ?? 5,
     respawnDelay: sc?.respawnDelay ?? 10,
     bleedAcc: { teamA: 0, teamB: 0 },
@@ -118,8 +121,16 @@ export function stepConquest(s: ConquestState, presence: Map<string, Record<Team
       continue; // oba týmy = postup stojí
     }
     if (!a && !b) {
+      // Nikdo v bodu: rozpracovaný postup se pomalu vrací do klidu – vlastněný bod vlajkou
+      // nahoru k vlastníkovi, neutrální bod dolů k neutrálu (jako vlajka v BF2).
       cp.activity = null;
-      continue; // rozpracovaný postup se zachová
+      const rest = cp.owner === 'neutral' ? 0 : sign(cp.owner as Team);
+      if (cp.p !== rest) {
+        const step = dt / s.returnTime;
+        const next = cp.p < rest ? Math.min(rest, cp.p + step) : Math.max(rest, cp.p - step);
+        cp.p = Math.round(next * 1e9) / 1e9;
+      }
+      continue;
     }
     const team: Team = a ? 'teamA' : 'teamB';
     const dir = sign(team);

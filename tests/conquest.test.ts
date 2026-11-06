@@ -50,7 +50,7 @@ describe('Conquest – stavový automat bodů', () => {
     expect(c.owner).toBe('teamA');
   });
 
-  it('oba týmy = sporný stav, postup stojí; po opuštění se postup zachová; soupeř ho nejprve vrací', () => {
+  it('oba týmy = sporný stav, postup stojí; po opuštění se pomalu vrací do klidu; soupeř ho vrací rychleji', () => {
     const s = createConquest(doc());
     const c = s.cps.find((x) => x.id === 'c2')!;
     run(s, 'c2', 1, 0, 5);
@@ -58,13 +58,30 @@ describe('Conquest – stavový automat bodů', () => {
     run(s, 'c2', 1, 1, 3);
     expect(c.p).toBe(p);
     expect(c.activity).toBe('contested');
-    run(s, 'c2', 0, 0, 3);
-    expect(c.p).toBe(p);
-    run(s, 'c2', 0, 1, 5.0); // vrátí zpět k neutrálu (stejnou rychlostí)
-    expect(c.p).toBe(0);
+    run(s, 'c2', 0, 0, 3); // nikdo: návrat k neutrálu 1/20 za s
+    expect(c.p).toBeCloseTo(p - 3 / s.returnTime, 3);
+    expect(c.owner).toBe('neutral');
+    run(s, 'c2', 0, 1, 3.5); // soupeř vrátí zbytek k neutrálu rychlostí zabrání
+    expect(c.p).toBeCloseTo(0, 5);
     expect(c.owner).toBe('neutral');
     run(s, 'c2', 1, 0, 2); // stejný tým pokračuje od neutrálu
     expect(c.p).toBeGreaterThan(0.15);
+  });
+
+  it('bez hráčů: rozpracovaná neutralizace se vrátí k vlastníkovi, rozpracované zabrání k neutrálu', () => {
+    const s = createConquest(doc());
+    const c3 = s.cps.find((x) => x.id === 'c3')!; // vlastní B (p = −1)
+    run(s, 'c3', 1, 0, 4); // A neutralizuje do −0,6
+    expect(c3.p).toBeCloseTo(-0.6, 2);
+    run(s, 'c3', 0, 0, 30);
+    expect(c3.p).toBe(-1);
+    expect(c3.owner).toBe('teamB');
+    const c2 = s.cps.find((x) => x.id === 'c2')!; // neutrální
+    run(s, 'c2', 0, 1, 6);
+    expect(c2.p).toBeCloseTo(-0.6, 2);
+    run(s, 'c2', 0, 0, 30);
+    expect(c2.p).toBe(0);
+    expect(c2.owner).toBe('neutral');
   });
 
   it('nezabíratelný bod se nemění; bleed jen z počítaných bodů; neutrální zůstávají ve jmenovateli', () => {
@@ -177,7 +194,9 @@ describe('Conquest v simulaci zápasu', () => {
     m.removePlayer('a');
     const p = m.conquest!.cps.find((c) => c.id === 'c2')!.p;
     idle(m, 2);
-    expect(m.conquest!.cps.find((c) => c.id === 'c2')!.p).toBe(p);
+    // Odpojený hráč už nezabírá: postup se jen pomalu vrací k neutrálu (nepokračuje).
+    expect(m.conquest!.cps.find((c) => c.id === 'c2')!.p).toBeLessThan(p);
+    expect(m.conquest!.cps.find((c) => c.id === 'c2')!.p).toBeGreaterThan(p - 0.2);
   });
 
   it('restart vrátí scénář, tickety a body; autorský dokument se nezmění', async () => {

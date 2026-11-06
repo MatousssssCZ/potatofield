@@ -1,6 +1,6 @@
 import { MOVEMENT, type MovementConfig } from '../config/movement';
 import { PF_RIFLE, type WeaponConfig } from '../config/weapon';
-import { DEFAULT_FACTIONS, PILOT, arsenalEntry, rulesOf, weaponFor, type Faction, type Kit } from '../config/arsenal';
+import { DEFAULT_FACTIONS, PILOT, arsenalEntry, fallDamage, rulesOf, weaponFor, type Faction, type Kit } from '../config/arsenal';
 import type { MapDocument, SpawnPoint, Team, Zone } from '../map/schema';
 import type { V3 } from '../math';
 import type { PhysicsWorld } from '../physics/world';
@@ -41,6 +41,9 @@ export interface SimPlayer {
   downed: boolean;
   downedUntil: number;
   downedBy: string | null;
+  downedCause: 'weapon' | 'fall';
+  /** Čas posledního zpracovaného dopadu (poškození pádem jednou na dopad). */
+  landSeen: number;
   /** Medik: koho právě oživuje a jak dlouho drží (s). */
   reviveTarget: string | null;
   reviveHeld: number;
@@ -66,6 +69,7 @@ export type SimEvent =
   | { type: 'hit'; owner: string; target: string; damage: number; zone: string; hp: number }
   | { type: 'death'; id: string; killer: string | null; cause: 'weapon' | 'zone' | 'fall' | 'giveup'; lifeId: number }
   | { type: 'downed'; id: string; killer: string | null; lifeId: number }
+  | { type: 'fall'; id: string; damage: number; hp: number }
   | { type: 'revive'; id: string; by: string; lifeId: number }
   | { type: 'spawn'; id: string; lifeId: number; spawnId: string | null }
   | { type: 'dummyDown'; id: string }
@@ -169,6 +173,8 @@ export class MatchSim {
       downed: false,
       downedUntil: 0,
       downedBy: null,
+      downedCause: 'weapon',
+      landSeen: -1e9,
       reviveTarget: null,
       reviveHeld: 0,
       revives: 0,
@@ -254,6 +260,7 @@ export class MatchSim {
     p.alive = true;
     p.lifeId++;
     p.zone = null;
+    p.landSeen = p.state.lastLandAt;
     this.events.push({ type: 'spawn', id, lifeId: p.lifeId, spawnId });
     return null;
   }
@@ -270,9 +277,10 @@ export class MatchSim {
    * Vyřazení zásahem: tělo zůstává, hráč je mimo boj po dobu okna pro oživení. Zabití se
    * připíše hned (vyřazení je výsledek zásahu), smrt a ticket až při definitivní smrti.
    */
-  down(p: SimPlayer, killer: string | null) {
+  down(p: SimPlayer, killer: string | null, cause: 'weapon' | 'fall' = 'weapon') {
     if (!p.alive) return;
-    if (this.opts.downed === false) return this.kill(p, killer, 'weapon');
+    if (this.opts.downed === false) return this.kill(p, killer, cause);
+    p.downedCause = cause;
     p.alive = false;
     p.downed = true;
     p.hp = 0;
@@ -301,7 +309,7 @@ export class MatchSim {
   private finalizeDowned(p: SimPlayer, cause: 'weapon' | 'giveup') {
     p.downed = false;
     p.alive = true; // kill() vyžaduje živého – dokončí smrt jedinou cestou (ticket jednou)
-    this.kill(p, p.downedBy, cause, true);
+    this.kill(p, p.downedBy, cause === 'weapon' ? p.downedCause : cause, true);
   }
 
   /** Oživení medikem: stejný život (lifeId), HP podle pravidel pilotu, pozice těla. */
@@ -371,6 +379,19 @@ export class MatchSim {
       if (p.state.pos.y < -50) {
         this.kill(p, null, 'fall');
         continue;
+      }
+      // Poškození pádem: jednou na dopad, z rychlosti dopadu (žebřík a malé výšky bez zranění).
+      if (p.state.lastLandAt !== p.landSeen) {
+        p.landSeen = p.state.lastLandAt;
+        const dmg = ended ? 0 : fallDamage(p.state.lastLandSpeed, this.cfg.gravity);
+        if (dmg > 0) {
+          p.hp = Math.max(0, p.hp - dmg);
+          this.events.push({ type: 'fall', id: p.id, damage: dmg, hp: p.hp });
+          if (p.hp <= 0) {
+            this.down(p, null, 'fall');
+            continue;
+          }
+        }
       }
       const shots = ended ? [] : stepWeapon(rulesOf(p.weaponId), this.cfg, p.state, p.weapon, input, { playerId: p.id, lifeId: p.lifeId, team: p.team, seed: p.seed, phys: this.phys });
       for (const s of shots) {

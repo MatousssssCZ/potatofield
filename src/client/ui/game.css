@@ -1179,3 +1179,13 @@ body.mode-play .tui-log {
   pointer-events: none;
   z-index: 4;
 }
+
+/* Zranění (pád): červený okraj obrazu. */
+.h-hurt {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(150, 20, 12, 0.75) 100%);
+  transition: opacity 0.1s;
+}

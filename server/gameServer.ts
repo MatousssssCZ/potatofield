@@ -534,6 +534,7 @@ export class GameServer {
     for (const c of this.clients.values()) {
       const list = events.filter((e) => {
         if (e.type === 'hit') return e.owner === c.id || e.target === c.id;
+        if (e.type === 'fall') return e.id === c.id;
         return true;
       });
       if (list.length) this.send(c, { t: 'events', list });
