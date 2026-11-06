@@ -543,7 +543,7 @@ export class App {
       const ts = new TeamScreens(net, () => game.map);
       game.extraTabs = [
         { id: 'squad', label: t('pause.squad'), view: () => ts.squadView() },
-        { id: 'commander', label: t('pause.commander'), view: () => (game.driver.local() ? ts.commanderView(game.driver.local()!, game.driver.remotes(), game.driver.conquest()) : h('div')) },
+        { id: 'commander', label: t('pause.commander'), full: true, view: () => (game.driver.local() ? ts.commanderView(game.driver.local()!, game.driver.remotes(), game.driver.conquest()) : h('div')) },
       ];
     }
     const teamKey = inp.onUiKey;
@@ -552,14 +552,27 @@ export class App {
       if (!down) return false;
       if (net && (code === 'KeyP' || code === 'Home')) return this.openPause('squad'), true;
       if (net && code === 'KeyC') return this.openPause('commander'), true;
+      if (code === 'Enter' || code === 'NumpadEnter') return this.openDeploy(), true;
+      if (code === 'KeyM') {
+        // Mapa jen k prohlížení: uvolní myš (zoom, posun), boj se nepropustí.
+        game.hud.toggleMap(true);
+        inp.releaseLock();
+        inp.clear();
+        return true;
+      }
       return false;
+    };
+    game.hud.deploy.onClose = () => {
+      game.hud.deploy.close();
+      // Tlačítko „Zpět do hry“ je uživatelské gesto → pointer lock (živý hráč).
+      if (game.driver.local()?.alive) void this.lockPointer();
     };
     this.pause = new PauseMenu({
       resume: () => void this.lockPointer(),
       deploy: () => {
         // Nasazení za živa: změna výbavy platí pro příští nasazení (obrazovka to vysvětluje).
         this.pause?.show(false);
-        game.hud.deploy.show(true);
+        game.hud.deploy.open(false);
       },
       leave: () => this.exitPlay(),
       settings: () => this.settingsView.open(),
@@ -646,18 +659,77 @@ export class App {
   }
 
   /** Esc bez zamčené myši: zavřít pauzu (návrat do hry), případně ji otevřít. */
+  /** Otevřít obrazovku nasazení (Enter): uvolnit myš, vyčistit držené vstupy (boj se nepropustí). */
+  private openDeploy() {
+    const s = this.session;
+    if (!s) return;
+    this.pause?.show(false);
+    s.game.hud.deploy.open(false);
+    s.input.releaseLock();
+    s.input.clear();
+  }
+
   private playKey = (e: KeyboardEvent) => {
-    if (e.code !== 'Escape' || !this.session || this.session.input.locked) return;
+    if (!this.session || this.session.input.locked) return;
     if (!$('#modal').classList.contains('hidden') || document.querySelector('.pf-dialog')) return;
     const g = this.session.game;
+    const dep = g.hud.deploy;
+    const tgt = e.target as HTMLElement | null;
+    const typing = !!tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.isContentEditable);
+    if ((e.code === 'Enter' || e.code === 'NumpadEnter') && !e.repeat && !typing) {
+      if (dep.visible) {
+        // Enter v obrazovce = hlavní akce, jen když fokus není v jiném ovládacím prvku.
+        if (!tgt || tgt === document.body || tgt.classList.contains('pf-map-canvas') || tgt.classList.contains('pf-deploy')) {
+          e.preventDefault();
+          dep.primaryAction();
+        }
+      } else if (!this.pause?.visible && !this.menu?.visible) {
+        e.preventDefault();
+        this.openDeploy();
+      }
+      return;
+    }
+    if (g.hud.mapVisible && (e.code === 'KeyM' || e.code === 'Escape')) {
+      g.hud.toggleMap(false);
+      if (g.driver.local()?.alive && e.code === 'KeyM') void this.lockPointer();
+      return;
+    }
+    if (e.code !== 'Escape') return;
+    // Escape: nejdřív bublina / seznam, pak obrazovka, pak pauza.
+    const picker = document.querySelector('.pf-map-picker:not(.hidden)');
+    if (picker) return picker.classList.add('hidden');
     if (this.pause?.visible) {
       if (g.driver.local()?.alive) void this.lockPointer();
       else this.pause.show(false);
-    } else if (g.hud.deploy.visible && g.driver.local()?.alive) {
-      g.hud.deploy.show(false);
-      void this.lockPointer();
+    } else if (dep.visible) {
+      dep.close();
+      if (g.driver.local()?.alive) void this.lockPointer();
     } else this.pause?.show(true);
   };
+
+  /** Výzva k návratu do hry, když myš není zamčená a nic jiného obraz nezakrývá. */
+  private lockPrompt: HTMLElement | null = null;
+  private updateLockPrompt() {
+    const s = this.session;
+    const g = s?.game;
+    const show = !!s && !s.input.locked && !this.pause?.visible && !g!.hud.deploy.visible && !g!.hud.mapVisible && !this.sbEl && !this.menu?.visible && !document.querySelector('.pf-dialog') && !g!.driver.conquest()?.ended && g!.driver.local()?.life !== 'downed';
+    if (!show) {
+      this.lockPrompt?.classList.add('hidden');
+      return;
+    }
+    const alive = !!g!.driver.local()?.alive;
+    if (!this.lockPrompt) {
+      this.lockPrompt = h('button', { class: 'pf-lock-prompt hidden', type: 'button' });
+      this.lockPrompt.addEventListener('click', () => {
+        if (this.session?.game.driver.local()?.alive) void this.lockPointer();
+        else this.openDeploy();
+      });
+      document.body.append(this.lockPrompt);
+    }
+    const text = alive ? t('hud.lock') : t('deploy.chipHint');
+    if (this.lockPrompt.textContent !== text) this.lockPrompt.textContent = text;
+    this.lockPrompt.classList.remove('hidden');
+  }
 
   exitPlay(toEditor = false) {
     if (this.mode !== 'play' || !this.session) return;
@@ -667,6 +739,7 @@ export class App {
     this.pause = null;
     this.sbEl?.remove();
     this.sbEl = null;
+    this.lockPrompt?.classList.add('hidden');
     this.session.dispose();
     this.audio.suspend();
     this.session = null;
@@ -1013,6 +1086,7 @@ export class App {
       this.session.update(dt);
       if (this.teamUi) this.teamUi.update(this.session.game.driver.local(), this.session.game.driver.remotes());
       this.renderScoreboard(dt);
+      this.updateLockPrompt();
     } else {
       // Náhledy katalogu: po dvou na snímek, jen v editoru (vykreslí se do rohu, scéna je přepíše).
       if (this.thumbs?.pending) this.thumbs.pump(this.renderer, this.world, 2);

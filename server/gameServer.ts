@@ -583,7 +583,7 @@ export class GameServer {
       tick: this.sim.tick,
       time: this.sim.time,
       ack: c.lastSeq,
-      me: { state: { ...p.state, blocked: [] }, weapon: p.weapon, hp: p.hp, alive: p.alive, respawnAt: p.respawnAt, zone: p.zone, kills: p.kills, deaths: p.deaths, team: p.team, squad: mem?.squad ?? null, canSquadSpawn: canSquad, downed: p.downed, downedLeft: p.downed ? r3(Math.max(0, p.downedUntil - this.sim.time)) : 0, reviveProgress: p.reviveTarget ? r3(p.reviveHeld / PILOT.reviveHold) : 0, revives: p.revives },
+      me: { state: { ...p.state, blocked: [] }, weapon: p.weapon, hp: p.hp, alive: p.alive, respawnAt: p.respawnAt, zone: p.zone, kills: p.kills, deaths: p.deaths, team: p.team, squad: mem?.squad ?? null, canSquadSpawn: canSquad, downed: p.downed, downedLeft: p.downed ? r3(Math.max(0, p.downedUntil - this.sim.time)) : 0, reviveProgress: p.reviveTarget ? r3(p.reviveHeld / PILOT.reviveHold) : 0, revives: p.revives, lifeId: p.lifeId },
       others: [],
       o,
       cps: cq ? cq.cps.map((x) => ({ id: x.id, owner: x.owner, p: r3(x.p), activity: x.activity })) : null,

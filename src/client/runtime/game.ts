@@ -236,7 +236,7 @@ export class Game {
         cq: this.driver.conquest(),
         doc: this.doc,
         simTime: this.simTime,
-        spawns: me && !me.alive ? this.driver.spawnOptions() : [],
+        spawns: me ? this.driver.spawnOptions() : [],
         faction: this.driver.faction(),
         kits: this.kits(),
         remotes: this.driver.remotes(),
@@ -253,7 +253,7 @@ export class Game {
   }
 
   /** Doplňkové záložky nasazení (četa, velitel) – nastavuje aplikace. */
-  extraTabs: Array<{ id: string; label: string; view: () => HTMLElement }> = [];
+  extraTabs: Array<{ id: string; label: string; view: () => HTMLElement; full?: boolean }> = [];
 
   private processEvents() {
     const me = this.driver.local();

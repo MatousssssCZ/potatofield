@@ -129,6 +129,7 @@ export interface SelfState {
   /** Medik: průběh oživování 0–1 (0 = neoživuje). */
   reviveProgress: number;
   revives: number;
+  lifeId: number;
 }
 
 /** Pravidla serveru pro UI (čte je klient, nevymýšlí je). */

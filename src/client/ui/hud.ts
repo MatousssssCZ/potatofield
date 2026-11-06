@@ -1,13 +1,13 @@
-import * as THREE from 'three';
 import type { MapDocument, SpawnPoint, Team } from '../../shared/map/schema';
 import type { ConquestState } from '../../shared/sim/conquest';
 import { PILOT, arsenalEntry, type Faction, type Kit } from '../../shared/config/arsenal';
 import type { ContactInfo, OrderInfo, SquadInfo } from '../../shared/net/protocol';
 import type { PlayerView } from '../runtime/driver';
-import { worldWeapon } from '../render/weapons/worldModel';
+import { drawSilhouette } from './silhouette';
 import { t } from './i18n';
 import { button, fmtTime, h } from './kit';
 import { DeployScreen } from './deploy';
+import { MapView } from './mapView';
 import { TacticalMap } from './tactical';
 
 /**
@@ -36,7 +36,7 @@ export interface HudContext {
   interaction: { text: string; progress: number } | null;
   /** Jméno identifikovaného nepřítele (po souvislém zamíření, ne přes zeď). */
   identified: string | null;
-  extraTabs: Array<{ id: string; label: string; view: () => HTMLElement }>;
+  extraTabs: Array<{ id: string; label: string; view: () => HTMLElement; full?: boolean }>;
   network: boolean;
 }
 
@@ -47,6 +47,22 @@ export class Hud {
   private sysmsg: Array<{ el: HTMLElement; until: number }> = [];
   private hitUntil = 0;
   readonly deploy = new DeployScreen();
+  /** Mapa na M: jen prohlížení (žádné nasazení), stejné značky jako obrazovka nasazení. */
+  private mapView = new MapView();
+  private mapOverlay = h('div', { class: 'pf-screen pf-mapover hidden', role: 'dialog' });
+  get mapVisible() {
+    return !this.mapOverlay.classList.contains('hidden');
+  }
+  toggleMap(v = !this.mapVisible) {
+    this.mapOverlay.classList.toggle('hidden', !v);
+    if (v) this.drawMapOverlay();
+  }
+  private drawMapOverlay() {
+    const c = this.deploy.lastContext;
+    if (!c || !this.mapVisible) return;
+    this.mapView.setMap(c.map, this.deploy.mapWindow(c));
+    this.mapView.setMarkers(this.deploy.markers(c).map((m) => ({ ...m, selectable: false })), null);
+  }
   private minimap: HTMLCanvasElement;
   private silhouette: HTMLCanvasElement;
   private silId = '';
@@ -100,6 +116,8 @@ export class Hud {
     if (st) st.remove();
     if (sc) sc.remove();
     this.deploy.onDeploy = (id, w) => this.onSpawn(id, w);
+    this.mapOverlay.append(h('header', {}, h('h2', {}, t('mapview.title')), h('span', { class: 'pf-dim' }, 'M / Esc')), this.mapView.root);
+    document.body.append(this.mapOverlay);
     window.addEventListener('keydown', this.onKey, true);
     window.addEventListener('keyup', this.onKeyUp, true);
   }
@@ -161,10 +179,23 @@ export class Hud {
     }
     const me = c.me;
     const alive = !!me?.alive;
-    // Nasazení: před prvním nasazením a po definitivní smrti (ne ve vyřazení, ne po konci kola).
-    const showDeploy = !!me && !alive && me.life !== 'downed' && !c.cq?.ended;
-    if (showDeploy !== this.deploy.visible) this.deploy.show(showDeploy);
-    if (showDeploy && me) this.deploy.update({ doc: c.doc, map: c.map!, me, team: c.team, cq: c.cq, spawns: c.spawns, faction: c.faction, kits: c.kits, simTime: c.simTime, teammates: this.teammates(c), extraTabs: c.extraTabs, alive: false });
+    // Nasazení: automaticky před prvním nasazením a po definitivní smrti; Enter ho otevře kdykoli.
+    // Oživení i nasazení obrazovku zavře; konec kola ji skryje (výsledky).
+    if (me && c.map) {
+      const life = me.alive ? 'alive' : me.life;
+      const lifeKey = `${me.lifeId ?? 0}|${life}`;
+      if (c.cq && c.cq.time < this.lastCqTime - 1) this.round++;
+      this.lastCqTime = c.cq?.time ?? 0;
+      if (lifeKey !== this.lastLife) {
+        if (life === 'dead' && !c.cq?.ended) this.deploy.open(true);
+        else if (life === 'alive' && this.lastLife) this.deploy.close();
+        this.lastLife = lifeKey;
+      }
+      if (c.cq?.ended && this.deploy.visible) this.deploy.close();
+      const names = new Map(c.remotes.map((r) => [r.id, r.name]));
+      this.deploy.update({ doc: c.doc, map: c.map, me, team: c.team, cq: c.cq, spawns: c.spawns, faction: c.faction, kits: c.kits, simTime: c.simTime, teammates: this.teammates(c), extraTabs: c.extraTabs, names, roundKey: `${c.doc.id}|${c.cq?.scenarioId ?? 'free'}|${this.round}` });
+      this.drawMapOverlay();
+    }
     this.root.classList.toggle('pf-dead', !alive);
 
     // Vlevo dole: zdraví (bez samovolné regenerace), výdrž, postoj; nad tím četa.
@@ -233,9 +264,13 @@ export class Hud {
     this.renderEnd(c);
   }
 
+  private lastLife = '';
+  private lastCqTime = 0;
+  private round = 0;
+
   private teammates(c: HudContext) {
     const mySquad = c.squads.find((s) => c.me && s.members.includes(c.me.id));
-    return c.remotes.filter((r) => r.alive && r.team === c.team).map((r) => ({ id: r.id, pos: [r.state.pos.x, r.state.pos.z] as [number, number], squad: !!mySquad?.members.includes(r.id), leader: mySquad?.leader === r.id }));
+    return c.remotes.filter((r) => r.alive && r.team === c.team).map((r) => ({ id: r.id, name: r.name, pos: [r.state.pos.x, r.state.pos.z] as [number, number], squad: !!mySquad?.members.includes(r.id), leader: mySquad?.leader === r.id }));
   }
 
   private renderSquad(c: HudContext) {
@@ -397,35 +432,8 @@ export class Hud {
   private drawSilhouette(id: string) {
     if (id === this.silId) return;
     this.silId = id;
-    const cv = this.silhouette;
-    cv.width = 220;
-    cv.height = 70;
-    const g = cv.getContext('2d')!;
-    g.clearRect(0, 0, cv.width, cv.height);
-    const geo = worldWeapon(id, 'low').lods[0];
-    const p = geo.getAttribute('position') as THREE.BufferAttribute;
-    geo.computeBoundingBox();
-    const b = geo.boundingBox!;
-    // Hlaveň leží v nejdelší vodorovné ose modelu; průmět z boku, ústí vlevo.
-    const alongX = b.max.x - b.min.x > b.max.z - b.min.z;
-    const lo = alongX ? b.min.x : b.min.z, len = alongX ? b.max.x - b.min.x : b.max.z - b.min.z;
-    const sc = Math.min((cv.width - 8) / len, (cv.height - 8) / (b.max.y - b.min.y));
-    const X = (v: number) => cv.width - 4 - (v - lo) * sc;
-    const A = (i: number) => (alongX ? p.getX(i) : p.getZ(i));
-    const Y = (y: number) => cv.height - 4 - (y - b.min.y) * sc;
-    g.fillStyle = 'rgba(229,231,216,0.85)';
-    const idx = geo.index;
-    const n = idx ? idx.count : p.count;
-    for (let i = 0; i < n; i += 3) {
-      const a = idx ? idx.getX(i) : i, b2 = idx ? idx.getX(i + 1) : i + 1, c2 = idx ? idx.getX(i + 2) : i + 2;
-      g.beginPath();
-      g.moveTo(X(A(a)), Y(p.getY(a)));
-      g.lineTo(X(A(b2)), Y(p.getY(b2)));
-      g.lineTo(X(A(c2)), Y(p.getY(c2)));
-      g.closePath();
-      g.fill();
-    }
-    cv.title = arsenalEntry(id)?.name ?? id;
+    drawSilhouette(this.silhouette, id, 220, 70);
+    this.silhouette.title = arsenalEntry(id)?.name ?? id;
   }
 
   reset() {
@@ -438,6 +446,7 @@ export class Hud {
     window.removeEventListener('keydown', this.onKey, true);
     window.removeEventListener('keyup', this.onKeyUp, true);
     this.deploy.dispose();
+    this.mapOverlay.remove();
     for (const id of ['h-tl', 'h-tr', 'h-bl', 'h-br', 'h-hit', 'h-hurt', 'h-center', 'h-zone', 'h-downed', 'h-end']) document.getElementById(id)?.remove();
   }
 }

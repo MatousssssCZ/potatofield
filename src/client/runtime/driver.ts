@@ -28,6 +28,8 @@ export interface PlayerView {
   /** Medik: průběh oživování 0–1. */
   reviveProgress: number;
   revives: number;
+  /** Pořadí života (mění se při nasazení; oživení ho zachová). Jen u vlastního hráče. */
+  lifeId?: number;
 }
 
 /**
@@ -101,6 +103,7 @@ export class OfflineDriver implements GameDriver {
       downedLeft: p.downed ? Math.max(0, p.downedUntil - t) : 0,
       reviveProgress: p.reviveTarget ? p.reviveHeld / PILOT.reviveHold : 0,
       revives: p.revives,
+      lifeId: p.lifeId,
     };
   }
 

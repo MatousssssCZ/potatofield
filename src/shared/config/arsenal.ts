@@ -17,23 +17,27 @@ export interface ArsenalEntry {
   rules: WeaponConfig;
   /** false = zbraň zatím nemá hotový model (classa je vidět, nasazení s ní server odmítne). */
   available?: boolean;
+  /** Pevná mířidla (bez volby příslušenství): kolimátor, mechanická, puškohled se zvětšením. */
+  sight: { kind: 'reddot' | 'iron' | 'scope'; zoom?: number };
 }
 
+const RD = { kind: 'reddot' } as const, IRON = { kind: 'iron' } as const;
+
 export const ARSENAL: ArsenalEntry[] = [
-  { id: 'm4a1', name: 'M4A1', faction: 'usmc', kit: 'assault', rules: PF_RIFLE },
-  { id: 'm16a2', name: 'M16A2', faction: 'usmc', kit: 'medic', rules: PF_RIFLE },
-  { id: 'm249', name: 'M249', faction: 'usmc', kit: 'support', rules: PF_MG },
-  { id: 'r870', name: 'Remington 870', faction: 'usmc', kit: 'engineer', rules: PF_PUMP },
-  { id: 'ak101', name: 'AK-101', faction: 'mec', kit: 'assault', rules: PF_RIFLE },
-  { id: 'akm', name: 'AKM', faction: 'mec', kit: 'medic', rules: PF_RIFLE },
-  { id: 'pkm', name: 'PKM', faction: 'mec', kit: 'support', rules: PF_MG },
-  { id: 'saiga', name: 'Saiga-12', faction: 'mec', kit: 'engineer', rules: PF_SEMISHOT },
-  { id: 'qbz95', name: 'QBZ-95', faction: 'pla', kit: 'assault', rules: PF_RIFLE },
-  { id: 't81', name: 'Type 81', faction: 'pla', kit: 'medic', rules: PF_RIFLE },
-  { id: 'qbb95', name: 'QBB-95', faction: 'pla', kit: 'support', rules: PF_MG },
-  { id: 'hawk97', name: 'Hawk Type 97 (návrh)', faction: 'pla', kit: 'engineer', rules: PF_PUMP },
-  { id: 'm24', name: 'M24', faction: 'usmc', kit: 'sniper', rules: PF_SNIPER },
-  { id: 'svd', name: 'SVD', faction: 'mec', kit: 'sniper', rules: PF_SNIPER },
+  { id: 'm4a1', name: 'M4A1', faction: 'usmc', kit: 'assault', rules: PF_RIFLE, sight: RD },
+  { id: 'm16a2', name: 'M16A2', faction: 'usmc', kit: 'medic', rules: PF_RIFLE, sight: IRON },
+  { id: 'm249', name: 'M249', faction: 'usmc', kit: 'support', rules: PF_MG, sight: IRON },
+  { id: 'r870', name: 'Remington 870', faction: 'usmc', kit: 'engineer', rules: PF_PUMP, sight: IRON },
+  { id: 'ak101', name: 'AK-101', faction: 'mec', kit: 'assault', rules: PF_RIFLE, sight: RD },
+  { id: 'akm', name: 'AKM', faction: 'mec', kit: 'medic', rules: PF_RIFLE, sight: IRON },
+  { id: 'pkm', name: 'PKM', faction: 'mec', kit: 'support', rules: PF_MG, sight: IRON },
+  { id: 'saiga', name: 'Saiga-12', faction: 'mec', kit: 'engineer', rules: PF_SEMISHOT, sight: IRON },
+  { id: 'qbz95', name: 'QBZ-95', faction: 'pla', kit: 'assault', rules: PF_RIFLE, sight: RD },
+  { id: 't81', name: 'Type 81', faction: 'pla', kit: 'medic', rules: PF_RIFLE, sight: IRON },
+  { id: 'qbb95', name: 'QBB-95', faction: 'pla', kit: 'support', rules: PF_MG, sight: IRON },
+  { id: 'hawk97', name: 'Hawk Type 97 (návrh)', faction: 'pla', kit: 'engineer', rules: PF_PUMP, sight: IRON },
+  { id: 'm24', name: 'M24', faction: 'usmc', kit: 'sniper', rules: PF_SNIPER, sight: { kind: 'scope', zoom: 10 } },
+  { id: 'svd', name: 'SVD', faction: 'mec', kit: 'sniper', rules: PF_SNIPER, sight: { kind: 'scope', zoom: 4 } },
 ];
 
 /**

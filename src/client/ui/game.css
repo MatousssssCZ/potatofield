@@ -552,19 +552,19 @@ body.mode-menu #app {
   line-height: 1.5;
 }
 
-/* ---------- Nasazení ---------- */
+/* ---------- Nasazení (BF2: jedna taktická obrazovka) ---------- */
 .pf-deploy {
   z-index: 30;
   display: grid;
-  grid-template-rows: auto 1fr auto;
-  background: rgba(21, 27, 27, 0.94);
+  grid-template-rows: 64px minmax(0, 1fr) 80px;
+  background: rgba(21, 27, 27, 0.96);
+  padding: 0 var(--pf-m);
 }
 .pf-deploy-top {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 16px;
-  padding: 12px var(--pf-m) 0;
   border-bottom: 1px solid var(--pf-line);
 }
 .pf-deploy-top .pf-tabs {
@@ -576,93 +576,274 @@ body.mode-menu #app {
   display: flex;
   gap: 14px;
   align-items: baseline;
-  padding-bottom: 10px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .pf-deploy-title b {
   font-size: 1.3em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .pf-tickets {
   display: flex;
   gap: 18px;
   font-size: 1.4em;
   font-weight: 700;
-  padding-bottom: 10px;
 }
 .pf-deploy-body {
   display: grid;
-  grid-template-columns: minmax(280px, 1fr) 2fr;
-  gap: var(--pf-m);
-  padding: 16px var(--pf-m);
+  grid-template-columns: minmax(260px, 32%) minmax(0, 1fr);
+  gap: 16px;
+  padding: 14px 0;
   min-height: 0;
 }
 .pf-deploy-left {
   overflow: auto;
   min-height: 0;
+  padding-right: 4px;
+}
+.pf-classes {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 .pf-class {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 2px;
+  grid-template-columns: 28px 92px 1fr;
+  align-items: center;
+  gap: 8px;
   width: 100%;
   text-align: left;
   font: 500 1em var(--pf-font);
   color: var(--pf-text);
-  background: rgba(229, 231, 216, 0.04);
-  border: 1px solid var(--pf-line);
+  background: transparent;
+  border: 1px solid transparent;
   border-left: 3px solid transparent;
-  padding: 10px 14px;
-  margin-bottom: 6px;
+  padding: 7px 10px;
   cursor: pointer;
 }
 .pf-class b {
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  font-size: 1.1em;
+}
+.pf-class .pf-dim {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pf-class:hover {
+  background: rgba(229, 231, 216, 0.04);
 }
 .pf-class.on {
   border-left-color: var(--pf-accent);
-  background: rgba(216, 198, 106, 0.1);
+  background: rgba(216, 198, 106, 0.13);
+  border-color: rgba(216, 198, 106, 0.25);
 }
-.pf-class.unavailable span:last-child {
-  color: var(--pf-warn);
+.pf-kit-ico {
+  width: 22px;
+  height: 22px;
+  color: var(--pf-dim);
+}
+.pf-class.on .pf-kit-ico {
+  color: var(--pf-accent);
+}
+.pf-kit-ico svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 .pf-equip {
-  margin-top: 14px;
+  margin-top: 12px;
+  border-top: 1px solid var(--pf-line);
+  padding-top: 10px;
+}
+.pf-kit-title {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pf-accent);
+}
+.pf-sil-wrap {
+  height: 92px;
+  margin: 6px 0;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--pf-line);
+}
+.pf-deploy-sil {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.pf-kit-weapon {
+  margin-bottom: 6px;
+}
+.pf-kit-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 12px;
+}
+.pf-kit-items li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 3px 0;
+}
+.pf-slot {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  border: 1px solid var(--pf-line);
+  font-size: 0.8em;
+  color: var(--pf-dim);
 }
 .pf-deploy-right {
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
-.pf-deploy-map {
-  flex: 1;
-  width: 100%;
-  min-height: 0;
-  background: #1b2220;
-  border: 1px solid var(--pf-line);
-  cursor: crosshair;
-}
 .pf-deploy-extra {
-  padding: 16px var(--pf-m);
+  padding: 14px 0;
   overflow: auto;
 }
 .pf-deploy-bottom {
   display: grid;
-  grid-template-columns: auto auto 1fr auto;
-  gap: 24px;
+  grid-template-columns: auto minmax(180px, auto) minmax(0, 1fr) auto;
+  gap: 18px;
   align-items: center;
-  padding: 12px var(--pf-m);
   border-top: 1px solid var(--pf-line);
-  background: rgba(0, 0, 0, 0.25);
+}
+.pf-deploy-sum {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  white-space: nowrap;
+}
+.pf-deploy-sum select {
+  max-width: 260px;
 }
 .pf-deploy-msg {
   color: var(--pf-dim);
   text-align: right;
+  min-width: 0;
+  overflow: hidden;
 }
-.pf-deploy-msg.warn {
+.pf-deploy-msg.warn > div:first-child {
   color: var(--pf-warn);
+}
+.pf-deploy-msg .pf-dim {
+  font-size: 0.9em;
+}
+.pf-deploy-chip {
+  position: fixed;
+  left: 50%;
+  bottom: 110px;
+  transform: translateX(-50%);
+  z-index: 25;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 14px;
+  background: rgba(21, 27, 27, 0.9);
+  border: 1px solid rgba(216, 198, 106, 0.5);
+  border-left: 3px solid var(--pf-accent);
+  font: 600 var(--pf-fs) var(--pf-font);
+  color: var(--pf-text);
+}
+.pf-deploy-chip.hidden,
+.pf-lock-prompt.hidden {
+  display: none;
+}
+.pf-lock-prompt {
+  position: fixed;
+  left: 50%;
+  top: 38%;
+  transform: translateX(-50%);
+  z-index: 24;
+  padding: 12px 22px;
+  background: rgba(21, 27, 27, 0.88);
+  border: 1px solid var(--pf-line);
+  border-top: 3px solid var(--pf-accent);
+  color: var(--pf-text);
+  font: 700 1.15em var(--pf-font);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+
+/* Taktická mapa (nasazení, squad, M). */
+.pf-map {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border: 1px solid var(--pf-line);
+  background: #1b2220;
+  overflow: hidden;
+}
+.pf-map-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+.pf-map-canvas:focus-visible {
+  outline: 2px solid var(--pf-accent);
+  outline-offset: -2px;
+}
+.pf-map-ctl {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+}
+.pf-map-ctl .pf-btn {
+  min-width: 32px;
+  background: rgba(21, 27, 27, 0.85);
+}
+.pf-map-tip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(21, 27, 27, 0.94);
+  border: 1px solid var(--pf-line);
+  padding: 6px 10px;
+  max-width: 260px;
+  font-size: 0.9em;
+}
+.pf-map-tip.hidden,
+.pf-map-picker.hidden {
+  display: none;
+}
+.pf-map-picker {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: rgba(21, 27, 27, 0.96);
+  border: 1px solid var(--pf-accent);
+  padding: 4px;
+  z-index: 2;
+}
+
+@media (max-width: 1100px) {
+  .pf-class {
+    grid-template-columns: 24px 80px 1fr;
+    padding: 6px 8px;
+  }
+  .pf-kit-items {
+    grid-template-columns: 1fr;
+  }
+  .pf-deploy-bottom {
+    gap: 10px;
+  }
 }
 
 /* ---------- HUD ---------- */
@@ -1165,9 +1346,6 @@ body.mode-play .tui-log {
   .pf-servers {
     grid-template-columns: 1fr;
   }
-  .pf-deploy-body {
-    grid-template-columns: 1fr 1.4fr;
-  }
 }
 
 /* Puškohled přes celou obrazovku (pod HUD, nad scénou). */
@@ -1188,4 +1366,18 @@ body.mode-play .tui-log {
   pointer-events: none;
   background: radial-gradient(ellipse at center, transparent 55%, rgba(150, 20, 12, 0.75) 100%);
   transition: opacity 0.1s;
+}
+
+/* Mapa na M (jen prohlížení). */
+.pf-mapover {
+  z-index: 32;
+  background: rgba(10, 13, 13, 0.82);
+  display: grid;
+  grid-template-rows: 48px minmax(0, 1fr);
+  padding: 16px 6vw 5vh;
+}
+.pf-mapover header {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
 }
