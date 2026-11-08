@@ -7,6 +7,8 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import type { WeaponModel } from './types';
 import { buildFirstPerson, weaponDef } from './catalog';
 import { HAND_LOOKS, Hand, POSES, buildHandGeometry, makeCamoTexture, type HandGeometry } from './hands';
+import { FPArms } from './fpArms';
+import { mannequinSource } from '../soldier/mannequin';
 
 /**
  * Zbraň a ruce v první osobě (libovolný hotový model z katalogu). Hierarchie:
@@ -76,6 +78,11 @@ export class FPWeapon {
   private weaponRoot = new THREE.Group();
   readonly model: WeaponModel;
   private handGeo: HandGeometry;
+  /** Paže z modelu (Mannequin), pokud je načtený; jinak se kreslí procedurální ruce. */
+  private arms: FPArms | null = null;
+  /** Ramena v prostoru pohledu (za a pod okem). */
+  shoulderR = new THREE.Vector3(0.19, -0.3, 0.06);
+  shoulderL = new THREE.Vector3(-0.2, -0.3, -0.02);
   private rightHand: Hand;
   private leftHand: Hand;
   private mag: THREE.Mesh;
@@ -214,6 +221,12 @@ export class FPWeapon {
     }
     this.rightHand.setPose(POSES.grip);
     this.leftHand.setPose(POSES.handguard);
+    if (mannequinSource()) {
+      this.arms = new FPArms(sleeve, glove, look.bare ? look.skin : look.glove);
+      this.presentation.add(this.arms.root);
+      this.rightHand.hideGeometry();
+      this.leftHand.hideGeometry();
+    }
 
     // Záblesk z ústí: zkřížené plochy s aditivní hvězdou (pool = 1 instance, náhodná rotace).
     this.flash = this.makeFlash();
@@ -338,21 +351,26 @@ export class FPWeapon {
       if (emptyBolt) target.lerp(bolt, boltT);
       target.lerp(base, home);
       this.leftHand.setPose(toMag > 0.5 && home < 0.5 && boltT < 0.5 ? POSES.magazine : POSES.handguard, 0.25);
-    } else this.leftHand.setPose(this.model.slideCycle ? POSES.grip : POSES.handguard, 0.3);
+    } else this.leftHand.setPose(this.model.slideCycle ? POSES.support : POSES.handguard, 0.3);
     lh.position.copy(target);
   }
+
+  /** Lokty v prostoru pohledu (mimo obraz): pravý vpravo dole u těla, levý vlevo dole pod předpažbím. */
+  elbowR = new THREE.Vector3(0.26, -0.5, 0.12);
+  elbowL = new THREE.Vector3(-0.26, -0.5, -0.02);
 
   /** Orientace předloktí od zápěstí k loktu mimo obraz (lokty v prostoru prezentace → svět). */
   private placeForearms() {
     this.presentation.updateMatrixWorld(true);
     for (const [h, elbowLocal] of [
-      [this.rightHand, new THREE.Vector3(0.26, -0.5, 0.12)],
-      [this.leftHand, new THREE.Vector3(-0.26, -0.5, -0.02)],
+      [this.rightHand, this.elbowR],
+      [this.leftHand, this.elbowL],
     ] as const) {
       const wristLocal = h.root.position.clone().applyMatrix4(this.weaponRoot.matrix);
       h.forearm.position.copy(wristLocal);
       h.forearm.lookAt(this.presentation.localToWorld(elbowLocal.clone()));
     }
+    this.arms?.update(this.rightHand, this.leftHand, this.presentation, { r: this.shoulderR, l: this.shoulderL }, { r: this.elbowR, l: this.elbowL });
   }
 
   /**

@@ -7,7 +7,9 @@ import { reloadDuration } from '../shared/config/weapon';
 import { rulesOf } from '../shared/config/arsenal';
 import { FPWeapon } from './render/weapons/fpWeapon';
 import { preloadGunModels } from './render/weapons/glbWeapon';
-await preloadGunModels(import.meta.env.BASE_URL);
+import { preloadSoldierModel } from './render/soldier/mannequin';
+if (!new URLSearchParams(location.search).has('noarms')) await preloadSoldierModel(import.meta.env.BASE_URL);
+if (!new URLSearchParams(location.search).has('proc')) await preloadGunModels(import.meta.env.BASE_URL);
 import { HAND_LOOKS } from './render/weapons/hands';
 import { FACTION_LABEL, KIT_LABEL, SIDEARM_DEFS, WEAPON_DEFS, weaponDef } from './render/weapons/catalog';
 
@@ -86,6 +88,7 @@ function build() {
   fp?.dispose();
   fp = new FPWeapon($<HTMLSelectElement>('#weapon').value, $<HTMLSelectElement>('#hands').value, $<HTMLSelectElement>('#q').value as never);
   camera.add(fp.root);
+  (window as unknown as { __fp: FPWeapon }).__fp = fp;
   rebuildPoints();
 }
 

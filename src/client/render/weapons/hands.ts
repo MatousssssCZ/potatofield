@@ -45,8 +45,10 @@ export interface FingerPose {
   triggerOff?: boolean;
 }
 
-export const POSES: Record<'grip' | 'handguard' | 'magazine' | 'open', FingerPose> = {
+export const POSES: Record<'grip' | 'support' | 'handguard' | 'magazine' | 'open', FingerPose> = {
   grip: { fingers: [[0.15, 0.25, 0.2], [1.25, 1.35, 0.7], [1.3, 1.4, 0.75], [1.35, 1.4, 0.8]], thumb: [0.9, 0.4, 0.3], triggerOff: true },
+  /** Podpůrná ruka u pistole: celá dlaň obejme pravou ruku (bez prstu na spoušti). */
+  support: { fingers: [[1.1, 1.2, 0.6], [1.2, 1.3, 0.7], [1.25, 1.35, 0.7], [1.3, 1.35, 0.75]], thumb: [0.6, 0.3, 0.2] },
   handguard: { fingers: [[0.9, 1.1, 0.6], [1.0, 1.15, 0.65], [1.05, 1.2, 0.7], [1.1, 1.2, 0.7]], thumb: [0.4, 0.2, 0.1] },
   magazine: { fingers: [[0.9, 0.9, 0.5], [1.0, 1.0, 0.55], [1.05, 1.05, 0.6], [1.1, 1.1, 0.6]], thumb: [0.7, 0.5, 0.3] },
   open: { fingers: [[0.15, 0.2, 0.1], [0.2, 0.25, 0.1], [0.25, 0.25, 0.15], [0.3, 0.3, 0.15]], thumb: [0.5, 0.1, 0.05] },
@@ -116,6 +118,29 @@ export class Hand {
     arm.frustumCulled = false;
     this.forearm.add(arm);
     void mats.skin;
+  }
+
+  /** Rámec ruky pro model paží: zápěstí ve světě, směr prstů a hřbetu (zrcadlení už započtené). */
+  frame(): { wrist: THREE.Vector3; fingers: THREE.Vector3; back: THREE.Vector3 } {
+    const holder = this.root.children[0];
+    holder.updateWorldMatrix(true, false);
+    const o = holder.localToWorld(new THREE.Vector3());
+    return {
+      wrist: o,
+      fingers: holder.localToWorld(new THREE.Vector3(0, 0, -1)).sub(o).normalize(),
+      back: holder.localToWorld(new THREE.Vector3(0, 1, 0)).sub(o).normalize(),
+    };
+  }
+
+  /** Ohyb prstů (rad, kladně = sevřít): [ukazovák, prostředník, prsteník, malík][článek], palec [3]. */
+  curls(): { fingers: number[][]; thumb: number[] } {
+    return { fingers: this.bones.map((ch) => ch.map((b) => -b.rotation.x)), thumb: this.thumbB.map((b) => -b.rotation.x) };
+  }
+
+  /** Skryje vlastní geometrii ruky a předloktí (kreslí je model paží). */
+  hideGeometry() {
+    this.mesh.visible = false;
+    for (const c of this.forearm.children) c.visible = false;
   }
 
   setPose(p: FingerPose, blend = 1) {

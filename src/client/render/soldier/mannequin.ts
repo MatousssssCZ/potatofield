@@ -69,6 +69,11 @@ export async function preloadSoldierModel(base = '/'): Promise<void> {
   }
 }
 
+/** Zdrojová scéna Mannequinu (pro paže v první osobě). */
+export function mannequinSource() {
+  return source?.scene ?? null;
+}
+
 export function hasMannequin() {
   return source !== null;
 }

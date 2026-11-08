@@ -174,7 +174,7 @@ export function buildGlbWeapon(id: string, proc: WeaponModel): WeaponModel | nul
   })(), all.min.z);
   muzzle.z = Math.min(muzzle.z, all.min.z + 0.002);
   const pistol = proc.slideCycle === true;
-  const gripRight = trigger.clone().add(new THREE.Vector3(0, pistol ? -0.05 : -0.045, pistol ? 0.028 : 0.042));
+  const gripRight = trigger.clone().add(new THREE.Vector3(0, pistol ? -0.028 : -0.045, pistol ? 0.03 : 0.042));
   const pumpT = by(pumpBones);
   const pumpCenter = pumpT.length ? bounds(pumpT).getCenter(new THREE.Vector3()) : null;
   const railBottom = J('Attach_RailBottom');
@@ -284,7 +284,10 @@ export function buildGlbWeapon(id: string, proc: WeaponModel): WeaponModel | nul
   const staticG = geom(staticTris);
   const metal = metalOptic.length ? mergeLike(staticGeomFor(metalOptic)) : emptyLike();
   const procAdjust = proc.hipRoot.clone().sub(hipFromGrip(proc.points.gripRight));
-  const hipRoot = hipFromGrip(gripRight).add(procAdjust).add(new THREE.Vector3(...(spec.hipAdjust ?? [0, 0, 0])));
+  // Pistole: vpravo dole, natočená dopředu (ne svisle uprostřed obrazu).
+  const hipRoot = pistol
+    ? hipFromGrip(gripRight, [-0.02, 0.035, -0.044])
+    : hipFromGrip(gripRight).add(procAdjust).add(new THREE.Vector3(...(spec.hipAdjust ?? [0, 0, 0])));
   return {
     ...proc,
     id,
@@ -298,6 +301,8 @@ export function buildGlbWeapon(id: string, proc: WeaponModel): WeaponModel | nul
     sight: optic ? 'optic' : 'iron',
     points,
     hipRoot,
+    // Mírný náklon doprava: z pohledu hráče je vidět bok zbraně a zásobník, ne jen horní lišta.
+    hipRot: pistol ? new THREE.Euler(0.06, 0.1, -0.12) : new THREE.Euler(0.01, 0.02, -0.15),
     triangles: triCount(staticG, metal, mag.geometry, handle?.geometry, pump?.geometry, optic?.glass),
   };
 }
