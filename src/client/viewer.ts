@@ -6,6 +6,8 @@ import { MOVEMENT } from '../shared/config/movement';
 import { reloadDuration } from '../shared/config/weapon';
 import { rulesOf } from '../shared/config/arsenal';
 import { FPWeapon } from './render/weapons/fpWeapon';
+import { preloadGunModels } from './render/weapons/glbWeapon';
+await preloadGunModels(import.meta.env.BASE_URL);
 import { HAND_LOOKS } from './render/weapons/hands';
 import { FACTION_LABEL, KIT_LABEL, SIDEARM_DEFS, WEAPON_DEFS, weaponDef } from './render/weapons/catalog';
 

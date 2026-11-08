@@ -7,6 +7,9 @@ import { createWeaponState } from '../shared/sim/weapon';
 import { hitboxOf } from '../shared/sim/ballistics';
 import type { PlayerView } from './runtime/driver';
 import { SoldierPool } from './render/soldier';
+import { preloadSoldierModel } from './render/soldier/mannequin';
+import { preloadGunModels } from './render/weapons/glbWeapon';
+await Promise.all([preloadSoldierModel(import.meta.env.BASE_URL), preloadGunModels(import.meta.env.BASE_URL)]);
 
 /**
  * Náhledová scéna vojáků (vývojová pomůcka): USMC a MEC vedle sebe, role, postoje, pohyb,

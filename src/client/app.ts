@@ -18,6 +18,8 @@ import { insertMarker, renderTerrainPanel, type GameUiState } from './editor/uiG
 import { debugLines } from '../shared/physics/world';
 import { heightAt } from '../world/terrain';
 import { EnvironmentRig } from './render/environment';
+import { preloadGunModels } from './render/weapons/glbWeapon';
+import { preloadSoldierModel } from './render/soldier/mannequin';
 import { MaterialLibrary, TEXTURE_IDS, generateTextures, makeMacroNoise, sharedUniforms } from './render/materials';
 import { PostPipeline } from './render/post';
 import { QUALITY, type QualityProfile } from './render/quality';
@@ -172,8 +174,10 @@ export class App {
     };
     progress(0.02, 'Generuji materiály…');
     const anis = Math.min(this.quality.anisotropy, r.capabilities.getMaxAnisotropy());
-    const [, textures] = await Promise.all([
+    const [, , , textures] = await Promise.all([
       initRapier(),
+      preloadGunModels(import.meta.env.BASE_URL),
+      preloadSoldierModel(import.meta.env.BASE_URL),
       generateTextures(TEXTURE_IDS, this.quality.textureSize, anis, (d, n) => progress(0.05 + (d / n) * 0.8, `Generuji materiály ${d}/${n}`), this.settings.softTextures),
     ]);
     sharedUniforms.uMacro.value = makeMacroNoise();

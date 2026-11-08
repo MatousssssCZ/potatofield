@@ -9,6 +9,7 @@ import { buildM9, buildPM } from './pistol';
 import type { WeaponModel } from './types';
 import { BUDGET_TABLE } from './budgetTable';
 import { FULL_DETAIL, withDetail } from './meshkit';
+import { buildGlbWeapon, hasGlbGun } from './glbWeapon';
 
 export type { Faction, Kit };
 export { FACTION_LABEL, KIT_LABEL };
@@ -78,12 +79,15 @@ export function hasGunModel(id: string) {
  */
 export function buildFirstPerson(id: string): WeaponModel {
   const d = weaponDef(id);
-  return withDetail(BUDGET_TABLE[d.id]?.fp ?? FULL_DETAIL, () => d.build!(1));
+  const proc = withDetail(BUDGET_TABLE[d.id]?.fp ?? FULL_DETAIL, () => d.build!(1));
+  // Model z balíčku (Flat Guns), je-li načtený; chování (přebití, optika) zůstává z procedurálního.
+  return (hasGlbGun(d.id) && buildGlbWeapon(d.id, proc)) || proc;
 }
 
 export function buildWorldLod0(id: string): WeaponModel {
   const d = weaponDef(id);
-  return withDetail(BUDGET_TABLE[d.id]?.world ?? FULL_DETAIL, () => d.build!(1));
+  const proc = withDetail(BUDGET_TABLE[d.id]?.world ?? FULL_DETAIL, () => d.build!(1));
+  return (hasGlbGun(d.id) && buildGlbWeapon(d.id, proc)) || proc;
 }
 
 export function readyWeapons() {

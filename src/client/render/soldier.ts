@@ -2,9 +2,10 @@ import * as THREE from 'three';
 import type { PlayerView } from '../runtime/driver';
 import { arsenalEntry } from '../../shared/config/arsenal';
 import { WORLD_LOD, worldWeapon } from './weapons/worldModel';
-import { createSkeleton, type BoneName } from './soldier/rig';
+import { BONE_INDEX, createSkeleton, type BoneName } from './soldier/rig';
 import { makeUniformAtlas, soldierGeometry, type SoldierFaction, type SoldierVariant } from './soldier/body';
 import { SoldierAnimator, type AnimInput } from './soldier/animator';
+import { MannequinBody, hasMannequin } from './soldier/mannequin';
 
 /**
  * Vzdálení vojáci (world model): skinned tělo podle frakce a role (factionId + classId z výbavy),
@@ -16,6 +17,41 @@ const LOD_DIST = [18, 55] as const;
 const LOD_HZ = [0, 20, 10];
 /** Jak dlouho zůstane tělo padlého na místě (s) – konfigurovatelné podle výkonu. */
 export const CORPSE_TIME = 10;
+
+/**
+ * Pod modelem Mannequinu se kreslí jen výstroj z procedurálního těla (helma, vesta, sumky),
+ * bez dílů na nohou (nohy modelu jdou podle klipů, výstroj by „plavala“).
+ */
+const gearCache = new Map<THREE.BufferGeometry, THREE.BufferGeometry>();
+const LEG_BONES = new Set<number>((['thighL', 'shinL', 'footL', 'thighR', 'shinR', 'footR'] as BoneName[]).map((b) => BONE_INDEX[b]));
+function gearOnly(src: THREE.BufferGeometry): THREE.BufferGeometry {
+  let g = gearCache.get(src);
+  if (g) return g;
+  const grp = src.groups.find((x) => x.materialIndex === 1);
+  const si = src.getAttribute('skinIndex'), sw = src.getAttribute('skinWeight');
+  const keep: number[] = [];
+  if (grp)
+    for (let i = grp.start; i < grp.start + grp.count; i += 3) {
+      let best = 0, bw = -1;
+      for (let k = 0; k < 4; k++) if (sw.getComponent(i, k) > bw) {
+        bw = sw.getComponent(i, k);
+        best = si.getComponent(i, k);
+      }
+      if (!LEG_BONES.has(best)) keep.push(i, i + 1, i + 2);
+    }
+  g = new THREE.BufferGeometry();
+  for (const [name, attr] of Object.entries(src.attributes)) {
+    const a = attr as THREE.BufferAttribute;
+    const arr = new (a.array.constructor as Float32ArrayConstructor)(keep.length * a.itemSize);
+    keep.forEach((v, j) => {
+      for (let c = 0; c < a.itemSize; c++) arr[j * a.itemSize + c] = a.array[v * a.itemSize + c];
+    });
+    g.setAttribute(name, new THREE.BufferAttribute(arr, a.itemSize, a.normalized));
+  }
+  g.addGroup(0, keep.length, 1);
+  gearCache.set(src, g);
+  return g;
+}
 
 export function soldierLook(weaponId: string, team: 'teamA' | 'teamB'): { faction: SoldierFaction; variant: SoldierVariant } {
   const e = arsenalEntry(weaponId);
@@ -42,6 +78,8 @@ interface Soldier {
   diedAt: number;
   life: PlayerView['life'];
   seen: boolean;
+  /** Tělo z modelu (Mannequin), pokud je načtené; procedurální tělo pak kreslí jen výstroj. */
+  body: MannequinBody | null;
 }
 
 export class SoldierPool {
@@ -49,6 +87,8 @@ export class SoldierPool {
   private soldiers = new Map<string, Soldier>();
   private bodyMats: Record<SoldierFaction, THREE.MeshStandardMaterial>;
   private gearMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.86, metalness: 0 });
+  /** Uniforma procedurálního těla se pod modelem Mannequinu nekreslí (výstroj ano). */
+  private hiddenMat = new THREE.MeshBasicMaterial({ visible: false });
   private rifleMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, metalness: 0.3 });
   private flashMat = new THREE.MeshBasicMaterial({ color: '#ffd28a', transparent: true, opacity: 0.9, toneMapped: false, depthWrite: false });
   private flashGeo = new THREE.SphereGeometry(0.06, 6, 6);
@@ -89,7 +129,9 @@ export class SoldierPool {
     flash.visible = false;
     weapon.add(flash);
     this.root.add(group, weapon);
-    const s: Soldier = { id, group, mesh, bones: byName, anim: new SoldierAnimator(byName), weapon, weaponId: '', look: '', lod: -1, wlod: -1, acc: 1, flash, flashUntil: 0, lastAlive: new THREE.Vector3(), diedAt: -1, life: 'alive', seen: true };
+    const body = hasMannequin() ? new MannequinBody(byName) : null;
+    if (body) group.add(body.root);
+    const s: Soldier = { id, group, mesh, bones: byName, anim: new SoldierAnimator(byName), weapon, weaponId: '', look: '', lod: -1, wlod: -1, acc: 1, flash, flashUntil: 0, lastAlive: new THREE.Vector3(), diedAt: -1, life: 'alive', seen: true, body };
     this.soldiers.set(id, s);
     return s;
   }
@@ -141,8 +183,15 @@ export class SoldierPool {
       const lk = soldierLook(p.primary ?? wid, p.team);
       const key = `${lk.faction}:${lk.variant}`;
       if (key !== s.look || lod !== s.lod) {
-        s.mesh.geometry = soldierGeometry(lk.faction, lk.variant, lod);
-        s.mesh.material = [this.bodyMats[lk.faction], this.gearMat];
+        // Model těla na blízko a střední vzdálenost; nejvzdálenější LOD zůstává procedurální (levný).
+        const model = !!s.body && lod < 2;
+        const full = soldierGeometry(lk.faction, lk.variant, lod);
+        s.mesh.geometry = model ? gearOnly(full) : full;
+        s.mesh.material = [model ? this.hiddenMat : this.bodyMats[lk.faction], this.gearMat];
+        if (s.body) {
+          s.body.visible = model;
+          s.body.setFaction(lk.faction);
+        }
         s.mesh.castShadow = lod < 2;
         s.look = key;
         s.lod = lod;
@@ -187,6 +236,12 @@ export class SoldierPool {
         seed: hashId(p.id),
       };
       s.anim.update(inp, simTime, step, s.group, s.weapon, ww);
+      if (s.body && s.lod < 2) {
+        const sp = Math.hypot(ps.vel.x, ps.vel.z);
+        const fwd = sp > 0.01 ? (-Math.sin(ps.yaw) * ps.vel.x - Math.cos(ps.yaw) * ps.vel.z) / sp : 1;
+        s.group.updateMatrixWorld(true);
+        s.body.update(step, { group: s.group, speed: sp, forward: fwd, crouch: ps.height < 1.45 && ps.height > 0.8 ? 1 : 0, sprinting: ps.sprinting, grounded: ps.grounded, life: p.life, prone: ps.height <= 0.8 });
+      }
       s.flash.visible = this.time < s.flashUntil;
     }
     for (const [id, s] of this.soldiers) {
@@ -194,6 +249,7 @@ export class SoldierPool {
         s.group.removeFromParent();
         s.weapon.removeFromParent();
         s.mesh.skeleton.dispose();
+        s.body?.dispose();
         this.soldiers.delete(id);
       }
     }
