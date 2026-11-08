@@ -39,6 +39,8 @@ export interface WeaponFrame {
   stockZ: number;
   /** Držení: puška u ramene (výchozí), pistole v natažených rukou, předmět v ruce před tělem. */
   hold?: 'rifle' | 'pistol' | 'item';
+  /** Styl dlouhé zbraně: kulomet (u boku, záklon), odstřelovačka (hlaveň dolů mimo míření). */
+  style?: 'rifle' | 'heavy' | 'sniper' | 'shotgun';
 }
 
 /** Návrhové parametry (N). */
@@ -65,6 +67,8 @@ export class SoldierAnimator {
   private moveDir = new THREE.Vector2(0, 1);
   private kick = 0;
   private kickV = 0;
+  /** Odstřelovačka: po výstřelu chvíli zvednutá (1 → 0). */
+  private readyT = 0;
   private lastShot = -1;
   private lie = 0;
   private lieKind: 'downed' | 'deadFront' | 'deadBack' = 'downed';
@@ -151,8 +155,17 @@ export class SoldierAnimator {
     const twist = clamp(angleDiff(inp.yaw, this.pelvisYaw), -1.2, 1.2) * (1 - prone);
     const pitch = clamp(inp.pitch, -1.2, 1.2);
     // Pitch: páteř nese menší díl (bez přehnaného záklonu), zbytek krk, hlava a paže se zbraní.
-    B.spine1.rotation.set(pitch * 0.12 + crouch * 0.12 + prone * 0.06, twist * 0.3, 0);
-    B.spine2.rotation.set(pitch * 0.18 + prone * 0.05, twist * 0.4, 0);
+    // Styl držení (N): kulomet nese u boku s trupem v záklonu (váha), při míření k rameni;
+    // odstřelovačka mimo míření hlavní dolů („low ready“), po výstřelu chvíli zvednutá.
+    const longGun = !wf.hold || wf.hold === 'rifle';
+    const style = longGun ? (wf.style ?? 'rifle') : 'rifle';
+    const sprint0 = inp.sprinting ? 1 : 0;
+    const heavyHip = style === 'heavy' ? (1 - inp.ads) * (1 - sprint0) * (1 - prone) : 0;
+    const heavyLean = style === 'heavy' ? (1 - prone) * (0.6 + 0.4 * (1 - inp.ads)) : 0;
+    this.readyT = Math.max(0, this.readyT - dt * 0.6);
+    const lowReady = style === 'sniper' ? (1 - inp.ads) * (1 - sprint0) * (1 - prone) * (1 - Math.min(1, this.readyT * 1.5)) : 0;
+    B.spine1.rotation.set(pitch * 0.12 + crouch * 0.12 + prone * 0.06 - heavyLean * 0.1, twist * 0.3, 0);
+    B.spine2.rotation.set(pitch * 0.18 + prone * 0.05 - heavyLean * 0.06, twist * 0.4 + heavyHip * 0.12, 0);
     B.neck.rotation.set(pitch * 0.25 + prone * 0.42, twist * 0.3, 0);
     B.head.rotation.set(pitch * 0.35 + prone * 0.3, 0, 0);
     for (const b of ['clavL', 'clavR'] as const) B[b].rotation.set(0, 0, 0);
@@ -161,8 +174,9 @@ export class SoldierAnimator {
     // --- Zbraň: o rameno, ve směru zamíření; sprint nízko, přebití náklon, kopnutí ---
     if (inp.shotSeq !== this.lastShot) {
       if (inp.shotSeq > this.lastShot) {
-        this.kickV += 6;
+        this.kickV += (style === 'heavy' ? 4 : 6);
         this.fired = true;
+        this.readyT = 1;
       }
       this.lastShot = inp.shotSeq;
     }
@@ -172,8 +186,13 @@ export class SoldierAnimator {
     if (inp.action === 'reload' && inp.actionEnd > inp.actionStart) reloadT = clamp((simTime - inp.actionStart) / (inp.actionEnd - inp.actionStart), 0, 1);
     const rl = Math.sin(Math.min(1, reloadT * 1.1) * Math.PI);
     this.layers.upper = inp.life !== 'alive' ? '–' : reloadT > 0 ? `přebití ${(reloadT * 100).toFixed(0)} %` : sprint ? 'sprint – puška dole' : inp.ads > 0.5 ? 'ADS' : 'míření';
-    const shoulder = new THREE.Vector3(0.13 - inp.ads * 0.07, 0.13 + inp.ads * 0.03, -0.07).applyMatrix4(B.spine2.matrixWorld);
-    const wq = new THREE.Quaternion().setFromEuler(new THREE.Euler(clamp(inp.pitch, -1.25, 1.25) * (1 - sprint) - sprint * 0.75 - rl * 0.35 + this.kick * 0.06, inp.yaw + sprint * 0.55 + rl * 0.15, -rl * 0.5, 'YXZ'));
+    const shoulderPt = new THREE.Vector3(0.13 - inp.ads * 0.07, 0.13 + inp.ads * 0.03, -0.07).applyMatrix4(B.spine2.matrixWorld);
+    // Kulomet u boku: pažba u pravého boku nad pánví (opřená o předloktí), ne u ramene.
+    const hipPt = new THREE.Vector3(0.19, 0.26, -0.12).applyMatrix4(B.pelvis.matrixWorld);
+    const shoulder = shoulderPt.lerp(hipPt, heavyHip);
+    if (lowReady > 0) shoulder.add(new THREE.Vector3(-0.03, -0.04, -0.02).applyQuaternion(B.spine2.getWorldQuaternion(new THREE.Quaternion())).multiplyScalar(lowReady));
+    const aimPitch = clamp(inp.pitch, -1.25, 1.25) * (1 - heavyHip * 0.5) + heavyHip * 0.1 - lowReady * 0.5;
+    const wq = new THREE.Quaternion().setFromEuler(new THREE.Euler(aimPitch * (1 - sprint) - sprint * (style === 'heavy' ? 0.45 : 0.75) - rl * 0.35 + this.kick * 0.06, inp.yaw + sprint * 0.55 + rl * 0.15 + heavyHip * 0.06 + lowReady * 0.18, -rl * 0.5 - heavyHip * 0.05, 'YXZ'));
     weapon.quaternion.copy(wq);
     if (!wf.hold || wf.hold === 'rifle') {
       const back = new THREE.Vector3(0, 0, wf.stockZ - 0.03 + this.kick * 0.04 + sprint * 0.12).applyQuaternion(wq);

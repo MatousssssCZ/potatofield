@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { SIDEARM_DEFS, buildWorldLod0 } from './catalog';
 import { isItemModel, itemGeometry } from './items';
 import { WEAPON_BUDGET } from './budget';
+import { arsenalEntry } from '../../../shared/config/arsenal';
 
 /**
  * Světové modely zbraní pro vzdálené postavy: stejný generátor jako v první osobě v rozpočtu
@@ -20,6 +21,16 @@ export interface WorldWeapon {
   /** Zadní konec pažby (z) – opření o rameno. */
   stockZ: number;
   hold: 'rifle' | 'pistol' | 'item';
+  /** Styl držení dlouhé zbraně: kulomet u boku, odstřelovačka hlavní dolů, brokovnice, puška. */
+  style: HoldStyle;
+}
+
+export type HoldStyle = 'rifle' | 'heavy' | 'sniper' | 'shotgun';
+
+/** Styl držení podle role zbraně v arzenálu (Support = kulomet, Sniper, Engineer = brokovnice). */
+export function holdStyleOf(id: string): HoldStyle {
+  const kit = arsenalEntry(id)?.kit;
+  return kit === 'support' ? 'heavy' : kit === 'sniper' ? 'sniper' : kit === 'engineer' ? 'shotgun' : 'rifle';
 }
 
 const tri = (g: THREE.BufferGeometry) => (g.index ? g.index.count : g.getAttribute('position').count) / 3;
@@ -77,7 +88,7 @@ export function worldWeapon(id: string, quality: 'low' | 'standard' | 'high'): W
     // Nestřelná položka v ruce: jedna geometrie (malá), vzdálené LOD jen obalové kvádry.
     const g0 = itemGeometry(id).clone();
     const far = mergeGeometries(slices(g0, 1), false)!;
-    const w: WorldWeapon = { lods: [g0, far, far.clone()], triangles: [tri(g0), tri(far), tri(far)], muzzle: new THREE.Vector3(0, 0.1, -0.05), gripRight: new THREE.Vector3(), gripLeft: new THREE.Vector3(id === 'defib' ? -0.09 : -0.03, -0.02, 0.02), magazineSocket: new THREE.Vector3(), stockZ: 0.05, hold: 'item' };
+    const w: WorldWeapon = { lods: [g0, far, far.clone()], triangles: [tri(g0), tri(far), tri(far)], muzzle: new THREE.Vector3(0, 0.1, -0.05), gripRight: new THREE.Vector3(), gripLeft: new THREE.Vector3(id === 'defib' ? -0.09 : -0.03, -0.02, 0.02), magazineSocket: new THREE.Vector3(), stockZ: 0.05, hold: 'item', style: 'rifle' };
     cache.set(key, w);
     return w;
   }
@@ -123,6 +134,7 @@ export function worldWeapon(id: string, quality: 'low' | 'standard' | 'high'): W
     magazineSocket: m.points.magazineSocket.clone(),
     stockZ: lod0.boundingBox!.max.z,
     hold: SIDEARM_DEFS.some((d) => d.id === id) ? 'pistol' : 'rifle',
+    style: holdStyleOf(id),
   };
   cache.set(key, w);
   return w;

@@ -13,6 +13,15 @@ const ARM = /^(upperarm|lowerarm|hand|index|middle|ring|pinky|thumb)_/;
 const HANDISH = /^(hand|index|middle|ring|pinky|thumb)_/;
 const FINGERS = ['index', 'middle', 'ring', 'pinky'] as const;
 const HAND_SCALE = 0.75;
+/**
+ * Palce v úchopu (lokální rotace článků 1–3) z klipu „Pistol_Idle_Loop“ knihovny UAL (CC0):
+ * pravý obepíná rukojeť a míří podél rámu dopředu, levý (podpůrný) leží vpředu natažený.
+ * Ohyb palce kolem jedné osy jako u prstů dával palec mířící dozadu.
+ */
+const THUMB_GRIP: Record<'l' | 'r', [number, number, number, number][]> = {
+  r: [[-0.3862, 0.9156, 0.1121, 0.0019], [0.2349, -0.1373, 0.2252, 0.9355], [0.4778, 0.0002, 0.0005, 0.8785]],
+  l: [[0.2474, 0.9458, 0.2034, 0.0536], [-0.0001, -0.0001, 0, 1], [0.0002, 0.0001, -0.0005, 1]],
+};
 
 interface Side {
   s: 'l' | 'r';
@@ -136,8 +145,8 @@ export class FPArms {
       // Prsty a palec.
       const c = h.curls();
       side.fingers.forEach((chain, fi) => chain.forEach((j, k) => j.bone.quaternion.copy(j.rest).multiply(_q.setFromAxisAngle(j.axis, c.fingers[fi][k] ?? 0))));
-      // Palec: ohyb z rigu, zesílený (palec Mannequinu je v T-póze natažený podél prstů).
-      side.thumb.forEach((j, k) => j.bone.quaternion.copy(j.rest).multiply(_q.setFromAxisAngle(j.axis, 0.25 + (c.thumb[k] ?? 0) * 1.4)));
+      // Palec: úchop z klipu (viz THUMB_GRIP).
+      side.thumb.forEach((j, k) => j.bone.quaternion.fromArray(THUMB_GRIP[side.s][k]));
     }
   }
 
