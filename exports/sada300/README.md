@@ -52,6 +52,11 @@ Přízemní budovy zůstávají přístupné; jejich kolize se slučují (stejn�
   čtyři brány (dřevěná, kovová, klenutá, poškozená), tři průjezdy 3 × 3 × 6 m (rovný, klenutý,
   poškozený), tři obchody s roletou (průlez jen vleže), tři sklepní vstupy 1,8 m pod terén,
   dvě verandy a dvě proražené zdi.
+- **D86–D105 (obchody a vybavenost):** čtyři tržní stánky (malý, široký, rohový L, poškozený),
+  kiosek a otevřená budka, dvě kavárny (s posezením pod markýzou, rohová s krytou terasou), dvě
+  dílny, čerpací stanice (přístřešek 12 × 8 m, stojany, obslužná budova se sklem), městská věž
+  14 m (žebříky a podesty uvnitř), kupole (lepí se nahoru), škola a úřad (patrové → uzavřené,
+  interiér přepínačem; úřad má pochozí střechu po vnějším žebříku) a tři tržnice.
 
 ## Editor: magnet budov
 
@@ -105,6 +110,11 @@ střešní moduly, balkony) se dál lepí na stěnu / střechu jako dřív.
   strop 0,65 m nad terénem (nízký kryt), protože světlá výška 2,2 m se do 1,8 m hloubky nevejde.
 - **C61/C62 (pilotní P):** šířka 4,0 m místo 4,2 m (stejně jako B39); oblouk je skutečná valená
   klenba v celé hloubce výklenku (pilot měl rovný strop), patka 2,2 m podle pilotu.
+
+- **Sklo (od D98):** výlohy čerpací stanice mají sklo, které zastaví hráče, ale ne střelu
+  (kolize jen pro pohyb).
+- **Kolize D:** přístupné budovy s mnoha otvory mají 25–61 kvádrů (věž 61 kvůli střílnám ve
+  dvou stupních); uzavřená škola 7 a úřad 10.
 
 **Neotestováno přímo ve hře** (multiplayer, skuteční hráči): vše výše pochází ze simulace
 a renderů editoru.

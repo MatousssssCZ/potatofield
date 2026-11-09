@@ -1,0 +1,370 @@
+{
+ "schema_version": "1.1",
+ "id": "D102_office",
+ "asset_id": "setD.office",
+ "label_cs": "D102 Úřední budova",
+ "category": "sada300_D",
+ "asset_kind": "building",
+ "footprint_m": [
+  18.22,
+  13.51
+ ],
+ "height_m": 7.46,
+ "target_m": [
+  18,
+  12,
+  7.4
+ ],
+ "bounds_m": {
+  "min": [
+   -9.11,
+   0,
+   -7.4
+  ],
+  "max": [
+   9.11,
+   7.46,
+   6.11
+  ]
+ },
+ "triangles": {
+  "LOD0": 3632
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteLight",
+  "glass",
+  "metal",
+  "paintedMetal",
+  "plasterWarm",
+  "plasterWhite",
+  "roof",
+  "sandstone",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    -2,
+    1.35,
+    -7.2
+   ],
+   "size": [
+    0.3,
+    2.7,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2,
+    1.35,
+    -7.2
+   ],
+   "size": [
+    0.3,
+    2.7,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    6.9,
+    -5.875
+   ],
+   "size": [
+    18,
+    1,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    6.9,
+    5.875
+   ],
+   "size": [
+    18,
+    1,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    8.875,
+    6.9,
+    0
+   ],
+   "size": [
+    0.25,
+    1,
+    11.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -8.875,
+    6.9,
+    -1.625
+   ],
+   "size": [
+    0.25,
+    1,
+    8.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -8.875,
+    6.9,
+    4.625
+   ],
+   "size": [
+    0.25,
+    1,
+    2.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    3.2,
+    0
+   ],
+   "size": [
+    18,
+    6.4,
+    12
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    2.8,
+    -6.7
+   ],
+   "size": [
+    4.4,
+    0.2,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.075,
+    -6.45
+   ],
+   "size": [
+    3.2,
+    0.15,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "sand"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [
+  {
+   "base": [
+    -9.05,
+    0,
+    3
+   ],
+   "height": 6.4,
+   "facing_deg": 90
+  }
+ ],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -8.5
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    0,
+    0.08,
+    -3
+   ],
+   "note": "vstupní hala"
+  },
+  {
+   "p": [
+    -3,
+    0.08,
+    -3.5
+   ]
+  },
+  {
+   "p": [
+    -6,
+    0.08,
+    -1.5
+   ],
+   "note": "kancelář"
+  },
+  {
+   "p": [
+    -6,
+    0.08,
+    1.5
+   ],
+   "note": "kancelář vzadu"
+  },
+  {
+   "p": [
+    -3,
+    0.08,
+    3.5
+   ]
+  },
+  {
+   "p": [
+    -2.2,
+    0.08,
+    -0.4
+   ]
+  },
+  {
+   "p": [
+    -0.775,
+    0.08,
+    -0.4
+   ],
+   "note": "pata schodiště"
+  },
+  {
+   "p": [
+    -0.775,
+    1.64,
+    3.5
+   ],
+   "note": "mezipodesta"
+  },
+  {
+   "p": [
+    0.775,
+    1.64,
+    3.5
+   ]
+  },
+  {
+   "p": [
+    0.75,
+    3.2,
+    -0.6
+   ],
+   "note": "patro – hala"
+  },
+  {
+   "p": [
+    3,
+    3.2,
+    -3.5
+   ]
+  },
+  {
+   "p": [
+    6,
+    3.2,
+    -1.2
+   ],
+   "note": "kancelář v patře"
+  },
+  {
+   "p": [
+    -9.7,
+    0,
+    3
+   ],
+   "teleport": true,
+   "note": "za domem u žebříku"
+  },
+  {
+   "p": [
+    -7.5,
+    6.4,
+    3
+   ],
+   "ladder": true,
+   "note": "pochozí střecha"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Výchozí: uzavřená (BF2). Na střechu vede vnější žebřík u boku −X (i v uzavřené verzi); atika 1 m.",
+  "„Přístupný interiér“: hala, schodiště 1,4 m, 4 kanceláře v podlaží."
+ ],
+ "tested_in_game": false
+}

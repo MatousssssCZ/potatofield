@@ -1,0 +1,369 @@
+{
+ "schema_version": "1.1",
+ "id": "D103_marketSmall",
+ "asset_id": "setD.marketSmall",
+ "label_cs": "D103 Malá otevřená tržnice",
+ "category": "sada300_D",
+ "asset_kind": "building",
+ "footprint_m": [
+  10.4,
+  8.44
+ ],
+ "height_m": 3.28,
+ "target_m": [
+  10,
+  8,
+  3.3
+ ],
+ "bounds_m": {
+  "min": [
+   -5.2,
+   0,
+   -4.22
+  ],
+  "max": [
+   5.2,
+   3.28,
+   4.22
+  ]
+ },
+ "triangles": {
+  "LOD0": 684
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "crateFruitA",
+  "crateFruitB",
+  "crateFruitC",
+  "metalSheet",
+  "paving",
+  "plasterWarm",
+  "sandstone",
+  "wood",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.025,
+    0
+   ],
+   "size": [
+    10,
+    0.05,
+    8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -4.75,
+    1.6,
+    -3.75
+   ],
+   "size": [
+    0.5,
+    3.2,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -4.75,
+    1.6,
+    3.75
+   ],
+   "size": [
+    0.5,
+    3.2,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.6,
+    1.6,
+    -3.75
+   ],
+   "size": [
+    0.5,
+    3.2,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.6,
+    1.6,
+    3.75
+   ],
+   "size": [
+    0.5,
+    3.2,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.6,
+    1.6,
+    -3.75
+   ],
+   "size": [
+    0.5,
+    3.2,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.6,
+    1.6,
+    3.75
+   ],
+   "size": [
+    0.5,
+    3.2,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    4.75,
+    1.6,
+    -3.75
+   ],
+   "size": [
+    0.5,
+    3.2,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    4.75,
+    1.6,
+    3.75
+   ],
+   "size": [
+    0.5,
+    3.2,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.4,
+    0.455,
+    -1.8
+   ],
+   "size": [
+    2.8,
+    0.91,
+    0.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    2.4,
+    0.455,
+    -1.8
+   ],
+   "size": [
+    2.8,
+    0.91,
+    0.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -2.4,
+    0.455,
+    1.8
+   ],
+   "size": [
+    2.8,
+    0.91,
+    0.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    2.4,
+    0.455,
+    1.8
+   ],
+   "size": [
+    2.8,
+    0.91,
+    0.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -5.5
+   ],
+   "note": "vstup"
+  },
+  {
+   "p": [
+    0,
+    0.05,
+    0
+   ],
+   "note": "hlavní ulička 2 m"
+  },
+  {
+   "p": [
+    -4.3,
+    0.05,
+    0
+   ]
+  },
+  {
+   "p": [
+    -4.3,
+    0.05,
+    -3
+   ],
+   "note": "boční ulička"
+  },
+  {
+   "p": [
+    4.3,
+    0.05,
+    -3
+   ]
+  },
+  {
+   "p": [
+    0,
+    0,
+    5.5
+   ],
+   "note": "ven"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Uličky: hlavní 2,0 m (mezi pulty), boční 1,5 m u sloupů. Střecha je plech bez kolize (průstřel shora)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -2.4,
+    0.6,
+    -5
+   ],
+   "to": [
+    -2.4,
+    0.6,
+    -1.8
+   ],
+   "expect_hit": true,
+   "note": "pult kryje"
+  },
+  {
+   "from": [
+    -6,
+    1.5,
+    0
+   ],
+   "to": [
+    6,
+    1.5,
+    0
+   ],
+   "expect_hit": false,
+   "note": "ulička průstřelná"
+  }
+ ]
+}

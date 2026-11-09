@@ -1,0 +1,216 @@
+{
+ "schema_version": "1.1",
+ "id": "D97_fuelPumps",
+ "asset_id": "setD.fuelPumps",
+ "label_cs": "D97 Čerpací stojany",
+ "category": "sada300_D",
+ "asset_kind": "building",
+ "footprint_m": [
+  4.06,
+  1.26
+ ],
+ "height_m": 2.08,
+ "target_m": [
+  4,
+  1.2,
+  2.1
+ ],
+ "bounds_m": {
+  "min": [
+   -2.03,
+   0,
+   -0.63
+  ],
+  "max": [
+   2.03,
+   2.08,
+   0.63
+  ]
+ },
+ "triangles": {
+  "LOD0": 400
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "glass",
+  "gunMetal",
+  "gunPolymer",
+  "paintedMetal",
+  "paintedMetalRed",
+  "plasterWhite",
+  "rubber"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.1,
+    0
+   ],
+   "size": [
+    4,
+    0.2,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1,
+    1.1,
+    0
+   ],
+   "size": [
+    0.9,
+    1.8,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    1,
+    1.1,
+    0
+   ],
+   "size": [
+    0.9,
+    1.8,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -1.85,
+    0.6,
+    0
+   ],
+   "size": [
+    0.2,
+    0.8,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    1.85,
+    0.6,
+    0
+   ],
+   "size": [
+    0.2,
+    0.8,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -2.5,
+    0,
+    -1.4
+   ],
+   "note": "u ostrůvku"
+  },
+  {
+   "p": [
+    2.5,
+    0,
+    -1.4
+   ]
+  },
+  {
+   "p": [
+    2.5,
+    0,
+    1.4
+   ]
+  },
+  {
+   "p": [
+    -2.5,
+    0,
+    1.4
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Hadice zjednodušené (válec), displeje prázdné (tmavé sklo). Ochranné sloupky na koncích ostrůvku."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -1,
+    1.2,
+    -3
+   ],
+   "to": [
+    -1,
+    1.2,
+    3
+   ],
+   "expect_hit": true,
+   "note": "tělo stojanu kryje"
+  },
+  {
+   "from": [
+    0,
+    1.2,
+    -3
+   ],
+   "to": [
+    0,
+    1.2,
+    3
+   ],
+   "expect_hit": false,
+   "note": "mezi stojany volno"
+  }
+ ]
+}

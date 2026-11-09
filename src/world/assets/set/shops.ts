@@ -395,6 +395,8 @@ regD(98, 'fuelShop', 'Obslužná budova čerpací stanice', {
 // D99 Městská věž (bez náboženských symbolů), D100 Kupole
 // ---------------------------------------------------------------------------
 const TOWER_L = [0.08, 4.0, 8.0, 11.4];
+/** Poklopy podest: žebřík u hrany −X, za ní podesta (výstup), poklopy se nad sebou nekryjí. */
+const TOWER_H: Record<number, Rect> = { 4: [-0.85, 0.25, 0.05, 1.15], 8: [0.5, -1.15, 1.4, -0.25], 11.4: [-0.4, 0.25, 0.5, 1.15] };
 regD(99, 'cityTower', 'Městská věž', {
   describe: () => 'půdorys 4 × 4 m, výška 14 m, tři stupně (4 / 3,4 / ochoz), uvnitř žebříky a podesty ve 4, 8 a 11,4 m, horní ochoz s atikou',
   ladders: () => towerLadders().map((l) => l.ladder),
@@ -420,12 +422,14 @@ regD(99, 'cityTower', 'Městská věž', {
   route: [
     { p: [0, 0, -3.0], note: 'ulice' },
     { p: [0, 0.08, -0.5], note: 'přízemí věže' },
-    { p: [-0.9, 0.08, 0.6] },
-    { p: [-0.3, 4.0, 0.6], ladder: true, note: 'podesta 4 m' },
-    { p: [0.4, 4.0, -0.6] },
-    { p: [1.2, 8.0, -0.6], ladder: true, note: 'podesta 8 m' },
-    { p: [-0.4, 8.0, 0.7] },
-    { p: [0.6, 11.4, 0.7], ladder: true, note: 'horní ochoz 11,4 m' },
+    { p: [0.3, 0.08, 0.7], note: 'k žebříku' },
+    { p: [-1.25, 4.0, 0.7], ladder: true, note: 'podesta 4 m' },
+    { p: [-1.25, 4.0, -0.5] },
+    { p: [1.2, 4.0, -0.7] },
+    { p: [0.0, 8.0, -0.7], ladder: true, note: 'podesta 8 m' },
+    { p: [0.8, 8.0, 0.7] },
+    { p: [-1.0, 11.4, 0.7], ladder: true, note: 'horní ochoz 11,4 m' },
+    { p: [-1.0, 11.4, -0.6] },
     { p: [1.0, 11.4, -1.0], note: 'u atiky' },
   ],
   walkableRoof: true,
@@ -435,12 +439,11 @@ regD(99, 'cityTower', 'Městská věž', {
 
 /** Žebříky věže: tři ramena střídavě u různých stěn (poklopy se nekryjí nad sebou). */
 function towerLadders() {
-  const H1: Rect = [-1.65, 0.25, -0.75, 1.15], H2: Rect = [-0.15, -1.15, 0.75, -0.25], H3: Rect = [-0.85, 0.25, 0.05, 1.15];
+  const H1: Rect = TOWER_H[4], H2: Rect = TOWER_H[8], H3: Rect = TOWER_H[11.4];
   return [hatch(H1, TOWER_L[0], TOWER_L[1]), hatch(H2, TOWER_L[1], TOWER_L[2]), hatch(H3, TOWER_L[2], TOWER_L[3])];
 }
 function towerSlab(a: number, b: number, y: number, mat: string, over = 0): Part[] {
-  const holes: Record<number, Rect> = { 4: [-1.65, 0.25, -0.75, 1.15], 8: [-0.15, -1.15, 0.75, -0.25], 11.4: [-0.85, 0.25, 0.05, 1.15] };
-  const h = holes[y];
+  const h = TOWER_H[y];
   const r: Rect = [a + 0.3 - over, a + 0.3 - over, b - 0.3 + over, b - 0.3 + over];
   const parts: Part[] = [];
   // Deska s otvorem (pásy kolem poklopu).
@@ -610,10 +613,10 @@ function marketRoof(x0: number, x1: number, z0: number, z1: number, y: number, s
 const pier = (x: number, z: number, h: number, mat: string): Part[] => [bx(x - 0.25, x + 0.25, 0, h, z - 0.25, z + 0.25, mat), bx(x - 0.3, x + 0.3, h - 0.15, h, z - 0.3, z + 0.3, TRIM, false)];
 
 regD(103, 'marketSmall', 'Malá otevřená tržnice', {
-  describe: () => '10 × 8 m, lehká plechová střecha ve 3,2 m na 6 zděných sloupech, 4 pevné pulty, průchody ≥ 1,5 m',
+  describe: () => '10 × 8 m, lehká plechová střecha ve 3,2 m na 8 zděných sloupech (ústí uliček volná), 4 pevné pulty, průchody ≥ 1,5 m',
   generate(_p, seed, mat) {
     const parts: Part[] = [bx(-5, 5, 0, 0.05, -4, 4, 'paving')];
-    for (const x of [-4.75, 0, 4.75]) for (const z of [-3.75, 3.75]) parts.push(...pier(x, z, 3.2, mat));
+    for (const x of [-4.75, -1.6, 1.6, 4.75]) for (const z of [-3.75, 3.75]) parts.push(...pier(x, z, 3.2, mat));
     parts.push(...marketRoof(-5.2, 5.2, -4.1, 4.1, 3.2));
     for (const [x0, x1, z0, z1] of [[-3.8, -1.0, -2.2, -1.4], [1.0, 3.8, -2.2, -1.4], [-3.8, -1.0, 1.4, 2.2], [1.0, 3.8, 1.4, 2.2]] as const) {
       parts.push(...counter(x0, x1, z0, z1));

@@ -1,0 +1,210 @@
+{
+ "schema_version": "1.1",
+ "id": "D91_boothOpen",
+ "asset_id": "setD.boothOpen",
+ "label_cs": "D91 Otevřená prodejní budka",
+ "category": "sada300_D",
+ "asset_kind": "building",
+ "footprint_m": [
+  3.1,
+  3.35
+ ],
+ "height_m": 2.72,
+ "target_m": [
+  3,
+  2.5,
+  2.6
+ ],
+ "bounds_m": {
+  "min": [
+   -1.55,
+   0,
+   -2.05
+  ],
+  "max": [
+   1.55,
+   2.72,
+   1.3
+  ]
+ },
+ "triangles": {
+  "LOD0": 192
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "awningSand",
+  "crateFruitA",
+  "crateFruitB",
+  "crateFruitC",
+  "metalSheet",
+  "plasterWarm",
+  "wood",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    0.2,
+    0.95,
+    0.9
+   ],
+   "size": [
+    1.6,
+    1.9,
+    0.4
+   ],
+   "rotX": 3.1416,
+   "rotY": 0,
+   "rotZ": 3.1416,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0,
+    1.3,
+    1.175
+   ],
+   "size": [
+    3,
+    2.6,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.425,
+    1.3,
+    -0.075
+   ],
+   "size": [
+    0.15,
+    2.6,
+    2.35
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.425,
+    1.3,
+    -0.075
+   ],
+   "size": [
+    0.15,
+    2.6,
+    2.35
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.575,
+    0.455,
+    -0.925
+   ],
+   "size": [
+    1.55,
+    0.91,
+    0.55
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0.8,
+    0,
+    -2
+   ],
+   "note": "před budkou"
+  },
+  {
+   "p": [
+    0.8,
+    0,
+    -0.6
+   ],
+   "note": "průchod vedle pultu"
+  },
+  {
+   "p": [
+    -0.6,
+    0,
+    0
+   ],
+   "note": "za pultem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Stříška je vzhled (střely projdou), stěny a pult mají kolizi."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -0.6,
+    0.6,
+    -3
+   ],
+   "to": [
+    -0.6,
+    0.6,
+    -0.5
+   ],
+   "expect_hit": true,
+   "note": "pult kryje"
+  },
+  {
+   "from": [
+    -3,
+    1.5,
+    0
+   ],
+   "to": [
+    3,
+    1.5,
+    0
+   ],
+   "expect_hit": true,
+   "note": "boční stěny kryjí"
+  }
+ ]
+}

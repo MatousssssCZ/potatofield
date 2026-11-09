@@ -1,0 +1,332 @@
+{
+ "schema_version": "1.1",
+ "id": "D101_school",
+ "asset_id": "setD.school",
+ "label_cs": "D101 Školní budova",
+ "category": "sada300_D",
+ "asset_kind": "building",
+ "footprint_m": [
+  22.22,
+  12.13
+ ],
+ "height_m": 7.26,
+ "target_m": [
+  22,
+  10,
+  7.2
+ ],
+ "bounds_m": {
+  "min": [
+   -11.11,
+   0,
+   -6.4
+  ],
+  "max": [
+   11.11,
+   7.26,
+   5.73
+  ]
+ },
+ "triangles": {
+  "LOD0": 4020
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "glass",
+  "paintedMetal",
+  "plasterWarm",
+  "roof",
+  "sandstone",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    6.8,
+    -4.875
+   ],
+   "size": [
+    22,
+    0.8,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    6.8,
+    4.875
+   ],
+   "size": [
+    22,
+    0.8,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    10.875,
+    6.8,
+    0
+   ],
+   "size": [
+    0.25,
+    0.8,
+    9.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -10.875,
+    6.8,
+    0
+   ],
+   "size": [
+    0.25,
+    0.8,
+    9.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    3.2,
+    0
+   ],
+   "size": [
+    22,
+    6.4,
+    10
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    2.625,
+    -5.7
+   ],
+   "size": [
+    3.2,
+    0.15,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.06,
+    -5.45
+   ],
+   "size": [
+    2.8,
+    0.12,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -7
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    0,
+    0.08,
+    -4
+   ],
+   "note": "hlavní vstup → chodba"
+  },
+  {
+   "p": [
+    -8,
+    0.08,
+    -4
+   ]
+  },
+  {
+   "p": [
+    -8.3,
+    0.08,
+    -2.2
+   ]
+  },
+  {
+   "p": [
+    -8.3,
+    0.08,
+    0
+   ],
+   "note": "učebna 1"
+  },
+  {
+   "p": [
+    -8.3,
+    0.08,
+    3.5
+   ]
+  },
+  {
+   "p": [
+    -6.8,
+    0.08,
+    3.5
+   ]
+  },
+  {
+   "p": [
+    -4,
+    0.08,
+    3.5
+   ],
+   "note": "učebna 2 (propojená)"
+  },
+  {
+   "p": [
+    -3.6,
+    0.08,
+    -4
+   ]
+  },
+  {
+   "p": [
+    9.5,
+    0.08,
+    -4
+   ],
+   "note": "konec chodby"
+  },
+  {
+   "p": [
+    12.3,
+    0,
+    -4
+   ],
+   "note": "druhý vstup na konci"
+  },
+  {
+   "p": [
+    9.5,
+    0.08,
+    -4
+   ]
+  },
+  {
+   "p": [
+    -0.65,
+    0.08,
+    -3.6
+   ]
+  },
+  {
+   "p": [
+    -0.65,
+    1.64,
+    0.6
+   ],
+   "note": "mezipodesta"
+  },
+  {
+   "p": [
+    0.65,
+    1.64,
+    0.6
+   ]
+  },
+  {
+   "p": [
+    0.65,
+    3.2,
+    -3.4
+   ],
+   "note": "patro – chodba"
+  },
+  {
+   "p": [
+    8,
+    3.2,
+    -4
+   ]
+  },
+  {
+   "p": [
+    8.3,
+    3.2,
+    -2.2
+   ]
+  },
+  {
+   "p": [
+    8.3,
+    3.2,
+    0
+   ],
+   "note": "učebna v patře"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Výchozí: uzavřená (BF2) – zvenku okna se sklem, dveře zavřené. „Přístupný interiér“: chodba, 4 učebny v podlaží (po dvou propojené), dvouramenné schodiště 1,2 m."
+ ],
+ "tested_in_game": false
+}

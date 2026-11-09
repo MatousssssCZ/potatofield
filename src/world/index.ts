@@ -14,6 +14,7 @@ import './assets/set/residential2';
 import './assets/set/residential3';
 import './assets/set/modules';
 import './assets/set/entries';
+import './assets/set/shops';
 
 export * from './registry';
 export * from './parts';

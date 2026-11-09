@@ -110,8 +110,9 @@ function entryModule(s: EntrySpec, mat: string, seed = 1): Part[] {
     parts.push(bx(-s.rw / 2, s.rw / 2, s.lintel!, s.h, zf, zf + ft, mat));
     if (s.damage === 'rect') {
       // Prasklý překlad: zalomená silueta (klín vylomený uprostřed) + tmavá spára.
-      parts.push({ shape: 'box', pos: [0.15, s.lintel! - 0.02, zf - 0.06], rot: [0, 0, 0.18], size: [s.rw * 0.55, 0.22, 0.1], material: 'concreteLight' });
-      parts.push({ shape: 'box', pos: [-s.rw * 0.3, s.lintel! - 0.04, zf - 0.06], rot: [0, 0, -0.05], size: [s.rw * 0.45, 0.2, 0.1], material: 'concreteLight' });
+      // Prohnuté poloviny překladu (spodní hrana klesá k trhlině), lícují se zdí.
+      parts.push({ shape: 'box', pos: [s.rw * 0.22, s.lintel! - 0.04, zf + ft / 2], rot: [0, 0, 0.12], size: [s.rw * 0.5, 0.14, ft - 0.02], material: mat });
+      parts.push({ shape: 'box', pos: [-s.rw * 0.25, s.lintel! - 0.03, zf + ft / 2], rot: [0, 0, -0.08], size: [s.rw * 0.5, 0.12, ft - 0.02], material: mat });
       parts.push({ shape: 'box', pos: [0.02, s.lintel! + 0.18, zf - 0.005], rot: [0, 0, 1.2], size: [0.5, 0.03, 0.02], material: 'concreteDark' });
     } else {
       // Mírně vystupující překlad.
@@ -211,7 +212,11 @@ regEntry(68, 'entryRectDamaged', 'Poškozený pravoúhlý vstup', RECT_DMG, '4 �
 const GT = 0.4;
 /** Zeď podél X s otvorem šířky ow uprostřed (osa z = 0). */
 function gateWall(W: number, h: number, ow: number, mat: string): Part[] {
-  return [bx(-W / 2, -ow / 2, 0, h, -GT / 2, GT / 2, mat), bx(ow / 2, W / 2, 0, h, -GT / 2, GT / 2, mat), bx(-W / 2 - 0.03, W / 2 + 0.03, h, h + 0.08, -GT / 2 - 0.04, GT / 2 + 0.04, TRIM, false)];
+  // Krycí lišta jen nad zdí (nad otvorem nic nevisí).
+  return [
+    bx(-W / 2, -ow / 2, 0, h, -GT / 2, GT / 2, mat), bx(ow / 2, W / 2, 0, h, -GT / 2, GT / 2, mat),
+    bx(-W / 2 - 0.03, -ow / 2, h, h + 0.08, -GT / 2 - 0.04, GT / 2 + 0.04, TRIM, false), bx(ow / 2, W / 2 + 0.03, h, h + 0.08, -GT / 2 - 0.04, GT / 2 + 0.04, TRIM, false),
+  ];
 }
 /** Křídlo vrat: obdélník (šířka podél osy a→b), tloušťka, kovové pásy; kolize = deska. */
 function leaf(x0: number, z0: number, x1: number, z1: number, h: number, th: number, mat: string, straps: string, nStraps = 3, rot?: V3): Part[] {
@@ -231,7 +236,7 @@ regC(69, 'gateWood', 'Brána s dřevěnými vraty', {
   generate(_p, _s, mat) {
     const W = 7, h = 3.4, ow = 3, oh = 2.8;
     const parts = gateWall(W, h, ow, mat);
-    parts.push(bx(-ow / 2, ow / 2, oh, h, -GT / 2, GT / 2, mat));
+    parts.push(bx(-ow / 2, ow / 2, oh, h, -GT / 2, GT / 2, mat), bx(-ow / 2, ow / 2, h, h + 0.08, -GT / 2 - 0.04, GT / 2 + 0.04, TRIM, false));
     parts.push(bx(-ow / 2 - 0.15, ow / 2 + 0.15, oh, oh + 0.25, -GT / 2 - 0.06, -GT / 2, 'woodDark', false));
     // Křídla přiklopená k vnitřnímu líci zdi vedle otvoru (nezužují průjezd).
     for (const sg of [-1, 1]) parts.push(...leaf(sg * (ow / 2 + 0.05), GT / 2 + 0.07, sg * (ow / 2 + 1.5), GT / 2 + 0.07, oh - 0.1, 0.1, 'woodDark', 'metal'));

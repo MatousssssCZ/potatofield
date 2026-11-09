@@ -1,0 +1,428 @@
+{
+ "schema_version": "1.1",
+ "id": "D94_workshopSmall",
+ "asset_id": "setD.workshopSmall",
+ "label_cs": "D94 Malá dílna",
+ "category": "sada300_D",
+ "asset_kind": "building",
+ "footprint_m": [
+  6.21,
+  8.2
+ ],
+ "height_m": 4,
+ "target_m": [
+  6,
+  8,
+  4
+ ],
+ "bounds_m": {
+  "min": [
+   -3.1,
+   0,
+   -4.1
+  ],
+  "max": [
+   3.11,
+   4,
+   4.1
+  ]
+ },
+ "triangles": {
+  "LOD0": 384
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "metalSheet",
+  "paintedMetal",
+  "plasterWarm",
+  "sandstone",
+  "wood",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    2.5,
+    0.95,
+    2.5
+   ],
+   "size": [
+    1.2,
+    1.9,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": -1.5708,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0,
+    0.03,
+    0
+   ],
+   "size": [
+    5.8,
+    0.06,
+    7.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -2.4,
+    1.9,
+    -3.85
+   ],
+   "size": [
+    1.2,
+    3.8,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.3,
+    3.4,
+    -3.85
+   ],
+   "size": [
+    3,
+    0.8,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.1,
+    1.9,
+    -3.85
+   ],
+   "size": [
+    1.8,
+    3.8,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    1.9,
+    3.85
+   ],
+   "size": [
+    6,
+    3.8,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.85,
+    1.9,
+    -1.65
+   ],
+   "size": [
+    0.3,
+    3.8,
+    4.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.85,
+    0.8,
+    1
+   ],
+   "size": [
+    0.3,
+    1.6,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.85,
+    3.2,
+    1
+   ],
+   "size": [
+    0.3,
+    1.2,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.85,
+    1.9,
+    2.65
+   ],
+   "size": [
+    0.3,
+    3.8,
+    2.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.85,
+    1.9,
+    -3.225
+   ],
+   "size": [
+    0.3,
+    3.8,
+    0.95
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.85,
+    3,
+    -2.2
+   ],
+   "size": [
+    0.3,
+    1.6,
+    1.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.85,
+    1.9,
+    1.025
+   ],
+   "size": [
+    0.3,
+    3.8,
+    5.35
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    3.9,
+    0
+   ],
+   "size": [
+    6.2,
+    0.2,
+    8.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.2,
+    0.43,
+    3.35
+   ],
+   "size": [
+    3.2,
+    0.86,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -2.3,
+    0.35,
+    2.9
+   ],
+   "size": [
+    0.7,
+    0.7,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    2.3,
+    0.3,
+    -2.9
+   ],
+   "size": [
+    0.6,
+    0.6,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -0.3,
+    0,
+    -5.5
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    -0.3,
+    0.06,
+    -2.5
+   ],
+   "note": "vrata"
+  },
+  {
+   "p": [
+    0,
+    0.06,
+    2.4
+   ],
+   "note": "u pracovního stolu"
+  },
+  {
+   "p": [
+    -2,
+    0.06,
+    -2.2
+   ]
+  },
+  {
+   "p": [
+    -3.9,
+    0,
+    -2.2
+   ],
+   "note": "boční dveře ven"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Vrata bez křídel (otevřený otvor 3 × 3 m), plechová střecha 3,8–4,0 m."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -0.3,
+    1.5,
+    -6
+   ],
+   "to": [
+    -0.3,
+    1.5,
+    -2
+   ],
+   "expect_hit": false,
+   "note": "vraty volno"
+  },
+  {
+   "from": [
+    2.2,
+    1.5,
+    -6
+   ],
+   "to": [
+    2.2,
+    1.5,
+    -2
+   ],
+   "expect_hit": true,
+   "note": "čelní zeď kryje"
+  }
+ ]
+}

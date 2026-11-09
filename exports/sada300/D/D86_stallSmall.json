@@ -1,0 +1,225 @@
+{
+ "schema_version": "1.1",
+ "id": "D86_stallSmall",
+ "asset_id": "setD.stallSmall",
+ "label_cs": "D86 Malý tržní stánek",
+ "category": "sada300_D",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.7217,
+  2.3136
+ ],
+ "height_m": 2.7106,
+ "target_m": [
+  2.5,
+  2,
+  2.6
+ ],
+ "bounds_m": {
+  "min": [
+   -1.3608,
+   0,
+   -1.2575
+  ],
+  "max": [
+   1.3608,
+   2.7106,
+   1.0561
+  ]
+ },
+ "triangles": {
+  "LOD0": 180
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "awningSand",
+  "crateFruitA",
+  "crateFruitB",
+  "crateFruitC",
+  "paintedMetal",
+  "wood",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    -1.2,
+    1.3,
+    -0.95
+   ],
+   "size": [
+    0.08,
+    2.6,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    1.2,
+    1.3,
+    -0.95
+   ],
+   "size": [
+    0.08,
+    2.6,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -1.2,
+    1.2,
+    0.95
+   ],
+   "size": [
+    0.08,
+    2.4,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    1.2,
+    1.2,
+    0.95
+   ],
+   "size": [
+    0.08,
+    2.4,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    0.455,
+    -0.625
+   ],
+   "size": [
+    2.3,
+    0.91,
+    0.55
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -0.7,
+    0.25,
+    0.5
+   ],
+   "size": [
+    0.5,
+    0.5,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0.3,
+    0,
+    2
+   ],
+   "note": "za stánkem"
+  },
+  {
+   "p": [
+    0.3,
+    0,
+    0
+   ],
+   "note": "za pultem (vstup zezadu)"
+  },
+  {
+   "p": [
+    0.3,
+    0,
+    2
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Pult je plná skříň (kryt vkleče), plachta je jen vzhled (střely projdou)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    0.6,
+    -3
+   ],
+   "to": [
+    0,
+    0.6,
+    0
+   ],
+   "expect_hit": true,
+   "note": "pult kryje vkleče"
+  },
+  {
+   "from": [
+    0,
+    1.6,
+    -3
+   ],
+   "to": [
+    0,
+    1.6,
+    0
+   ],
+   "expect_hit": false,
+   "note": "nad pultem volno"
+  }
+ ]
+}

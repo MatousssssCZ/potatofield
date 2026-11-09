@@ -1,0 +1,186 @@
+{
+ "section": "D",
+ "generated": "2026-11-09",
+ "models": [
+  {
+   "item": 86,
+   "id": "D86_stallSmall",
+   "asset_id": "setD.stallSmall",
+   "label": "D86 Malý tržní stánek",
+   "glb": "D86_stallSmall.glb",
+   "json": "D86_stallSmall.json",
+   "render": "renders/D86.jpg"
+  },
+  {
+   "item": 87,
+   "id": "D87_stallWide",
+   "asset_id": "setD.stallWide",
+   "label": "D87 Široký tržní stánek",
+   "glb": "D87_stallWide.glb",
+   "json": "D87_stallWide.json",
+   "render": "renders/D87.jpg"
+  },
+  {
+   "item": 88,
+   "id": "D88_stallCorner",
+   "asset_id": "setD.stallCorner",
+   "label": "D88 Rohový tržní stánek",
+   "glb": "D88_stallCorner.glb",
+   "json": "D88_stallCorner.json",
+   "render": "renders/D88.jpg"
+  },
+  {
+   "item": 89,
+   "id": "D89_stallDamaged",
+   "asset_id": "setD.stallDamaged",
+   "label": "D89 Poškozený tržní stánek",
+   "glb": "D89_stallDamaged.glb",
+   "json": "D89_stallDamaged.json",
+   "render": "renders/D89.jpg"
+  },
+  {
+   "item": 90,
+   "id": "D90_kiosk",
+   "asset_id": "setD.kiosk",
+   "label": "D90 Prodejní kiosek",
+   "glb": "D90_kiosk.glb",
+   "json": "D90_kiosk.json",
+   "render": "renders/D90.jpg"
+  },
+  {
+   "item": 91,
+   "id": "D91_boothOpen",
+   "asset_id": "setD.boothOpen",
+   "label": "D91 Otevřená prodejní budka",
+   "glb": "D91_boothOpen.glb",
+   "json": "D91_boothOpen.json",
+   "render": "renders/D91.jpg"
+  },
+  {
+   "item": 92,
+   "id": "D92_cafeSmall",
+   "asset_id": "setD.cafeSmall",
+   "label": "D92 Malá kavárna s posezením",
+   "glb": "D92_cafeSmall.glb",
+   "json": "D92_cafeSmall.json",
+   "render": "renders/D92.jpg"
+  },
+  {
+   "item": 93,
+   "id": "D93_cafeCorner",
+   "asset_id": "setD.cafeCorner",
+   "label": "D93 Rohová kavárna",
+   "glb": "D93_cafeCorner.glb",
+   "json": "D93_cafeCorner.json",
+   "render": "renders/D93.jpg"
+  },
+  {
+   "item": 94,
+   "id": "D94_workshopSmall",
+   "asset_id": "setD.workshopSmall",
+   "label": "D94 Malá dílna",
+   "glb": "D94_workshopSmall.glb",
+   "json": "D94_workshopSmall.json",
+   "render": "renders/D94.jpg"
+  },
+  {
+   "item": 95,
+   "id": "D95_workshopGarage",
+   "asset_id": "setD.workshopGarage",
+   "label": "D95 Autodílna se dvěma vjezdy",
+   "glb": "D95_workshopGarage.glb",
+   "json": "D95_workshopGarage.json",
+   "render": "renders/D95.jpg"
+  },
+  {
+   "item": 96,
+   "id": "D96_fuelCanopy",
+   "asset_id": "setD.fuelCanopy",
+   "label": "D96 Přístřešek čerpací stanice",
+   "glb": "D96_fuelCanopy.glb",
+   "json": "D96_fuelCanopy.json",
+   "render": "renders/D96.jpg"
+  },
+  {
+   "item": 97,
+   "id": "D97_fuelPumps",
+   "asset_id": "setD.fuelPumps",
+   "label": "D97 Čerpací stojany",
+   "glb": "D97_fuelPumps.glb",
+   "json": "D97_fuelPumps.json",
+   "render": "renders/D97.jpg"
+  },
+  {
+   "item": 98,
+   "id": "D98_fuelShop",
+   "asset_id": "setD.fuelShop",
+   "label": "D98 Obslužná budova čerpací stanice",
+   "glb": "D98_fuelShop.glb",
+   "json": "D98_fuelShop.json",
+   "render": "renders/D98.jpg"
+  },
+  {
+   "item": 99,
+   "id": "D99_cityTower",
+   "asset_id": "setD.cityTower",
+   "label": "D99 Městská věž",
+   "glb": "D99_cityTower.glb",
+   "json": "D99_cityTower.json",
+   "render": "renders/D99.jpg"
+  },
+  {
+   "item": 100,
+   "id": "D100_domeRoof",
+   "asset_id": "setD.domeRoof",
+   "label": "D100 Kupole",
+   "glb": "D100_domeRoof.glb",
+   "json": "D100_domeRoof.json",
+   "render": "renders/D100.jpg"
+  },
+  {
+   "item": 101,
+   "id": "D101_school",
+   "asset_id": "setD.school",
+   "label": "D101 Školní budova",
+   "glb": "D101_school.glb",
+   "json": "D101_school.json",
+   "render": "renders/D101.jpg"
+  },
+  {
+   "item": 102,
+   "id": "D102_office",
+   "asset_id": "setD.office",
+   "label": "D102 Úřední budova",
+   "glb": "D102_office.glb",
+   "json": "D102_office.json",
+   "render": "renders/D102.jpg"
+  },
+  {
+   "item": 103,
+   "id": "D103_marketSmall",
+   "asset_id": "setD.marketSmall",
+   "label": "D103 Malá otevřená tržnice",
+   "glb": "D103_marketSmall.glb",
+   "json": "D103_marketSmall.json",
+   "render": "renders/D103.jpg"
+  },
+  {
+   "item": 104,
+   "id": "D104_marketLong",
+   "asset_id": "setD.marketLong",
+   "label": "D104 Dlouhá krytá tržnice",
+   "glb": "D104_marketLong.glb",
+   "json": "D104_marketLong.json",
+   "render": "renders/D104.jpg"
+  },
+  {
+   "item": 105,
+   "id": "D105_marketDamaged",
+   "asset_id": "setD.marketDamaged",
+   "label": "D105 Poškozená tržnice",
+   "glb": "D105_marketDamaged.glb",
+   "json": "D105_marketDamaged.json",
+   "render": "renders/D105.jpg"
+  }
+ ]
+}

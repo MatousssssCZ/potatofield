@@ -1,0 +1,172 @@
+{
+ "schema_version": "1.1",
+ "id": "D100_domeRoof",
+ "asset_id": "setD.domeRoof",
+ "label_cs": "D100 Kupole",
+ "category": "sada300_D",
+ "asset_kind": "building",
+ "footprint_m": [
+  6.15,
+  6.15
+ ],
+ "height_m": 3.51,
+ "target_m": [
+  6,
+  6,
+  3.5
+ ],
+ "bounds_m": {
+  "min": [
+   -3.075,
+   0,
+   -3.075
+  ],
+  "max": [
+   3.075,
+   3.51,
+   3.075
+  ]
+ },
+ "triangles": {
+  "LOD0": 956
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "plasterWarm",
+  "plasterWhite",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.4,
+    0
+   ],
+   "size": [
+    6,
+    0.8,
+    6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    1.1494,
+    0
+   ],
+   "size": [
+    5.7504,
+    0.7188,
+    5.7504
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    1.8244,
+    0
+   ],
+   "size": [
+    5.3585,
+    0.6712,
+    5.3585
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    2.4296,
+    0
+   ],
+   "size": [
+    4.6014,
+    0.5792,
+    4.6014
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "plaster"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -4,
+    0,
+    0
+   ]
+  },
+  {
+   "p": [
+    0,
+    0,
+    -4
+   ],
+   "note": "kolem bubnu"
+  },
+  {
+   "p": [
+    4,
+    0,
+    0
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Lepí se nahoru na budovu (mount top). Kolize jen buben a spodní prstence (horní část nepochozí)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -5,
+    1.5,
+    0
+   ],
+   "to": [
+    0,
+    1.5,
+    0
+   ],
+   "expect_hit": true,
+   "note": "kupole kryje"
+  }
+ ]
+}
