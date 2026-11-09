@@ -4,12 +4,12 @@ Automaticky z `scripts/export-set.ts`. Trasa = simulovaný hráč (stejné koliz
 
 | # | Model | Typ | Cíl (m) | Skutečnost (m) | Trojúhelníky LOD0 | Kolizní kvádry | Materiály | Žebříky | Trasa | Kryt/průstřel |
 |---|---|---|---|---|---|---|---|---|---|---|
-| G161 | Rovný kryt z pytlů (pilot) | přístupná | 2.48 × 0.44 × 1.04 | 2.44 × 0.53 × 1.01 | 2160 / 12000 | 1 | 1 | 0 | ✔ 1/1 | ✔ 2/2 |
-| G162 | Rohový kryt z pytlů (pilot) | přístupná | 2.48 × 2.23 × 1.04 | 2.43 × 2.24 × 1.01 | 3600 / 12000 | 2 | 1 | 0 | ✔ 2/2 | ✔ 1/1 |
-| G163 | Stanoviště U z pytlů (pilot) | přístupná | 2.48 × 2.23 × 1.04 | 2.43 × 2.24 × 1.01 | 5280 / 12000 | 3 | 1 | 0 | ✔ 3/3 | ✔ 2/2 |
-| G164 | Obloukový kryt z pytlů | přístupná | 3.5 × 2 × 1.04 | 3.43 × 1.79 × 1.02 | 5040 / 12000 | 7 | 1 | 0 | ✔ 2/2 | ✔ 2/2 |
-| G165 | Kulometné hnízdo | přístupná | 4 × 3 × 1.4 | 4.05 × 3.08 × 1.42 | 9612 / 12000 | 7 | 2 | 0 | ✔ 3/3 | ✔ 3/3 |
-| G166 | Poškozené pytlové opevnění | přístupná | 3 × 1.5 × 1.04 | 3.22 × 1.46 × 1.01 | 3600 / 12000 | 2 | 2 | 0 | ✔ 1/1 | ✔ 3/3 |
+| G161 | Rovný kryt z pytlů (pilot) | přístupná | 2.48 × 0.44 × 1.04 | 2.41 × 0.53 × 1.01 | 2484 / 12000 | 1 | 1 | 0 | ✔ 1/1 | ✔ 2/2 |
+| G162 | Rohový kryt z pytlů (pilot) | přístupná | 2.48 × 2.23 × 1.04 | 2.42 × 2.21 × 1.01 | 4140 / 12000 | 2 | 1 | 0 | ✔ 2/2 | ✔ 1/1 |
+| G163 | Stanoviště U z pytlů (pilot) | přístupná | 2.48 × 2.23 × 1.04 | 2.43 × 2.21 × 1.01 | 6072 / 12000 | 3 | 1 | 0 | ✔ 3/3 | ✔ 2/2 |
+| G164 | Obloukový kryt z pytlů | přístupná | 3.5 × 2 × 1.04 | 3.45 × 1.78 × 1.01 | 5796 / 12000 | 7 | 1 | 0 | ✔ 2/2 | ✔ 2/2 |
+| G165 | Kulometné hnízdo | přístupná | 4 × 3 × 1.4 | 4.03 × 3.08 × 1.42 | 11052 / 12000 | 7 | 2 | 0 | ✔ 3/3 | ✔ 3/3 |
+| G166 | Poškozené pytlové opevnění | přístupná | 3 × 1.5 × 1.04 | 3.20 × 1.46 × 1.01 | 4032 / 12000 | 2 | 2 | 0 | ✔ 1/1 | ✔ 3/3 |
 | G167 | Jersey bariéra | přístupná | 3 × 0.6 × 1 | 3.00 × 0.72 × 1.01 | 84 / 12000 | 3 | 2 | 0 | ✔ 1/1 | ✔ 2/2 |
 | G168 | Poškozená jersey bariéra | přístupná | 3 × 0.6 × 1 | 3.73 × 1.13 × 1.01 | 432 / 12000 | 6 | 4 | 0 | ✔ 1/1 | ✔ 2/2 |
 | G169 | Jersey bariéra s plotem | přístupná | 3 × 0.6 × 2.2 | 3.00 × 0.72 × 2.22 | 256 / 12000 | 4 | 4 | 0 | ✔ 1/1 | ✔ 2/2 |

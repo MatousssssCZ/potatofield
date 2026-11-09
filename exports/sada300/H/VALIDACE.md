@@ -13,7 +13,7 @@ Automaticky z `scripts/export-set.ts`. Trasa = simulovaný hráč (stejné koliz
 | H197 | Pickup bez korby | přístupná | 1.9 × 4.6 × 1.95 | 1.93 × 4.66 × 1.95 | 696 / 12000 | 7 | 6 | 0 | ✔ 1/1 | ✔ 1/1 |
 | H198 | Ohořelá dodávka | přístupná | 3 × 5.1 × 2.3 | 3.89 × 5.18 × 2.43 | 400 / 12000 | 13 | 3 | 0 | ✔ 2/2 | ✔ 2/2 |
 | H199 | Převrácená dodávka | přístupná | 2.3 × 5.1 × 2 | 2.36 × 5.18 × 3.89 | 400 / 12000 | 13 | 3 | 0 | ✔ 1/1 | ✔ 1/1 |
-| H200 | Průchozí autobus | přístupná | 2.5 × 10 × 3 | 3.07 × 10.00 × 2.97 | 1164 / 12000 | 38 ⚠ | 5 | 0 | ✔ 5/5 | ✔ 2/2 |
+| H200 | Průchozí autobus | přístupná | 2.5 × 10 × 3 | 3.07 × 10.00 × 2.97 | 1164 / 12000 | 24 | 5 | 0 | ✔ 5/5 | ✔ 2/2 |
 | H201 | Nákladní auto s plachtou | přístupná | 2.4 × 7 × 3.1 | 2.46 × 7.10 × 3.10 | 1228 / 12000 | 13 | 7 | 0 | ✔ 2/2 | ✔ 2/2 |
 | H202 | Nákladní auto s poškozenou plachtou | přístupná | 3.3 × 7 × 3.1 | 4.52 × 7.10 × 3.10 | 1300 / 12000 | 14 | 8 | 0 | ✔ 1/1 | ✔ 1/1 |
 | H203 | Silniční cisterna | přístupná | 2.4 × 8 × 3 | 2.47 × 8.10 × 3.21 | 1744 / 12000 | 8 | 8 | 0 | ✔ 1/1 | ✔ 1/1 |
