@@ -17,6 +17,8 @@ import { buildCatalog, issuesList, modal, renderInspector, renderSceneList, toas
 import { insertMarker, renderTerrainPanel, type GameUiState } from './editor/uiGame';
 import { debugLines } from '../shared/physics/world';
 import { heightAt } from '../world/terrain';
+import type { MapObject } from '../shared/map/schema';
+import { footprintPoints, localFootprint, planTerrainFit, type Pad } from '../world/groundFit';
 import { EnvironmentRig } from './render/environment';
 import { preloadGunModels } from './render/weapons/glbWeapon';
 import { preloadSoldierModel } from './render/soldier/mannequin';
@@ -354,6 +356,89 @@ export class App {
     this.colliderLines.renderOrder = 15;
     this.colliderLines.raycast = () => {};
     this.editor.root.add(this.colliderLines);
+  }
+
+  /** Předměty, které stojí na terénu nebo na jiném předmětu (ne doplňky na zdi). */
+  private groundCandidates(): MapObject[] {
+    return this.ed.doc.objects.filter((o) => {
+      const def = getAsset(o.assetId);
+      if (!def || def.mount?.kind === 'wall' || o.editor?.locked) return false;
+      return true;
+    });
+  }
+
+  /**
+   * Podpora předmětu: výška, na kterou má dosednout. Ze všech bodů půdorysu: pokud něco pod
+   * patou je jiný předmět (střecha, bedna), dosedne na nejvyšší z nich; jinak na nejnižší bod
+   * terénu pod půdorysem (žádný roh nevisí ve vzduchu). Předměty kopírující terén = terén v pivotu.
+   */
+  private supportOf(o: MapObject): { y: number; onObject: boolean; by?: string } | null {
+    const t = this.ed.doc.terrain;
+    const def = getAsset(o.assetId)!;
+    const [px, py, pz] = o.transform.position;
+    if (def.usesTerrain?.(resolveParams(def, o.params)) || def.params.some((q) => q.type === 'points')) {
+      const h = heightAt(t, px, pz);
+      return h === null ? null : { y: h, onObject: false };
+    }
+    const g = generateObject(o, t, this.ed.doc.objects);
+    const fp = localFootprint(g.parts);
+    let terrainMin = Infinity, objTop = -Infinity, by: string | undefined;
+    for (const [x, z] of footprintPoints(o, fp)) {
+      const th = heightAt(t, x, z);
+      if (th !== null) terrainMin = Math.min(terrainMin, th);
+      // Jiný předmět pod patou (paprsek jen kousek nad patou → nechytí střechu nad sebou).
+      const from = Math.max(py, th ?? py) + 0.35;
+      const hit = this.phys.castRay({ x, y: from, z }, { x: 0, y: -1, z: 0 }, 400, undefined, undefined, o.id);
+      if (hit && hit.objectId !== '__terrain' && (th === null || hit.point.y > th + 0.05) && hit.point.y > objTop) {
+        objTop = hit.point.y;
+        by = hit.objectId;
+      }
+    }
+    if (isFinite(objTop)) return { y: objTop, onObject: true, by };
+    return isFinite(terrainMin) ? { y: terrainMin, onObject: false } : null;
+  }
+
+  /** Jedno tlačítko: všechny předměty dosednou na zem (nebo na předmět pod sebou). */
+  groundAllObjects() {
+    const changes: Change[] = [];
+    // Odspodu nahoru: předmět na jiném předmětu (nádrž na střeše) se posune spolu s ním.
+    const delta = new Map<string, number>();
+    const list = this.groundCandidates().sort((a, b) => a.transform.position[1] - b.transform.position[1]);
+    for (const o of list) {
+      const sup = this.supportOf(o);
+      if (!sup) continue;
+      const [x, y, z] = o.transform.position;
+      const ny = Math.round((sup.y + (sup.by ? (delta.get(sup.by) ?? 0) : 0)) * 1000) / 1000;
+      delta.set(o.id, ny - y);
+      if (Math.abs(ny - y) < 0.005) continue;
+      changes.push({ kind: 'object', id: o.id, before: structuredClone(o), after: { ...structuredClone(o), transform: { ...o.transform, position: [x, ny, z] } } });
+    }
+    if (!changes.length) return toast('Všechny předměty už stojí na zemi.');
+    this.history.execute({ label: `Položit předměty na zem (${changes.length})`, changes });
+    toast(`Na zem položeno předmětů: ${changes.length} (Ctrl+Z vrátí)`);
+  }
+
+  /** Jedno tlačítko: terén se pod předměty srovná na jejich patu a plynule zaoblí do okolí. */
+  fitTerrainToObjects() {
+    const t = this.ed.doc.terrain;
+    const pads: Pad[] = [];
+    for (const o of this.groundCandidates()) {
+      const def = getAsset(o.assetId)!;
+      // Ploty, zdi a kreslené silnice kopírují terén samy.
+      if (def.usesTerrain?.(resolveParams(def, o.params)) || def.params.some((q) => q.type === 'points')) continue;
+      const sup = this.supportOf(o);
+      if (!sup || sup.onObject) continue;
+      const g = generateObject(o, t, this.ed.doc.objects);
+      const fp = localFootprint(g.parts);
+      // Upravit jen tam, kde terén pod půdorysem od paty skutečně odbíhá.
+      const pts = footprintPoints(o, fp).map(([x, z]) => heightAt(t, x, z) ?? o.transform.position[1]);
+      if (pts.every((h) => Math.abs(h - o.transform.position[1]) < 0.02)) continue;
+      pads.push({ object: o, fp, base: o.transform.position[1] });
+    }
+    const plan = planTerrainFit(t, pads);
+    if (!plan) return toast('Terén už pod všemi předměty sedí.');
+    this.history.execute({ label: `Dorovnat terén pod předměty (${pads.length})`, changes: [{ kind: 'terrain', region: plan.region, before: plan.before, after: plan.after }] });
+    toast(`Terén dorovnán pod ${pads.length} předměty (${plan.changed} bodů terénu, Ctrl+Z vrátí)`);
   }
 
   /** Jednorázové položení objektů na povrch pod nimi (terén nebo jiný objekt). */
@@ -908,6 +993,8 @@ export class App {
       game: this.gameUi,
       rerender: () => (this.uiDirty = true),
       dropToSurface: (ids) => this.dropToSurface(ids),
+      groundAll: () => this.groundAllObjects(),
+      fitTerrain: () => this.fitTerrainToObjects(),
     });
     if (!$('[data-body="terrain"]').classList.contains('hidden')) renderTerrainPanel($('#terrain-panel'), this.editor, () => (this.uiDirty = true));
     if (!$('[data-body="scene"]').classList.contains('hidden')) renderSceneList(this.ed, this.history, this.editor);

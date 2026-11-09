@@ -71,6 +71,10 @@ mapě** (assety, které mapa už obsahuje, s počtem). Klik vloží asset do st�
 - **Palmy** (Příroda): *Palma* (datlovník / štíhlá, výška, náklon, počet listů, převislost),
   *Random palma* (každé vložení trochu jiná – výška, náklon a jeho směr, listy; „Míra rozdílů“ drží
   rozptyl) a *Palma v záhonu* (čtvercová / kruhová obruba z vybraného materiálu, zemina, palma).
+- **Předměty a terén** (vlastnosti mapy, bez výběru): **⬇ Položit vše na zem** – každý předmět
+  dosedne na terén (na svahu na nejnižší bod pod sebou, aby nevisel žádný roh) nebo na předmět pod
+  sebou (nádrž na střeše jede s domem); **⛰ Dorovnat terén pod předměty** – předměty zůstanou,
+  terén pod nimi se srovná na patu a plynule zaoblí. Jedno Ctrl+Z vrátí celou akci.
 - **Sázení palem** (záložka Terén → 🌴 Sázet palmy): tah štětcem vysází háj Random palem s
   rozestupem (druh, průměrná výška, míra rozdílů); **Mazat palmy** je v kruhu odebere. Jeden tah =
   jedna položka historie.

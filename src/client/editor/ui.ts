@@ -385,7 +385,7 @@ export function renderInspector(
   ed: EditorDoc,
   history: History,
   editor: Editor,
-  extra: { missing: (id: string) => string | undefined; spawnIssue: () => string | undefined; game: GameUiState; rerender: () => void; dropToSurface: (ids: string[]) => void },
+  extra: { missing: (id: string) => string | undefined; spawnIssue: () => string | undefined; game: GameUiState; rerender: () => void; dropToSurface: (ids: string[]) => void; groundAll: () => void; fitTerrain: () => void },
 ) {
   const root = document.getElementById('inspector')!;
   // Nepřekreslovat pod rukama, když uživatel právě píše do pole inspektoru.
@@ -398,7 +398,7 @@ export function renderInspector(
   const sel = [...editor.selection];
 
   if (sel.length === 0) {
-    renderMapProps(root, ed, history);
+    renderMapProps(root, ed, history, extra);
     renderScenarios(root, ed, history);
     return;
   }
@@ -524,7 +524,7 @@ export function renderInspector(
   root.appendChild(row);
 }
 
-function renderMapProps(root: HTMLElement, ed: EditorDoc, history: History) {
+function renderMapProps(root: HTMLElement, ed: EditorDoc, history: History, extra: { groundAll: () => void; fitTerrain: () => void }) {
   const doc = ed.doc;
   root.appendChild(el('h3', {}, 'Mapa'));
   root.appendChild(el('div', { class: 'meta' }, `${doc.objects.length} objektů · terén ${(doc.terrain.samplesX - 1) * doc.terrain.spacing} × ${(doc.terrain.samplesZ - 1) * doc.terrain.spacing} m, rozteč ${doc.terrain.spacing} m`));
@@ -541,6 +541,17 @@ function renderMapProps(root: HTMLElement, ed: EditorDoc, history: History) {
   root.appendChild(
     prop('Rozpití textur', same ? 'všechny objekty' : 'všechny objekty (teď různé)', blurControl(same ? (blurs[0] ?? 0) : 0, (v) => setBlur(ed, history, doc.objects.map((o) => o.id), v, 'Rozpití textur celé mapy'))),
   );
+
+  // Předměty ve vzduchu: buď je položit na zem, nebo terén dorovnat pod ně (jedno Ctrl+Z vrátí).
+  root.appendChild(el('div', { class: 'sec' }, 'Předměty a terén'));
+  const gr = el('div', { class: 'btnrow' });
+  const gA = el('button', { title: 'Každý předmět dosedne na terén (na svahu na nejnižší bod pod sebou, aby nevisel žádný roh) nebo na předmět pod sebou. Doplňky na zdech zůstanou.' }, '⬇ Položit vše na zem');
+  gA.addEventListener('click', () => extra.groundAll());
+  const gB = el('button', { title: 'Předměty zůstanou na místě; terén pod nimi se srovná na jejich patu a plynule zaoblí do okolí.' }, '⛰ Dorovnat terén pod předměty');
+  gB.addEventListener('click', () => extra.fitTerrain());
+  gr.append(gA, gB);
+  root.appendChild(gr);
+  root.appendChild(el('div', { class: 'note' }, 'Žádný předmět nemá viset ve vzduchu: buď předměty přesuň na zem, nebo nech terén dorovnat pod ně. Ploty, zdi a ulice kopírují terén samy. Jedno Ctrl+Z vrátí celou akci.'));
 
   root.appendChild(el('div', { class: 'sec' }, 'Prostředí'));
   const env = doc.environment;
