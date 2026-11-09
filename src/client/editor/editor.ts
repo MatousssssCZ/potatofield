@@ -45,7 +45,11 @@ type Drag =
   | { kind: 'move'; gp0: THREE.Vector3; starts: Map<string, { pos: V3; rotY: number }>; mount: boolean }
   | { kind: 'rotate'; center: THREE.Vector3; a0: number; starts: Map<string, { pos: V3; rotY: number }>; delta: number }
   | { kind: 'size'; id: string; axis: 'x' | 'y' | 'z'; sign: 1 | -1; origin: THREE.Vector3; dir: THREE.Vector3; ext: number; opp: number; f: number; uniform: boolean }
-  | { kind: 'point'; id: string; index: number; pts: Pt[] };
+  | { kind: 'point'; id: string; index: number; pts: Pt[] }
+  | { kind: 'scale'; center: THREE.Vector3; d0: number; starts: Map<string, { pos: V3; rotY: number; scale: number }>; f: number };
+
+const CLIPBOARD_KEY = 'pf.editorClipboard';
+const HINTS_KEY = 'pf.editorHints';
 
 /**
  * Editor ve viewportu: volná kamera, výběr a jednotná manipulace bez režimů.
@@ -86,6 +90,18 @@ export class Editor {
   /** Kreslení nové ulice: body ve světě, náhled. */
   private roadDraft: { assetId: string; pts: THREE.Vector3[]; line: THREE.Line; dots: THREE.Group } | null = null;
 
+  /** Úprava klávesou G / R / S bez držení myši: LMB / Enter potvrdí, RMB / Esc zruší. */
+  private modal: { key: 'G' | 'R' | 'S'; axis: 'x' | 'y' | 'z' | null } | null = null;
+  /** Číslo psané během úpravy (přesná hodnota: m, °, ×). */
+  private numBuf = '';
+  /** Orbit kolem bodu (prostřední tlačítko / Alt+LMB v prázdnu), Shift = posun pohledu. */
+  private orbit: { pivot: THREE.Vector3; dist: number; pan: boolean; button: number } | null = null;
+  private pointerClient = { x: -1, y: -1, inside: false };
+  private hintEl: HTMLDivElement;
+  private helpEl: HTMLDivElement;
+  private hintAt = 0;
+  showHints = readHints();
+
   // kamera
   private yaw = 0;
   private pitch = -0.5;
@@ -118,6 +134,19 @@ export class Editor {
     this.rectEl = document.createElement('div');
     this.rectEl.className = 'select-rect hidden';
     canvas.parentElement!.appendChild(this.rectEl);
+    this.hintEl = document.createElement('div');
+    this.hintEl.className = 'cursor-hint hidden';
+    canvas.parentElement!.appendChild(this.hintEl);
+    this.helpEl = buildHelp(() => {
+      this.showHints = !this.showHints;
+      try {
+        localStorage.setItem(HINTS_KEY, this.showHints ? '1' : '0');
+      } catch {
+        /* bez úložiště */
+      }
+      return this.showHints;
+    }, () => this.showHints);
+    canvas.parentElement!.appendChild(this.helpEl);
     this.rebuildGrid();
     camera.position.set(0, 18, 28);
     this.yaw = 0;
@@ -140,6 +169,11 @@ export class Editor {
     this.on(this.canvas, 'dblclick', (() => this.roadDraft && this.finishRoad()) as EventListener);
     this.on(this.canvas, 'wheel', ((e: WheelEvent) => this.wheel(e)) as EventListener);
     this.on(this.canvas, 'contextmenu', ((e: Event) => e.preventDefault()) as EventListener);
+    this.on(this.canvas, 'mousedown', ((e: MouseEvent) => e.button === 1 && e.preventDefault()) as EventListener);
+    this.on(this.canvas, 'pointerleave', (() => {
+      this.pointerClient.inside = false;
+      this.hintEl.classList.add('hidden');
+    }) as EventListener);
     this.on(window, 'keydown', ((e: KeyboardEvent) => this.keyDown(e)) as EventListener);
     this.on(window, 'keyup', ((e: KeyboardEvent) => this.keyUp(e)) as EventListener);
     this.on(window, 'blur', () => this.clearKeys());
@@ -158,6 +192,11 @@ export class Editor {
     this.clearKeys();
     this.flying = false;
     this.cancelRoad();
+    if (this.drag) this.cancelDrag();
+    this.modal = null;
+    this.orbit = null;
+    this.hintEl.classList.add('hidden');
+    this.helpEl.classList.add('hidden');
     this.root.visible = false;
   }
 
@@ -214,6 +253,7 @@ export class Editor {
     this.markers.update(performance.now() / 1000);
     if (!this.drag) this.layoutHandles();
     this.scaleHandles();
+    this.updateHint();
     for (const [id, h] of this.boxes) {
       const g = this.groupOf(id);
       if (g) h.box.setFromObject(g);
@@ -252,6 +292,13 @@ export class Editor {
       this.keys.add(e.code);
       return;
     }
+    if (e.key === '?' || e.code === 'F1') {
+      e.preventDefault();
+      this.toggleHelp();
+      return;
+    }
+    // Během úpravy (tažení myší i G/R/S): čísla = přesná hodnota, X/Y/Z = osa posunu, Enter potvrdí.
+    if (this.drag && this.numericKey(e)) return;
     if (this.roadDraft) {
       if (e.code === 'Enter') this.finishRoad();
       else if (e.code === 'Escape') this.cancelRoad(true);
@@ -279,7 +326,22 @@ export class Editor {
       this.duplicate();
       return;
     }
+    if (ctrl && (e.code === 'KeyC' || e.code === 'KeyX')) {
+      if (this.copySelection() && e.code === 'KeyX') this.deleteSelection();
+      e.preventDefault();
+      return;
+    }
+    if (ctrl && e.code === 'KeyV') {
+      e.preventDefault();
+      this.paste();
+      return;
+    }
     if (ctrl) return;
+    if (!this.drag && !this.terrainMode && (e.code === 'KeyG' || e.code === 'KeyR' || e.code === 'KeyS')) {
+      e.preventDefault();
+      this.startModal(e.code === 'KeyG' ? 'G' : e.code === 'KeyR' ? 'R' : 'S');
+      return;
+    }
     switch (e.code) {
       case 'KeyF':
         this.frameSelection();
@@ -291,6 +353,7 @@ export class Editor {
         break;
       case 'Escape':
         if (this.drag) this.cancelDrag();
+        else if (!this.helpEl.classList.contains('hidden')) this.toggleHelp(false);
         else this.select([], false);
         break;
     }
@@ -305,6 +368,17 @@ export class Editor {
   }
 
   private pointerDown(e: PointerEvent) {
+    // Úprava G/R/S: LMB potvrdí, RMB zruší (nespouští létání).
+    if (this.modal && this.drag) {
+      if (e.button === 0) this.endDrag();
+      else if (e.button === 2) this.cancelDrag();
+      return;
+    }
+    if (e.button === 1) {
+      e.preventDefault();
+      this.startOrbit(e, 1);
+      return;
+    }
     if (e.button === 2) {
       this.flying = true;
       this.canvas.requestPointerLock?.();
@@ -333,6 +407,11 @@ export class Editor {
     }
     // 2) Objekt: výběr hned, tažení až po posunu myši o pár pixelů.
     const { id } = this.pick(e.clientX, e.clientY);
+    // Alt + LMB v prázdnu = orbit (pro touchpad bez prostředního tlačítka).
+    if (!id && e.altKey) {
+      this.startOrbit(e, 0);
+      return;
+    }
     const ctrl = e.ctrlKey || e.metaKey;
     if (id && !ctrl && !this.selection.has(id)) this.select([id], false);
     this.pressed = { x: e.clientX, y: e.clientY, ctrl, id, started: false };
@@ -340,6 +419,12 @@ export class Editor {
 
   private pointerMove(e: PointerEvent) {
     this.pointerNdc = this.ndc(e.clientX, e.clientY);
+    const rc = this.canvas.getBoundingClientRect();
+    this.pointerClient = { x: e.clientX - rc.left, y: e.clientY - rc.top, inside: e.clientX >= rc.left && e.clientX <= rc.right && e.clientY >= rc.top && e.clientY <= rc.bottom };
+    if (this.orbit) {
+      this.moveOrbit(e.movementX, e.movementY, e.shiftKey);
+      return;
+    }
     if (this.flying && document.pointerLockElement === this.canvas) {
       this.yaw -= e.movementX * 0.0025;
       this.pitch = THREE.MathUtils.clamp(this.pitch - e.movementY * 0.0025, -1.55, 1.55);
@@ -371,6 +456,10 @@ export class Editor {
   }
 
   private pointerUp(e: PointerEvent) {
+    if (this.orbit && e.button === this.orbit.button) {
+      this.orbit = null;
+      return;
+    }
     if (e.button === 2 && this.flying) {
       this.flying = false;
       this.keys.clear();
@@ -865,6 +954,28 @@ export class Editor {
   private previewDrag() {
     const d = this.drag;
     if (!d) return;
+    const num = this.numValue();
+    if (d.kind === 'move' && (num !== null || this.modal?.axis)) {
+      // Přesný posun po ose (číslo v m) nebo posun omezený na osu myší.
+      const axis = this.modal?.axis ?? 'x';
+      const first = d.starts.values().next().value!;
+      let off = num;
+      if (off === null) {
+        const origin = new THREE.Vector3(first.pos[0], first.pos[1], first.pos[2]);
+        const dir = new THREE.Vector3(axis === 'x' ? 1 : 0, axis === 'y' ? 1 : 0, axis === 'z' ? 1 : 0);
+        off = this.alongAxis(origin, dir);
+        if (!this.altHeld && axis !== 'y') off = Math.round(off / this.settings.grid) * this.settings.grid;
+      }
+      for (const [id, st] of d.starts) {
+        const g = this.groupOf(id);
+        if (!g) continue;
+        const x = st.pos[0] + (axis === 'x' ? off : 0), z = st.pos[2] + (axis === 'z' ? off : 0);
+        const y = axis === 'y' ? st.pos[1] + off : st.pos[1] + this.groundY(x, z) - this.groundY(st.pos[0], st.pos[2]);
+        g.position.set(x, y, z);
+        g.updateMatrixWorld(true);
+      }
+      return;
+    }
     if (d.kind === 'move') {
       const gp = this.groundAtPointer();
       if (!gp) return;
@@ -908,6 +1019,7 @@ export class Editor {
       let delta = Math.atan2(gp.x - d.center.x, gp.z - d.center.z) - d.a0;
       const snap = this.settings.rotSnapDeg;
       if (snap && !this.altHeld) delta = Math.round(delta / THREE.MathUtils.degToRad(snap)) * THREE.MathUtils.degToRad(snap);
+      if (num !== null) delta = THREE.MathUtils.degToRad(num);
       d.delta = delta;
       const c = Math.cos(delta), s = Math.sin(delta);
       for (const [id, st] of d.starts) {
@@ -926,6 +1038,8 @@ export class Editor {
       if (!g || !o) return;
       const t = this.alongAxis(d.origin, d.dir);
       d.f = Math.max(0.05, (d.ext + t) / d.ext);
+      // Číslo: u rozměru nová délka v m, u jednotného měřítka násobek.
+      if (num !== null && num > 0) d.f = d.uniform ? num : num / d.ext;
       const base = o.transform.scale ?? 1;
       if (d.uniform) g.scale.setScalar(base * d.f);
       else {
@@ -938,6 +1052,19 @@ export class Editor {
         g.position.set(...o.transform.position).add(shift);
       }
       g.updateMatrixWorld(true);
+      return;
+    }
+    if (d.kind === 'scale') {
+      const gp = this.groundAtPointer();
+      if (num !== null && num > 0) d.f = num;
+      else if (gp) d.f = Math.max(0.05, Math.hypot(gp.x - d.center.x, gp.z - d.center.z) / d.d0);
+      for (const [id, st] of d.starts) {
+        const g = this.groupOf(id);
+        if (!g) continue;
+        g.scale.setScalar(st.scale * d.f);
+        g.position.set(d.center.x + (st.pos[0] - d.center.x) * d.f, st.pos[1], d.center.z + (st.pos[2] - d.center.z) * d.f);
+        g.updateMatrixWorld(true);
+      }
       return;
     }
     if (d.kind === 'point') {
@@ -957,9 +1084,11 @@ export class Editor {
   private cancelDrag() {
     const d = this.drag;
     this.drag = null;
+    this.modal = null;
+    this.numBuf = '';
     this.handles.visible = true;
     if (!d) return;
-    for (const id of d.kind === 'move' || d.kind === 'rotate' ? d.starts.keys() : [d.id]) {
+    for (const id of d.kind === 'move' || d.kind === 'rotate' || d.kind === 'scale' ? d.starts.keys() : [d.id]) {
       const o = this.ed.getObject(id);
       if (o) this.world.addObject(generateObject(o, this.ed.doc.terrain, this.ed.doc.objects));
     }
@@ -976,6 +1105,8 @@ export class Editor {
   private endDrag() {
     const d = this.drag!;
     this.drag = null;
+    this.modal = null;
+    this.numBuf = '';
     this.handles.visible = true;
     const changes: Command['changes'] = [];
     let label = 'Posun';
@@ -991,6 +1122,9 @@ export class Editor {
         if (g.userData.mounted) label = 'Přilepit na budovu';
         changes.push(...this.transformChanges(id, pos, rotY));
       }
+    } else if (d.kind === 'scale') {
+      label = 'Měřítko';
+      changes.push(...this.scaleChanges(d));
     } else if (d.kind === 'size') {
       const c = this.sizeCommand(d);
       if (c) {
@@ -1184,6 +1318,273 @@ export class Editor {
     if (!changes.length) return;
     this.history.execute({ label: 'Smazat', changes });
     this.select([], false);
+  }
+
+  // ---------------- G / R / S a přesná čísla ----------------
+
+  private selectionCenter(ids: string[]): THREE.Vector3 | null {
+    const box = new THREE.Box3();
+    for (const id of ids) {
+      const g = this.groupOf(id);
+      if (g) box.expandByObject(g);
+    }
+    if (box.isEmpty()) return null;
+    const c = box.getCenter(new THREE.Vector3());
+    c.y = box.min.y;
+    return c;
+  }
+
+  /** G = posun, R = rotace, S = měřítko výběru bez držení myši. */
+  private startModal(key: 'G' | 'R' | 'S') {
+    const ids = this.movable();
+    if (!ids.length) return this.onToast('Nejdřív vyber předmět (klik).');
+    if (!this.pointerClient.inside) this.pointerNdc.set(0, 0);
+    this.numBuf = '';
+    if (key === 'G') {
+      this.beginMove(this.pointerNdc);
+      if (!this.drag) return;
+    } else {
+      const center = this.selectionCenter(ids);
+      const gp = this.groundAtPointer();
+      if (!center || !gp) return;
+      if (key === 'R') this.drag = { kind: 'rotate', center, a0: Math.atan2(gp.x - center.x, gp.z - center.z), starts: this.startStates(ids), delta: 0 };
+      else {
+        const starts = new Map<string, { pos: V3; rotY: number; scale: number }>();
+        for (const [id, st] of this.startStates(ids)) {
+          if (id === TEST_SPAWN_ID || markerId.parse(id)) continue;
+          starts.set(id, { ...st, scale: this.ed.getObject(id)?.transform.scale ?? 1 });
+        }
+        if (!starts.size) return;
+        this.drag = { kind: 'scale', center, d0: Math.max(0.5, Math.hypot(gp.x - center.x, gp.z - center.z)), starts, f: 1 };
+      }
+      this.handles.visible = false;
+    }
+    this.modal = { key, axis: null };
+    this.previewDrag();
+  }
+
+  private numValue(): number | null {
+    if (!this.numBuf || this.numBuf === '-' || this.numBuf === '.') return null;
+    const v = Number(this.numBuf.replace(',', '.'));
+    return isFinite(v) ? v : null;
+  }
+
+  /** Klávesy během úpravy; vrací true, pokud je zpracovala. */
+  private numericKey(e: KeyboardEvent): boolean {
+    const digit = /^(Digit|Numpad)([0-9])$/.exec(e.code);
+    if (digit) this.numBuf += digit[2];
+    else if (e.code === 'Period' || e.code === 'Comma' || e.code === 'NumpadDecimal') {
+      if (!this.numBuf.includes('.')) this.numBuf += '.';
+    } else if (e.code === 'Minus' || e.code === 'NumpadSubtract') this.numBuf = this.numBuf.startsWith('-') ? this.numBuf.slice(1) : '-' + this.numBuf;
+    else if (e.code === 'Backspace') this.numBuf = this.numBuf.slice(0, -1);
+    else if (e.code === 'Enter' || e.code === 'NumpadEnter') {
+      this.previewDrag();
+      this.endDrag();
+    } else if (this.drag?.kind === 'move' && (e.code === 'KeyX' || e.code === 'KeyY' || e.code === 'KeyZ')) {
+      const axis = e.code === 'KeyX' ? 'x' : e.code === 'KeyY' ? 'y' : 'z';
+      this.modal = { key: this.modal?.key ?? 'G', axis: this.modal?.axis === axis ? null : axis };
+    } else return false;
+    e.preventDefault();
+    if (this.drag) this.previewDrag();
+    return true;
+  }
+
+  /** Měřítko výběru: rekvizity jednotným měřítkem, parametrické objekty přes rozměrové parametry. */
+  private scaleChanges(d: Extract<Drag, { kind: 'scale' }>): Command['changes'] {
+    const out: Command['changes'] = [];
+    if (Math.abs(d.f - 1) < 1e-3) return out;
+    let skipped = 0;
+    for (const [id, st] of d.starts) {
+      const o = this.ed.getObject(id);
+      const def = o && getAsset(o.assetId);
+      if (!o || !def) continue;
+      const pos: V3 = [r4(d.center.x + (st.pos[0] - d.center.x) * d.f), st.pos[1], r4(d.center.z + (st.pos[2] - d.center.z) * d.f)];
+      if (def.uniformScale) {
+        const v = r4(THREE.MathUtils.clamp(st.scale * d.f, def.uniformScale.min, def.uniformScale.max));
+        out.push(...cmds.update(this.ed, id, (x) => {
+          x.transform.scale = v;
+          x.transform.position = pos;
+        }).changes);
+      } else if (def.sizeParams) {
+        const p = resolveParams(def, o.params);
+        const next: Record<string, number> = {};
+        for (const key of new Set(Object.values(def.sizeParams))) {
+          const spec = def.params.find((q) => q.key === key);
+          if (!spec || typeof p[key] !== 'number') continue;
+          let v = (p[key] as number) * d.f;
+          if (spec.type === 'int') v = Math.round(v);
+          next[key] = r4(THREE.MathUtils.clamp(v, spec.min ?? 0, spec.max ?? 1e6));
+        }
+        out.push(...cmds.update(this.ed, id, (x) => {
+          Object.assign(x.params, next);
+          x.transform.position = pos;
+        }).changes);
+      } else skipped++;
+    }
+    if (skipped) this.onToast(`Měřítko nejde u ${skipped} objektů (nemají rozměr ani měřítko).`, 'warn');
+    return out;
+  }
+
+  // ---------------- orbit ----------------
+
+  private startOrbit(e: PointerEvent, button: number) {
+    const ids = this.movable();
+    let pivot = ids.length ? this.selectionCenter(ids) : null;
+    if (pivot) {
+      const box = new THREE.Box3();
+      for (const id of ids) {
+        const g = this.groupOf(id);
+        if (g) box.expandByObject(g);
+      }
+      pivot = box.getCenter(new THREE.Vector3());
+    }
+    if (!pivot) pivot = this.pick(e.clientX, e.clientY, true).point ?? this.groundAtPointer();
+    if (!pivot) {
+      const dir = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(this.pitch, this.yaw, 0, 'YXZ'));
+      pivot = this.camera.position.clone().addScaledVector(dir, 20);
+    }
+    this.orbit = { pivot, dist: Math.max(2, this.camera.position.distanceTo(pivot)), pan: e.shiftKey, button };
+    // Pohled natočit na pivot, ať se kolem něj otáčí (bez skoku vzdálenosti).
+    const d = pivot.clone().sub(this.camera.position);
+    this.yaw = Math.atan2(-d.x, -d.z);
+    this.pitch = Math.atan2(d.y, Math.hypot(d.x, d.z));
+    this.applyCamera();
+  }
+
+  private moveOrbit(mx: number, my: number, shift: boolean) {
+    const o = this.orbit!;
+    if (shift || o.pan) {
+      const e = new THREE.Euler(this.pitch, this.yaw, 0, 'YXZ');
+      const right = new THREE.Vector3(1, 0, 0).applyEuler(e), up = new THREE.Vector3(0, 1, 0).applyEuler(e);
+      const k = o.dist * 0.0016;
+      const delta = right.multiplyScalar(-mx * k).add(up.multiplyScalar(my * k));
+      o.pivot.add(delta);
+      this.camera.position.add(delta);
+      return;
+    }
+    this.yaw -= mx * 0.006;
+    this.pitch = THREE.MathUtils.clamp(this.pitch - my * 0.006, -1.5, 1.2);
+    const fw = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(this.pitch, this.yaw, 0, 'YXZ'));
+    this.camera.position.copy(o.pivot).addScaledVector(fw, -o.dist);
+    this.applyCamera();
+  }
+
+  // ---------------- schránka ----------------
+
+  /** Ctrl+C: výběr do schránky prohlížeče (funguje i mezi mapami). */
+  copySelection(): boolean {
+    const objs = [...this.selection].map((id) => this.ed.getObject(id)).filter((o): o is MapObject => !!o);
+    if (!objs.length) {
+      this.onToast('Kopírovat jde jen předměty (markery a spawn ne).', 'warn');
+      return false;
+    }
+    const cx = objs.reduce((a, o) => a + o.transform.position[0], 0) / objs.length;
+    const cz = objs.reduce((a, o) => a + o.transform.position[2], 0) / objs.length;
+    const items = objs.map((o) => {
+      const [x, y, z] = o.transform.position;
+      return { object: structuredClone(o), rel: [r4(x - cx), r4(y - this.groundY(x, z)), r4(z - cz)] };
+    });
+    try {
+      localStorage.setItem(CLIPBOARD_KEY, JSON.stringify({ v: 1, items }));
+    } catch {
+      return false;
+    }
+    this.onToast(`Zkopírováno: ${objs.length} (Ctrl+V vloží pod kurzor, i do jiné mapy)`);
+    return true;
+  }
+
+  /** Ctrl+V: vložit na místo pod kurzorem (výška nad terénem zůstane). */
+  paste() {
+    let data: { v: number; items: { object: MapObject; rel: [number, number, number] }[] } | null = null;
+    try {
+      data = JSON.parse(localStorage.getItem(CLIPBOARD_KEY) ?? 'null');
+    } catch {
+      data = null;
+    }
+    if (!data?.items?.length) return this.onToast('Schránka je prázdná (Ctrl+C zkopíruje výběr).');
+    if (!this.pointerClient.inside) this.pointerNdc.set(0, 0);
+    const gp = this.groundAtPointer();
+    if (!gp) return;
+    const t = this.snapXZ(gp);
+    const objs: MapObject[] = [];
+    for (const it of data.items) {
+      if (!getAsset(it.object.assetId)) continue;
+      const x = r4(t.x + it.rel[0]), z = r4(t.z + it.rel[2]);
+      objs.push({ ...structuredClone(it.object), id: this.ed.newId(), transform: { ...it.object.transform, position: [x, r4(this.groundY(x, z) + it.rel[1]), z] } });
+    }
+    for (let i = 0; i < objs.length; i++) while (objs.slice(0, i).some((q) => q.id === objs[i].id)) objs[i].id = this.ed.newId();
+    if (!objs.length) return;
+    this.history.execute(cmds.insert(this.ed, objs, `Vložit (${objs.length})`));
+    this.select(objs.map((o) => o.id), false);
+  }
+
+  // ---------------- nápověda ----------------
+
+  toggleHelp(force?: boolean) {
+    const show = force ?? this.helpEl.classList.contains('hidden');
+    this.helpEl.classList.toggle('hidden', !show);
+  }
+
+  /** Text u kurzoru podle toho, co je pod ním a co právě probíhá. */
+  private hintFor(): string | null {
+    const d = this.drag;
+    if (d) {
+      const num = this.numBuf ? ` · zadáno: ${this.numBuf}` : '';
+      const tail = this.modal ? ' · LMB / Enter potvrdí · Esc / RMB zruší' : ' · pusť = hotovo · Esc zruší';
+      if (d.kind === 'move') {
+        const first = d.starts.entries().next().value!;
+        const g = this.groupOf(first[0]);
+        const dx = g ? g.position.x - first[1].pos[0] : 0, dz = g ? g.position.z - first[1].pos[2] : 0, dy = g ? g.position.y - first[1].pos[1] : 0;
+        const ax = this.modal?.axis ? ` po ose ${this.modal.axis.toUpperCase()}` : '';
+        return `Posun${ax}: X ${dx.toFixed(2)} · Z ${dz.toFixed(2)}${Math.abs(dy) > 0.005 ? ` · výška ${dy.toFixed(2)}` : ''} m${num}\nČíslo = přesná vzdálenost v m · X / Y / Z = osa${tail}`;
+      }
+      if (d.kind === 'rotate') return `Rotace: ${THREE.MathUtils.radToDeg(d.delta).toFixed(1)}°${num}\nČíslo = úhel ve stupních${tail}`;
+      if (d.kind === 'size') return d.uniform ? `Měřítko ×${d.f.toFixed(2)}${num}\nČíslo = násobek (např. 1.5)${tail}` : `Rozměr: ${(d.ext * d.f).toFixed(2)} m${num}\nČíslo = nová délka v m${tail}`;
+      if (d.kind === 'scale') return `Měřítko ×${d.f.toFixed(2)}${num}\nČíslo = násobek${tail}`;
+      return 'Táhni bod ulice · pusť = hotovo';
+    }
+    if (this.flying) return null;
+    if (this.roadDraft) return 'Klik = další bod ulice · Enter / dvojklik = hotovo\nBackspace = zpět o bod · Esc = zrušit';
+    if (this.terrainMode) {
+      if (this.plant) return this.plant.erase ? 'Táhni = smazat palmy v kruhu' : 'Táhni = sázet palmy (rozestup a druh vlevo)';
+      return 'Táhni = upravit terén štětcem\nShift+klik = nabrat výšku pro Srovnat';
+    }
+    const h = this.pickHandle();
+    if (h) {
+      const k = h.info.kind;
+      if (k === 'rotate') return 'Táhni = otočit (Alt = volně)\nBěhem tažení napiš úhel ve ° + Enter';
+      if (k === 'size') return 'Táhni = změnit rozměr (protější strana drží)\nBěhem tažení napiš délku v m + Enter';
+      if (k === 'uniform') return 'Táhni ven / dovnitř = zvětšit / zmenšit\nBěhem tažení napiš násobek + Enter';
+      if (k === 'point') return 'Táhni = posunout bod ulice · Shift+klik = smazat bod';
+      return 'Táhni = přidat bod ulice';
+    }
+    const { id } = this.pick(this.pointerClient.x + this.canvas.getBoundingClientRect().left, this.pointerClient.y + this.canvas.getBoundingClientRect().top);
+    if (id && this.selection.has(id)) return 'Táhni = posunout · G / R / S = posun / rotace / měřítko\nCtrl+C / Ctrl+V · Ctrl+D duplikovat · Del smazat · F zaměřit';
+    if (id) return 'Klik = vybrat · Ctrl+klik = přidat do výběru';
+    return 'Tažení = výběr rámečkem · prostřední tlačítko = otáčet kolem\nRMB + WASD = létat · ? = všechny zkratky';
+  }
+
+  private updateHint() {
+    const el = this.hintEl;
+    if (!this.showHints || !this.pointerClient.inside || !this.attached) {
+      el.classList.add('hidden');
+      return;
+    }
+    const now = performance.now();
+    // Raycast nápovědy jen ~10× za sekundu (během úpravy každý snímek – živá hodnota).
+    if (!this.drag && now - this.hintAt < 100) {
+      el.style.transform = `translate(${this.pointerClient.x + 18}px, ${this.pointerClient.y + 18}px)`;
+      return;
+    }
+    this.hintAt = now;
+    const text = this.hintFor();
+    if (!text) {
+      el.classList.add('hidden');
+      return;
+    }
+    if (el.textContent !== text) el.textContent = text;
+    el.classList.remove('hidden');
+    el.style.transform = `translate(${this.pointerClient.x + 18}px, ${this.pointerClient.y + 18}px)`;
   }
 
   duplicate() {
@@ -1399,6 +1800,8 @@ export class Editor {
   dispose() {
     this.detach();
     this.rectEl.remove();
+    this.hintEl.remove();
+    this.helpEl.remove();
     this.selection.clear();
     this.refreshSelectionVisuals();
     this.root.traverse((o) => {
@@ -1447,4 +1850,94 @@ function makeSpawnMarker(): THREE.Group {
   ring.userData.special = TEST_SPAWN_ID;
   g.add(body, arrow, ring);
   return g;
+}
+
+function readHints(): boolean {
+  try {
+    return localStorage.getItem(HINTS_KEY) !== '0';
+  } catch {
+    return true;
+  }
+}
+
+/** Přehled zkratek (klávesa ? nebo F1). */
+function buildHelp(toggleHints: () => boolean, hintsOn: () => boolean): HTMLDivElement {
+  const el = document.createElement('div');
+  el.className = 'shortcuts hidden';
+  const groups: [string, [string, string][]][] = [
+    ['Kamera', [
+      ['RMB + W A S D', 'létat'],
+      ['Mezerník / Shift', 'nahoru / dolů (při létání)'],
+      ['kolečko při RMB', 'rychlost letu'],
+      ['prostřední tlačítko', 'otáčet kolem výběru / bodu pod kurzorem'],
+      ['Shift + prostřední', 'posouvat pohled'],
+      ['Alt + LMB v prázdnu', 'otáčet (touchpad)'],
+      ['kolečko', 'přiblížit / oddálit'],
+      ['F', 'zaměřit výběr'],
+    ]],
+    ['Výběr', [
+      ['LMB', 'vybrat'],
+      ['Ctrl + LMB', 'přidat / odebrat z výběru'],
+      ['tažení v prázdnu', 'výběr rámečkem'],
+      ['Esc', 'zrušit výběr'],
+    ]],
+    ['Úpravy', [
+      ['táhni předmět', 'posun po terénu (Alt = bez mřížky)'],
+      ['modrý prstenec', 'rotace'],
+      ['oranžové kostky', 'rozměry / měřítko'],
+      ['G / R / S', 'posun / rotace / měřítko bez držení myši'],
+      ['X / Y / Z (při G)', 'jen po ose'],
+      ['číslo + Enter', 'přesná hodnota (m, °, násobek) – i při tažení myší'],
+      ['LMB / Enter', 'potvrdit úpravu G/R/S'],
+      ['Esc / RMB', 'zrušit úpravu'],
+    ]],
+    ['Operace', [
+      ['Ctrl + C / X / V', 'kopírovat / vyjmout / vložit pod kurzor (i do jiné mapy)'],
+      ['Ctrl + D', 'duplikovat'],
+      ['Del', 'smazat'],
+      ['Ctrl + Z / Ctrl + Y', 'zpět / znovu'],
+      ['Ctrl + S', 'uložit hned'],
+      ['F5', 'testovat mapu'],
+      ['? nebo F1', 'tento přehled'],
+    ]],
+  ];
+  const head = document.createElement('div');
+  head.className = 'sc-head';
+  head.innerHTML = '<b>Klávesové zkratky editoru</b>';
+  const close = document.createElement('button');
+  close.textContent = '×';
+  close.title = 'Zavřít (Esc)';
+  close.addEventListener('click', () => el.classList.add('hidden'));
+  head.appendChild(close);
+  el.appendChild(head);
+  const grid = document.createElement('div');
+  grid.className = 'sc-grid';
+  for (const [title, rows] of groups) {
+    const sec = document.createElement('div');
+    const h = document.createElement('div');
+    h.className = 'sc-title';
+    h.textContent = title;
+    sec.appendChild(h);
+    for (const [k, v] of rows) {
+      const r = document.createElement('div');
+      r.className = 'sc-row';
+      const kb = document.createElement('kbd');
+      kb.textContent = k;
+      const sp = document.createElement('span');
+      sp.textContent = v;
+      r.append(kb, sp);
+      sec.appendChild(r);
+    }
+    grid.appendChild(sec);
+  }
+  el.appendChild(grid);
+  const lab = document.createElement('label');
+  lab.className = 'sc-opt';
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.checked = hintsOn();
+  cb.addEventListener('change', () => (cb.checked = toggleHints()));
+  lab.append(cb, document.createTextNode(' Zobrazovat nápovědu u kurzoru'));
+  el.appendChild(lab);
+  return el;
 }

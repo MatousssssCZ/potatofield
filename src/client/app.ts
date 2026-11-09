@@ -11,7 +11,7 @@ import { buildEmptyMap } from '../world/maps/empty';
 import { buildRangeMap } from '../world/maps/range';
 import { buildStreetMap } from '../world/maps/street';
 import { Editor, TEST_SPAWN_ID } from './editor/editor';
-import { EditorDoc, History, type Change } from './editor/editorDoc';
+import { EditorDoc, History, cmds, type Change } from './editor/editorDoc';
 import { AutoSaver, MapStore, exportMapFile, readMapFile } from './editor/persistence';
 import { buildCatalog, issuesList, modal, renderInspector, renderSceneList, toast } from './editor/ui';
 import { insertMarker, renderTerrainPanel, type GameUiState } from './editor/uiGame';
@@ -389,7 +389,7 @@ export class App {
       // Jiný předmět pod patou (paprsek jen kousek nad patou → nechytí střechu nad sebou).
       const from = Math.max(py, th ?? py) + 0.35;
       const hit = this.phys.castRay({ x, y: from, z }, { x: 0, y: -1, z: 0 }, 400, undefined, undefined, o.id);
-      if (hit && hit.objectId !== '__terrain' && (th === null || hit.point.y > th + 0.05) && hit.point.y > objTop) {
+      if (hit && hit.objectId !== '__terrain' && (th === null || hit.point.y > th + 0.25) && hit.point.y > objTop) {
         objTop = hit.point.y;
         by = hit.objectId;
       }
@@ -400,11 +400,20 @@ export class App {
 
   /** Jedno tlačítko: všechny předměty dosednou na zem (nebo na předmět pod sebou). */
   groundAllObjects() {
+    const changes = this.groundChanges();
+    if (!changes.length) return toast('Všechny předměty už stojí na zemi.');
+    this.history.execute({ label: `Položit předměty na zem (${changes.length})`, changes });
+    toast(`Na zem položeno předmětů: ${changes.length} (Ctrl+Z vrátí)`);
+  }
+
+  /** Změny „položit na zem“ (jen `only`, pokud je zadáno; podpůrné předměty se počítají vždy). */
+  private groundChanges(only?: Set<string>): Change[] {
     const changes: Change[] = [];
     // Odspodu nahoru: předmět na jiném předmětu (nádrž na střeše) se posune spolu s ním.
     const delta = new Map<string, number>();
     const list = this.groundCandidates().sort((a, b) => a.transform.position[1] - b.transform.position[1]);
     for (const o of list) {
+      if (only && !only.has(o.id)) continue;
       const sup = this.supportOf(o);
       if (!sup) continue;
       const [x, y, z] = o.transform.position;
@@ -413,16 +422,22 @@ export class App {
       if (Math.abs(ny - y) < 0.005) continue;
       changes.push({ kind: 'object', id: o.id, before: structuredClone(o), after: { ...structuredClone(o), transform: { ...o.transform, position: [x, ny, z] } } });
     }
-    if (!changes.length) return toast('Všechny předměty už stojí na zemi.');
-    this.history.execute({ label: `Položit předměty na zem (${changes.length})`, changes });
-    toast(`Na zem položeno předmětů: ${changes.length} (Ctrl+Z vrátí)`);
+    return changes;
   }
 
   /** Jedno tlačítko: terén se pod předměty srovná na jejich patu a plynule zaoblí do okolí. */
   fitTerrainToObjects() {
+    const r = this.terrainFitChange();
+    if (!r) return toast('Terén už pod všemi předměty sedí.');
+    this.history.execute({ label: `Dorovnat terén pod předměty (${r.count})`, changes: [r.change] });
+    toast(`Terén dorovnán pod ${r.count} předměty (${r.points} bodů terénu, Ctrl+Z vrátí)`);
+  }
+
+  private terrainFitChange(only?: Set<string>): { change: Change; count: number; points: number } | null {
     const t = this.ed.doc.terrain;
     const pads: Pad[] = [];
     for (const o of this.groundCandidates()) {
+      if (only && !only.has(o.id)) continue;
       const def = getAsset(o.assetId)!;
       // Ploty, zdi a kreslené silnice kopírují terén samy.
       if (def.usesTerrain?.(resolveParams(def, o.params)) || def.params.some((q) => q.type === 'points')) continue;
@@ -436,9 +451,58 @@ export class App {
       pads.push({ object: o, fp, base: o.transform.position[1] });
     }
     const plan = planTerrainFit(t, pads);
-    if (!plan) return toast('Terén už pod všemi předměty sedí.');
-    this.history.execute({ label: `Dorovnat terén pod předměty (${pads.length})`, changes: [{ kind: 'terrain', region: plan.region, before: plan.before, after: plan.after }] });
-    toast(`Terén dorovnán pod ${pads.length} předměty (${plan.changed} bodů terénu, Ctrl+Z vrátí)`);
+    if (!plan) return null;
+    return { change: { kind: 'terrain', region: plan.region, before: plan.before, after: plan.after }, count: pads.length, points: plan.changed };
+  }
+
+  /** Nejbližší volné místo pro hráče (spawn) do 10 m: na povrchu, bez kolize s objekty. */
+  private freeSpotNear(p: [number, number, number]): [number, number, number] | null {
+    for (let r = 0; r <= 10; r += 0.75) {
+      const n = r === 0 ? 1 : Math.ceil((2 * Math.PI * r) / 0.75);
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2;
+        const x = p[0] + Math.cos(a) * r, z = p[2] + Math.sin(a) * r;
+        // Povrch pod bodem (paprsek z výšky pasu → podlaha ve stejné místnosti, ne střecha).
+        const hit = this.phys.castRay({ x, y: p[1] + 1.2, z }, { x: 0, y: -1, z: 0 }, 60);
+        const th = this.terrainHeight(x, z);
+        const y = hit ? hit.point.y : th;
+        if (y === null || y === undefined) continue;
+        const q: [number, number, number] = [Math.round(x * 100) / 100, Math.round((y + 0.02) * 100) / 100, Math.round(z * 100) / 100];
+        if (!this.spawnIssue(q)) return q;
+      }
+    }
+    return null;
+  }
+
+  /** Předměty, jejichž půdorysy se výrazně překrývají (AABB, bez doplňků a věcí na jiných předmětech). */
+  private overlaps(): { a: MapObject; b: MapObject; push: [number, number] }[] {
+    const boxes: { o: MapObject; x0: number; z0: number; x1: number; z1: number }[] = [];
+    for (const o of this.groundCandidates()) {
+      const def = getAsset(o.assetId)!;
+      if (def.mount || def.params.some((q) => q.type === 'points') || def.usesTerrain?.(resolveParams(def, o.params))) continue;
+      const g = generateObject(o, this.ed.doc.terrain, this.ed.doc.objects);
+      if (!g.parts.some((p) => p.collide)) continue;
+      const fp = localFootprint(g.parts);
+      const pts = footprintPoints(o, fp);
+      const xs = pts.map((q) => q[0]), zs = pts.map((q) => q[1]);
+      const b = { o, x0: Math.min(...xs), z0: Math.min(...zs), x1: Math.max(...xs), z1: Math.max(...zs) };
+      if ((b.x1 - b.x0) * (b.z1 - b.z0) < 1) continue;
+      boxes.push(b);
+    }
+    const out: { a: MapObject; b: MapObject; push: [number, number] }[] = [];
+    for (let i = 0; i < boxes.length; i++)
+      for (let j = i + 1; j < boxes.length; j++) {
+        const A = boxes[i], B = boxes[j];
+        const ox = Math.min(A.x1, B.x1) - Math.max(A.x0, B.x0), oz = Math.min(A.z1, B.z1) - Math.max(A.z0, B.z0);
+        if (ox <= 0 || oz <= 0) continue;
+        const small = Math.min((A.x1 - A.x0) * (A.z1 - A.z0), (B.x1 - B.x0) * (B.z1 - B.z0));
+        if (ox * oz < small * 0.25) continue;
+        // Odsunout B po kratší ose ven z A (+ mezera 0,2 m).
+        const bcx = (B.x0 + B.x1) / 2, acx = (A.x0 + A.x1) / 2, bcz = (B.z0 + B.z1) / 2, acz = (A.z0 + A.z1) / 2;
+        const push: [number, number] = ox < oz ? [Math.sign(bcx - acx || 1) * (ox + 0.2), 0] : [0, Math.sign(bcz - acz || 1) * (oz + 0.2)];
+        out.push({ a: A.o, b: B.o, push });
+      }
+    return out;
   }
 
   /** Jednorázové položení objektů na povrch pod nimi (terén nebo jiný objekt). */
@@ -952,6 +1016,7 @@ export class App {
     $('#tb-undo').addEventListener('click', () => this.editor.undo());
     $('#tb-redo').addEventListener('click', () => this.editor.redo());
     $('#tb-check').addEventListener('click', () => void this.checkMap());
+    $('#tb-help').addEventListener('click', () => this.editor.toggleHelp());
     $('#tb-map').addEventListener('click', () => void this.mapMenu());
     $<HTMLSelectElement>('#st-grid').addEventListener('change', (e) => {
       this.editor.settings.grid = Number((e.target as HTMLSelectElement).value);
@@ -1021,29 +1086,99 @@ export class App {
     $('#st-count').textContent = `${this.ed.doc.objects.length} objektů · výběr ${this.editor.selection.size}`;
     $('#st-hint').textContent = this.editor.drawingRoad
       ? 'Kreslení ulice: klik = bod · Enter / dvojklik = hotovo · Backspace = zpět o bod · Esc = zrušit'
-      : 'Táhni objekt = posun · modrý prstenec = rotace · oranžové kostky = rozměry · F5 testovat · Ctrl+Z/Y · Ctrl+D · Del · F zaměřit';
+      : 'Táhni = posun · G/R/S + číslo = přesně · prstenec = rotace · kostky = rozměry · Ctrl+C/V · ? zkratky · F5 testovat';
   }
 
+  /**
+   * Kontrola mapy s opravami: každý problém má „Ukázat“ (vybere a zaměří) a kde to jde
+   * „Opravit“; „Opravit vše“ provede všechny opravy jako jednu položku historie.
+   */
   private async checkMap() {
+    type Issue = { severity: string; path: string; message: string; show?: string[]; fix?: { label: string; order: number; changes: () => Change[] } };
     const v = validateMap(JSON.parse(JSON.stringify(this.ed.doc)));
-    const issues = [...v.issues];
-    const si = this.spawnIssue();
-    if (si) issues.push({ severity: 'warning', path: 'testSpawn', message: si });
-    for (const [id, m] of this.world.missing) issues.push({ severity: 'warning', path: id, message: `placeholder: ${m}` });
+    const issues: Issue[] = [...v.issues];
     const doc = this.ed.doc;
-    // Spawny proti objemu hráče a terénu.
+    const nameOf = (o: MapObject) => o.editor?.name || getAsset(o.assetId)?.label || o.assetId;
+    // Překryvy se řeší dřív (odsunutím) – ty předměty se v „na zem“ neopakují.
+    const ovl = this.overlaps();
+    const inOverlap = new Set(ovl.flatMap((o) => [o.a.id, o.b.id]));
+    // Předměty ve vzduchu / zapadlé pod terén.
+    const ground = this.groundChanges();
+    for (const c of ground) {
+      if (c.kind !== 'object' || !c.before || !c.after || inOverlap.has(c.id)) continue;
+      const dy = c.before.transform.position[1] - c.after.transform.position[1];
+      if (Math.abs(dy) < 0.08) continue;
+      const o = c.before;
+      const one = new Set([o.id]);
+      issues.push({
+        severity: 'warning',
+        path: nameOf(o),
+        message: dy > 0 ? `visí ${dy.toFixed(2)} m nad zemí` : `je ${(-dy).toFixed(2)} m pod terénem`,
+        show: [o.id],
+        fix: { label: 'Položit na zem', order: 1, changes: () => this.groundChanges(one) },
+      });
+    }
+    // Překrývající se předměty.
+    for (const ov of ovl) {
+      issues.push({
+        severity: 'warning',
+        path: `${nameOf(ov.a)} × ${nameOf(ov.b)}`,
+        message: 'předměty stojí v sobě',
+        show: [ov.a.id, ov.b.id],
+        fix: {
+          label: 'Odsunout',
+          order: 0,
+          changes: () => {
+            const o = this.ed.getObject(ov.b.id);
+            if (!o) return [];
+            const [x, y, z] = o.transform.position;
+            const nx = Math.round((x + ov.push[0]) * 1000) / 1000, nz = Math.round((z + ov.push[1]) * 1000) / 1000;
+            const ny = y + (heightAt(doc.terrain, nx, nz) ?? 0) - (heightAt(doc.terrain, x, z) ?? 0);
+            return [{ kind: 'object', id: o.id, before: structuredClone(o), after: { ...structuredClone(o), transform: { ...o.transform, position: [nx, Math.round(ny * 1000) / 1000, nz] } } }];
+          },
+        },
+      });
+    }
+    // Testovací spawn a spawny týmů.
+    const si = this.spawnIssue();
+    if (si) {
+      const ts = doc.testSpawn;
+      issues.push({
+        severity: 'warning',
+        path: 'testovací spawn',
+        message: si,
+        show: ts ? [TEST_SPAWN_ID] : undefined,
+        fix: ts ? { label: 'Přesunout na volné místo', order: 2, changes: () => {
+          const q = this.freeSpotNear(ts.position);
+          return q ? [{ kind: 'testSpawn', before: ts, after: { ...ts, position: q } }] : [];
+        } } : undefined,
+      });
+    }
     for (const sp of doc.spawnPoints) {
       const iss = this.spawnIssue(sp.position);
-      if (iss) issues.push({ severity: 'error', path: `spawn ${sp.id}`, message: iss });
+      if (!iss) continue;
+      issues.push({
+        severity: 'error',
+        path: `spawn ${sp.id}`,
+        message: iss,
+        show: [`sp:${sp.id}`],
+        fix: { label: 'Přesunout na volné místo', order: 2, changes: () => {
+          const q = this.freeSpotNear(sp.position);
+          return q ? cmds.entity<typeof sp>(this.ed, 'spawnPoints', sp.id, (e) => {
+            e.position = q;
+          }, 'Spawn').changes : [];
+        } },
+      });
     }
+    for (const [id, m] of this.world.missing) issues.push({ severity: 'warning', path: id, message: `placeholder: ${m}`, show: [id] });
     // Žebříky: volný výstup nahoře.
     for (const [oid, list] of this.ladders) {
       for (const L of list) {
         const exit = { x: L.base.x + L.facing.x * 0.6, y: L.base.y + L.height + 0.05, z: L.base.z + L.facing.z * 0.6 };
-        if (this.phys.capsuleBlocked(exit, MOVEMENT.stances.stand.height, MOVEMENT.radius)) issues.push({ severity: 'warning', path: oid, message: 'žebřík: výstup nahoře je blokovaný (nepoužitelný žebřík)' });
+        if (this.phys.capsuleBlocked(exit, MOVEMENT.stances.stand.height, MOVEMENT.radius)) issues.push({ severity: 'warning', path: oid, message: 'žebřík: výstup nahoře je blokovaný (nepoužitelný žebřík) – posuň ho nebo uvolni místo nahoře', show: [oid] });
       }
     }
-    if (doc.controlPoints.length && !doc.scenarios.length) issues.push({ severity: 'warning', path: 'scenarios', message: 'mapa má body, ale žádný scénář – Conquest nelze spustit' });
+    if (doc.controlPoints.length && !doc.scenarios.length) issues.push({ severity: 'warning', path: 'scenarios', message: 'mapa má body, ale žádný scénář – Conquest nelze spustit (záložka Scéna → + Scénář)' });
     for (const sc of doc.scenarios) {
       for (const team of ['teamA', 'teamB'] as const) {
         const ok = doc.spawnPoints.some((sp) => {
@@ -1063,7 +1198,78 @@ export class App {
       });
       if (!counted.length) issues.push({ severity: 'warning', path: `scénář ${sc.name}`, message: 'žádný bod se nepočítá do bleed – tickety budou ubývat jen smrtí' });
     }
-    const body = issues.length ? issuesList(issues) : document.createTextNode('Bez chyb a upozornění. (Kontrola neprokazuje vyváženost mapy.)');
+    // Vykreslení: řádky s tlačítky.
+    const body = document.createElement('div');
+    if (!issues.length) {
+      body.textContent = 'Bez chyb a upozornění. (Kontrola neprokazuje vyváženost mapy.)';
+      await modal('Kontrola mapy', body, [{ id: 'ok', label: 'Zavřít', primary: true }]);
+      return;
+    }
+    const fixable = issues.filter((i) => i.fix);
+    const close = () => document.getElementById('modal')!.classList.add('hidden');
+    const runFixes = (list: Issue[], label: string) => {
+      // Po skupinách: nejdřív odsunout překryvy, pak položit na zem, nakonec spawny (každá
+      // skupina se počítá až po předchozí, aby opravy na sebe navazovaly).
+      let done = 0;
+      for (const order of [0, 1, 2]) {
+        const group = list.filter((i) => i.fix!.order === order);
+        if (!group.length) continue;
+        const changes: Change[] = [];
+        const seen = new Set<string>();
+        for (const i of group) for (const c of i.fix!.changes()) {
+          const key = c.kind === 'object' ? c.id : c.kind === 'entity' ? c.id : c.kind;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          changes.push(c);
+        }
+        if (changes.length) {
+          this.history.execute({ label: `${label}: ${group[0].fix!.label.toLowerCase()}`, changes });
+          done += group.length;
+        }
+      }
+      if (done) toast(`${label}: opraveno ${done} (Ctrl+Z vrátí po krocích)`);
+      else toast('Opravu se nepodařilo najít automaticky – použij Ukázat.', 'warn');
+      void this.checkMap();
+    };
+    const head = document.createElement('div');
+    head.className = 'check-head';
+    head.textContent = `${issues.length} ${issues.length === 1 ? 'problém' : issues.length < 5 ? 'problémy' : 'problémů'}, z toho ${fixable.length} jde opravit automaticky.`;
+    if (fixable.length) {
+      const all = document.createElement('button');
+      all.className = 'primary';
+      all.textContent = `Opravit vše (${fixable.length})`;
+      all.addEventListener('click', () => runFixes(fixable, 'Opravit vše'));
+      head.appendChild(all);
+    }
+    body.appendChild(head);
+    const ul = document.createElement('ul');
+    ul.className = 'check-list';
+    for (const i of issues.slice(0, 80)) {
+      const li = document.createElement('li');
+      li.className = i.severity === 'error' ? 'err' : 'wrn';
+      const tx = document.createElement('span');
+      tx.textContent = `${i.path ? i.path + ': ' : ''}${i.message}`;
+      li.appendChild(tx);
+      if (i.show) {
+        const b = document.createElement('button');
+        b.textContent = 'Ukázat';
+        b.addEventListener('click', () => {
+          close();
+          this.editor.select(i.show!.filter((id) => id === TEST_SPAWN_ID || id.startsWith('sp:') || this.ed.getObject(id)), false);
+          this.editor.frameSelection();
+        });
+        li.appendChild(b);
+      }
+      if (i.fix) {
+        const b = document.createElement('button');
+        b.textContent = i.fix.label;
+        b.addEventListener('click', () => runFixes([i], i.fix!.label));
+        li.appendChild(b);
+      }
+      ul.appendChild(li);
+    }
+    if (issues.length > 80) ul.appendChild(Object.assign(document.createElement('li'), { textContent: `… a dalších ${issues.length - 80}` }));
+    body.appendChild(ul);
     await modal('Kontrola mapy', body, [{ id: 'ok', label: 'Zavřít', primary: true }]);
   }
 

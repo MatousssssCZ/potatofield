@@ -887,3 +887,105 @@ kbd {
   top: 30%;
   pointer-events: none;
 }
+
+/* Nápověda u kurzoru (editor). */
+.cursor-hint {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 6;
+  pointer-events: none;
+  max-width: 360px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  background: rgba(20, 17, 12, 0.86);
+  border: 1px solid rgba(217, 164, 65, 0.45);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: pre-line;
+}
+.cursor-hint.hidden,
+.shortcuts.hidden {
+  display: none;
+}
+/* Přehled zkratek (? / F1). */
+.shortcuts {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 8;
+  width: min(860px, calc(100% - 32px));
+  max-height: calc(100% - 40px);
+  overflow: auto;
+  padding: 14px 16px;
+  border-radius: 6px;
+  background: rgba(22, 19, 14, 0.96);
+  border: 1px solid rgba(217, 164, 65, 0.5);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+.shortcuts .sc-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+.shortcuts .sc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px 20px;
+}
+.shortcuts .sc-title {
+  color: var(--accent);
+  font-weight: 600;
+  margin: 2px 0 6px;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+.shortcuts .sc-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 12.5px;
+  margin: 3px 0;
+}
+.shortcuts kbd {
+  flex: 0 0 auto;
+  min-width: 118px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font: 11.5px/1.5 ui-monospace, monospace;
+}
+.shortcuts .sc-opt {
+  display: block;
+  margin-top: 12px;
+  font-size: 12.5px;
+}
+
+/* Kontrola mapy s opravami. */
+.check-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.check-list {
+  margin: 0;
+  padding-left: 18px;
+  max-height: 55vh;
+  overflow: auto;
+}
+.check-list li {
+  margin: 4px 0;
+}
+.check-list li button {
+  margin-left: 8px;
+  padding: 1px 8px;
+  font-size: 12px;
+}

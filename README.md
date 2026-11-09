@@ -55,15 +55,19 @@ mapě** (assety, které mapa už obsahuje, s počtem). Klik vloží asset do st�
 | Akce | Ovládání |
 |---|---|
 | Volná kamera | držet **RMB** + W A S D, **Mezerník** nahoru, **Shift** dolů, kolečko při RMB = rychlost |
+| Orbit | **prostřední tlačítko** = otáčet kolem výběru (nebo bodu pod kurzorem), **Shift** + prostřední = posouvat pohled, **Alt + LMB** v prázdnu = orbit na touchpadu |
 | Přiblížení | kolečko |
 | Výběr | **LMB**; **Ctrl+LMB** přidat/odebrat; tažení LMB = výběr rámečkem; Esc zruší výběr |
 | Úpravy (bez režimů) | **táhni objekt** = posun po terénu · **modrý prstenec** = rotace · **oranžové kostky** = rozměry (protilehlá strana drží) |
 | Ulice | v katalogu „Ulice (kreslená body)“: klikej body na terén, **Enter**/dvojklik hotovo, **Backspace** zpět, **Esc** zrušit; u vybrané ulice táhni zelené body, ◆ přidá bod, **Shift+klik** bod smaže; kde se dvě kreslené ulice překříží, vznikne **křižovatka** sama (přerušené chodníky a čáry, přechody); ulice kopíruje terén |
 | Přichycení | mřížka 0,25/0,5/1/2 m (výchozí 0,5), rotace 15°/90°/volná; **Alt** dočasně vypne |
-| Operace | **F** zaměřit, **Delete** smazat, **Ctrl+D** duplikovat |
+| Operace | **F** zaměřit, **Delete** smazat, **Ctrl+D** duplikovat, **Ctrl+C / X / V** kopírovat / vyjmout / vložit pod kurzor (schránka v prohlížeči – funguje i mezi mapami) |
+| Přesně | **G / R / S** = posun / rotace / měřítko bez držení myši; **X / Y / Z** (při G) = jen po ose; **číslo + Enter** = přesná hodnota (m, °, násobek) – funguje i při tažení úchopu (např. délka plotu); LMB / Enter potvrdí, Esc / RMB zruší |
+| Nápověda | štítek u kurzoru říká, co udělá klik / tažení (vypnout v přehledu); **?** nebo **F1** = přehled všech zkratek |
 | Historie | **Ctrl+Z** zpět, **Ctrl+Shift+Z** nebo **Ctrl+Y** znovu (jedno tažení = jedna položka) |
 | Uložení | automaticky po každé operaci (stav vlevo dole); **Ctrl+S** uloží hned |
 | Testovat | **F5** / tlačítko ▶ Testovat |
+| Kontrola | **✓ Kontrola**: u každého problému **Ukázat** (vybere a zaměří) a kde to jde **Opravit** (položit na zem, odsunout předměty, které stojí v sobě, přesunout spawn na volné místo); **Opravit vše** |
 
 - **Sada 300** (kategorie „Sada 300 · A Obytné budovy“ …): modely podle zadání sady 300,
   přístupné budovy s ověřeným průchodem (test `tests/set300.test.ts`). Export GLB + JSON,
