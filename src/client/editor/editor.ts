@@ -6,6 +6,8 @@ import { buildObjectGeometry } from '../render/geometry';
 import type { WorldView } from '../render/worldView';
 import { cmds, type Command, type EditorDoc, type History } from './editorDoc';
 import { MarkerView, markerId } from './markers';
+import { magnetSnap, type MagnetBody, type MagnetResult } from './magnet';
+import { localFootprint } from '../../world/groundFit';
 export interface PlantBrush {
   erase: boolean;
   /** Rozestup palem (m). */
@@ -925,6 +927,44 @@ export class Editor {
     return (b * e - c * d) / den;
   }
 
+  private fpCache = new WeakMap<MapObject, [number, number, number, number]>();
+  /** Lokální půdorys předmětu z kolizí (cache podle instance objektu – změna = nový objekt). */
+  private footprintOf(o: MapObject): [number, number, number, number] {
+    let fp = this.fpCache.get(o);
+    if (!fp) {
+      fp = localFootprint(generateObject(o, this.ed.doc.terrain, this.ed.doc.objects).parts);
+      this.fpCache.set(o, fp);
+    }
+    return fp;
+  }
+
+  /** Předmět se přilepuje magnetem (budovy, moduly, zdi, kryty); ne příroda, ulice a značky. */
+  private magnetic(o: MapObject): boolean {
+    const def = getAsset(o.assetId);
+    if (!def || def.mount) return false;
+    if (['nature', 'street', 'markers'].includes(def.category)) return false;
+    return !def.params.some((q) => q.type === 'points');
+  }
+
+  /** Magnet: přilepí posouvaný předmět k sousední budově líc na líc (null = žádný soused v dosahu). */
+  private magnetFor(id: string, x: number, z: number, yaw: number): MagnetResult | null {
+    const o = this.ed.getObject(id);
+    if (!o || !this.magnetic(o)) return null;
+    const body = (b: MapObject, pos: [number, number], yw: number): MagnetBody => ({ id: b.id, pos, yaw: yw, scale: b.transform.scale ?? 1, fp: this.footprintOf(b) });
+    const me = body(o, [x, z], yaw);
+    const r0 = Math.hypot(me.fp[2] - me.fp[0], me.fp[3] - me.fp[1]) * me.scale;
+    const others: MagnetBody[] = [];
+    for (const b of this.ed.doc.objects) {
+      if (b.id === id || !this.magnetic(b) || this.selection.has(b.id)) continue;
+      const [bx, , bz] = b.transform.position;
+      if (Math.hypot(bx - x, bz - z) > r0 + 40) continue;
+      const nb = body(b, [bx, bz], b.transform.rotation[1]);
+      if (Math.hypot(bx - x, bz - z) > (r0 + Math.hypot(nb.fp[2] - nb.fp[0], nb.fp[3] - nb.fp[1]) * nb.scale) / 2 + 1) continue;
+      others.push(nb);
+    }
+    return magnetSnap(me, others, 0.6);
+  }
+
   /** Místo na budově pro doplněk (stěna / střecha) pod kurzorem, nebo null. */
   private mountHit(id: string, def: AssetDef): { pos: THREE.Vector3; yaw?: number } | null {
     this.raycaster.setFromCamera(this.pointerNdc, this.camera);
@@ -996,7 +1036,15 @@ export class Editor {
       let dx = gp.x - d.gp0.x, dz = gp.z - d.gp0.z;
       // Přichycení: první objekt na mřížku, ostatní stejný posun (zachová rozestavení).
       const first = d.starts.values().next().value!;
-      if (!this.altHeld) {
+      // Magnet k sousední budově má přednost před mřížkou (jen u jednoho předmětu; Alt vypne).
+      const [firstId] = [...d.starts.keys()];
+      const mag = !this.altHeld && d.starts.size === 1 ? this.magnetFor(firstId, first.pos[0] + dx, first.pos[2] + dz, first.rotY) : null;
+      const fg = this.groupOf(firstId);
+      if (fg) fg.userData.magnet = mag?.to ?? null;
+      if (mag) {
+        dx = mag.pos[0] - first.pos[0];
+        dz = mag.pos[1] - first.pos[2];
+      } else if (!this.altHeld) {
         const g = this.settings.grid;
         dx = Math.round((first.pos[0] + dx) / g) * g - first.pos[0];
         dz = Math.round((first.pos[2] + dz) / g) * g - first.pos[2];
@@ -1120,6 +1168,8 @@ export class Editor {
         const st = d.starts.get(id)!;
         if (pos.every((v, i) => Math.abs(v - st.pos[i]) < 1e-4) && Math.abs(rotY - normAngle(st.rotY)) < 1e-4) continue;
         if (g.userData.mounted) label = 'Přilepit na budovu';
+        else if (g.userData.magnet) label = 'Přilepit k budově (magnet)';
+        g.userData.magnet = null;
         changes.push(...this.transformChanges(id, pos, rotY));
       }
     } else if (d.kind === 'scale') {
@@ -1536,7 +1586,8 @@ export class Editor {
         const g = this.groupOf(first[0]);
         const dx = g ? g.position.x - first[1].pos[0] : 0, dz = g ? g.position.z - first[1].pos[2] : 0, dy = g ? g.position.y - first[1].pos[1] : 0;
         const ax = this.modal?.axis ? ` po ose ${this.modal.axis.toUpperCase()}` : '';
-        return `Posun${ax}: X ${dx.toFixed(2)} · Z ${dz.toFixed(2)}${Math.abs(dy) > 0.005 ? ` · výška ${dy.toFixed(2)}` : ''} m${num}\nČíslo = přesná vzdálenost v m · X / Y / Z = osa${tail}`;
+        const mag = g?.userData.magnet ? `\n🧲 Magnet: přilepeno k ${getAsset(this.ed.getObject(g.userData.magnet as string)?.assetId ?? '')?.label ?? 'budově'} (Alt = bez magnetu)` : '';
+        return `Posun${ax}: X ${dx.toFixed(2)} · Z ${dz.toFixed(2)}${Math.abs(dy) > 0.005 ? ` · výška ${dy.toFixed(2)}` : ''} m${num}${mag}\nČíslo = přesná vzdálenost v m · X / Y / Z = osa${tail}`;
       }
       if (d.kind === 'rotate') return `Rotace: ${THREE.MathUtils.radToDeg(d.delta).toFixed(1)}°${num}\nČíslo = úhel ve stupních${tail}`;
       if (d.kind === 'size') return d.uniform ? `Měřítko ×${d.f.toFixed(2)}${num}\nČíslo = násobek (např. 1.5)${tail}` : `Rozměr: ${(d.ext * d.f).toFixed(2)} m${num}\nČíslo = nová délka v m${tail}`;
@@ -1882,7 +1933,8 @@ function buildHelp(toggleHints: () => boolean, hintsOn: () => boolean): HTMLDivE
       ['Esc', 'zrušit výběr'],
     ]],
     ['Úpravy', [
-      ['táhni předmět', 'posun po terénu (Alt = bez mřížky)'],
+      ['táhni předmět', 'posun po terénu (Alt = bez mřížky a magnetu)'],
+      ['táhni budovu k budově', 'magnet: přilepí líc na líc a srovná hrany (do 0,6 m)'],
       ['modrý prstenec', 'rotace'],
       ['oranžové kostky', 'rozměry / měřítko'],
       ['G / R / S', 'posun / rotace / měřítko bez držení myši'],

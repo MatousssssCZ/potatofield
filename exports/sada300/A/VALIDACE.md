@@ -30,8 +30,8 @@ Automaticky z `scripts/export-set.ts`. Trasa = simulovaný hráč (stejné koliz
 | A24 | Hliněný dům se dvěma místnostmi | přístupná | 8 × 5 × 3 | 8.26 × 5.73 × 3.75 | 1996 / 12000 | 36 ⚠ | 7 | 1 | ✔ 7/7 | – |
 | A25 | Hliněný dům s přístavkem | přístupná | 9 × 6 × 3 | 9.22 × 6.73 × 4.15 | 2300 / 12000 | 41 ⚠ | 7 | 1 | ✔ 9/9 | – |
 | A26 | Hliněný dům s nepravidelným půdorysem | přístupná | 9 × 7 × 3 | 9.55 × 9.62 × 3.95 | 1000 / 12000 | 38 ⚠ | 8 | 1 | ✔ 14/14 | – |
-| A27 | Vila s dvorem a terasou | uzavřená | 16 × 14 × 6.4 | 16.54 × 14.60 × 7.36 | 4080 / 12000 | 32 ⚠ | 14 | 0 | ✔ 8/8 | – |
-| A28 | Vila s obvodovou zdí | uzavřená | 18 × 16 × 6.4 | 18.09 × 16.14 × 7.46 | 3516 / 12000 | 27 ⚠ | 14 | 1 | ✔ 15/15 | – |
+| A27 | Vila s dvorem a terasou | uzavřená (interiér volitelně) | 16 × 14 × 6.4 | 16.54 × 14.60 × 7.36 | 4212 / 12000 | 32 ⚠ | 15 | 0 | ✔ 21/21 | – |
+| A28 | Vila s obvodovou zdí | uzavřená (interiér volitelně) | 18 × 16 × 6.4 | 18.09 × 16.14 × 7.46 | 3648 / 12000 | 27 ⚠ | 14 | 1 | ✔ 29/29 | – |
 | A29 | Poškozený dvoupodlažní dům | uzavřená | 8 × 7 × 6.4 | 10.13 × 12.07 × 7.46 | 2616 / 12000 | 13 | 9 | 0 | ✔ 3/3 | – |
 | A30 | Poškozený třípodlažní činžák | uzavřená | 12 × 8 × 9.6 | 12.54 × 10.58 × 11.50 | 4552 / 12000 | 21 | 15 | 0 | ✔ 2/2 | – |
 

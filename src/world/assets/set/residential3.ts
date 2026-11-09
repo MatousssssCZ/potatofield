@@ -1,7 +1,7 @@
 import { rng } from '../../../shared/math';
 import type { Part } from '../../parts';
 import {
-  M, acBox, bands, crate, door, ladderDef, ladderParts, landing, mattress, parapet, pass, rug, shelf, slab, spout, stairs, table, tank, wall, wallLine, win,
+  M, acBox, bands, chair, rail, coreFlights, coreLayout, crate, door, ladderDef, ladderParts, landing, mattress, parapet, pass, rug, shelf, slab, spout, stairs, table, tank, wall, wallLine, win,
   type Op, type P2, type Rect,
 } from './bk';
 import type { B6 } from './close';
@@ -415,6 +415,18 @@ reg(26, 'mudIrregular', 'Hliněný dům s nepravidelným půdorysem', {
   notes: ['Obvodové zdi vychýlené až o 0,3 m (natočené kvádry), podlahy rovné.'],
 });
 
+/** Zábradlí kolem otvoru schodiště v patře: všude kromě výstupu ramene B (přední hrana u xb). */
+function holeRails(c: ReturnType<typeof coreLayout>): Part[] {
+  const [x0, z0, x1, z1] = c.rect, y = S, e = 0.04;
+  const exitX = Math.min(c.xa, c.xb) + 0.55 + 0.075; // konec ramene A u dělicí zdi
+  return [
+    ...rail([x0 + e, z1 - e], [x1 - e, z1 - e], y),
+    ...rail([x0 + e, z0 + e], [x0 + e, z1 - e], y),
+    ...rail([x1 - e, z0 + e], [x1 - e, z1 - e], y),
+    ...rail([x0 + e, z0 + e], [exitX, z0 + e], y),
+  ];
+}
+
 // ---------------------------------------------------------------------------
 // A27 Vila s dvorem a terasou: obálka 16 × 14 m, dvoupodlažní křídlo (uzavřené), sloupové
 // podloubí do dvora nesoucí širokou terasu, venkovní schody na terasu, dvůr se zdí a bránou.
@@ -422,14 +434,26 @@ reg(26, 'mudIrregular', 'Hliněný dům s nepravidelným půdorysem', {
 reg(27, 'villaTerrace', 'Vila s dvorem a terasou', {
   describe: () => 'obálka 16 × 14 m, křídlo 2 podlaží (uzavřené), podloubí na 5 sloupech, terasa 14 × 2,3 m, schody',
   closed: { solids: [[-8, 0, 1, 8, 2 * S, 7]] },
+  interior: true,
   generate(_p, seed, mat) {
     const Wg: Rect = [-8, 1, 8, 7];
     const parts: Part[] = [];
+    // Interiér (s přepínačem): chodba u čela, schodišťové jádro uprostřed, dva pokoje v každém podlaží.
+    const c = coreLayout(0, 2.6);
+    parts.push(...groundFloor(Wg));
     for (let i = 0; i < 2; i++) {
       const y = i * S;
       parts.push(...shell(Wg, y, H, { front: i === 0 ? [win(-5.4), door(-3.0), win(-0.8), win(0.8), door(3.0), win(5.4)] : [win(-5.4), win(-3.0), door(0), win(3.0), win(5.4)], back: [win(-5), win(-1.6), win(1.6), win(5)], left: [win(4.0)], right: [win(4.0)] }, mat));
+      for (const x of [-1.3, 1.3]) parts.push(...partition([x, 1.3], [x, 6.7], y, H, [door(1.95)], mat));
+      const fy = i === 0 ? 0.08 : y;
+      parts.push(...table(-6.0, 4.6, fy, 1.4, 0.8), ...chair(-6.0, 3.8, fy), ...chair(-6.0, 5.4, fy, Math.PI), ...shelf(-7.45, 3.0, fy, Math.PI / 2));
+      if (i === 0) parts.push(...rug(4.5, 4.2, fy, 2.4, 1.6), ...table(4.5, 4.2, fy, 1.2, 0.7), ...shelf(7.45, 5.4, fy, -Math.PI / 2));
+      else parts.push(...mattress(4.8, 5.6, fy), ...mattress(6.8, 3.0, fy, Math.PI / 2), ...rug(3.5, 4.0, fy, 1.8, 1.2));
     }
-    parts.push(...roofSlab(Wg, H, [], 'concreteLight'), ...roofSlab(Wg, 2 * S - M.slab), ...parapet(Wg, 2 * S, 0.9, mat, TRIM));
+    parts.push(...coreFlights(c, 0.08, S - 0.08, 1.1, 'concreteLight', mat));
+    parts.push(...roofSlab(Wg, H, [c.rect], 'concreteLight'), ...roofSlab(Wg, 2 * S - M.slab), ...parapet(Wg, 2 * S, 0.9, mat, TRIM));
+    // Zábradlí kolem otvoru schodiště v patře (u výstupu volno).
+    parts.push(...holeRails(c));
     // Podloubí: 5 sloupů, průvlak, terasa nahoře (+ díl u schodů).
     for (const x of [-6, -3, 0, 3, 6]) {
       parts.push({ shape: 'cylinder', pos: [x, (S - 0.25) / 2, -1.0], size: [0.42, S - 0.25, 0.42], material: 'plasterWhite', collide: true });
@@ -468,10 +492,23 @@ reg(27, 'villaTerrace', 'Vila s dvorem a terasou', {
     { p: [7.0, 3.2, 0.2], note: 'terasa' },
     { p: [5.8, 3.2, -0.6] },
     { p: [-4.5, 3.2, -0.6] },
+    { p: [0, 3.2, -0.5], note: 'terasa u dveří patra' },
+    { p: [0, 3.2, 1.9], note: 'chodba patra (interiér)' },
+    { p: [-4.0, 3.2, 2.0] },
+    { p: [-4.0, 3.2, 5.6], note: 'pokoj patra' },
+    { p: [-0.5, 3.2, 1.95] },
+    { p: [0.625, 3.2, 2.2], note: 'horní výstup schodů' },
+    { p: [0.625, 1.64, 5.9], note: 'mezipodesta' },
+    { p: [-0.625, 1.64, 5.9] },
+    { p: [-0.625, 0.08, 2.1], note: 'přízemí – chodba' },
+    { p: [3.0, 0.08, 1.95] },
+    { p: [3.0, 0.08, 5.0], note: 'pokoj přízemí' },
+    { p: [3.0, 0.08, 1.7] },
+    { p: [3.0, 0, -0.6], note: 'ven do podloubí' },
   ],
   walkableRoof: false,
   view: [[-6.8, 1.7, -5.8], [4.0, 2.0, 0.0]],
-  notes: ['Uzavřené dvoupodlažní křídlo (BF2); dvůr, podloubí a terasa jsou přístupné.'],
+  notes: ['Výchozí: uzavřené dvoupodlažní křídlo (BF2); dvůr, podloubí a terasa jsou přístupné.', 'Parametr „Přístupný interiér“: chodba, dvouramenné schodiště, 2 pokoje v každém podlaží, dveře z patra na terasu.'],
 });
 
 // ---------------------------------------------------------------------------
@@ -481,15 +518,27 @@ reg(27, 'villaTerrace', 'Vila s dvorem a terasou', {
 reg(28, 'villaWalled', 'Vila s obvodovou zdí', {
   describe: () => 'pozemek 18 × 16 m, dům 11 × 10 m (2 podlaží, uzavřený), brána 3 m, boční branka, žebřík na střechu',
   closed: { solids: [[-5.5, 0, -3.5, 5.5, 2 * S, 6.5]] },
+  interior: true,
   ladders: () => [ladderDef(-5.55, 0.0, 0, 2 * S, 'x+')],
   generate(_p, seed, mat) {
     const Hs: Rect = [-5.5, -3.5, 5.5, 6.5];
     const parts: Part[] = [];
+    // Interiér (s přepínačem): hala za vchodem, jádro se schody, 2 přední pokoje, zadní pokoj přes celou šířku.
+    const c = coreLayout(0, -1.9);
+    parts.push(...groundFloor(Hs));
     for (let i = 0; i < 2; i++) {
       const y = i * S;
       parts.push(...shell(Hs, y, H, { front: i === 0 ? [win(-3.6), door(0), win(3.6)] : [win(-3.6), win(-1.2), win(1.2), win(3.6)], back: [win(-3), win(0), win(3)], left: [win(-1), win(3)], right: [win(-2.0, { w: 1.0 }), win(3)] }, mat));
+      for (const x of [-1.3, 1.3]) parts.push(...partition([x, -3.2], [x, 2.0], y, H, [door(-2.5)], mat));
+      parts.push(...partition([-5.2, 2.075], [5.2, 2.075], y, H, [door(-3.0), door(3.0)], mat));
+      const fy = i === 0 ? 0.08 : y;
+      parts.push(...table(-4.3, 0.4, fy, 1.4, 0.8), ...chair(-4.3, -0.4, fy), ...shelf(-5.05, -2.2, fy, -Math.PI / 2));
+      if (i === 0) parts.push(...rug(0, 4.4, fy, 3.0, 1.8), ...table(0, 4.4, fy, 1.6, 0.8), ...chair(-1.2, 4.4, fy, Math.PI / 2), ...shelf(4.3, 0.9, fy, Math.PI / 2));
+      else parts.push(...mattress(-3.6, 5.4, fy), ...mattress(3.6, 5.4, fy), ...mattress(3.8, 0.2, fy));
     }
-    parts.push(...roofSlab(Hs, H, [], 'concreteLight'), ...roofSlab(Hs, 2 * S - M.slab), ...parapet(Hs, 2 * S, M.parapet, mat, TRIM, { gaps: [{ side: 'right', from: -0.5, to: 0.5 }] }));
+    parts.push(...coreFlights(c, 0.08, S - 0.08, 1.1, 'concreteLight', mat));
+    parts.push(...holeRails(c));
+    parts.push(...roofSlab(Hs, H, [c.rect], 'concreteLight'), ...roofSlab(Hs, 2 * S - M.slab), ...parapet(Hs, 2 * S, M.parapet, mat, TRIM, { gaps: [{ side: 'right', from: -0.5, to: 0.5 }] }));
     parts.push(...ladderParts(-5.55, 0.0, 0, 2 * S, 'x+'));
     // Vstupní stříška a schod.
     parts.push({ shape: 'box', pos: [0, 2.62, -4.0], size: [2.4, 0.1, 1.1], material: 'concreteLight', collide: true });
@@ -530,10 +579,24 @@ reg(28, 'villaWalled', 'Vila s obvodovou zdí', {
     { p: [-7.2, 0, -2.0] },
     { p: [-6.0, 0, 0.0], note: 'pod žebříkem' },
     { p: [-4.0, 6.4, 0.0], ladder: true, note: 'střecha' },
+    { p: [0, 0.04, -5.0], teleport: true, note: 'před vchodem' },
+    { p: [0, 0.08, -2.6], note: 'hala (interiér)' },
+    { p: [-3.3, 0.08, -2.5] },
+    { p: [-3.0, 0.08, 1.4], note: 'levý pokoj' },
+    { p: [-3.0, 0.08, 3.6], note: 'zadní pokoj' },
+    { p: [3.0, 0.08, 3.6] },
+    { p: [3.0, 0.08, 1.4], note: 'pravý pokoj' },
+    { p: [3.0, 0.08, -2.5] },
+    { p: [-0.625, 0.08, -2.5] },
+    { p: [-0.625, 1.64, 1.5], note: 'mezipodesta' },
+    { p: [0.625, 1.64, 1.5] },
+    { p: [0.625, 3.2, -2.5], note: 'patro – hala' },
+    { p: [-3.3, 3.2, -2.5] },
+    { p: [-3.0, 3.2, 3.6], note: 'zadní pokoj patra' },
   ],
   walkableRoof: true,
   view: [[-8.0, 1.8, -7.0], [2.0, 2.0, 0.0]],
-  notes: ['Uzavřený dům (BF2); ochozy 3,2 m po stranách a 1,2 m vzadu, kryty na pozemku.'],
+  notes: ['Výchozí: uzavřený dům (BF2); ochozy 3,2 m po stranách a 1,2 m vzadu, kryty na pozemku.', 'Parametr „Přístupný interiér“: hala, dvouramenné schodiště, 3 pokoje v každém podlaží.'],
 });
 
 // ---------------------------------------------------------------------------

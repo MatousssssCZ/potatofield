@@ -28,7 +28,7 @@
   ]
  },
  "triangles": {
-  "LOD0": 4080
+  "LOD0": 4212
  },
  "triangle_limits": {
   "LOD0": 12000
@@ -39,6 +39,7 @@
   "concreteLight",
   "glass",
   "metal",
+  "paintedMetal",
   "plasterWarm",
   "plasterWhite",
   "plazaTile",
@@ -666,6 +667,105 @@
     3.2,
     -0.6
    ]
+  },
+  {
+   "p": [
+    0,
+    3.2,
+    -0.5
+   ],
+   "note": "terasa u dveří patra"
+  },
+  {
+   "p": [
+    0,
+    3.2,
+    1.9
+   ],
+   "note": "chodba patra (interiér)"
+  },
+  {
+   "p": [
+    -4,
+    3.2,
+    2
+   ]
+  },
+  {
+   "p": [
+    -4,
+    3.2,
+    5.6
+   ],
+   "note": "pokoj patra"
+  },
+  {
+   "p": [
+    -0.5,
+    3.2,
+    1.95
+   ]
+  },
+  {
+   "p": [
+    0.625,
+    3.2,
+    2.2
+   ],
+   "note": "horní výstup schodů"
+  },
+  {
+   "p": [
+    0.625,
+    1.64,
+    5.9
+   ],
+   "note": "mezipodesta"
+  },
+  {
+   "p": [
+    -0.625,
+    1.64,
+    5.9
+   ]
+  },
+  {
+   "p": [
+    -0.625,
+    0.08,
+    2.1
+   ],
+   "note": "přízemí – chodba"
+  },
+  {
+   "p": [
+    3,
+    0.08,
+    1.95
+   ]
+  },
+  {
+   "p": [
+    3,
+    0.08,
+    5
+   ],
+   "note": "pokoj přízemí"
+  },
+  {
+   "p": [
+    3,
+    0.08,
+    1.7
+   ]
+  },
+  {
+   "p": [
+    3,
+    0,
+    -0.6
+   ],
+   "note": "ven do podloubí"
   }
  ],
  "doors_m": {
@@ -684,7 +784,8 @@
  "uv_units": "meters",
  "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
  "notes": [
-  "Uzavřené dvoupodlažní křídlo (BF2); dvůr, podloubí a terasa jsou přístupné."
+  "Výchozí: uzavřené dvoupodlažní křídlo (BF2); dvůr, podloubí a terasa jsou přístupné.",
+  "Parametr „Přístupný interiér“: chodba, dvouramenné schodiště, 2 pokoje v každém podlaží, dveře z patra na terasu."
  ],
  "tested_in_game": false
 }

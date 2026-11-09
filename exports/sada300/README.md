@@ -48,6 +48,13 @@ Přízemní budovy zůstávají přístupné; jejich kolize se slučují (stejn�
   Konvence: pivot = střed půdorysu u paty, uliční líc −Z, zdi 0,3 m, výška fasád 3,2 m
   (parametr „Výška stěny“ 2,6–4,6 m). Rendery pro B nejsou – ověřeno testy (průchod + střely).
 
+## Editor: magnet budov
+
+Při tažení budovy, modulu, zdi nebo krytu k jinému stejně natočenému předmětu (i otočenému
+o 90° / 180°) se předmět do 0,6 m přilepí líc na líc a srovná hranu nebo střed. U kurzoru
+se ukáže „🧲 Magnet: přilepeno k …“, Alt magnet (i mřížku) dočasně vypne. Doplňky (klimatizace,
+střešní moduly, balkony) se dál lepí na stěnu / střechu jako dřív.
+
 ## Validace
 
 - **Průchod:** u každého modelu projde simulovaný hráč (stejné kolize a pohyb jako server)

@@ -28,7 +28,7 @@
   ]
  },
  "triangles": {
-  "LOD0": 3516
+  "LOD0": 3648
  },
  "triangle_limits": {
   "LOD0": 12000
@@ -643,6 +643,113 @@
    ],
    "ladder": true,
    "note": "střecha"
+  },
+  {
+   "p": [
+    0,
+    0.04,
+    -5
+   ],
+   "teleport": true,
+   "note": "před vchodem"
+  },
+  {
+   "p": [
+    0,
+    0.08,
+    -2.6
+   ],
+   "note": "hala (interiér)"
+  },
+  {
+   "p": [
+    -3.3,
+    0.08,
+    -2.5
+   ]
+  },
+  {
+   "p": [
+    -3,
+    0.08,
+    1.4
+   ],
+   "note": "levý pokoj"
+  },
+  {
+   "p": [
+    -3,
+    0.08,
+    3.6
+   ],
+   "note": "zadní pokoj"
+  },
+  {
+   "p": [
+    3,
+    0.08,
+    3.6
+   ]
+  },
+  {
+   "p": [
+    3,
+    0.08,
+    1.4
+   ],
+   "note": "pravý pokoj"
+  },
+  {
+   "p": [
+    3,
+    0.08,
+    -2.5
+   ]
+  },
+  {
+   "p": [
+    -0.625,
+    0.08,
+    -2.5
+   ]
+  },
+  {
+   "p": [
+    -0.625,
+    1.64,
+    1.5
+   ],
+   "note": "mezipodesta"
+  },
+  {
+   "p": [
+    0.625,
+    1.64,
+    1.5
+   ]
+  },
+  {
+   "p": [
+    0.625,
+    3.2,
+    -2.5
+   ],
+   "note": "patro – hala"
+  },
+  {
+   "p": [
+    -3.3,
+    3.2,
+    -2.5
+   ]
+  },
+  {
+   "p": [
+    -3,
+    3.2,
+    3.6
+   ],
+   "note": "zadní pokoj patra"
   }
  ],
  "doors_m": {
@@ -661,7 +768,8 @@
  "uv_units": "meters",
  "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
  "notes": [
-  "Uzavřený dům (BF2); ochozy 3,2 m po stranách a 1,2 m vzadu, kryty na pozemku."
+  "Výchozí: uzavřený dům (BF2); ochozy 3,2 m po stranách a 1,2 m vzadu, kryty na pozemku.",
+  "Parametr „Přístupný interiér“: hala, dvouramenné schodiště, 3 pokoje v každém podlaží."
  ],
  "tested_in_game": false
 }
