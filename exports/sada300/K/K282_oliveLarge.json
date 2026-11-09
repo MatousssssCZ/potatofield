@@ -1,0 +1,129 @@
+{
+ "schema_version": "1.1",
+ "id": "K282_oliveLarge",
+ "asset_id": "setK.oliveLarge",
+ "label_cs": "K282 Velký olivovník",
+ "category": "sada300_K",
+ "asset_kind": "building",
+ "footprint_m": [
+  4.9424,
+  5.5997
+ ],
+ "height_m": 6.6381,
+ "target_m": [
+  7,
+  7,
+  6
+ ],
+ "bounds_m": {
+  "min": [
+   -2.2408,
+   -0.0265,
+   -2.8955
+  ],
+  "max": [
+   2.7017,
+   6.6381,
+   2.7042
+  ]
+ },
+ "triangles": {
+  "LOD0": 2472
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "bark",
+  "crownOlive",
+  "leafOlive"
+ ],
+ "collision": [
+  {
+   "center": [
+    -0.0488,
+    0.525,
+    -0.0438
+   ],
+   "size": [
+    0.45,
+    1.0582,
+    0.45
+   ],
+   "rotX": -3.0173,
+   "rotY": -0.8396,
+   "rotZ": -3.1416,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -0.1465,
+    1.575,
+    -0.1314
+   ],
+   "size": [
+    0.3825,
+    1.0582,
+    0.3825
+   ],
+   "rotX": -3.0173,
+   "rotY": -0.8396,
+   "rotZ": -3.1416,
+   "kind": "cylinder",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -2.5,
+    0,
+    -2.5
+   ]
+  },
+  {
+   "p": [
+    2.5,
+    0,
+    -2.5
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -3,
+    1,
+    0
+   ],
+   "to": [
+    3,
+    1,
+    0
+   ],
+   "expect_hit": true,
+   "note": "kmen"
+  }
+ ]
+}

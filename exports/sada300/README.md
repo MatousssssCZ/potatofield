@@ -90,6 +90,14 @@ Přízemní budovy zůstávají přístupné; jejich kolize se slučují (stejn�
   palety, pneumatiky s otevřeným středem, kanystr, plynová láhev, pytel, nábytek (stůl, židle,
   regál průstřelný mezi policemi, skříň s otevřeným křídlem, postel, matrace, gauč, koberec bez
   kolize), lednice, sporák, CRT televize, rádio a interiérová suť bez kolize.
+- **K276–K300 (příroda):** palmy (K276/K277 podle pilotů, vysoká, prohnutá, pahýl), olivovníky
+  (malý, velký, starý dvojitý), akácie, deštníkovitý strom, suchý strom, keře (K287/K288 podle
+  pilotů, hustý, pouštní), okrasná palma, agáve, trávy, balvany (malý, se svislou stranou,
+  velký ze 4 objemů), skalní stěny (rovná – návazné konce, členitá – výstupek a zářez bez
+  úzkých mezer) a palma v květináči. Listí a tráva bez kolize (zakrývají výhled, ne střely).
+
+**Sada 300 je kompletní: 300 modelů v 11 sekcích, každý s testem průchodu, limitů a (kde dává
+smysl) krytu a průstřelu.**
 
 ## Editor: magnet budov
 

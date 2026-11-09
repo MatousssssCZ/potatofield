@@ -1,0 +1,97 @@
+{
+ "schema_version": "1.1",
+ "id": "K293_grassLow",
+ "asset_id": "setK.grassLow",
+ "label_cs": "K293 Nízký trs suché trávy",
+ "category": "sada300_K",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.6886,
+  0.5597
+ ],
+ "height_m": 0.4529,
+ "target_m": [
+  0.6,
+  0.6,
+  0.3
+ ],
+ "bounds_m": {
+  "min": [
+   -0.3814,
+   0.15,
+   -0.3225
+  ],
+  "max": [
+   0.3071,
+   0.4529,
+   0.2372
+  ]
+ },
+ "triangles": {
+  "LOD0": 8
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "leafDry"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.005,
+    0
+   ],
+   "size": [
+    0.05,
+    0.01,
+    0.05
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "wood",
+   "blocks": "move"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -0.8
+   ]
+  },
+  {
+   "p": [
+    0,
+    0,
+    0.8
+   ],
+   "note": "přes trs"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Formální kolize 1 cm (jen pro editor), pohybu nepřekáží."
+ ],
+ "tested_in_game": false
+}

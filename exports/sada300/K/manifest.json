@@ -1,0 +1,231 @@
+{
+ "section": "K",
+ "generated": "2026-11-09",
+ "models": [
+  {
+   "item": 276,
+   "id": "K276_palmDateSmall",
+   "asset_id": "setK.palmDateSmall",
+   "label": "K276 Menší datlová palma (pilot)",
+   "glb": "K276_palmDateSmall.glb",
+   "json": "K276_palmDateSmall.json",
+   "render": "renders/K276.jpg"
+  },
+  {
+   "item": 277,
+   "id": "K277_palmDateLeaning",
+   "asset_id": "setK.palmDateLeaning",
+   "label": "K277 Vyšší nakloněná palma (pilot)",
+   "glb": "K277_palmDateLeaning.glb",
+   "json": "K277_palmDateLeaning.json",
+   "render": "renders/K277.jpg"
+  },
+  {
+   "item": 278,
+   "id": "K278_palmDateTall",
+   "asset_id": "setK.palmDateTall",
+   "label": "K278 Vysoká datlová palma",
+   "glb": "K278_palmDateTall.glb",
+   "json": "K278_palmDateTall.json",
+   "render": "renders/K278.jpg"
+  },
+  {
+   "item": 279,
+   "id": "K279_palmCurved",
+   "asset_id": "setK.palmCurved",
+   "label": "K279 Palma s prohnutým kmenem",
+   "glb": "K279_palmCurved.glb",
+   "json": "K279_palmCurved.json",
+   "render": "renders/K279.jpg"
+  },
+  {
+   "item": 280,
+   "id": "K280_palmStump",
+   "asset_id": "setK.palmStump",
+   "label": "K280 Pahýl palmy",
+   "glb": "K280_palmStump.glb",
+   "json": "K280_palmStump.json",
+   "render": "renders/K280.jpg"
+  },
+  {
+   "item": 281,
+   "id": "K281_oliveSmall",
+   "asset_id": "setK.oliveSmall",
+   "label": "K281 Malý olivovník",
+   "glb": "K281_oliveSmall.glb",
+   "json": "K281_oliveSmall.json",
+   "render": "renders/K281.jpg"
+  },
+  {
+   "item": 282,
+   "id": "K282_oliveLarge",
+   "asset_id": "setK.oliveLarge",
+   "label": "K282 Velký olivovník",
+   "glb": "K282_oliveLarge.glb",
+   "json": "K282_oliveLarge.json",
+   "render": "renders/K282.jpg"
+  },
+  {
+   "item": 283,
+   "id": "K283_oliveOld",
+   "asset_id": "setK.oliveOld",
+   "label": "K283 Starý olivovník",
+   "glb": "K283_oliveOld.glb",
+   "json": "K283_oliveOld.json",
+   "render": "renders/K283.jpg"
+  },
+  {
+   "item": 284,
+   "id": "K284_acaciaSmall",
+   "asset_id": "setK.acaciaSmall",
+   "label": "K284 Menší akácie",
+   "glb": "K284_acaciaSmall.glb",
+   "json": "K284_acaciaSmall.json",
+   "render": "renders/K284.jpg"
+  },
+  {
+   "item": 285,
+   "id": "K285_treeUmbrella",
+   "asset_id": "setK.treeUmbrella",
+   "label": "K285 Strom s deštníkovitou korunou",
+   "glb": "K285_treeUmbrella.glb",
+   "json": "K285_treeUmbrella.json",
+   "render": "renders/K285.jpg"
+  },
+  {
+   "item": 286,
+   "id": "K286_treeDead",
+   "asset_id": "setK.treeDead",
+   "label": "K286 Suchý strom",
+   "glb": "K286_treeDead.glb",
+   "json": "K286_treeDead.json",
+   "render": "renders/K286.jpg"
+  },
+  {
+   "item": 287,
+   "id": "K287_bushOlive",
+   "asset_id": "setK.bushOlive",
+   "label": "K287 Nízký olivově zelený keř (pilot)",
+   "glb": "K287_bushOlive.glb",
+   "json": "K287_bushOlive.json",
+   "render": "renders/K287.jpg"
+  },
+  {
+   "item": 288,
+   "id": "K288_bushDry",
+   "asset_id": "setK.bushDry",
+   "label": "K288 Rozložitý suchý keř (pilot)",
+   "glb": "K288_bushDry.glb",
+   "json": "K288_bushDry.json",
+   "render": "renders/K288.jpg"
+  },
+  {
+   "item": 289,
+   "id": "K289_bushDense",
+   "asset_id": "setK.bushDense",
+   "label": "K289 Hustý zelený keř",
+   "glb": "K289_bushDense.glb",
+   "json": "K289_bushDense.json",
+   "render": "renders/K289.jpg"
+  },
+  {
+   "item": 290,
+   "id": "K290_bushDesert",
+   "asset_id": "setK.bushDesert",
+   "label": "K290 Šedozelený pouštní keř",
+   "glb": "K290_bushDesert.glb",
+   "json": "K290_bushDesert.json",
+   "render": "renders/K290.jpg"
+  },
+  {
+   "item": 291,
+   "id": "K291_palmOrnamental",
+   "asset_id": "setK.palmOrnamental",
+   "label": "K291 Nízká okrasná palma",
+   "glb": "K291_palmOrnamental.glb",
+   "json": "K291_palmOrnamental.json",
+   "render": "renders/K291.jpg"
+  },
+  {
+   "item": 292,
+   "id": "K292_agave",
+   "asset_id": "setK.agave",
+   "label": "K292 Agáve",
+   "glb": "K292_agave.glb",
+   "json": "K292_agave.json",
+   "render": "renders/K292.jpg"
+  },
+  {
+   "item": 293,
+   "id": "K293_grassLow",
+   "asset_id": "setK.grassLow",
+   "label": "K293 Nízký trs suché trávy",
+   "glb": "K293_grassLow.glb",
+   "json": "K293_grassLow.json",
+   "render": "renders/K293.jpg"
+  },
+  {
+   "item": 294,
+   "id": "K294_grassTall",
+   "asset_id": "setK.grassTall",
+   "label": "K294 Vyšší trs trávy",
+   "glb": "K294_grassTall.glb",
+   "json": "K294_grassTall.json",
+   "render": "renders/K294.jpg"
+  },
+  {
+   "item": 295,
+   "id": "K295_boulderSmall",
+   "asset_id": "setK.boulderSmall",
+   "label": "K295 Malý balvan",
+   "glb": "K295_boulderSmall.glb",
+   "json": "K295_boulderSmall.json",
+   "render": "renders/K295.jpg"
+  },
+  {
+   "item": 296,
+   "id": "K296_boulderMedium",
+   "asset_id": "setK.boulderMedium",
+   "label": "K296 Střední balvan",
+   "glb": "K296_boulderMedium.glb",
+   "json": "K296_boulderMedium.json",
+   "render": "renders/K296.jpg"
+  },
+  {
+   "item": 297,
+   "id": "K297_boulderLarge",
+   "asset_id": "setK.boulderLarge",
+   "label": "K297 Velký balvan",
+   "glb": "K297_boulderLarge.glb",
+   "json": "K297_boulderLarge.json",
+   "render": "renders/K297.jpg"
+  },
+  {
+   "item": 298,
+   "id": "K298_rockWallStraight",
+   "asset_id": "setK.rockWallStraight",
+   "label": "K298 Rovná skalní stěna",
+   "glb": "K298_rockWallStraight.glb",
+   "json": "K298_rockWallStraight.json",
+   "render": "renders/K298.jpg"
+  },
+  {
+   "item": 299,
+   "id": "K299_rockWallRugged",
+   "asset_id": "setK.rockWallRugged",
+   "label": "K299 Členitá skalní stěna",
+   "glb": "K299_rockWallRugged.glb",
+   "json": "K299_rockWallRugged.json",
+   "render": "renders/K299.jpg"
+  },
+  {
+   "item": 300,
+   "id": "K300_palmPot",
+   "asset_id": "setK.palmPot",
+   "label": "K300 Palma v květináči",
+   "glb": "K300_palmPot.glb",
+   "json": "K300_palmPot.json",
+   "render": "renders/K300.jpg"
+  }
+ ]
+}

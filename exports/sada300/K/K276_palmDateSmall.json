@@ -1,0 +1,197 @@
+{
+ "schema_version": "1.1",
+ "id": "K276_palmDateSmall",
+ "asset_id": "setK.palmDateSmall",
+ "label_cs": "K276 Menší datlová palma (pilot)",
+ "category": "sada300_K",
+ "asset_kind": "building",
+ "footprint_m": [
+  7.9673,
+  7.916
+ ],
+ "height_m": 8.1572,
+ "target_m": [
+  4.76,
+  4.26,
+  6.9
+ ],
+ "bounds_m": {
+  "min": [
+   -3.7599,
+   -0.0071,
+   -3.9213
+  ],
+  "max": [
+   4.2073,
+   8.1572,
+   3.9948
+  ]
+ },
+ "triangles": {
+  "LOD0": 2152
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "palmBarkDate",
+  "palmFrond",
+  "palmFrondDate",
+  "palmFrondDry"
+ ],
+ "collision": [
+  {
+   "center": [
+    0.0032,
+    0.375,
+    -0.0047
+   ],
+   "size": [
+    0.94,
+    0.7501,
+    0.94
+   ],
+   "rotX": -3.1265,
+   "rotY": 0.6,
+   "rotZ": -3.1416,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.0143,
+    1.125,
+    -0.0133
+   ],
+   "size": [
+    0.745,
+    0.7502,
+    0.745
+   ],
+   "rotX": -3.118,
+   "rotY": 1.1078,
+   "rotZ": 3.1416,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.0342,
+    1.875,
+    -0.0199
+   ],
+   "size": [
+    0.69,
+    0.7504,
+    0.69
+   ],
+   "rotX": -3.1089,
+   "rotY": 1.3531,
+   "rotZ": -3.1416,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.0618,
+    2.625,
+    -0.0235
+   ],
+   "size": [
+    0.67,
+    0.7507,
+    0.67
+   ],
+   "rotX": -3.0998,
+   "rotY": 1.5115,
+   "rotZ": -3.1416,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.0967,
+    3.375,
+    -0.0235
+   ],
+   "size": [
+    0.65,
+    0.751,
+    0.65
+   ],
+   "rotX": 0.0511,
+   "rotY": 1.5223,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.2,
+    0,
+    -1.2
+   ]
+  },
+  {
+   "p": [
+    1.2,
+    0,
+    -1.2
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Podle pilotu tree_palm_a (kmen 6 m, výška 6,9 m, kolize kmene 3 úseky). Listy jsou prohnuté listové plochy (frond) místo plochých karet – čitelný oblouk."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -3,
+    1,
+    0
+   ],
+   "to": [
+    3,
+    1,
+    0
+   ],
+   "expect_hit": true,
+   "note": "kmen zastaví střelu"
+  },
+  {
+   "from": [
+    -4,
+    6.4,
+    1.6
+   ],
+   "to": [
+    4,
+    6.4,
+    1.6
+   ],
+   "expect_hit": false,
+   "note": "koruna střelu propustí"
+  }
+ ]
+}

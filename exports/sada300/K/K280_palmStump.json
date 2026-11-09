@@ -1,0 +1,154 @@
+{
+ "schema_version": "1.1",
+ "id": "K280_palmStump",
+ "asset_id": "setK.palmStump",
+ "label_cs": "K280 Pahýl palmy",
+ "category": "sada300_K",
+ "asset_kind": "building",
+ "footprint_m": [
+  3.6249,
+  2.1384
+ ],
+ "height_m": 3.7429,
+ "target_m": [
+  3.6,
+  2,
+  3.6
+ ],
+ "bounds_m": {
+  "min": [
+   -0.5,
+   -0.0097,
+   -0.5
+  ],
+  "max": [
+   3.1249,
+   3.7429,
+   1.6384
+  ]
+ },
+ "triangles": {
+  "LOD0": 352
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "bark",
+  "palmBarkDate",
+  "wood"
+ ],
+ "collision": [
+  {
+   "center": [
+    0.025,
+    0.9,
+    0
+   ],
+   "size": [
+    0.72,
+    1.8007,
+    0.72
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": -0.0278,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.085,
+    2.55,
+    0.02
+   ],
+   "size": [
+    0.62,
+    1.5022,
+    0.62
+   ],
+   "rotX": 0.0537,
+   "rotY": 1.0517,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    2.1,
+    0.265,
+    1
+   ],
+   "size": [
+    0.55,
+    1.97,
+    0.55
+   ],
+   "rotX": 1.586,
+   "rotY": 1.1526,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.5,
+    0,
+    -1.5
+   ]
+  },
+  {
+   "p": [
+    1.5,
+    0,
+    -1.5
+   ]
+  },
+  {
+   "p": [
+    2.2,
+    0,
+    -0.4
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Odlomený kus (2 m) má kolizi – nízký kryt vleže."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -3,
+    1,
+    0
+   ],
+   "to": [
+    3,
+    1,
+    0
+   ],
+   "expect_hit": true,
+   "note": "kmen kryje"
+  }
+ ]
+}

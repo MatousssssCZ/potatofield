@@ -1,0 +1,114 @@
+{
+ "schema_version": "1.1",
+ "id": "K287_bushOlive",
+ "asset_id": "setK.bushOlive",
+ "label_cs": "K287 Nízký olivově zelený keř (pilot)",
+ "category": "sada300_K",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.37,
+  1.3518
+ ],
+ "height_m": 1.0154,
+ "target_m": [
+  1.14,
+  1.2,
+  0.8
+ ],
+ "bounds_m": {
+  "min": [
+   -0.632,
+   -0.0777,
+   -0.7314
+  ],
+  "max": [
+   0.7381,
+   1.0154,
+   0.6204
+  ]
+ },
+ "triangles": {
+  "LOD0": 1036
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "bark",
+  "crownOlive",
+  "leafOlive"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.12,
+    0
+   ],
+   "size": [
+    0.18,
+    0.24,
+    0.18
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -1.2
+   ]
+  },
+  {
+   "p": [
+    0,
+    0,
+    1.2
+   ],
+   "note": "skrz keř (bez kolize listí)"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Podle pilotu bush_a (1,14 × 0,8 × 1,2 m, kolize jen pahýl 0,18 m). Karty jsou tečné k povrchu koruny – nevidět obdélníky."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -2,
+    0.5,
+    0.2
+   ],
+   "to": [
+    2,
+    0.5,
+    0.2
+   ],
+   "expect_hit": false,
+   "note": "listí střelu propustí"
+  }
+ ]
+}

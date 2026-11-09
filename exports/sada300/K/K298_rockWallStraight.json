@@ -1,0 +1,331 @@
+{
+ "schema_version": "1.1",
+ "id": "K298_rockWallStraight",
+ "asset_id": "setK.rockWallStraight",
+ "label_cs": "K298 Rovná skalní stěna",
+ "category": "sada300_K",
+ "asset_kind": "building",
+ "footprint_m": [
+  8.5317,
+  2.5938
+ ],
+ "height_m": 5.2167,
+ "target_m": [
+  8,
+  2,
+  5
+ ],
+ "bounds_m": {
+  "min": [
+   -4.2445,
+   -0.2034,
+   -1.1717
+  ],
+  "max": [
+   4.2872,
+   5.2167,
+   1.4222
+  ]
+ },
+ "triangles": {
+  "LOD0": 2928
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "rock",
+  "rockWarm"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.5,
+    0.1
+   ],
+   "size": [
+    8.2,
+    1.4,
+    2.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -3,
+    2.4,
+    -0.2732
+   ],
+   "size": [
+    2.35,
+    4.8,
+    1.5
+   ],
+   "rotX": -0.0344,
+   "rotY": 0.0576,
+   "rotZ": 0.0099,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -2.9914,
+    4.6,
+    0
+   ],
+   "size": [
+    1.8,
+    0.7,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -3,
+    2.16,
+    0.65
+   ],
+   "size": [
+    1.6,
+    3.84,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1,
+    2.55,
+    -0.2142
+   ],
+   "size": [
+    2.35,
+    5.1,
+    1.5
+   ],
+   "rotX": -0.0028,
+   "rotY": -0.0312,
+   "rotZ": 0.0033,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.9081,
+    4.9,
+    0
+   ],
+   "size": [
+    1.8,
+    0.7,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1,
+    2.295,
+    0.65
+   ],
+   "size": [
+    1.6,
+    4.08,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1,
+    2.45,
+    -0.2363
+   ],
+   "size": [
+    2.35,
+    4.9,
+    1.5
+   ],
+   "rotX": -0.0275,
+   "rotY": 0.0317,
+   "rotZ": 0.0002,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.8789,
+    4.7,
+    0
+   ],
+   "size": [
+    1.8,
+    0.7,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1,
+    2.205,
+    0.65
+   ],
+   "size": [
+    1.6,
+    3.92,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    3,
+    2.5,
+    -0.2198
+   ],
+   "size": [
+    2.35,
+    5,
+    1.5
+   ],
+   "rotX": -0.0166,
+   "rotY": 0.004,
+   "rotZ": -0.0123,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    3.1912,
+    4.8,
+    0
+   ],
+   "size": [
+    1.8,
+    0.7,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    3,
+    2.25,
+    0.65
+   ],
+   "size": [
+    1.6,
+    4,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -3.6,
+    0,
+    -1.8
+   ],
+   "note": "podél stěny"
+  },
+  {
+   "p": [
+    3.6,
+    0,
+    -1.8
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Konce v x = ±4,2 m mírně přesahují – dva moduly vedle sebe se překryjí bez spáry."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    3,
+    -3
+   ],
+   "to": [
+    0,
+    3,
+    0
+   ],
+   "expect_hit": true,
+   "note": "stěna kryje"
+  },
+  {
+   "from": [
+    3.9,
+    3,
+    -3
+   ],
+   "to": [
+    3.9,
+    3,
+    0
+   ],
+   "expect_hit": true,
+   "note": "až ke konci"
+  }
+ ]
+}

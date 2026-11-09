@@ -1,0 +1,127 @@
+{
+ "schema_version": "1.1",
+ "id": "K295_boulderSmall",
+ "asset_id": "setK.boulderSmall",
+ "label_cs": "K295 Malý balvan",
+ "category": "sada300_K",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.077,
+  0.7641
+ ],
+ "height_m": 0.5071,
+ "target_m": [
+  1,
+  0.8,
+  0.55
+ ],
+ "bounds_m": {
+  "min": [
+   -0.5209,
+   -0.1093,
+   -0.3518
+  ],
+  "max": [
+   0.556,
+   0.5071,
+   0.4123
+  ]
+ },
+ "triangles": {
+  "LOD0": 332
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "rock"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.22,
+    0
+   ],
+   "size": [
+    1,
+    0.65,
+    0.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.015,
+    0
+   ],
+   "size": [
+    0.8,
+    0.13,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1,
+    0,
+    -1
+   ]
+  },
+  {
+   "p": [
+    1,
+    0,
+    -1
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -2,
+    0.3,
+    0
+   ],
+   "to": [
+    0,
+    0.3,
+    0
+   ],
+   "expect_hit": true,
+   "note": "kryje vleže"
+  }
+ ]
+}

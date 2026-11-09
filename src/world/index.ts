@@ -21,6 +21,7 @@ import './assets/set/covers';
 import './assets/set/vehicles';
 import './assets/set/furniture';
 import './assets/set/props300';
+import './assets/set/nature300';
 
 export * from './registry';
 export * from './parts';

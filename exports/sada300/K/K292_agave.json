@@ -1,0 +1,97 @@
+{
+ "schema_version": "1.1",
+ "id": "K292_agave",
+ "asset_id": "setK.agave",
+ "label_cs": "K292 Agáve",
+ "category": "sada300_K",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.0994,
+  1.1763
+ ],
+ "height_m": 1.0689,
+ "target_m": [
+  1.5,
+  1.5,
+  1
+ ],
+ "bounds_m": {
+  "min": [
+   -0.5821,
+   0,
+   -0.6009
+  ],
+  "max": [
+   0.5172,
+   1.0689,
+   0.5755
+  ]
+ },
+ "triangles": {
+  "LOD0": 760
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "bark",
+  "crownOlive"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.075,
+    0
+   ],
+   "size": [
+    0.3,
+    0.15,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.1,
+    0,
+    -1.1
+   ]
+  },
+  {
+   "p": [
+    1.1,
+    0,
+    -1.1
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Listy bez kolize (nepřekáží), jen nízký střed."
+ ],
+ "tested_in_game": false
+}

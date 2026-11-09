@@ -1,0 +1,183 @@
+{
+ "schema_version": "1.1",
+ "id": "K277_palmDateLeaning",
+ "asset_id": "setK.palmDateLeaning",
+ "label_cs": "K277 Vyšší nakloněná palma (pilot)",
+ "category": "sada300_K",
+ "asset_kind": "building",
+ "footprint_m": [
+  8.9402,
+  8.7124
+ ],
+ "height_m": 11.3737,
+ "target_m": [
+  4.76,
+  4.26,
+  9.9
+ ],
+ "bounds_m": {
+  "min": [
+   -2.6084,
+   -0.0186,
+   -4.4518
+  ],
+  "max": [
+   6.3319,
+   11.3737,
+   4.2605
+  ]
+ },
+ "triangles": {
+  "LOD0": 2248
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "palmBarkDate",
+  "palmFrond",
+  "palmFrondDate",
+  "palmFrondDry"
+ ],
+ "collision": [
+  {
+   "center": [
+    0.0219,
+    0.5625,
+    -0.0047
+   ],
+   "size": [
+    0.94,
+    1.1259,
+    0.94
+   ],
+   "rotX": -3.1019,
+   "rotY": 1.3603,
+   "rotZ": 3.1416,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.098,
+    1.6875,
+    -0.0133
+   ],
+   "size": [
+    0.745,
+    1.1303,
+    0.745
+   ],
+   "rotX": -3.0451,
+   "rotY": 1.498,
+   "rotZ": -3.1416,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.2341,
+    2.8125,
+    -0.0199
+   ],
+   "size": [
+    0.69,
+    1.1369,
+    0.69
+   ],
+   "rotX": -2.997,
+   "rotY": 1.5385,
+   "rotZ": 3.1416,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.4231,
+    3.9375,
+    -0.0235
+   ],
+   "size": [
+    0.67,
+    1.1452,
+    0.67
+   ],
+   "rotX": -2.9533,
+   "rotY": 1.5621,
+   "rotZ": -3.1416,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.6614,
+    5.0625,
+    -0.0235
+   ],
+   "size": [
+    0.65,
+    1.1551,
+    0.65
+   ],
+   "rotX": 0.2289,
+   "rotY": 1.5637,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.2,
+    0,
+    -1.2
+   ]
+  },
+  {
+   "p": [
+    1.2,
+    0,
+    -1.2
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Podle pilotu tree_palm_b; kolize = válcové úseky kmene podél oblouku (spodních 60 %), listy bez kolize."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -3,
+    1,
+    0
+   ],
+   "to": [
+    3,
+    1,
+    0
+   ],
+   "expect_hit": true,
+   "note": "kmen u paty"
+  }
+ ]
+}

@@ -1,0 +1,112 @@
+{
+ "schema_version": "1.1",
+ "id": "K289_bushDense",
+ "asset_id": "setK.bushDense",
+ "label_cs": "K289 Hustý zelený keř",
+ "category": "sada300_K",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.7415,
+  1.786
+ ],
+ "height_m": 1.7338,
+ "target_m": [
+  1.5,
+  1.5,
+  1.2
+ ],
+ "bounds_m": {
+  "min": [
+   -0.9012,
+   0,
+   -0.9163
+  ],
+  "max": [
+   0.8403,
+   1.7338,
+   0.8697
+  ]
+ },
+ "triangles": {
+  "LOD0": 1368
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "bark",
+  "crownGreen",
+  "leafGreen"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.12,
+    0
+   ],
+   "size": [
+    0.2,
+    0.24,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -1.4
+   ]
+  },
+  {
+   "p": [
+    0,
+    0,
+    1.4
+   ],
+   "note": "skrz keř"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -2,
+    0.6,
+    0.2
+   ],
+   "to": [
+    2,
+    0.6,
+    0.2
+   ],
+   "expect_hit": false,
+   "note": "listí střelu propustí"
+  }
+ ]
+}

@@ -1,0 +1,129 @@
+{
+ "schema_version": "1.1",
+ "id": "K284_acaciaSmall",
+ "asset_id": "setK.acaciaSmall",
+ "label_cs": "K284 Menší akácie",
+ "category": "sada300_K",
+ "asset_kind": "building",
+ "footprint_m": [
+  5.016,
+  5.2026
+ ],
+ "height_m": 4.6411,
+ "target_m": [
+  4.5,
+  4.5,
+  4
+ ],
+ "bounds_m": {
+  "min": [
+   -2.6588,
+   -0.0245,
+   -2.7334
+  ],
+  "max": [
+   2.3572,
+   4.6411,
+   2.4692
+  ]
+ },
+ "triangles": {
+  "LOD0": 3760
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "bark",
+  "crownGreen",
+  "leafDry"
+ ],
+ "collision": [
+  {
+   "center": [
+    -0.0488,
+    0.22,
+    -0.0438
+   ],
+   "size": [
+    0.18,
+    0.4591,
+    0.18
+   ],
+   "rotX": -2.8518,
+   "rotY": -0.8396,
+   "rotZ": 3.1416,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -0.1465,
+    0.66,
+    -0.1314
+   ],
+   "size": [
+    0.153,
+    0.4591,
+    0.153
+   ],
+   "rotX": -2.8518,
+   "rotY": -0.8396,
+   "rotZ": 3.1416,
+   "kind": "cylinder",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -2.2,
+    0,
+    -2.2
+   ]
+  },
+  {
+   "p": [
+    2.2,
+    0,
+    -2.2
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -3,
+    3.6,
+    0.2
+   ],
+   "to": [
+    3,
+    3.6,
+    0.2
+   ],
+   "expect_hit": false,
+   "note": "listí střelu propustí"
+  }
+ ]
+}

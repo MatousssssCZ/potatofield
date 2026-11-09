@@ -1,0 +1,164 @@
+{
+ "schema_version": "1.1",
+ "id": "K297_boulderLarge",
+ "asset_id": "setK.boulderLarge",
+ "label_cs": "K297 Velký balvan",
+ "category": "sada300_K",
+ "asset_kind": "building",
+ "footprint_m": [
+  4.9654,
+  3.182
+ ],
+ "height_m": 2.8459,
+ "target_m": [
+  5,
+  3.5,
+  2.8
+ ],
+ "bounds_m": {
+  "min": [
+   -2.4659,
+   -0.407,
+   -1.5492
+  ],
+  "max": [
+   2.4995,
+   2.8459,
+   1.6328
+  ]
+ },
+ "triangles": {
+  "LOD0": 1280
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "rock",
+  "rockWarm"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.8,
+    0
+   ],
+   "size": [
+    4.6,
+    2.4,
+    3.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.4,
+    1.6,
+    0.4
+   ],
+   "size": [
+    2.2,
+    2,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.6,
+    0.6,
+    -0.6
+   ],
+   "size": [
+    2,
+    1.4,
+    1.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.2,
+    2.2,
+    -0.3
+   ],
+   "size": [
+    1.8,
+    1.2,
+    1.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -3.2,
+    0,
+    -3.2
+   ]
+  },
+  {
+   "p": [
+    3.2,
+    0,
+    -3.2
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "4 konvexní objemy místo jedné velké krabice."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    1.5,
+    -3
+   ],
+   "to": [
+    0,
+    1.5,
+    0
+   ],
+   "expect_hit": true,
+   "note": "kryje stojícího"
+  }
+ ]
+}

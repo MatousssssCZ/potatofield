@@ -1,0 +1,165 @@
+{
+ "schema_version": "1.1",
+ "id": "K278_palmDateTall",
+ "asset_id": "setK.palmDateTall",
+ "label_cs": "K278 Vysoká datlová palma",
+ "category": "sada300_K",
+ "asset_kind": "building",
+ "footprint_m": [
+  10.0282,
+  9.4136
+ ],
+ "height_m": 14.5439,
+ "target_m": [
+  5.5,
+  5.5,
+  13
+ ],
+ "bounds_m": {
+  "min": [
+   -4.3961,
+   -0.0038,
+   -4.7674
+  ],
+  "max": [
+   5.632,
+   14.5439,
+   4.6461
+  ]
+ },
+ "triangles": {
+  "LOD0": 2408
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "palmBarkDate",
+  "palmFrond",
+  "palmFrondDate",
+  "palmFrondDry"
+ ],
+ "collision": [
+  {
+   "center": [
+    0.0056,
+    0.75,
+    -0.0023
+   ],
+   "size": [
+    0.94,
+    1.5,
+    0.94
+   ],
+   "rotX": -3.1335,
+   "rotY": 1.1875,
+   "rotZ": 3.1416,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.0215,
+    2.25,
+    -0.0034
+   ],
+   "size": [
+    0.745,
+    1.5001,
+    0.745
+   ],
+   "rotX": 0.0137,
+   "rotY": 1.465,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.0456,
+    3.75,
+    0.0022
+   ],
+   "size": [
+    0.69,
+    1.5003,
+    0.69
+   ],
+   "rotX": 0.0195,
+   "rotY": 1.2531,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.0764,
+    5.25,
+    0.015
+   ],
+   "size": [
+    0.67,
+    1.5005,
+    0.67
+   ],
+   "rotX": 0.0251,
+   "rotY": 1.1202,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.1131,
+    6.75,
+    0.035
+   ],
+   "size": [
+    0.65,
+    1.5007,
+    0.65
+   ],
+   "rotX": 0.0307,
+   "rotY": 1.0304,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.2,
+    0,
+    -1.2
+   ]
+  },
+  {
+   "p": [
+    1.2,
+    0,
+    -1.2
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false
+}

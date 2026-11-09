@@ -1,0 +1,365 @@
+{
+ "schema_version": "1.1",
+ "id": "K299_rockWallRugged",
+ "asset_id": "setK.rockWallRugged",
+ "label_cs": "K299 Členitá skalní stěna",
+ "category": "sada300_K",
+ "asset_kind": "building",
+ "footprint_m": [
+  8.5225,
+  3.3246
+ ],
+ "height_m": 6.1167,
+ "target_m": [
+  8,
+  2.9,
+  6
+ ],
+ "bounds_m": {
+  "min": [
+   -4.2353,
+   -0.2034,
+   -1.9024
+  ],
+  "max": [
+   4.2872,
+   6.1167,
+   1.4222
+  ]
+ },
+ "triangles": {
+  "LOD0": 3260
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "rock",
+  "rockWarm"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.5,
+    0.1
+   ],
+   "size": [
+    8.2,
+    1.4,
+    2.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -3.2,
+    1.6,
+    -0.2732
+   ],
+   "size": [
+    1.95,
+    3.2,
+    1.5
+   ],
+   "rotX": -0.0344,
+   "rotY": 0.0576,
+   "rotZ": 0.0099,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -3.1914,
+    3,
+    0
+   ],
+   "size": [
+    1.44,
+    0.7,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -3.2,
+    1.44,
+    0.65
+   ],
+   "size": [
+    1.28,
+    2.56,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.6,
+    3,
+    -0.6642
+   ],
+   "size": [
+    1.95,
+    6,
+    2.4
+   ],
+   "rotX": -0.0028,
+   "rotY": -0.0312,
+   "rotZ": 0.0033,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.5081,
+    5.8,
+    0
+   ],
+   "size": [
+    1.44,
+    0.7,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.6,
+    2.7,
+    0.65
+   ],
+   "size": [
+    1.28,
+    4.8,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    2.1,
+    -0.2363
+   ],
+   "size": [
+    1.95,
+    4.2,
+    1.5
+   ],
+   "rotX": -0.0275,
+   "rotY": 0.0317,
+   "rotZ": 0.0002,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.1211,
+    4,
+    0
+   ],
+   "size": [
+    1.44,
+    0.7,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    1.89,
+    0.65
+   ],
+   "size": [
+    1.28,
+    3.36,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.6,
+    1.5,
+    -0.2198
+   ],
+   "size": [
+    1.95,
+    3,
+    1.5
+   ],
+   "rotX": -0.0166,
+   "rotY": 0.004,
+   "rotZ": -0.0123,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.7912,
+    2.8,
+    0
+   ],
+   "size": [
+    1.44,
+    0.7,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    3.2,
+    2.7,
+    -0.2379
+   ],
+   "size": [
+    1.95,
+    5.4,
+    1.5
+   ],
+   "rotX": 0.031,
+   "rotY": -0.0364,
+   "rotZ": -0.0225,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    3.0619,
+    5.2,
+    0
+   ],
+   "size": [
+    1.44,
+    0.7,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    3.2,
+    2.43,
+    0.65
+   ],
+   "size": [
+    1.28,
+    4.32,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -3.6,
+    0,
+    -2.5
+   ],
+   "note": "podél stěny"
+  },
+  {
+   "p": [
+    3.6,
+    0,
+    -2.5
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Bloky se překrývají o 0,35 m – hráč nikam nezapadne."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -2.4,
+    4,
+    -3
+   ],
+   "to": [
+    -2.4,
+    4,
+    0
+   ],
+   "expect_hit": true,
+   "note": "výstupek kryje"
+  },
+  {
+   "from": [
+    1.6,
+    3.6,
+    -3
+   ],
+   "to": [
+    1.6,
+    3.6,
+    0
+   ],
+   "expect_hit": false,
+   "note": "zářez – nad ním volno"
+  }
+ ]
+}
