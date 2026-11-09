@@ -1,0 +1,197 @@
+{
+ "schema_version": "1.1",
+ "id": "G173_hedgehog",
+ "asset_id": "setG.hedgehog",
+ "label_cs": "G173 Protitankový ježek",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.0714,
+  2.1796
+ ],
+ "height_m": 1.5985,
+ "target_m": [
+  2.2,
+  2.2,
+  1.5
+ ],
+ "bounds_m": {
+  "min": [
+   -1.0438,
+   -0.0055,
+   -1.0568
+  ],
+  "max": [
+   1.0276,
+   1.5985,
+   1.1228
+  ]
+ },
+ "triangles": {
+  "LOD0": 84
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "metalSheetRust"
+ ],
+ "collision": [
+  {
+   "center": [
+    0.0234,
+    0.75,
+    -0.0553
+   ],
+   "size": [
+    0.12,
+    0.012,
+    2.6
+   ],
+   "rotX": -0.6155,
+   "rotY": 1.1708,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.0319,
+    0.799,
+    -0.0135
+   ],
+   "size": [
+    0.012,
+    0.12,
+    2.6
+   ],
+   "rotX": -0.6155,
+   "rotY": 1.1708,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0.0362,
+    0.75,
+    0.0479
+   ],
+   "size": [
+    0.12,
+    0.012,
+    2.6
+   ],
+   "rotX": -0.6155,
+   "rotY": -0.9236,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0.0276,
+    0.799,
+    -0.0209
+   ],
+   "size": [
+    0.012,
+    0.12,
+    2.6
+   ],
+   "rotX": -0.6155,
+   "rotY": -0.9236,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.0595,
+    0.75,
+    0.0074
+   ],
+   "size": [
+    0.12,
+    0.012,
+    2.6
+   ],
+   "rotX": 2.5261,
+   "rotY": -0.1236,
+   "rotZ": -3.1416,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0.0043,
+    0.799,
+    0.0344
+   ],
+   "size": [
+    0.012,
+    0.12,
+    2.6
+   ],
+   "rotX": 2.5261,
+   "rotY": -0.1236,
+   "rotZ": -3.1416,
+   "kind": "box",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.8,
+    0,
+    -1.8
+   ]
+  },
+  {
+   "p": [
+    1.8,
+    0,
+    -1.8
+   ],
+   "note": "kolem ježku"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Kolize = 6 tenkých desek (skutečný profil), ne plný kvádr: blokuje pohyb, střelbu jen v místě nosníku."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -3,
+    0.5,
+    0.6
+   ],
+   "to": [
+    3,
+    0.5,
+    0.6
+   ],
+   "expect_hit": false,
+   "note": "velké průhledy – střela projde"
+  }
+ ]
+}

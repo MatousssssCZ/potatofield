@@ -1,0 +1,161 @@
+{
+ "schema_version": "1.1",
+ "id": "G167_jersey",
+ "asset_id": "setG.jersey",
+ "label_cs": "G167 Jersey bariéra",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  3,
+  0.7163
+ ],
+ "height_m": 1.0113,
+ "target_m": [
+  3,
+  0.6,
+  1
+ ],
+ "bounds_m": {
+  "min": [
+   -1.5,
+   0,
+   -0.3581
+  ],
+  "max": [
+   1.5,
+   1.0113,
+   0.3581
+  ]
+ },
+ "triangles": {
+  "LOD0": 84
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.04,
+    0
+   ],
+   "size": [
+    3,
+    0.08,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.165,
+    0
+   ],
+   "size": [
+    3,
+    0.33,
+    0.56
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.665,
+    0
+   ],
+   "size": [
+    3,
+    0.67,
+    0.24
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.3,
+    0,
+    0.8
+   ],
+   "note": "za bariérou"
+  },
+  {
+   "p": [
+    1.3,
+    0,
+    0.8
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Kolize = dva kvádry (široký spodek, úzký vršek) – odpovídá lomenému profilu."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    0.8,
+    -3
+   ],
+   "to": [
+    0,
+    0.8,
+    3
+   ],
+   "expect_hit": true,
+   "note": "kryje vkleče"
+  },
+  {
+   "from": [
+    0,
+    0.2,
+    -3
+   ],
+   "to": [
+    0,
+    0.2,
+    3
+   ],
+   "expect_hit": true,
+   "note": "patka kryje vleže"
+  }
+ ]
+}

@@ -1,0 +1,176 @@
+{
+ "schema_version": "1.1",
+ "id": "G163_bagsU",
+ "asset_id": "setG.bagsU",
+ "label_cs": "G163 Stanoviště U z pytlů (pilot)",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.4293,
+  2.2354
+ ],
+ "height_m": 1.0131,
+ "target_m": [
+  2.48,
+  2.23,
+  1.04
+ ],
+ "bounds_m": {
+  "min": [
+   -1.2331,
+   -0.0316,
+   -1.1569
+  ],
+  "max": [
+   1.1962,
+   1.0131,
+   1.0785
+  ]
+ },
+ "triangles": {
+  "LOD0": 5280
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "fabricSand"
+ ],
+ "collision": [
+  {
+   "center": [
+    -0.02,
+    0.5,
+    -0.895
+   ],
+   "size": [
+    2.4,
+    1,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric"
+  },
+  {
+   "center": [
+    -0.97,
+    0.5,
+    0.205
+   ],
+   "size": [
+    0.5,
+    1,
+    1.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric"
+  },
+  {
+   "center": [
+    0.93,
+    0.5,
+    0.205
+   ],
+   "size": [
+    0.5,
+    1,
+    1.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    1.8
+   ],
+   "note": "za stanovištěm"
+  },
+  {
+   "p": [
+    0,
+    0,
+    0.6
+   ],
+   "note": "zadní vstup"
+  },
+  {
+   "p": [
+    -0.1,
+    0,
+    -0.25
+   ],
+   "note": "u čelní hradby"
+  },
+  {
+   "p": [
+    0.2,
+    0,
+    0.5
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Podle pilotu cover_sandbags_c. Vnitřek 1,4 × 1,7 m – stačí na otočení vestoje i vkleče."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    0.8,
+    -3
+   ],
+   "to": [
+    0,
+    0.8,
+    0
+   ],
+   "expect_hit": true,
+   "note": "čelo kryje"
+  },
+  {
+   "from": [
+    3,
+    0.8,
+    0.2
+   ],
+   "to": [
+    0,
+    0.8,
+    0.2
+   ],
+   "expect_hit": true,
+   "note": "bok kryje"
+  }
+ ]
+}

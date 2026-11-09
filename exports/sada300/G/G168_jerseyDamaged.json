@@ -1,0 +1,213 @@
+{
+ "schema_version": "1.1",
+ "id": "G168_jerseyDamaged",
+ "asset_id": "setG.jerseyDamaged",
+ "label_cs": "G168 Poškozená jersey bariéra",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  3.7317,
+  1.1333
+ ],
+ "height_m": 1.0113,
+ "target_m": [
+  3,
+  0.6,
+  1
+ ],
+ "bounds_m": {
+  "min": [
+   -2.2317,
+   -0.0729,
+   -0.7752
+  ],
+  "max": [
+   1.5,
+   1.0113,
+   0.3581
+  ]
+ },
+ "triangles": {
+  "LOD0": 432
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "brick",
+  "concreteDark",
+  "concreteLight",
+  "metalSheetRust"
+ ],
+ "collision": [
+  {
+   "center": [
+    0.125,
+    0.04,
+    0
+   ],
+   "size": [
+    2.75,
+    0.08,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.125,
+    0.165,
+    0
+   ],
+   "size": [
+    2.75,
+    0.33,
+    0.56
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.525,
+    0.665,
+    0
+   ],
+   "size": [
+    1.45,
+    0.67,
+    0.24
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.55,
+    0.465,
+    0
+   ],
+   "size": [
+    0.7,
+    0.27,
+    0.24
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.2,
+    0.665,
+    0
+   ],
+   "size": [
+    0.6,
+    0.67,
+    0.24
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.375,
+    0.225,
+    0
+   ],
+   "size": [
+    0.25,
+    0.45,
+    0.56
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.3,
+    0,
+    0.8
+   ]
+  },
+  {
+   "p": [
+    1.3,
+    0,
+    0.8
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Hlavní hmota zachovaná, výlom 0,7 m je střelecké místo vkleče."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0.55,
+    0.8,
+    -3
+   ],
+   "to": [
+    0.55,
+    0.8,
+    3
+   ],
+   "expect_hit": false,
+   "note": "výlomem vkleče střelba"
+  },
+  {
+   "from": [
+    -0.5,
+    0.8,
+    -3
+   ],
+   "to": [
+    -0.5,
+    0.8,
+    3
+   ],
+   "expect_hit": true,
+   "note": "zbytek kryje"
+  }
+ ]
+}

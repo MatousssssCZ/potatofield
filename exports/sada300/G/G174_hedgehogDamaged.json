@@ -1,0 +1,230 @@
+{
+ "schema_version": "1.1",
+ "id": "G174_hedgehogDamaged",
+ "asset_id": "setG.hedgehogDamaged",
+ "label_cs": "G174 Poškozený ježek",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.0719,
+  1.7683
+ ],
+ "height_m": 1.7932,
+ "target_m": [
+  2.2,
+  2.2,
+  1.5
+ ],
+ "bounds_m": {
+  "min": [
+   -1.0296,
+   -0.28,
+   -0.8516
+  ],
+  "max": [
+   1.0423,
+   1.7932,
+   0.9167
+  ]
+ },
+ "triangles": {
+  "LOD0": 96
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "metalSheetRust"
+ ],
+ "collision": [
+  {
+   "center": [
+    0.0311,
+    0.72,
+    -0.0513
+   ],
+   "size": [
+    0.12,
+    0.012,
+    2.6
+   ],
+   "rotX": -0.4963,
+   "rotY": 1.026,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.0244,
+    0.7728,
+    -0.0148
+   ],
+   "size": [
+    0.012,
+    0.12,
+    2.6
+   ],
+   "rotX": -0.4963,
+   "rotY": 1.026,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0.4649,
+    0.4396,
+    -0.3624
+   ],
+   "size": [
+    0.12,
+    0.012,
+    1.3
+   ],
+   "rotX": -0.446,
+   "rotY": -0.8067,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0.4421,
+    0.4937,
+    -0.4236
+   ],
+   "size": [
+    0.012,
+    0.12,
+    1.3
+   ],
+   "rotX": -0.446,
+   "rotY": -0.8067,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.3607,
+    0.7754,
+    0.4288
+   ],
+   "size": [
+    0.12,
+    0.012,
+    1.1197
+   ],
+   "rotX": -0.0991,
+   "rotY": -0.8067,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.3979,
+    0.8351,
+    0.3813
+   ],
+   "size": [
+    0.012,
+    0.12,
+    1.1197
+   ],
+   "rotX": -0.0991,
+   "rotY": -0.8067,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.0593,
+    0.72,
+    0.0094
+   ],
+   "size": [
+    0.12,
+    0.012,
+    2.6
+   ],
+   "rotX": 2.2686,
+   "rotY": -0.1573,
+   "rotZ": -3.1416,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0.0072,
+    0.7586,
+    0.0454
+   ],
+   "size": [
+    0.012,
+    0.12,
+    2.6
+   ],
+   "rotX": 2.2686,
+   "rotY": -0.1573,
+   "rotZ": -3.1416,
+   "kind": "box",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.8,
+    0,
+    -1.8
+   ]
+  },
+  {
+   "p": [
+    1.8,
+    0,
+    -1.8
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Bez obalové kolize – jen desky nosníků."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -3,
+    0.5,
+    0.6
+   ],
+   "to": [
+    3,
+    0.5,
+    0.6
+   ],
+   "expect_hit": false,
+   "note": "průhledy zachované"
+  }
+ ]
+}

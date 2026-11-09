@@ -1,0 +1,273 @@
+{
+ "schema_version": "1.1",
+ "id": "G183_pipeShort",
+ "asset_id": "setG.pipeShort",
+ "label_cs": "G183 Krátká betonová roura",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.6,
+  2.5
+ ],
+ "height_m": 2.6,
+ "target_m": [
+  2.6,
+  2.5,
+  2.6
+ ],
+ "bounds_m": {
+  "min": [
+   -1.3,
+   0,
+   -1.25
+  ],
+  "max": [
+   1.3,
+   2.6,
+   1.25
+  ]
+ },
+ "triangles": {
+  "LOD0": 228
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    0.8485,
+    0.4515,
+    0
+   ],
+   "size": [
+    1.1078,
+    0.2,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0.7854,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.2,
+    1.3,
+    0
+   ],
+   "size": [
+    1.1078,
+    0.2,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.8485,
+    2.1485,
+    0
+   ],
+   "size": [
+    1.1078,
+    0.2,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 2.3562,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    2.5,
+    0
+   ],
+   "size": [
+    1.1078,
+    0.2,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 3.1416,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.8485,
+    2.1485,
+    0
+   ],
+   "size": [
+    1.1078,
+    0.2,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": -2.3562,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.2,
+    1.3,
+    0
+   ],
+   "size": [
+    1.1078,
+    0.2,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": -1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.8485,
+    0.4515,
+    0
+   ],
+   "size": [
+    1.1078,
+    0.2,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": -0.7854,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.1,
+    0
+   ],
+   "size": [
+    1.1078,
+    0.2,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.23,
+    0
+   ],
+   "size": [
+    1.1,
+    0.06,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2.2
+   ],
+   "note": "před rourou"
+  },
+  {
+   "p": [
+    0,
+    0.26,
+    0
+   ],
+   "note": "uvnitř"
+  },
+  {
+   "p": [
+    0,
+    0,
+    2.2
+   ],
+   "note": "ven"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Kapsle stojícího hráče (1,8 m) prochází uvnitř – ověřeno trasou. Kolize: 8 desek tečných k vnitřnímu líci, vnitřek nikde užší než kruh."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -3,
+    1.2,
+    0
+   ],
+   "to": [
+    0,
+    1.2,
+    0
+   ],
+   "expect_hit": true,
+   "note": "stěna roury kryje"
+  },
+  {
+   "from": [
+    0,
+    1.2,
+    -3
+   ],
+   "to": [
+    0,
+    1.2,
+    3
+   ],
+   "expect_hit": false,
+   "note": "podélně průstřelná"
+  }
+ ]
+}

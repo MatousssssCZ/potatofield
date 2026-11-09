@@ -1,0 +1,176 @@
+{
+ "schema_version": "1.1",
+ "id": "G178_rubbleBerm",
+ "asset_id": "setG.rubbleBerm",
+ "label_cs": "G178 Podlouhlá betonová suť",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  6.415,
+  1.7541
+ ],
+ "height_m": 1.1318,
+ "target_m": [
+  6,
+  2,
+  1.1
+ ],
+ "bounds_m": {
+  "min": [
+   -3.2309,
+   -0.1248,
+   -0.935
+  ],
+  "max": [
+   3.1841,
+   1.1318,
+   0.8191
+  ]
+ },
+ "triangles": {
+  "LOD0": 1352
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight"
+ ],
+ "collision": [
+  {
+   "center": [
+    -2.25,
+    0.4512,
+    -0.1314
+   ],
+   "size": [
+    1.9,
+    1.1442,
+    1.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.75,
+    0.5199,
+    0.0064
+   ],
+   "size": [
+    1.9,
+    1.0014,
+    1.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.75,
+    0.4966,
+    -0.078
+   ],
+   "size": [
+    1.9,
+    1.0383,
+    1.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    2.25,
+    0.523,
+    -0.0727
+   ],
+   "size": [
+    1.9,
+    0.939,
+    1.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -2.8,
+    0,
+    1.4
+   ],
+   "note": "za valem"
+  },
+  {
+   "p": [
+    2.8,
+    0,
+    1.4
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -1,
+    0.5,
+    -3
+   ],
+   "to": [
+    -1,
+    0.5,
+    3
+   ],
+   "expect_hit": true,
+   "note": "kryje vleže / vkleče"
+  },
+  {
+   "from": [
+    1.5,
+    0.5,
+    -3
+   ],
+   "to": [
+    1.5,
+    0.5,
+    3
+   ],
+   "expect_hit": true,
+   "note": ""
+  }
+ ]
+}

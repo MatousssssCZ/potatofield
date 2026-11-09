@@ -1,0 +1,276 @@
+{
+ "section": "G",
+ "generated": "2026-11-09",
+ "models": [
+  {
+   "item": 161,
+   "id": "G161_bagsStraight",
+   "asset_id": "setG.bagsStraight",
+   "label": "G161 Rovný kryt z pytlů (pilot)",
+   "glb": "G161_bagsStraight.glb",
+   "json": "G161_bagsStraight.json",
+   "render": "renders/G161.jpg"
+  },
+  {
+   "item": 162,
+   "id": "G162_bagsCorner",
+   "asset_id": "setG.bagsCorner",
+   "label": "G162 Rohový kryt z pytlů (pilot)",
+   "glb": "G162_bagsCorner.glb",
+   "json": "G162_bagsCorner.json",
+   "render": "renders/G162.jpg"
+  },
+  {
+   "item": 163,
+   "id": "G163_bagsU",
+   "asset_id": "setG.bagsU",
+   "label": "G163 Stanoviště U z pytlů (pilot)",
+   "glb": "G163_bagsU.glb",
+   "json": "G163_bagsU.json",
+   "render": "renders/G163.jpg"
+  },
+  {
+   "item": 164,
+   "id": "G164_bagsArc",
+   "asset_id": "setG.bagsArc",
+   "label": "G164 Obloukový kryt z pytlů",
+   "glb": "G164_bagsArc.glb",
+   "json": "G164_bagsArc.json",
+   "render": "renders/G164.jpg"
+  },
+  {
+   "item": 165,
+   "id": "G165_mgNest",
+   "asset_id": "setG.mgNest",
+   "label": "G165 Kulometné hnízdo",
+   "glb": "G165_mgNest.glb",
+   "json": "G165_mgNest.json",
+   "render": "renders/G165.jpg"
+  },
+  {
+   "item": 166,
+   "id": "G166_bagsDamaged",
+   "asset_id": "setG.bagsDamaged",
+   "label": "G166 Poškozené pytlové opevnění",
+   "glb": "G166_bagsDamaged.glb",
+   "json": "G166_bagsDamaged.json",
+   "render": "renders/G166.jpg"
+  },
+  {
+   "item": 167,
+   "id": "G167_jersey",
+   "asset_id": "setG.jersey",
+   "label": "G167 Jersey bariéra",
+   "glb": "G167_jersey.glb",
+   "json": "G167_jersey.json",
+   "render": "renders/G167.jpg"
+  },
+  {
+   "item": 168,
+   "id": "G168_jerseyDamaged",
+   "asset_id": "setG.jerseyDamaged",
+   "label": "G168 Poškozená jersey bariéra",
+   "glb": "G168_jerseyDamaged.glb",
+   "json": "G168_jerseyDamaged.json",
+   "render": "renders/G168.jpg"
+  },
+  {
+   "item": 169,
+   "id": "G169_jerseyFence",
+   "asset_id": "setG.jerseyFence",
+   "label": "G169 Jersey bariéra s plotem",
+   "glb": "G169_jerseyFence.glb",
+   "json": "G169_jerseyFence.json",
+   "render": "renders/G169.jpg"
+  },
+  {
+   "item": 170,
+   "id": "G170_blockLow",
+   "asset_id": "setG.blockLow",
+   "label": "G170 Nízký betonový blok",
+   "glb": "G170_blockLow.glb",
+   "json": "G170_blockLow.json",
+   "render": "renders/G170.jpg"
+  },
+  {
+   "item": 171,
+   "id": "G171_blockHigh",
+   "asset_id": "setG.blockHigh",
+   "label": "G171 Vysoký betonový blok",
+   "glb": "G171_blockHigh.glb",
+   "json": "G171_blockHigh.json",
+   "render": "renders/G171.jpg"
+  },
+  {
+   "item": 172,
+   "id": "G172_blockCube",
+   "asset_id": "setG.blockCube",
+   "label": "G172 Betonová kostka",
+   "glb": "G172_blockCube.glb",
+   "json": "G172_blockCube.json",
+   "render": "renders/G172.jpg"
+  },
+  {
+   "item": 173,
+   "id": "G173_hedgehog",
+   "asset_id": "setG.hedgehog",
+   "label": "G173 Protitankový ježek",
+   "glb": "G173_hedgehog.glb",
+   "json": "G173_hedgehog.json",
+   "render": "renders/G173.jpg"
+  },
+  {
+   "item": 174,
+   "id": "G174_hedgehogDamaged",
+   "asset_id": "setG.hedgehogDamaged",
+   "label": "G174 Poškozený ježek",
+   "glb": "G174_hedgehogDamaged.glb",
+   "json": "G174_hedgehogDamaged.json",
+   "render": "renders/G174.jpg"
+  },
+  {
+   "item": 175,
+   "id": "G175_rubbleSmall",
+   "asset_id": "setG.rubbleSmall",
+   "label": "G175 Malá hromada sutě",
+   "glb": "G175_rubbleSmall.glb",
+   "json": "G175_rubbleSmall.json",
+   "render": "renders/G175.jpg"
+  },
+  {
+   "item": 176,
+   "id": "G176_rubbleRebar",
+   "asset_id": "setG.rubbleRebar",
+   "label": "G176 Velká suť s armaturou",
+   "glb": "G176_rubbleRebar.glb",
+   "json": "G176_rubbleRebar.json",
+   "render": "renders/G176.jpg"
+  },
+  {
+   "item": 177,
+   "id": "G177_wallCollapse",
+   "asset_id": "setG.wallCollapse",
+   "label": "G177 Zřícený úsek zdi",
+   "glb": "G177_wallCollapse.glb",
+   "json": "G177_wallCollapse.json",
+   "render": "renders/G177.jpg"
+  },
+  {
+   "item": 178,
+   "id": "G178_rubbleBerm",
+   "asset_id": "setG.rubbleBerm",
+   "label": "G178 Podlouhlá betonová suť",
+   "glb": "G178_rubbleBerm.glb",
+   "json": "G178_rubbleBerm.json",
+   "render": "renders/G178.jpg"
+  },
+  {
+   "item": 179,
+   "id": "G179_barricadeCarTires",
+   "asset_id": "setG.barricadeCarTires",
+   "label": "G179 Barikáda z auta a pneumatik",
+   "glb": "G179_barricadeCarTires.glb",
+   "json": "G179_barricadeCarTires.json",
+   "render": "renders/G179.jpg"
+  },
+  {
+   "item": 180,
+   "id": "G180_barricadeTwoCars",
+   "asset_id": "setG.barricadeTwoCars",
+   "label": "G180 Barikáda ze dvou vraků",
+   "glb": "G180_barricadeTwoCars.glb",
+   "json": "G180_barricadeTwoCars.json",
+   "render": "renders/G180.jpg"
+  },
+  {
+   "item": 181,
+   "id": "G181_barricadeTables",
+   "asset_id": "setG.barricadeTables",
+   "label": "G181 Barikáda ze stolů a dveří",
+   "glb": "G181_barricadeTables.glb",
+   "json": "G181_barricadeTables.json",
+   "render": "renders/G181.jpg"
+  },
+  {
+   "item": 182,
+   "id": "G182_barricadeWardrobes",
+   "asset_id": "setG.barricadeWardrobes",
+   "label": "G182 Barikáda ze skříní",
+   "glb": "G182_barricadeWardrobes.glb",
+   "json": "G182_barricadeWardrobes.json",
+   "render": "renders/G182.jpg"
+  },
+  {
+   "item": 183,
+   "id": "G183_pipeShort",
+   "asset_id": "setG.pipeShort",
+   "label": "G183 Krátká betonová roura",
+   "glb": "G183_pipeShort.glb",
+   "json": "G183_pipeShort.json",
+   "render": "renders/G183.jpg"
+  },
+  {
+   "item": 184,
+   "id": "G184_pipeLong",
+   "asset_id": "setG.pipeLong",
+   "label": "G184 Dlouhá betonová roura",
+   "glb": "G184_pipeLong.glb",
+   "json": "G184_pipeLong.json",
+   "render": "renders/G184.jpg"
+  },
+  {
+   "item": 185,
+   "id": "G185_cratesLow",
+   "asset_id": "setG.cratesLow",
+   "label": "G185 Nízký stoh beden",
+   "glb": "G185_cratesLow.glb",
+   "json": "G185_cratesLow.json",
+   "render": "renders/G185.jpg"
+  },
+  {
+   "item": 186,
+   "id": "G186_cratesMid",
+   "asset_id": "setG.cratesMid",
+   "label": "G186 Střední stoh beden",
+   "glb": "G186_cratesMid.glb",
+   "json": "G186_cratesMid.json",
+   "render": "renders/G186.jpg"
+  },
+  {
+   "item": 187,
+   "id": "G187_cratesHigh",
+   "asset_id": "setG.cratesHigh",
+   "label": "G187 Vysoký stoh beden",
+   "glb": "G187_cratesHigh.glb",
+   "json": "G187_cratesHigh.json",
+   "render": "renders/G187.jpg"
+  },
+  {
+   "item": 188,
+   "id": "G188_tireWall",
+   "asset_id": "setG.tireWall",
+   "label": "G188 Zeď z pneumatik",
+   "glb": "G188_tireWall.glb",
+   "json": "G188_tireWall.json",
+   "render": "renders/G188.jpg"
+  },
+  {
+   "item": 189,
+   "id": "G189_bermLow",
+   "asset_id": "setG.bermLow",
+   "label": "G189 Nízký hliněný val",
+   "glb": "G189_bermLow.glb",
+   "json": "G189_bermLow.json",
+   "render": "renders/G189.jpg"
+  },
+  {
+   "item": 190,
+   "id": "G190_bermHigh",
+   "asset_id": "setG.bermHigh",
+   "label": "G190 Vysoký hliněný val",
+   "glb": "G190_bermHigh.glb",
+   "json": "G190_bermHigh.json",
+   "render": "renders/G190.jpg"
+  }
+ ]
+}

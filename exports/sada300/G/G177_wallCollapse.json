@@ -1,0 +1,181 @@
+{
+ "schema_version": "1.1",
+ "id": "G177_wallCollapse",
+ "asset_id": "setG.wallCollapse",
+ "label_cs": "G177 Zřícený úsek zdi",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  5.0992,
+  1.8941
+ ],
+ "height_m": 2,
+ "target_m": [
+  5,
+  2,
+  2
+ ],
+ "bounds_m": {
+  "min": [
+   -2.5,
+   -0.0024,
+   -0.8726
+  ],
+  "max": [
+   2.5992,
+   2,
+   1.0215
+  ]
+ },
+ "triangles": {
+  "LOD0": 464
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "brick",
+  "concreteDark",
+  "concreteLight",
+  "plasterWarm"
+ ],
+ "collision": [
+  {
+   "center": [
+    1.2,
+    0.35,
+    0.1
+   ],
+   "size": [
+    2.6,
+    0.7,
+    1.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.7,
+    1,
+    0
+   ],
+   "size": [
+    1.6,
+    2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.6,
+    0.7,
+    0
+   ],
+   "size": [
+    0.6,
+    1.4,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.05,
+    0.4,
+    0
+   ],
+   "size": [
+    0.5,
+    0.8,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -2,
+    0,
+    1
+   ],
+   "note": "za stojící zdí"
+  },
+  {
+   "p": [
+    2.2,
+    0,
+    1.4
+   ],
+   "note": "za sutí"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Silueta klesá 2,0 → 1,4 → 0,8 m a pak suť 0,7 m."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -1.7,
+    1.7,
+    -3
+   ],
+   "to": [
+    -1.7,
+    1.7,
+    3
+   ],
+   "expect_hit": true,
+   "note": "zbytek zdi kryje stojícího"
+  },
+  {
+   "from": [
+    1.2,
+    0.4,
+    -3
+   ],
+   "to": [
+    1.2,
+    0.4,
+    3
+   ],
+   "expect_hit": true,
+   "note": "suť kryje vleže"
+  }
+ ]
+}

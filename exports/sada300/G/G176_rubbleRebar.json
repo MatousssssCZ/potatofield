@@ -1,0 +1,165 @@
+{
+ "schema_version": "1.1",
+ "id": "G176_rubbleRebar",
+ "asset_id": "setG.rubbleRebar",
+ "label_cs": "G176 Velká suť s armaturou",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  3.7554,
+  2.9632
+ ],
+ "height_m": 2.2516,
+ "target_m": [
+  4,
+  3,
+  1.8
+ ],
+ "bounds_m": {
+  "min": [
+   -1.8503,
+   -0.0023,
+   -1.4163
+  ],
+  "max": [
+   1.9051,
+   2.2516,
+   1.5468
+  ]
+ },
+ "triangles": {
+  "LOD0": 632
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "metalSheetRust"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.4,
+    0.2
+   ],
+   "size": [
+    3.6,
+    0.8,
+    2.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.3,
+    1,
+    -0.4
+   ],
+   "size": [
+    2.6,
+    0.22,
+    1.9
+   ],
+   "rotX": -0.8993,
+   "rotY": 0.1558,
+   "rotZ": -0.0679,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.1696,
+    0.5186,
+    1.1815
+   ],
+   "size": [
+    0.7,
+    0.3,
+    0.5
+   ],
+   "rotX": 1.5102,
+   "rotY": 1.4661,
+   "rotZ": 1.5092,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.0122,
+    0.572,
+    0.8427
+   ],
+   "size": [
+    0.7,
+    0.3,
+    0.5
+   ],
+   "rotX": -0.0215,
+   "rotY": 0.7998,
+   "rotZ": -0.2592,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -2.6,
+    0,
+    1.8
+   ],
+   "note": "za sutí"
+  },
+  {
+   "p": [
+    2.6,
+    0,
+    1.8
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Armatura bez kolize; deska a výplň s kolizí (výplň je konvexní objem)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -0.3,
+    1.4,
+    -3
+   ],
+   "to": [
+    -0.3,
+    1.4,
+    2
+   ],
+   "expect_hit": true,
+   "note": "deska kryje stojícího"
+  }
+ ]
+}

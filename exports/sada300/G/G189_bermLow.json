@@ -1,0 +1,155 @@
+{
+ "schema_version": "1.1",
+ "id": "G189_bermLow",
+ "asset_id": "setG.bermLow",
+ "label_cs": "G189 Nízký hliněný val",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  6.7857,
+  2.5
+ ],
+ "height_m": 1.0855,
+ "target_m": [
+  6,
+  2.5,
+  1.1
+ ],
+ "bounds_m": {
+  "min": [
+   -3.398,
+   -0.0271,
+   -1.25
+  ],
+  "max": [
+   3.3877,
+   1.0855,
+   1.25
+  ]
+ },
+ "triangles": {
+  "LOD0": 2268
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "dirt"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.4334,
+    -0.6395
+   ],
+   "size": [
+    6,
+    0.18,
+    1.4866
+   ],
+   "rotX": -0.7378,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "ramp",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.4334,
+    0.6395
+   ],
+   "size": [
+    6,
+    0.18,
+    1.4866
+   ],
+   "rotX": 2.4038,
+   "rotY": 0,
+   "rotZ": 3.1416,
+   "kind": "ramp",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.5,
+    0
+   ],
+   "size": [
+    6,
+    1,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2.2
+   ],
+   "note": "před valem"
+  },
+  {
+   "p": [
+    0,
+    1,
+    0
+   ],
+   "note": "na valu (přes svah)"
+  },
+  {
+   "p": [
+    0,
+    0,
+    2.2
+   ],
+   "note": "za valem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Kolize svahů = klíny (sklon 42°) – pohyb odpovídá svahu, nahoru se dá vyjít."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    0.6,
+    -3
+   ],
+   "to": [
+    0,
+    0.6,
+    3
+   ],
+   "expect_hit": true,
+   "note": "val kryje vleže / vkleče"
+  }
+ ]
+}

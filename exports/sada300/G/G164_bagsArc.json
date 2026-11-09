@@ -1,0 +1,236 @@
+{
+ "schema_version": "1.1",
+ "id": "G164_bagsArc",
+ "asset_id": "setG.bagsArc",
+ "label_cs": "G164 Obloukový kryt z pytlů",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  3.4266,
+  1.7918
+ ],
+ "height_m": 1.0182,
+ "target_m": [
+  3.5,
+  2,
+  1.04
+ ],
+ "bounds_m": {
+  "min": [
+   -1.7346,
+   -0.0327,
+   -0.9724
+  ],
+  "max": [
+   1.692,
+   1.0182,
+   0.8194
+  ]
+ },
+ "triangles": {
+  "LOD0": 5040
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "fabricSand"
+ ],
+ "collision": [
+  {
+   "center": [
+    -1.4257,
+    0.5,
+    0.4246
+   ],
+   "size": [
+    0.5,
+    1,
+    0.7477
+   ],
+   "rotX": 3.1416,
+   "rotY": 0.2244,
+   "rotZ": 3.1416,
+   "kind": "box",
+   "surface": "fabric"
+  },
+  {
+   "center": [
+    -1.1433,
+    0.5,
+    -0.1618
+   ],
+   "size": [
+    0.5,
+    1,
+    0.7477
+   ],
+   "rotX": 3.1416,
+   "rotY": 0.6732,
+   "rotZ": 3.1416,
+   "kind": "box",
+   "surface": "fabric"
+  },
+  {
+   "center": [
+    -0.6345,
+    0.5,
+    -0.5676
+   ],
+   "size": [
+    0.5,
+    1,
+    0.7477
+   ],
+   "rotX": 3.1416,
+   "rotY": 1.122,
+   "rotZ": 3.1416,
+   "kind": "box",
+   "surface": "fabric"
+  },
+  {
+   "center": [
+    0,
+    0.5,
+    -0.7124
+   ],
+   "size": [
+    0.5,
+    1,
+    0.7477
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric"
+  },
+  {
+   "center": [
+    0.6345,
+    0.5,
+    -0.5676
+   ],
+   "size": [
+    0.5,
+    1,
+    0.7477
+   ],
+   "rotX": 0,
+   "rotY": 1.122,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric"
+  },
+  {
+   "center": [
+    1.1433,
+    0.5,
+    -0.1618
+   ],
+   "size": [
+    0.5,
+    1,
+    0.7477
+   ],
+   "rotX": 0,
+   "rotY": 0.6732,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric"
+  },
+  {
+   "center": [
+    1.4257,
+    0.5,
+    0.4246
+   ],
+   "size": [
+    0.5,
+    1,
+    0.7477
+   ],
+   "rotX": 0,
+   "rotY": 0.2244,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    1.5
+   ],
+   "note": "za krytem"
+  },
+  {
+   "p": [
+    0,
+    0,
+    0.2
+   ],
+   "note": "uvnitř oblouku"
+  },
+  {
+   "p": [
+    -0.6,
+    0,
+    0.5
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "7 rovných úseků po oblouku, kolize = 7 natočených kvádrů s malým přesahem v kloubech."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    0.8,
+    -3
+   ],
+   "to": [
+    0,
+    0.8,
+    0
+   ],
+   "expect_hit": true,
+   "note": "čelo oblouku kryje"
+  },
+  {
+   "from": [
+    -3,
+    0.8,
+    0.3
+   ],
+   "to": [
+    0,
+    0.8,
+    0.3
+   ],
+   "expect_hit": true,
+   "note": "bok oblouku kryje"
+  }
+ ]
+}

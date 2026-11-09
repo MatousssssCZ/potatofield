@@ -1,0 +1,146 @@
+{
+ "schema_version": "1.1",
+ "id": "G175_rubbleSmall",
+ "asset_id": "setG.rubbleSmall",
+ "label_cs": "G175 Malá hromada sutě",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.1644,
+  1.7314
+ ],
+ "height_m": 0.8345,
+ "target_m": [
+  2,
+  1.5,
+  0.8
+ ],
+ "bounds_m": {
+  "min": [
+   -1.1419,
+   -0.0913,
+   -0.8158
+  ],
+  "max": [
+   1.0225,
+   0.8345,
+   0.9155
+  ]
+ },
+ "triangles": {
+  "LOD0": 380
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.3,
+    0
+   ],
+   "size": [
+    1.9,
+    0.6,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.6348,
+    0.3186,
+    0.4292
+   ],
+   "size": [
+    0.8796,
+    0.2982,
+    0.5217
+   ],
+   "rotX": 0.0015,
+   "rotY": 0.7202,
+   "rotZ": 0.0331,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.2988,
+    0.3773,
+    -0.3096
+   ],
+   "size": [
+    0.9056,
+    0.2978,
+    0.4591
+   ],
+   "rotX": -0.1319,
+   "rotY": 0.8771,
+   "rotZ": -0.0839,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.6,
+    0,
+    1.2
+   ]
+  },
+  {
+   "p": [
+    1.6,
+    0,
+    1.2
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Výplň = jeden konvexní objem (kolize), dva velké kusy mají vlastní kolizi, zbytek vzhled."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    0.35,
+    -3
+   ],
+   "to": [
+    0,
+    0.35,
+    3
+   ],
+   "expect_hit": true,
+   "note": "kryje vleže"
+  }
+ ]
+}

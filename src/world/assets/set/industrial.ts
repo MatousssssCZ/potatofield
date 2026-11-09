@@ -24,7 +24,7 @@ const RUST = 'metalSheetRust';
  * Natočení R = Ry(yaw) · Rx(a) převedené na Eulerovy úhly v pořadí XYZ (jako Three.js a
  * quatFromEuler), aby šikmé nosníky mířily správně i při současném natočení.
  */
-function eulerYX(yaw: number, a: number): V3 {
+export function eulerYX(yaw: number, a: number): V3 {
   const c = Math.cos(yaw), s = Math.sin(yaw), ca = Math.cos(a), sa = Math.sin(a);
   const m13 = s * ca;
   if (Math.abs(m13) < 0.9999999) return [Math.atan2(sa, c * ca), Math.asin(m13), Math.atan2(-s * sa, c)];

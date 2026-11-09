@@ -1,0 +1,182 @@
+{
+ "schema_version": "1.1",
+ "id": "G179_barricadeCarTires",
+ "asset_id": "setG.barricadeCarTires",
+ "label_cs": "G179 Barikáda z auta a pneumatik",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  5.6,
+  1.79
+ ],
+ "height_m": 1.4177,
+ "target_m": [
+  5.8,
+  1.8,
+  1.45
+ ],
+ "bounds_m": {
+  "min": [
+   -2.84,
+   0.0075,
+   -0.895
+  ],
+  "max": [
+   2.76,
+   1.4177,
+   0.895
+  ]
+ },
+ "triangles": {
+  "LOD0": 1096
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "glass",
+  "gunMetal",
+  "metal",
+  "paintedMetalBlue",
+  "rubber"
+ ],
+ "collision": [
+  {
+   "center": [
+    2.3,
+    0.55,
+    -0.3
+   ],
+   "size": [
+    0.68,
+    1.1,
+    0.68
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    2.4,
+    0.44,
+    0.45
+   ],
+   "size": [
+    0.68,
+    0.88,
+    0.68
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.6,
+    0.875,
+    0
+   ],
+   "size": [
+    4.4,
+    0.55,
+    1.75
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.55,
+    0.325,
+    0
+   ],
+   "size": [
+    2.1,
+    0.55,
+    1.51
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -2.4,
+    0,
+    1.6
+   ],
+   "note": "za vrakem"
+  },
+  {
+   "p": [
+    2.4,
+    0,
+    1.6
+   ],
+   "note": "za pneumatikami"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Vrak je zjednodušený (karoserie, kabina, kola); podrobné vraky přijdou v sekci H."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -0.6,
+    0.9,
+    -3
+   ],
+   "to": [
+    -0.6,
+    0.9,
+    3
+   ],
+   "expect_hit": true,
+   "note": "vrak kryje vkleče"
+  },
+  {
+   "from": [
+    2.3,
+    0.8,
+    -3
+   ],
+   "to": [
+    2.3,
+    0.8,
+    3
+   ],
+   "expect_hit": true,
+   "note": "pneumatiky kryjí"
+  }
+ ]
+}

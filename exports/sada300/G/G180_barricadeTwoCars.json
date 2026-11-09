@@ -1,0 +1,190 @@
+{
+ "schema_version": "1.1",
+ "id": "G180_barricadeTwoCars",
+ "asset_id": "setG.barricadeTwoCars",
+ "label_cs": "G180 Barikáda ze dvou vraků",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  10.9742,
+  3.5527
+ ],
+ "height_m": 1.4,
+ "target_m": [
+  10.6,
+  3.2,
+  1.45
+ ],
+ "bounds_m": {
+  "min": [
+   -5.4871,
+   0.0123,
+   -1.7763
+  ],
+  "max": [
+   5.4871,
+   1.4,
+   1.7763
+  ]
+ },
+ "triangles": {
+  "LOD0": 536
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "burntMetal",
+  "glass",
+  "metal",
+  "paintedMetalBlue",
+  "rubber"
+ ],
+ "collision": [
+  {
+   "center": [
+    -3.1,
+    0.575,
+    0.2
+   ],
+   "size": [
+    4.4,
+    0.55,
+    1.75
+   ],
+   "rotX": 0,
+   "rotY": 0.35,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -3.053,
+    1.125,
+    0.1829
+   ],
+   "size": [
+    2.1,
+    0.55,
+    1.51
+   ],
+   "rotX": 0,
+   "rotY": 0.35,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    3.1,
+    0.575,
+    -0.2
+   ],
+   "size": [
+    4.4,
+    0.55,
+    1.75
+   ],
+   "rotX": 0,
+   "rotY": -0.35,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    3.147,
+    1.125,
+    -0.1829
+   ],
+   "size": [
+    2.1,
+    0.55,
+    1.51
+   ],
+   "rotX": 0,
+   "rotY": -0.35,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2.5
+   ],
+   "note": "před barikádou"
+  },
+  {
+   "p": [
+    0,
+    0,
+    0
+   ],
+   "note": "pěší průchod"
+  },
+  {
+   "p": [
+    0,
+    0,
+    2.5
+   ],
+   "note": "za barikádou"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Kolize vraků = 2 natočené kvádry na vůz; průchod mezi předky ≥ 1,4 m (ověřeno trasou)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -3.4,
+    0.9,
+    -3
+   ],
+   "to": [
+    -3.4,
+    0.9,
+    3
+   ],
+   "expect_hit": true,
+   "note": "vrak kryje"
+  },
+  {
+   "from": [
+    0,
+    1,
+    -3
+   ],
+   "to": [
+    0,
+    1,
+    3
+   ],
+   "expect_hit": false,
+   "note": "průchod"
+  }
+ ]
+}

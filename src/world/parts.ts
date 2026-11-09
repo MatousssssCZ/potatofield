@@ -35,6 +35,8 @@ export interface Part {
   /** Blob: semínko deformace a hrbolatost (0–1). Tvar = deformovaná koule s rozměry `size`. */
   seed?: number;
   rough?: number;
+  /** Jemnost sítě blobu (úroveň ikosféry, výchozí 2 = 320 trojúhelníků; 1 = 80). */
+  detail?: number;
   /** Válec: poměr horního poloměru ke spodnímu (zúžení kmene), výchozí 1. */
   taper?: number;
   /** Karta (oboustranný obdélník v rovině XY, délka podél +Y): průhyb konce k −Z v metrech. */

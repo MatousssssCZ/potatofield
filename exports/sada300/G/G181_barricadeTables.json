@@ -1,0 +1,212 @@
+{
+ "schema_version": "1.1",
+ "id": "G181_barricadeTables",
+ "asset_id": "setG.barricadeTables",
+ "label_cs": "G181 Barikáda ze stolů a dveří",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  3.2257,
+  1.1692
+ ],
+ "height_m": 1.9719,
+ "target_m": [
+  3,
+  1.2,
+  1.4
+ ],
+ "bounds_m": {
+  "min": [
+   -1.5,
+   -0.0119,
+   -0.1192
+  ],
+  "max": [
+   1.7257,
+   1.9719,
+   1.05
+  ]
+ },
+ "triangles": {
+  "LOD0": 120
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "wood",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    0.3,
+    0.98,
+    0.18
+   ],
+   "size": [
+    0.85,
+    2,
+    0.05
+   ],
+   "rotX": 0.2002,
+   "rotY": -0.0479,
+   "rotZ": -0.0097,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.8,
+    0.98,
+    0.18
+   ],
+   "size": [
+    0.85,
+    2,
+    0.05
+   ],
+   "rotX": 0.2602,
+   "rotY": -0.0423,
+   "rotZ": -0.0113,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    1.3,
+    0.98,
+    0.18
+   ],
+   "size": [
+    0.85,
+    2,
+    0.05
+   ],
+   "rotX": 0.1802,
+   "rotY": 0.0469,
+   "rotZ": 0.0085,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -0.8,
+    0.4,
+    -0.025
+   ],
+   "size": [
+    1.4,
+    0.8,
+    0.05
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.8,
+    0.3,
+    0.75
+   ],
+   "size": [
+    0.6,
+    0.6,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -0.8,
+    0.25,
+    0.6
+   ],
+   "size": [
+    0.5,
+    0.5,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.2,
+    0,
+    1.5
+   ],
+   "note": "za barikádou"
+  },
+  {
+   "p": [
+    1.2,
+    0,
+    1.5
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Měkký kryt (dřevo) – v herních datech povrch wood."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -0.8,
+    0.6,
+    -3
+   ],
+   "to": [
+    -0.8,
+    0.6,
+    3
+   ],
+   "expect_hit": true,
+   "note": "deska stolu kryje"
+  },
+  {
+   "from": [
+    0.8,
+    1.2,
+    -3
+   ],
+   "to": [
+    0.8,
+    1.2,
+    3
+   ],
+   "expect_hit": true,
+   "note": "dveře kryjí"
+  }
+ ]
+}

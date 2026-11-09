@@ -186,7 +186,7 @@ function addBlob(b: Builder, part: Part, scale: number) {
   const m = partMatrix(part, scale).clone();
   const nm = _n.getNormalMatrix(m).clone();
   const hx = part.size[0] / 2, hy = part.size[1] / 2, hz = part.size[2] / 2;
-  const { verts, faces } = icosphere(2);
+  const { verts, faces } = icosphere(part.detail ?? 2);
   const seed = part.seed ?? 1, rough = part.rough ?? 0.5;
   const P = verts.map((d) => {
     const r = blobRadius(d, seed, rough);

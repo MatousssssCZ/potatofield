@@ -68,6 +68,11 @@ Přízemní budovy zůstávají přístupné; jejich kolize se slučují (stejn�
   zídky (rovná, rohová, zbořená), betonové T-stěny, pletivové ploty s ostnatým vrškem (rovný,
   rohový, brána), plechové a dřevěné ploty (i poškozené s průchodem), kovové zábradlí a tři
   posuvné brány (kolejnice bez kolize).
+- **G161–G190 (kryty a barikády):** pytle podle pilotů (rovný, L, U) jako stlačené vaky
+  v převázaných řadách, oblouk, kulometné hnízdo, poškozené pytle, jersey bariéry (lomený
+  profil, poškozená, s pletivem), betonové bloky a kostka, protitankové ježky z úhelníků (velké
+  průhledy), čtyři typy suti, barikády z vraků, stolů a skříní, betonové roury (průchozí),
+  stohy beden, zeď z pneumatik a hliněné valy (nízký se dá vyjít, vysoký jen rampou).
 
 ## Editor: magnet budov
 
@@ -133,6 +138,10 @@ střešní moduly, balkony) se dál lepí na stěnu / střechu jako dřív.
 - **F136–F138 (pilotní P):** osy pilířů posunuté z ±1,8 na ±2,0 m, aby modul měřil 4 m a roh
   i další moduly navazovaly. Pravý pilíř je o 1 cm menší, takže dva moduly se společným
   pilířem neblikají. Parametr „Koncové pilíře“ – vypnout při řazení modulů za sebou.
+
+- **Trojúhelníky G:** pytle jsou měkké vaky (zjednodušená síť 80 trojúhelníků na vak) –
+  kulometné hnízdo má 9 600 trojúhelníků, zeď z pneumatik 5 000; pod limitem 12 000, ale na
+  mapě je dobré je nepoužívat ve stovkách.
 
 **Neotestováno přímo ve hře** (multiplayer, skuteční hráči): vše výše pochází ze simulace
 a renderů editoru.

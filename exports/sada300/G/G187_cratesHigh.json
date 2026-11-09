@@ -1,0 +1,230 @@
+{
+ "schema_version": "1.1",
+ "id": "G187_cratesHigh",
+ "asset_id": "setG.cratesHigh",
+ "label_cs": "G187 Vysoký stoh beden",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  3,
+  2
+ ],
+ "height_m": 2,
+ "target_m": [
+  3,
+  2,
+  2.2
+ ],
+ "bounds_m": {
+  "min": [
+   -1.5,
+   0,
+   -1
+  ],
+  "max": [
+   1.5,
+   2,
+   1
+  ]
+ },
+ "triangles": {
+  "LOD0": 96
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "wood"
+ ],
+ "collision": [
+  {
+   "center": [
+    -0.95,
+    1.5,
+    -0.4
+   ],
+   "size": [
+    1,
+    1,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0.1,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.1,
+    1.55,
+    -0.45
+   ],
+   "size": [
+    0.9,
+    0.9,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": -0.08,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -1,
+    0.5,
+    -0.45
+   ],
+   "size": [
+    1,
+    1,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.05,
+    0.55,
+    -0.45
+   ],
+   "size": [
+    1.1,
+    1.1,
+    1.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    1.05,
+    0.45,
+    -0.4
+   ],
+   "size": [
+    0.9,
+    0.9,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -0.95,
+    0.45,
+    0.55
+   ],
+   "size": [
+    0.9,
+    0.9,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.1,
+    0.4,
+    0.6
+   ],
+   "size": [
+    0.8,
+    0.8,
+    0.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -0.95,
+    1.2,
+    0.5
+   ],
+   "size": [
+    0.6,
+    0.6,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.8,
+    0,
+    1.6
+   ]
+  },
+  {
+   "p": [
+    1.8,
+    0,
+    1.6
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Horní řada natočená ±5° – nepravidelná silueta bez mezer v kolizi."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -0.5,
+    1.8,
+    -3
+   ],
+   "to": [
+    -0.5,
+    1.8,
+    3
+   ],
+   "expect_hit": true,
+   "note": "kryje stojícího"
+  }
+ ]
+}

@@ -1,0 +1,126 @@
+{
+ "schema_version": "1.1",
+ "id": "G161_bagsStraight",
+ "asset_id": "setG.bagsStraight",
+ "label_cs": "G161 Rovný kryt z pytlů (pilot)",
+ "category": "sada300_G",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.4395,
+  0.531
+ ],
+ "height_m": 1.0112,
+ "target_m": [
+  2.48,
+  0.44,
+  1.04
+ ],
+ "bounds_m": {
+  "min": [
+   -1.2149,
+   -0.0324,
+   -0.2619
+  ],
+  "max": [
+   1.2246,
+   1.0112,
+   0.2691
+  ]
+ },
+ "triangles": {
+  "LOD0": 2160
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "fabricSand"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.5,
+    0
+   ],
+   "size": [
+    0.5,
+    1,
+    2.4
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1,
+    0,
+    0.8
+   ],
+   "note": "za krytem"
+  },
+  {
+   "p": [
+    1,
+    0,
+    0.8
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Podle pilotu cover_sandbags_a (2,4 × 0,5 × 1,02 m, kolize jeden kvádr). Úprava vzhledu: vaky jsou zploštělé měkké tvary s posunem o půl vaku v každé řadě (ne válce)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    0.8,
+    -3
+   ],
+   "to": [
+    0,
+    0.8,
+    3
+   ],
+   "expect_hit": true,
+   "note": "kryje vkleče"
+  },
+  {
+   "from": [
+    0,
+    1.3,
+    -3
+   ],
+   "to": [
+    0,
+    1.3,
+    3
+   ],
+   "expect_hit": false,
+   "note": "vestoje přes něj"
+  }
+ ]
+}
