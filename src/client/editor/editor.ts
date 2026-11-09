@@ -106,6 +106,8 @@ export class Editor {
 
   // kamera
   private yaw = 0;
+  /** Probíhající výběr místa pro test (klik = místo, Enter = marker, Esc = zrušit). */
+  private spawnPick: ((r: { pos: [number, number, number]; yaw: number } | 'marker' | null) => void) | null = null;
   private pitch = -0.5;
   private flying = false;
   private keys = new Set<string>();
@@ -283,6 +285,14 @@ export class Editor {
   }
 
   private keyDown(e: KeyboardEvent) {
+    if (this.spawnPick) {
+      if (e.code === 'Escape') this.spawnPick(null);
+      else if (e.code === 'Enter' || e.code === 'NumpadEnter') this.spawnPick('marker');
+      if (e.code === 'Escape' || e.code === 'Enter' || e.code === 'NumpadEnter') {
+        e.preventDefault();
+        return;
+      }
+    }
     if (this.typing(e)) return; // psaní do polí nikdy nehýbe kamerou ani nemaže
     this.altHeld = e.altKey;
     if (e.code === 'AltLeft' || e.code === 'AltRight') {
@@ -369,7 +379,37 @@ export class Editor {
     }
   }
 
+  /** Počká, až uživatel klikne do scény, kde se má objevit (nebo Enter / Esc). */
+  pickSpawn(): Promise<{ pos: [number, number, number]; yaw: number } | 'marker' | null> {
+    this.spawnPick?.(null);
+    return new Promise((resolve) => {
+      this.spawnPick = (r) => {
+        this.spawnPick = null;
+        this.updateSpawnMarker();
+        this.canvas.style.cursor = '';
+        resolve(r);
+      };
+      this.canvas.style.cursor = 'crosshair';
+    });
+  }
+
+  /** Bod pro spawn pod kurzorem: povrch objektu (střecha, podlaha) nebo terén. */
+  private spawnPointAt(cx: number, cy: number): THREE.Vector3 | null {
+    const vis = this.spawnMarker.visible;
+    this.spawnMarker.visible = false;
+    const { point } = this.pick(cx, cy, true);
+    this.spawnMarker.visible = vis;
+    return point ?? this.groundAtPointer(this.ndc(cx, cy));
+  }
+
   private pointerDown(e: PointerEvent) {
+    if (this.spawnPick) {
+      if (e.button === 0) {
+        const p = this.spawnPointAt(e.clientX, e.clientY);
+        if (p) this.spawnPick({ pos: [Math.round(p.x * 100) / 100, Math.round((p.y + 0.02) * 100) / 100, Math.round(p.z * 100) / 100], yaw: this.yaw });
+      } else if (e.button === 2) this.spawnPick(null);
+      return;
+    }
     // Úprava G/R/S: LMB potvrdí, RMB zruší (nespouští létání).
     if (this.modal && this.drag) {
       if (e.button === 0) this.endDrag();
@@ -430,6 +470,16 @@ export class Editor {
     if (this.flying && document.pointerLockElement === this.canvas) {
       this.yaw -= e.movementX * 0.0025;
       this.pitch = THREE.MathUtils.clamp(this.pitch - e.movementY * 0.0025, -1.55, 1.55);
+      return;
+    }
+    if (this.spawnPick) {
+      // Náhled: marker spawnu jede s kurzorem, natočený jako kamera.
+      const p = this.spawnPointAt(e.clientX, e.clientY);
+      if (p) {
+        this.spawnMarker.visible = true;
+        this.spawnMarker.position.copy(p);
+        this.spawnMarker.rotation.set(0, this.yaw, 0);
+      }
       return;
     }
     if (this.roadDraft) {
@@ -1577,6 +1627,7 @@ export class Editor {
 
   /** Text u kurzoru podle toho, co je pod ním a co právě probíhá. */
   private hintFor(): string | null {
+    if (this.spawnPick) return 'Klikni, kde se objevíš (směr = pohled kamery)\nEnter = uložený spawn · Esc / pravé tl. = zrušit';
     const d = this.drag;
     if (d) {
       const num = this.numBuf ? ` · zadáno: ${this.numBuf}` : '';
@@ -1949,7 +2000,7 @@ function buildHelp(toggleHints: () => boolean, hintsOn: () => boolean): HTMLDivE
       ['Del', 'smazat'],
       ['Ctrl + Z / Ctrl + Y', 'zpět / znovu'],
       ['Ctrl + S', 'uložit hned'],
-      ['F5', 'testovat mapu'],
+      ['F5 / Testovat', 'klikni, kde se objevíš (Enter = uložený spawn, Esc = zrušit)'],
       ['? nebo F1', 'tento přehled'],
     ]],
   ];

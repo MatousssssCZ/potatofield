@@ -10,6 +10,7 @@ import { generateObject, partsToColliders, collidersForMap, generateMap, getAsse
 import { buildEmptyMap } from '../world/maps/empty';
 import { buildRangeMap } from '../world/maps/range';
 import { buildStreetMap } from '../world/maps/street';
+import { buildShowcaseMap } from '../world/maps/showcase';
 import { Editor, TEST_SPAWN_ID } from './editor/editor';
 import { EditorDoc, History, cmds, type Change } from './editor/editorDoc';
 import { AutoSaver, MapStore, exportMapFile, readMapFile } from './editor/persistence';
@@ -639,6 +640,20 @@ export class App {
     else this.menu?.hide();
   }
 
+  /**
+   * Test z editoru: nejdřív kliknout do scény, kde se hráč objeví (směr pohledu = kamera editoru).
+   * Enter použije uložený spawn (marker), Esc / pravé tlačítko zruší.
+   */
+  async pickAndPlay() {
+    if (this.mode !== 'editor' || this.editor.stroking) return;
+    if (this.editor.terrainMode) this.editor.setTerrainMode(false);
+    toast('Klikni do scény, kde se objevíš · Enter = uložený spawn · Esc = zrušit');
+    const r = await this.editor.pickSpawn();
+    if (!r) return;
+    if (r !== 'marker') this.history.execute({ label: 'Spawn testu', changes: [{ kind: 'testSpawn', before: this.ed.doc.testSpawn, after: { position: r.pos, rotation: [0, r.yaw, 0] } }] });
+    await this.enterPlay();
+  }
+
   async enterPlay(netDriver?: GameDriver, preset?: { conquest: boolean; scenarioId?: string; team: Team; kits?: typeof PILOT.kits }) {
     if (this.mode === 'play' || this.editor.stroking) return;
     if (this.editor.terrainMode) this.editor.setTerrainMode(false);
@@ -1006,7 +1021,7 @@ export class App {
       if (e.code === 'F5') {
         e.preventDefault();
         if (!$('#modal').classList.contains('hidden')) return;
-        if (this.mode === 'editor') void this.enterPlay();
+        if (this.mode === 'editor') void this.pickAndPlay();
         else this.exitPlay();
       } else if (e.code === 'F3' && this.mode === 'editor') {
         e.preventDefault();
@@ -1020,7 +1035,7 @@ export class App {
       if (this.mode === 'play' || this.saver.state === 'pending' || this.saver.state === 'saving') e.preventDefault();
     });
 
-    $('#tb-play').addEventListener('click', () => void this.enterPlay());
+    $('#tb-play').addEventListener('click', () => void this.pickAndPlay());
     $('#tb-net').addEventListener('click', () => this.showMenu());
     $('#tb-undo').addEventListener('click', () => this.editor.undo());
     $('#tb-redo').addEventListener('click', () => this.editor.redo());
@@ -1332,6 +1347,7 @@ export class App {
       { id: 'new', label: 'Nová mapa' },
       { id: 'range', label: 'Šablona: střelnice' },
       { id: 'street', label: 'Šablona: ulice' },
+      { id: 'showcase', label: 'Přehled sady 300' },
       { id: 'import', label: 'Importovat…' },
       { id: 'export', label: 'Exportovat', primary: true },
     ]);
@@ -1357,6 +1373,10 @@ export class App {
     }
     else if (choice === 'range') this.openDoc(this.rangeTemplate());
     else if (choice === 'street') this.openDoc(this.streetTemplate());
+    else if (choice === 'showcase') {
+      this.openDoc(buildShowcaseMap());
+      toast('Přehled sady 300: všech 300 modelů po sekcích A–K, u každého cedule s číslem.');
+    }
     else if (choice === 'import') $<HTMLInputElement>('#file-import').click();
     else if (choice === 'export') exportMapFile(this.ed.doc);
   }
