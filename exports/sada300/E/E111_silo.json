@@ -1,0 +1,387 @@
+{
+ "schema_version": "1.1",
+ "id": "E111_silo",
+ "asset_id": "setE.silo",
+ "label_cs": "E111 Válcové silo",
+ "category": "sada300_E",
+ "asset_kind": "building",
+ "footprint_m": [
+  4.3,
+  4.3
+ ],
+ "height_m": 11.62,
+ "target_m": [
+  4,
+  4,
+  11.7
+ ],
+ "bounds_m": {
+  "min": [
+   -2.15,
+   0,
+   -2.15
+  ],
+  "max": [
+   2.15,
+   11.62,
+   2.15
+  ]
+ },
+ "triangles": {
+  "LOD0": 2120
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteLight",
+  "metal",
+  "metalSheet",
+  "paintedMetal"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    5,
+    0
+   ],
+   "size": [
+    4,
+    10,
+    4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    0.15,
+    0
+   ],
+   "size": [
+    4.3,
+    0.3,
+    4.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    10.135,
+    0
+   ],
+   "size": [
+    2,
+    0.27,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    10.405,
+    0
+   ],
+   "size": [
+    1.7,
+    0.27,
+    1.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    10.675,
+    0
+   ],
+   "size": [
+    1.4,
+    0.27,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    10.945,
+    0
+   ],
+   "size": [
+    1.1,
+    0.27,
+    1.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    11.215,
+    0
+   ],
+   "size": [
+    0.8,
+    0.27,
+    0.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    11.485,
+    0
+   ],
+   "size": [
+    0.5,
+    0.27,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    1.2739,
+    10.5,
+    1.2739
+   ],
+   "size": [
+    0.06,
+    1,
+    1.4925
+   ],
+   "rotX": 0,
+   "rotY": -0.7854,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    0,
+    10.5,
+    1.8016
+   ],
+   "size": [
+    0.06,
+    1,
+    1.4925
+   ],
+   "rotX": 0,
+   "rotY": -1.5708,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    -1.2739,
+    10.5,
+    1.2739
+   ],
+   "size": [
+    0.06,
+    1,
+    1.4925
+   ],
+   "rotX": 3.1416,
+   "rotY": -0.7854,
+   "rotZ": 3.1416,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    -1.8016,
+    10.5,
+    0
+   ],
+   "size": [
+    0.06,
+    1,
+    1.4925
+   ],
+   "rotX": 3.1416,
+   "rotY": 0,
+   "rotZ": 3.1416,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    -1.2739,
+    10.5,
+    -1.2739
+   ],
+   "size": [
+    0.06,
+    1,
+    1.4925
+   ],
+   "rotX": 3.1416,
+   "rotY": 0.7854,
+   "rotZ": 3.1416,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    0,
+    10.5,
+    -1.8016
+   ],
+   "size": [
+    0.06,
+    1,
+    1.4925
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    1.2739,
+    10.5,
+    -1.2739
+   ],
+   "size": [
+    0.06,
+    1,
+    1.4925
+   ],
+   "rotX": 0,
+   "rotY": 0.7854,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [
+  {
+   "base": [
+    2.08,
+    0,
+    0
+   ],
+   "height": 10,
+   "facing_deg": -90
+  }
+ ],
+ "route": [
+  {
+   "p": [
+    3,
+    0,
+    0
+   ],
+   "note": "u žebříku"
+  },
+  {
+   "p": [
+    1.45,
+    10,
+    0
+   ],
+   "ladder": true,
+   "note": "horní plošina"
+  },
+  {
+   "p": [
+    1,
+    10,
+    1
+   ]
+  },
+  {
+   "p": [
+    0,
+    10,
+    1.4
+   ],
+   "note": "kolem kužele"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Plošina = obvodový ochoz 1 m kolem kužele, zábradlí po obvodu kromě výstupu žebříku."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -5,
+    4,
+    0
+   ],
+   "to": [
+    0,
+    4,
+    0
+   ],
+   "expect_hit": true,
+   "note": "silo kryje"
+  }
+ ]
+}

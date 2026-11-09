@@ -1,0 +1,469 @@
+{
+ "schema_version": "1.1",
+ "id": "E106_shedSmall",
+ "asset_id": "setE.shedSmall",
+ "label_cs": "E106 Malý plechový sklad",
+ "category": "sada300_E",
+ "asset_kind": "building",
+ "footprint_m": [
+  8.5602,
+  10.7
+ ],
+ "height_m": 5.0841,
+ "target_m": [
+  8,
+  10,
+  5
+ ],
+ "bounds_m": {
+  "min": [
+   -4.2801,
+   0,
+   -5.35
+  ],
+  "max": [
+   4.2801,
+   5.0841,
+   5.35
+  ]
+ },
+ "triangles": {
+  "LOD0": 528
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "metalSheet",
+  "paintedMetal",
+  "wood",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    -2.125,
+    4.65,
+    0
+   ],
+   "size": [
+    4.3746,
+    0.06,
+    10.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0.1861,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    2.125,
+    4.65,
+    0
+   ],
+   "size": [
+    4.3746,
+    0.06,
+    10.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": -0.1861,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    3.4,
+    1.01,
+    -2.5
+   ],
+   "size": [
+    2.4,
+    1.9,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": -1.5708,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0,
+    0.03,
+    0
+   ],
+   "size": [
+    7.9,
+    0.06,
+    9.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -3.89,
+    2.1,
+    -5
+   ],
+   "size": [
+    0.22,
+    4.2,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    3.89,
+    2.1,
+    -5
+   ],
+   "size": [
+    0.22,
+    4.2,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -3.89,
+    2.1,
+    0
+   ],
+   "size": [
+    0.22,
+    4.2,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    3.89,
+    2.1,
+    0
+   ],
+   "size": [
+    0.22,
+    4.2,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -3.89,
+    2.1,
+    5
+   ],
+   "size": [
+    0.22,
+    4.2,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    3.89,
+    2.1,
+    5
+   ],
+   "size": [
+    0.22,
+    4.2,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -3,
+    2.1,
+    -4.95
+   ],
+   "size": [
+    2,
+    4.2,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    4.1,
+    -4.95
+   ],
+   "size": [
+    4,
+    0.2,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    3,
+    2.1,
+    -4.95
+   ],
+   "size": [
+    2,
+    4.2,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    2.1,
+    4.95
+   ],
+   "size": [
+    8,
+    4.2,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    3.95,
+    2.1,
+    -1.55
+   ],
+   "size": [
+    0.1,
+    4.2,
+    6.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    3.95,
+    3.2,
+    2.5
+   ],
+   "size": [
+    0.1,
+    2,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    3.95,
+    2.1,
+    4.05
+   ],
+   "size": [
+    0.1,
+    4.2,
+    1.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -3.95,
+    2.1,
+    0
+   ],
+   "size": [
+    0.1,
+    4.2,
+    10
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -2.8,
+    0.56,
+    3.5
+   ],
+   "size": [
+    1,
+    1,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -2.8,
+    0.46,
+    2.3
+   ],
+   "size": [
+    0.8,
+    0.8,
+    0.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -7
+   ],
+   "note": "před vraty"
+  },
+  {
+   "p": [
+    0,
+    0.06,
+    -2
+   ],
+   "note": "uvnitř"
+  },
+  {
+   "p": [
+    2.8,
+    0.06,
+    2.5
+   ]
+  },
+  {
+   "p": [
+    4.8,
+    0,
+    2.5
+   ],
+   "note": "boční dveře ven"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Vlnitý plech řešen materiálem, stěny 0,1 m s kolizí. Rám: sloupy po 5 m."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    1.5,
+    -8
+   ],
+   "to": [
+    0,
+    1.5,
+    0
+   ],
+   "expect_hit": false,
+   "note": "vraty volno"
+  },
+  {
+   "from": [
+    3,
+    1.5,
+    -8
+   ],
+   "to": [
+    3,
+    1.5,
+    -3
+   ],
+   "expect_hit": true,
+   "note": "plechová stěna zastaví střelu (kolize)"
+  }
+ ]
+}

@@ -1,0 +1,247 @@
+{
+ "schema_version": "1.1",
+ "id": "E133_tentLarge",
+ "asset_id": "setE.tentLarge",
+ "label_cs": "E133 Velký vojenský stan",
+ "category": "sada300_E",
+ "asset_kind": "building",
+ "footprint_m": [
+  6.412,
+  10.26
+ ],
+ "height_m": 3.5,
+ "target_m": [
+  6,
+  10,
+  3.5
+ ],
+ "bounds_m": {
+  "min": [
+   -3.206,
+   0,
+   -5.16
+  ],
+  "max": [
+   3.206,
+   3.5,
+   5.1
+  ]
+ },
+ "triangles": {
+  "LOD0": 1100
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "fabricSand",
+  "paintedMetal"
+ ],
+ "collision": [
+  {
+   "center": [
+    -2.97,
+    1.05,
+    0
+   ],
+   "size": [
+    0.06,
+    2.1,
+    10
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    2.97,
+    1.05,
+    0
+   ],
+   "size": [
+    0.06,
+    2.1,
+    10
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    -1.95,
+    1.05,
+    -5
+   ],
+   "size": [
+    2.1,
+    2.1,
+    0.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    1.95,
+    1.05,
+    -5
+   ],
+   "size": [
+    2.1,
+    2.1,
+    0.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    -1.95,
+    1.05,
+    5
+   ],
+   "size": [
+    2.1,
+    2.1,
+    0.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    1.95,
+    1.05,
+    5
+   ],
+   "size": [
+    2.1,
+    2.1,
+    0.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    -2.35,
+    0.4,
+    -0.55
+   ],
+   "size": [
+    0.7,
+    0.1,
+    8.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric"
+  },
+  {
+   "center": [
+    2.35,
+    0.4,
+    -0.55
+   ],
+   "size": [
+    0.7,
+    0.1,
+    8.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -6.5
+   ],
+   "note": "vstup 1"
+  },
+  {
+   "p": [
+    0,
+    0,
+    0
+   ],
+   "note": "středová cesta"
+  },
+  {
+   "p": [
+    0,
+    0,
+    6.5
+   ],
+   "note": "vstup 2"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Lůžka 0,7 m široká u obou stěn, mezi nimi 2,6 m volného průchodu."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    1.5,
+    -7
+   ],
+   "to": [
+    0,
+    1.5,
+    7
+   ],
+   "expect_hit": false,
+   "note": "středová cesta průstřelná skrz"
+  }
+ ]
+}

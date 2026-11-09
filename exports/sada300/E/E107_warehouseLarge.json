@@ -1,0 +1,806 @@
+{
+ "schema_version": "1.1",
+ "id": "E107_warehouseLarge",
+ "asset_id": "setE.warehouseLarge",
+ "label_cs": "E107 Velký sklad",
+ "category": "sada300_E",
+ "asset_kind": "building",
+ "footprint_m": [
+  14.5577,
+  20.7
+ ],
+ "height_m": 7.0831,
+ "target_m": [
+  14,
+  20,
+  7
+ ],
+ "bounds_m": {
+  "min": [
+   -7.2789,
+   0,
+   -10.35
+  ],
+  "max": [
+   7.2789,
+   7.0831,
+   10.35
+  ]
+ },
+ "triangles": {
+  "LOD0": 1056
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "metalSheet",
+  "paintedMetal",
+  "wood"
+ ],
+ "collision": [
+  {
+   "center": [
+    -3.625,
+    6.55,
+    0
+   ],
+   "size": [
+    7.3686,
+    0.06,
+    20.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0.1371,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    3.625,
+    6.55,
+    0
+   ],
+   "size": [
+    7.3686,
+    0.06,
+    20.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": -0.1371,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    0.03,
+    0
+   ],
+   "size": [
+    13.9,
+    0.06,
+    19.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -6.89,
+    3,
+    -10
+   ],
+   "size": [
+    0.22,
+    6,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    6.89,
+    3,
+    -10
+   ],
+   "size": [
+    0.22,
+    6,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -6.89,
+    3,
+    -5
+   ],
+   "size": [
+    0.22,
+    6,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    6.89,
+    3,
+    -5
+   ],
+   "size": [
+    0.22,
+    6,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -6.89,
+    3,
+    0
+   ],
+   "size": [
+    0.22,
+    6,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    6.89,
+    3,
+    0
+   ],
+   "size": [
+    0.22,
+    6,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -6.89,
+    3,
+    5
+   ],
+   "size": [
+    0.22,
+    6,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    6.89,
+    3,
+    5
+   ],
+   "size": [
+    0.22,
+    6,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -6.89,
+    3,
+    10
+   ],
+   "size": [
+    0.22,
+    6,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    6.89,
+    3,
+    10
+   ],
+   "size": [
+    0.22,
+    6,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -4.75,
+    3,
+    -9.95
+   ],
+   "size": [
+    4.5,
+    6,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    5.5,
+    -9.95
+   ],
+   "size": [
+    5,
+    1,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    4.75,
+    3,
+    -9.95
+   ],
+   "size": [
+    4.5,
+    6,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -4.75,
+    3,
+    9.95
+   ],
+   "size": [
+    4.5,
+    6,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    5.5,
+    9.95
+   ],
+   "size": [
+    5,
+    1,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    4.75,
+    3,
+    9.95
+   ],
+   "size": [
+    4.5,
+    6,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    6.95,
+    3,
+    -8.175
+   ],
+   "size": [
+    0.1,
+    6,
+    3.65
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    6.95,
+    4.1,
+    -5.75
+   ],
+   "size": [
+    0.1,
+    3.8,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    6.95,
+    3,
+    2.425
+   ],
+   "size": [
+    0.1,
+    6,
+    15.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -6.95,
+    3,
+    0
+   ],
+   "size": [
+    0.1,
+    6,
+    20
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -3.5,
+    3,
+    -5
+   ],
+   "size": [
+    0.3,
+    6,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -3.5,
+    3,
+    0
+   ],
+   "size": [
+    0.3,
+    6,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -3.5,
+    3,
+    5
+   ],
+   "size": [
+    0.3,
+    6,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    3.5,
+    3,
+    -5
+   ],
+   "size": [
+    0.3,
+    6,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    3.5,
+    3,
+    0
+   ],
+   "size": [
+    0.3,
+    6,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    3.5,
+    3,
+    5
+   ],
+   "size": [
+    0.3,
+    6,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -6.3,
+    1.33,
+    -8.2
+   ],
+   "size": [
+    1,
+    2.54,
+    3.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -6.3,
+    1.33,
+    -3.3
+   ],
+   "size": [
+    1,
+    2.54,
+    3.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -6.3,
+    1.33,
+    1.6
+   ],
+   "size": [
+    1,
+    2.54,
+    3.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -6.3,
+    1.33,
+    6.5
+   ],
+   "size": [
+    1,
+    2.54,
+    3.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    6.3,
+    1.33,
+    -8.2
+   ],
+   "size": [
+    1,
+    2.54,
+    3.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    6.3,
+    1.33,
+    -3.3
+   ],
+   "size": [
+    1,
+    2.54,
+    3.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    6.3,
+    1.33,
+    1.6
+   ],
+   "size": [
+    1,
+    2.54,
+    3.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    6.3,
+    1.33,
+    6.5
+   ],
+   "size": [
+    1,
+    2.54,
+    3.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -1.5,
+    0.56,
+    8.5
+   ],
+   "size": [
+    1,
+    1,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    5,
+    0.66,
+    -8
+   ],
+   "size": [
+    1.2,
+    1.2,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -12
+   ],
+   "note": "čelní vstup"
+  },
+  {
+   "p": [
+    0,
+    0.06,
+    0
+   ],
+   "note": "středová cesta"
+  },
+  {
+   "p": [
+    0,
+    0,
+    12
+   ],
+   "note": "zadní vstup"
+  },
+  {
+   "p": [
+    0,
+    0.06,
+    0
+   ]
+  },
+  {
+   "p": [
+    5,
+    0.06,
+    -5.75
+   ]
+  },
+  {
+   "p": [
+    7.6,
+    0,
+    -5.75
+   ],
+   "note": "boční dveře"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Sloupy v x = ±3,5 m – mezi nimi 6,7 m volné cesty od čela k zádům."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    1.5,
+    -12
+   ],
+   "to": [
+    0,
+    1.5,
+    12
+   ],
+   "expect_hit": false,
+   "note": "středová cesta průstřelná skrz"
+  },
+  {
+   "from": [
+    -8,
+    1.3,
+    -3
+   ],
+   "to": [
+    -5.5,
+    1.3,
+    -3
+   ],
+   "expect_hit": true,
+   "note": "regál u stěny kryje"
+  }
+ ]
+}

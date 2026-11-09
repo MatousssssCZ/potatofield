@@ -1,0 +1,421 @@
+{
+ "schema_version": "1.1",
+ "id": "E121_checkpointDamaged",
+ "asset_id": "setE.checkpointDamaged",
+ "label_cs": "E121 Poškozené kontrolní stanoviště",
+ "category": "sada300_E",
+ "asset_kind": "building",
+ "footprint_m": [
+  8.1093,
+  5
+ ],
+ "height_m": 2.65,
+ "target_m": [
+  8,
+  5,
+  2.7
+ ],
+ "bounds_m": {
+  "min": [
+   -3.7,
+   -0.1581,
+   -2.5
+  ],
+  "max": [
+   4.4093,
+   2.65,
+   2.5
+  ]
+ },
+ "triangles": {
+  "LOD0": 336
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "asphalt",
+  "brick",
+  "concreteLight",
+  "metalSheet",
+  "metalSheetRust",
+  "paintedMetal",
+  "paintedMetalRed",
+  "plasterWarm",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    -2.9,
+    0.25,
+    -0.1
+   ],
+   "size": [
+    0.4,
+    0.5,
+    0.7
+   ],
+   "rotX": 0.6606,
+   "rotY": 0.4688,
+   "rotZ": 0.6111,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    3,
+    0.04,
+    0.5
+   ],
+   "size": [
+    2,
+    0.08,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -3.4,
+    0.15,
+    -1.35
+   ],
+   "size": [
+    0.6,
+    0.3,
+    1.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -3.4,
+    0.575,
+    -1.45
+   ],
+   "size": [
+    0.3,
+    0.55,
+    1.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -3.4,
+    0.15,
+    1.4
+   ],
+   "size": [
+    0.6,
+    0.3,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -3.4,
+    0.575,
+    1.4
+   ],
+   "size": [
+    0.3,
+    0.55,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    3,
+    0.5,
+    -0.44
+   ],
+   "size": [
+    2,
+    1,
+    0.12
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3,
+    2.25,
+    -0.44
+   ],
+   "size": [
+    2,
+    0.5,
+    0.12
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.175,
+    1.25,
+    1.44
+   ],
+   "size": [
+    0.35,
+    2.5,
+    0.12
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.9,
+    2.35,
+    1.44
+   ],
+   "size": [
+    1.1,
+    0.3,
+    0.12
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.475,
+    0.6,
+    1.44
+   ],
+   "size": [
+    0.05,
+    1.2,
+    0.12
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.06,
+    0.5,
+    0.5
+   ],
+   "size": [
+    0.12,
+    1,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.06,
+    2.25,
+    0.5
+   ],
+   "size": [
+    0.12,
+    0.5,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.94,
+    0.5,
+    0
+   ],
+   "size": [
+    0.12,
+    1,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.94,
+    2.05,
+    -0.15
+   ],
+   "size": [
+    0.12,
+    0.1,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.55,
+    2.575,
+    0.5
+   ],
+   "size": [
+    1.5,
+    0.15,
+    2.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    1.3,
+    0.55,
+    -1.6
+   ],
+   "size": [
+    0.4,
+    1.1,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -4
+   ],
+   "note": "průjezd"
+  },
+  {
+   "p": [
+    0,
+    0,
+    4
+   ]
+  },
+  {
+   "p": [
+    2.9,
+    0,
+    2.3
+   ]
+  },
+  {
+   "p": [
+    2.9,
+    0.08,
+    0.6
+   ],
+   "note": "v budce"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Ulomené rameno leží u kraje cesty (x ≈ 2,2), bez kolize."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    1.5,
+    -4
+   ],
+   "to": [
+    0,
+    1.5,
+    4
+   ],
+   "expect_hit": false,
+   "note": "průjezd volný (rameno závory leží u kraje)"
+  },
+  {
+   "from": [
+    6,
+    1.5,
+    1.2
+   ],
+   "to": [
+    3,
+    1.5,
+    1.2
+   ],
+   "expect_hit": false,
+   "note": "chybějícím rohem lze do budky střílet"
+  }
+ ]
+}

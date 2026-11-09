@@ -1,0 +1,289 @@
+{
+ "schema_version": "1.1",
+ "id": "E113_tankLow",
+ "asset_id": "setE.tankLow",
+ "label_cs": "E113 Nízká průmyslová nádrž",
+ "category": "sada300_E",
+ "asset_kind": "building",
+ "footprint_m": [
+  6.5,
+  5.4
+ ],
+ "height_m": 5.205,
+ "target_m": [
+  5,
+  5,
+  4.3
+ ],
+ "bounds_m": {
+  "min": [
+   -2.7,
+   0,
+   -2.7
+  ],
+  "max": [
+   3.8,
+   5.205,
+   2.7
+  ]
+ },
+ "triangles": {
+  "LOD0": 1016
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteLight",
+  "metal",
+  "paintedMetal",
+  "paintedMetalRed"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.125,
+    0
+   ],
+   "size": [
+    5.4,
+    0.25,
+    5.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    2.125,
+    0
+   ],
+   "size": [
+    5,
+    3.75,
+    5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    4.09,
+    0
+   ],
+   "size": [
+    4.4,
+    0.18,
+    4.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    4.24,
+    0
+   ],
+   "size": [
+    2.6,
+    0.12,
+    2.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    3,
+    0.8,
+    0
+   ],
+   "size": [
+    0.4,
+    1.2,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": -1.5708,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    3.4,
+    0.925,
+    0
+   ],
+   "size": [
+    0.6,
+    0.65,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    3.6,
+    0.525,
+    0
+   ],
+   "size": [
+    0.4,
+    0.55,
+    0.4
+   ],
+   "rotX": 3.1416,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    1.15,
+    4.3,
+    0
+   ],
+   "size": [
+    0.7,
+    0.24,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -1.9,
+    4.68,
+    -0.45
+   ],
+   "size": [
+    0.6,
+    1,
+    0.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    -1.9,
+    4.68,
+    0.45
+   ],
+   "size": [
+    0.6,
+    1,
+    0.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [
+  {
+   "base": [
+    -2.58,
+    0,
+    0
+   ],
+   "height": 4.18,
+   "facing_deg": 90
+  }
+ ],
+ "route": [
+  {
+   "p": [
+    -3.4,
+    0,
+    0
+   ],
+   "note": "pod žebříkem"
+  },
+  {
+   "p": [
+    -1.85,
+    4.18,
+    0
+   ],
+   "ladder": true,
+   "note": "vršek nádrže"
+  },
+  {
+   "p": [
+    0.4,
+    4.3,
+    0.9
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Vršek pochozí (dva nízké stupně), poklop jako vzhled s malou kolizí."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    1.5,
+    -5
+   ],
+   "to": [
+    0,
+    1.5,
+    0
+   ],
+   "expect_hit": true,
+   "note": "nádrž kryje"
+  }
+ ]
+}

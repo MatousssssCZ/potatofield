@@ -1,0 +1,316 @@
+{
+ "schema_version": "1.1",
+ "id": "E115_fuelTanksHorizontal",
+ "asset_id": "setE.fuelTanksHorizontal",
+ "label_cs": "E115 Vodorovné palivové nádrže",
+ "category": "sada300_E",
+ "asset_kind": "building",
+ "footprint_m": [
+  5.24,
+  6.2
+ ],
+ "height_m": 3.22,
+ "target_m": [
+  5.2,
+  6.2,
+  3.2
+ ],
+ "bounds_m": {
+  "min": [
+   -2.62,
+   0,
+   -3.1
+  ],
+  "max": [
+   2.62,
+   3.22,
+   3.1
+  ]
+ },
+ "triangles": {
+  "LOD0": 1504
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteLight",
+  "paintedMetal",
+  "paintedMetalRed",
+  "plasterWhite"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    1.6,
+    -1.9
+   ],
+   "size": [
+    2.4,
+    4.5,
+    2.4
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": -1.5708,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.375,
+    1.6,
+    -1.9
+   ],
+   "size": [
+    2,
+    0.25,
+    2
+   ],
+   "rotX": 0,
+   "rotY": -1.5708,
+   "rotZ": 1.5708,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.375,
+    1.6,
+    -1.9
+   ],
+   "size": [
+    2,
+    0.25,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": -1.5708,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.6,
+    2.95,
+    -1.9
+   ],
+   "size": [
+    0.35,
+    0.4,
+    0.35
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    1.6,
+    1.9
+   ],
+   "size": [
+    2.4,
+    4.5,
+    2.4
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": -1.5708,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.375,
+    1.6,
+    1.9
+   ],
+   "size": [
+    2,
+    0.25,
+    2
+   ],
+   "rotX": 0,
+   "rotY": -1.5708,
+   "rotZ": 1.5708,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.375,
+    1.6,
+    1.9
+   ],
+   "size": [
+    2,
+    0.25,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": -1.5708,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.6,
+    2.95,
+    1.9
+   ],
+   "size": [
+    0.35,
+    0.4,
+    0.35
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -1.5,
+    0.375,
+    -1.9
+   ],
+   "size": [
+    0.4,
+    0.75,
+    1.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.5,
+    0.375,
+    -1.9
+   ],
+   "size": [
+    0.4,
+    0.75,
+    1.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.5,
+    0.375,
+    1.9
+   ],
+   "size": [
+    0.4,
+    0.75,
+    1.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.5,
+    0.375,
+    1.9
+   ],
+   "size": [
+    0.4,
+    0.75,
+    1.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -4,
+    0,
+    0
+   ],
+   "note": "mezi nádržemi"
+  },
+  {
+   "p": [
+    4,
+    0,
+    0
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Mezi nádržemi 1,4 m průchod; pod nádržemi se dá střílet mezi podpěrami."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    1.6,
+    -4
+   ],
+   "to": [
+    0,
+    1.6,
+    0
+   ],
+   "expect_hit": true,
+   "note": "nádrž kryje"
+  },
+  {
+   "from": [
+    0,
+    0.25,
+    -4
+   ],
+   "to": [
+    0,
+    0.25,
+    0
+   ],
+   "expect_hit": false,
+   "note": "pod nádrží mezi podpěrami volno"
+  }
+ ]
+}

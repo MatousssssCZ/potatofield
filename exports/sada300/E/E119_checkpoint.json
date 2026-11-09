@@ -1,0 +1,403 @@
+{
+ "schema_version": "1.1",
+ "id": "E119_checkpoint",
+ "asset_id": "setE.checkpoint",
+ "label_cs": "E119 Kontrolní stanoviště s budkou",
+ "category": "sada300_E",
+ "asset_kind": "building",
+ "footprint_m": [
+  7.9,
+  5
+ ],
+ "height_m": 5.1,
+ "target_m": [
+  8,
+  5,
+  5.1
+ ],
+ "bounds_m": {
+  "min": [
+   -3.7,
+   0,
+   -2.5
+  ],
+  "max": [
+   4.2,
+   5.1,
+   2.5
+  ]
+ },
+ "triangles": {
+  "LOD0": 240
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "asphalt",
+  "concreteLight",
+  "metalSheet",
+  "paintedMetal",
+  "paintedMetalRed",
+  "plasterWarm",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    3,
+    0.04,
+    0.5
+   ],
+   "size": [
+    2,
+    0.08,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -3.4,
+    0.15,
+    -1
+   ],
+   "size": [
+    0.6,
+    0.3,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -3.4,
+    0.575,
+    -1
+   ],
+   "size": [
+    0.3,
+    0.55,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -3.4,
+    0.15,
+    1.4
+   ],
+   "size": [
+    0.6,
+    0.3,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -3.4,
+    0.575,
+    1.4
+   ],
+   "size": [
+    0.3,
+    0.55,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    3,
+    0.5,
+    -0.44
+   ],
+   "size": [
+    2,
+    1,
+    0.12
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3,
+    2.25,
+    -0.44
+   ],
+   "size": [
+    2,
+    0.5,
+    0.12
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.175,
+    1.25,
+    1.44
+   ],
+   "size": [
+    0.35,
+    2.5,
+    0.12
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.725,
+    1.25,
+    1.44
+   ],
+   "size": [
+    0.55,
+    2.5,
+    0.12
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.9,
+    2.35,
+    1.44
+   ],
+   "size": [
+    1.1,
+    0.3,
+    0.12
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.06,
+    0.5,
+    0.5
+   ],
+   "size": [
+    0.12,
+    1,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.06,
+    2.25,
+    0.5
+   ],
+   "size": [
+    0.12,
+    0.5,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.94,
+    0.5,
+    0.5
+   ],
+   "size": [
+    0.12,
+    1,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.94,
+    2.25,
+    0.5
+   ],
+   "size": [
+    0.12,
+    0.5,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3,
+    2.575,
+    0.5
+   ],
+   "size": [
+    2.4,
+    0.15,
+    2.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    1.3,
+    0.55,
+    -1.6
+   ],
+   "size": [
+    0.4,
+    1.1,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -4
+   ],
+   "note": "průjezd"
+  },
+  {
+   "p": [
+    0,
+    0,
+    4
+   ]
+  },
+  {
+   "p": [
+    2.9,
+    0,
+    2.3
+   ],
+   "note": "za budkou"
+  },
+  {
+   "p": [
+    2.9,
+    0.08,
+    0.6
+   ],
+   "note": "v budce (dveře vzadu)"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Průjezd x −2,5…2,5 m bez překážek; bloky a budka stojí mimo něj."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -6,
+    0.5,
+    -1
+   ],
+   "to": [
+    -3,
+    0.5,
+    -1
+   ],
+   "expect_hit": true,
+   "note": "betonový blok kryje"
+  },
+  {
+   "from": [
+    0,
+    1.5,
+    -4
+   ],
+   "to": [
+    0,
+    1.5,
+    4
+   ],
+   "expect_hit": false,
+   "note": "průjezd volný (závora zvednutá)"
+  }
+ ]
+}

@@ -1,0 +1,558 @@
+{
+ "schema_version": "1.1",
+ "id": "E117_pipeBridgeHigh",
+ "asset_id": "setE.pipeBridgeHigh",
+ "label_cs": "E117 Vysoký potrubní most",
+ "category": "sada300_E",
+ "asset_kind": "building",
+ "footprint_m": [
+  12.05,
+  4.63
+ ],
+ "height_m": 7.425,
+ "target_m": [
+  12,
+  3.8,
+  7.4
+ ],
+ "bounds_m": {
+  "min": [
+   -6.025,
+   0,
+   -2.88
+  ],
+  "max": [
+   6.025,
+   7.425,
+   1.75
+  ]
+ },
+ "triangles": {
+  "LOD0": 1140
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteLight",
+  "metal",
+  "paintedMetal"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    5.7,
+    -0.9
+   ],
+   "size": [
+    0.6,
+    12,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": -1.5708,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    5.65,
+    -0.15
+   ],
+   "size": [
+    0.5,
+    12,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": -1.5708,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    5.6,
+    0.5
+   ],
+   "size": [
+    0.4,
+    12,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": -1.5708,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    5.55,
+    1.05
+   ],
+   "size": [
+    0.3,
+    12,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": -1.5708,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -5.5,
+    3.2,
+    -1.4
+   ],
+   "size": [
+    0.36,
+    6.4,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -5.5,
+    3.2,
+    1.4
+   ],
+   "size": [
+    0.36,
+    6.4,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -5.5,
+    5.2,
+    0
+   ],
+   "size": [
+    0.36,
+    0.4,
+    3.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    3.2,
+    -1.4
+   ],
+   "size": [
+    0.36,
+    6.4,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    3.2,
+    1.4
+   ],
+   "size": [
+    0.36,
+    6.4,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    5.2,
+    0
+   ],
+   "size": [
+    0.36,
+    0.4,
+    3.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    5.5,
+    3.2,
+    -1.4
+   ],
+   "size": [
+    0.36,
+    6.4,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    5.5,
+    3.2,
+    1.4
+   ],
+   "size": [
+    0.36,
+    6.4,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    5.5,
+    5.2,
+    0
+   ],
+   "size": [
+    0.36,
+    0.4,
+    3.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    6.35,
+    -2.15
+   ],
+   "size": [
+    12,
+    0.1,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -5.5,
+    0.175,
+    -1.4
+   ],
+   "size": [
+    0.7,
+    0.35,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -5.5,
+    0.175,
+    1.4
+   ],
+   "size": [
+    0.7,
+    0.35,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.175,
+    -1.4
+   ],
+   "size": [
+    0.7,
+    0.35,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.175,
+    1.4
+   ],
+   "size": [
+    0.7,
+    0.35,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    5.5,
+    0.175,
+    -1.4
+   ],
+   "size": [
+    0.7,
+    0.35,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    5.5,
+    0.175,
+    1.4
+   ],
+   "size": [
+    0.7,
+    0.35,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.425,
+    6.9,
+    -2.6
+   ],
+   "size": [
+    11.15,
+    1,
+    0.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    6,
+    6.9,
+    -2.15
+   ],
+   "size": [
+    0.06,
+    1,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    0,
+    6.9,
+    -1.7
+   ],
+   "size": [
+    12,
+    1,
+    0.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    -6,
+    6.9,
+    -2.15
+   ],
+   "size": [
+    0.06,
+    1,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [
+  {
+   "base": [
+    -5.55,
+    0,
+    -2.85
+   ],
+   "height": 6.4,
+   "facing_deg": 0
+  }
+ ],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -3.5
+   ],
+   "note": "před mostem"
+  },
+  {
+   "p": [
+    2.7,
+    0,
+    3.5
+   ],
+   "note": "pod mostem (5 m)"
+  },
+  {
+   "p": [
+    -5.55,
+    0,
+    -3.6
+   ],
+   "note": "pod žebříkem"
+  },
+  {
+   "p": [
+    -5.2,
+    6.4,
+    -2.15
+   ],
+   "ladder": true,
+   "note": "servisní lávka"
+  },
+  {
+   "p": [
+    4.5,
+    6.4,
+    -2.15
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Lávka 0,9 m široká vně rámů (sloupy ji nezužují); žebřík u −X konce mezerou v zábradlí; zábradlí kovové (jen pohybová kolize)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    2.7,
+    4.5,
+    -4
+   ],
+   "to": [
+    2.7,
+    4.5,
+    4
+   ],
+   "expect_hit": false,
+   "note": "světlá výška 5 m"
+  },
+  {
+   "from": [
+    2.7,
+    6.9,
+    -4
+   ],
+   "to": [
+    2.7,
+    6.9,
+    -1.9
+   ],
+   "expect_hit": false,
+   "note": "lávka – zábradlí střelu propustí"
+  }
+ ]
+}

@@ -1,0 +1,292 @@
+{
+ "schema_version": "1.1",
+ "id": "E114_fuelTanksVertical",
+ "asset_id": "setE.fuelTanksVertical",
+ "label_cs": "E114 Svislé palivové nádrže",
+ "category": "sada300_E",
+ "asset_kind": "building",
+ "footprint_m": [
+  9,
+  4.5
+ ],
+ "height_m": 5.6,
+ "target_m": [
+  9,
+  4.5,
+  5.6
+ ],
+ "bounds_m": {
+  "min": [
+   -4.5,
+   0,
+   -2.25
+  ],
+  "max": [
+   4.5,
+   5.6,
+   2.25
+  ]
+ },
+ "triangles": {
+  "LOD0": 1184
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "paintedMetal",
+  "paintedMetalRed",
+  "plasterWhite"
+ ],
+ "collision": [
+  {
+   "center": [
+    -2.5,
+    2.7,
+    0
+   ],
+   "size": [
+    3,
+    5,
+    3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.5,
+    5.325,
+    0
+   ],
+   "size": [
+    2.6,
+    0.25,
+    2.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.5,
+    5.525,
+    0
+   ],
+   "size": [
+    1.2,
+    0.15,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.5,
+    2.7,
+    0
+   ],
+   "size": [
+    3,
+    5,
+    3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.5,
+    5.325,
+    0
+   ],
+   "size": [
+    2.6,
+    0.25,
+    2.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.5,
+    5.525,
+    0
+   ],
+   "size": [
+    1.2,
+    0.15,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    3.6,
+    0
+   ],
+   "size": [
+    0.35,
+    2,
+    0.35
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": -1.5708,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    3.6,
+    1.6
+   ],
+   "size": [
+    0.3,
+    5,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": -1.5708,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -2.5,
+    2.1,
+    1.6
+   ],
+   "size": [
+    0.3,
+    3,
+    0.3
+   ],
+   "rotX": 3.1416,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    0.1,
+    0
+   ],
+   "size": [
+    9,
+    0.2,
+    4.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -3.5
+   ],
+   "note": "před plochou"
+  },
+  {
+   "p": [
+    0,
+    0.2,
+    0
+   ],
+   "note": "průchod mezi nádržemi"
+  },
+  {
+   "p": [
+    0,
+    0,
+    3.5
+   ],
+   "note": "za nádržemi"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Potrubí ve 3,6 m – průchod mezi nádržemi bez snížené výšky."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -6,
+    1.5,
+    0
+   ],
+   "to": [
+    0,
+    1.5,
+    0
+   ],
+   "expect_hit": true,
+   "note": "nádrž kryje"
+  },
+  {
+   "from": [
+    0,
+    1.5,
+    -4
+   ],
+   "to": [
+    0,
+    1.5,
+    4
+   ],
+   "expect_hit": false,
+   "note": "průchod volný"
+  }
+ ]
+}

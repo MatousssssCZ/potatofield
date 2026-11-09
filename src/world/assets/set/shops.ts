@@ -25,7 +25,7 @@ const AWN = ['awningRed', 'awningBlue', 'awningGreen', 'awningSand'];
 /** Sloupek (kovový / dřevěný) od země do výšky h. */
 const post = (x: number, z: number, h: number, mat = 'paintedMetal', s = 0.08): Part => ({ ...bx(x - s / 2, x + s / 2, 0, h, z - s / 2, z + s / 2, mat), collide: true });
 
-/** Plachta s mírným prověšením: dvě poloviny skloněné ke středu (vzhled, bez kolize). */
+/** Plachta s mírným prověšením: dvě poloviny skloněné ke středu (vzhled, bez kolize); slopeZ = o kolik je zadní hrana níž. */
 function canopy(x0: number, x1: number, z0: number, z1: number, y: number, sag: number, mat: string, slopeZ = 0): Part[] {
   const w = x1 - x0, d = z1 - z0, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
   const a = Math.atan2(sag, w / 2);
@@ -66,7 +66,7 @@ regD(86, 'stallSmall', 'Malý tržní stánek', {
     const W = 2.5, D = 2, h = 2.6;
     const parts: Part[] = [];
     for (const [x, z] of [[-W / 2 + 0.05, -D / 2 + 0.05], [W / 2 - 0.05, -D / 2 + 0.05], [-W / 2 + 0.05, D / 2 - 0.05], [W / 2 - 0.05, D / 2 - 0.05]] as const) parts.push(post(x, z, z < 0 ? h : h - 0.2));
-    parts.push(...canopy(-W / 2 - 0.1, W / 2 + 0.1, -D / 2 - 0.25, D / 2 + 0.05, h, 0.12, AWN[seed % 4], -0.2));
+    parts.push(...canopy(-W / 2 - 0.1, W / 2 + 0.1, -D / 2 - 0.25, D / 2 + 0.05, h, 0.12, AWN[seed % 4], 0.2));
     parts.push(...counter(-W / 2 + 0.1, W / 2 - 0.1, -D / 2 + 0.1, -D / 2 + 0.65));
     parts.push(...goods(-W / 2 + 0.1, W / 2 - 0.1, -D / 2 + 0.38, 0.95, seed));
     parts.push(...crate(-0.7, 0.5, 0, 0.5));
@@ -86,7 +86,7 @@ regD(87, 'stallWide', 'Široký tržní stánek', {
     const W = 4, D = 2.5, h = 2.8;
     const parts: Part[] = [];
     for (const x of [-W / 2 + 0.05, 0, W / 2 - 0.05]) for (const z of [-D / 2 + 0.05, D / 2 - 0.05]) parts.push(post(x, z, z < 0 ? h : h - 0.25));
-    parts.push(...canopy(-W / 2 - 0.1, W / 2 + 0.1, -D / 2 - 0.3, D / 2 + 0.05, h, 0.18, AWN[(seed + 1) % 4], -0.25));
+    parts.push(...canopy(-W / 2 - 0.1, W / 2 + 0.1, -D / 2 - 0.3, D / 2 + 0.05, h, 0.18, AWN[(seed + 1) % 4], 0.25));
     parts.push(...counter(-W / 2 + 0.1, -0.15, -D / 2 + 0.1, -D / 2 + 0.7), ...counter(0.15, W / 2 - 0.1, -D / 2 + 0.1, -D / 2 + 0.7));
     parts.push(...goods(-W / 2 + 0.1, -0.15, -D / 2 + 0.4, 0.95, seed), ...goods(0.15, W / 2 - 0.1, -D / 2 + 0.4, 0.95, seed + 3));
     // Zadní police (vyšší), uprostřed; po stranách vstupy.
@@ -108,7 +108,7 @@ regD(88, 'stallCorner', 'Rohový tržní stánek', {
     const h = 2.7, parts: Part[] = [];
     // Ramena: A = x −2…2, z −2…0 ; B = x −2…0, z 0…2.
     for (const [x, z] of [[-1.95, -1.95], [0, -1.95], [1.95, -1.95], [1.95, -0.05], [0.05, -0.05], [0.05, 1.95], [-1.95, 1.95], [-1.95, 0]] as const) parts.push(post(x, z, h));
-    parts.push(...canopy(-2.1, 2.1, -2.3, 0.05, h, 0.12, AWN[(seed + 2) % 4], -0.15), ...canopy(-2.1, 0.1, 0.05, 2.1, h - 0.02, 0.1, AWN[(seed + 2) % 4]));
+    parts.push(...canopy(-2.1, 2.1, -2.3, 0.05, h, 0.12, AWN[(seed + 2) % 4], 0.15), ...canopy(-2.1, 0.1, 0.05, 2.1, h - 0.02, 0.1, AWN[(seed + 2) % 4]));
     parts.push(...counter(-1.9, 1.9, -1.9, -1.4), ...counter(-1.9, -1.4, -1.4, 1.9));
     parts.push(...goods(-1.9, 1.9, -1.65, 0.95, seed), ...goods(-1.9, -1.4, 0.2, 0.95, seed + 4).map((p) => ({ ...p, pos: [-1.65, p.pos[1], p.pos[0]] as V3 })));
     // Zadní stěny (plachtovina) na vnitřních hranách kromě vstupu 1,2 m v koutě (krytý stříškou).

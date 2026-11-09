@@ -1,0 +1,266 @@
+{
+ "schema_version": "1.1",
+ "id": "E118_gantryCrane",
+ "asset_id": "setE.gantryCrane",
+ "label_cs": "E118 Portálový jeřáb",
+ "category": "sada300_E",
+ "asset_kind": "building",
+ "footprint_m": [
+  18,
+  5.6
+ ],
+ "height_m": 10,
+ "target_m": [
+  13.2,
+  5.6,
+  10
+ ],
+ "bounds_m": {
+  "min": [
+   -9,
+   -0.0343,
+   -2.8
+  ],
+  "max": [
+   9,
+   10,
+   2.8
+  ]
+ },
+ "triangles": {
+  "LOD0": 408
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "gunMetal",
+  "metal",
+  "paintedMetal",
+  "paintedMetalRed"
+ ],
+ "collision": [
+  {
+   "center": [
+    -6,
+    4.5,
+    -1.3
+   ],
+   "size": [
+    0.35,
+    0.35,
+    9.1782
+   ],
+   "rotX": -1.3734,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -6,
+    4.5,
+    1.3
+   ],
+   "size": [
+    0.35,
+    0.35,
+    9.1782
+   ],
+   "rotX": 1.7682,
+   "rotY": 0,
+   "rotZ": -3.1416,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    6,
+    4.5,
+    -1.3
+   ],
+   "size": [
+    0.35,
+    0.35,
+    9.1782
+   ],
+   "rotX": -1.3734,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    6,
+    4.5,
+    1.3
+   ],
+   "size": [
+    0.35,
+    0.35,
+    9.1782
+   ],
+   "rotX": 1.7682,
+   "rotY": 0,
+   "rotZ": -3.1416,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -6,
+    0.3,
+    0
+   ],
+   "size": [
+    0.8,
+    0.6,
+    5.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    6,
+    0.3,
+    0
+   ],
+   "size": [
+    0.8,
+    0.6,
+    5.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    9.5,
+    0
+   ],
+   "size": [
+    13.2,
+    1,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    8.7,
+    0
+   ],
+   "size": [
+    2.4,
+    0.6,
+    1.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    4.9,
+    0
+   ],
+   "size": [
+    0.7,
+    0.6,
+    0.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -3,
+    0,
+    -4
+   ],
+   "note": "před jeřábem"
+  },
+  {
+   "p": [
+    -3,
+    0,
+    4
+   ],
+   "note": "pod jeřábem"
+  },
+  {
+   "p": [
+    3,
+    0,
+    4
+   ]
+  },
+  {
+   "p": [
+    3,
+    0,
+    -4
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Hák a kladnice jsou statické (bez lana a pohybu), kolizi mají jen nohy, patky a nosník."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -8,
+    1.2,
+    -1.8
+   ],
+   "to": [
+    -4,
+    1.2,
+    -1.8
+   ],
+   "expect_hit": true,
+   "note": "noha podpěry kryje"
+  }
+ ]
+}

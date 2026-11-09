@@ -1,0 +1,370 @@
+{
+ "schema_version": "1.1",
+ "id": "E122_watchtowerWood",
+ "asset_id": "setE.watchtowerWood",
+ "label_cs": "E122 Dřevěná strážní věž",
+ "category": "sada300_E",
+ "asset_kind": "building",
+ "footprint_m": [
+  3.6,
+  3.5933
+ ],
+ "height_m": 7.4238,
+ "target_m": [
+  3.6,
+  3.6,
+  7.3
+ ],
+ "bounds_m": {
+  "min": [
+   -1.8,
+   0,
+   -1.7966
+  ],
+  "max": [
+   1.8,
+   7.4238,
+   1.7966
+  ]
+ },
+ "triangles": {
+  "LOD0": 564
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteLight",
+  "metal",
+  "metalSheetRust",
+  "wood",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    -1.4,
+    3.6,
+    -1.4
+   ],
+   "size": [
+    0.2,
+    7.2,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -1.4,
+    3.6,
+    1.4
+   ],
+   "size": [
+    0.2,
+    7.2,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    1.4,
+    3.6,
+    -1.4
+   ],
+   "size": [
+    0.2,
+    7.2,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    1.4,
+    3.6,
+    1.4
+   ],
+   "size": [
+    0.2,
+    7.2,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0,
+    4.925,
+    0
+   ],
+   "size": [
+    3,
+    0.15,
+    3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -0.95,
+    5.5,
+    -1.46
+   ],
+   "size": [
+    1.1,
+    1,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.95,
+    5.5,
+    -1.46
+   ],
+   "size": [
+    1.1,
+    1,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -1.46,
+    5.5,
+    0.04
+   ],
+   "size": [
+    0.08,
+    1,
+    2.92
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.04,
+    5.5,
+    1.46
+   ],
+   "size": [
+    2.92,
+    1,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    1.46,
+    5.5,
+    0
+   ],
+   "size": [
+    0.08,
+    1,
+    2.84
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -1.4,
+    0.15,
+    -1.4
+   ],
+   "size": [
+    0.5,
+    0.3,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.4,
+    0.15,
+    1.4
+   ],
+   "size": [
+    0.5,
+    0.3,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.4,
+    0.15,
+    -1.4
+   ],
+   "size": [
+    0.5,
+    0.3,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.4,
+    0.15,
+    1.4
+   ],
+   "size": [
+    0.5,
+    0.3,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [
+  {
+   "base": [
+    0,
+    0,
+    -1.55
+   ],
+   "height": 5,
+   "facing_deg": 0
+  }
+ ],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2.4
+   ],
+   "note": "pod žebříkem"
+  },
+  {
+   "p": [
+    0,
+    5,
+    -0.6
+   ],
+   "ladder": true,
+   "note": "plošina"
+  },
+  {
+   "p": [
+    0.8,
+    5,
+    0.8
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Výstup ze žebříku mezerou 0,8 m v čelním zábradlí."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    3,
+    5.6,
+    0.5
+   ],
+   "to": [
+    0,
+    5.6,
+    0.5
+   ],
+   "expect_hit": true,
+   "note": "zábradlí kryje vkleče"
+  },
+  {
+   "from": [
+    3,
+    6.5,
+    0.5
+   ],
+   "to": [
+    0,
+    6.5,
+    0.5
+   ],
+   "expect_hit": false,
+   "note": "nad zábradlím výhled"
+  }
+ ]
+}

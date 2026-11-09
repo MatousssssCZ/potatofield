@@ -1,0 +1,276 @@
+{
+ "section": "E",
+ "generated": "2026-11-09",
+ "models": [
+  {
+   "item": 106,
+   "id": "E106_shedSmall",
+   "asset_id": "setE.shedSmall",
+   "label": "E106 Malý plechový sklad",
+   "glb": "E106_shedSmall.glb",
+   "json": "E106_shedSmall.json",
+   "render": "renders/E106.jpg"
+  },
+  {
+   "item": 107,
+   "id": "E107_warehouseLarge",
+   "asset_id": "setE.warehouseLarge",
+   "label": "E107 Velký sklad",
+   "glb": "E107_warehouseLarge.glb",
+   "json": "E107_warehouseLarge.json",
+   "render": "renders/E107.jpg"
+  },
+  {
+   "item": 108,
+   "id": "E108_shedDamaged",
+   "asset_id": "setE.shedDamaged",
+   "label": "E108 Poškozený sklad",
+   "glb": "E108_shedDamaged.glb",
+   "json": "E108_shedDamaged.json",
+   "render": "renders/E108.jpg"
+  },
+  {
+   "item": 109,
+   "id": "E109_hangarSmall",
+   "asset_id": "setE.hangarSmall",
+   "label": "E109 Malý obloukový hangár",
+   "glb": "E109_hangarSmall.glb",
+   "json": "E109_hangarSmall.json",
+   "render": "renders/E109.jpg"
+  },
+  {
+   "item": 110,
+   "id": "E110_hangarLarge",
+   "asset_id": "setE.hangarLarge",
+   "label": "E110 Velký obloukový hangár",
+   "glb": "E110_hangarLarge.glb",
+   "json": "E110_hangarLarge.json",
+   "render": "renders/E110.jpg"
+  },
+  {
+   "item": 111,
+   "id": "E111_silo",
+   "asset_id": "setE.silo",
+   "label": "E111 Válcové silo",
+   "glb": "E111_silo.glb",
+   "json": "E111_silo.json",
+   "render": "renders/E111.jpg"
+  },
+  {
+   "item": 112,
+   "id": "E112_waterTower",
+   "asset_id": "setE.waterTower",
+   "label": "E112 Vodojem na ocelových nohách",
+   "glb": "E112_waterTower.glb",
+   "json": "E112_waterTower.json",
+   "render": "renders/E112.jpg"
+  },
+  {
+   "item": 113,
+   "id": "E113_tankLow",
+   "asset_id": "setE.tankLow",
+   "label": "E113 Nízká průmyslová nádrž",
+   "glb": "E113_tankLow.glb",
+   "json": "E113_tankLow.json",
+   "render": "renders/E113.jpg"
+  },
+  {
+   "item": 114,
+   "id": "E114_fuelTanksVertical",
+   "asset_id": "setE.fuelTanksVertical",
+   "label": "E114 Svislé palivové nádrže",
+   "glb": "E114_fuelTanksVertical.glb",
+   "json": "E114_fuelTanksVertical.json",
+   "render": "renders/E114.jpg"
+  },
+  {
+   "item": 115,
+   "id": "E115_fuelTanksHorizontal",
+   "asset_id": "setE.fuelTanksHorizontal",
+   "label": "E115 Vodorovné palivové nádrže",
+   "glb": "E115_fuelTanksHorizontal.glb",
+   "json": "E115_fuelTanksHorizontal.json",
+   "render": "renders/E115.jpg"
+  },
+  {
+   "item": 116,
+   "id": "E116_pipeBridgeLow",
+   "asset_id": "setE.pipeBridgeLow",
+   "label": "E116 Nízký potrubní most",
+   "glb": "E116_pipeBridgeLow.glb",
+   "json": "E116_pipeBridgeLow.json",
+   "render": "renders/E116.jpg"
+  },
+  {
+   "item": 117,
+   "id": "E117_pipeBridgeHigh",
+   "asset_id": "setE.pipeBridgeHigh",
+   "label": "E117 Vysoký potrubní most",
+   "glb": "E117_pipeBridgeHigh.glb",
+   "json": "E117_pipeBridgeHigh.json",
+   "render": "renders/E117.jpg"
+  },
+  {
+   "item": 118,
+   "id": "E118_gantryCrane",
+   "asset_id": "setE.gantryCrane",
+   "label": "E118 Portálový jeřáb",
+   "glb": "E118_gantryCrane.glb",
+   "json": "E118_gantryCrane.json",
+   "render": "renders/E118.jpg"
+  },
+  {
+   "item": 119,
+   "id": "E119_checkpoint",
+   "asset_id": "setE.checkpoint",
+   "label": "E119 Kontrolní stanoviště s budkou",
+   "glb": "E119_checkpoint.glb",
+   "json": "E119_checkpoint.json",
+   "render": "renders/E119.jpg"
+  },
+  {
+   "item": 120,
+   "id": "E120_sandbagPost",
+   "asset_id": "setE.sandbagPost",
+   "label": "E120 Stanoviště s pytli a přístřeškem",
+   "glb": "E120_sandbagPost.glb",
+   "json": "E120_sandbagPost.json",
+   "render": "renders/E120.jpg"
+  },
+  {
+   "item": 121,
+   "id": "E121_checkpointDamaged",
+   "asset_id": "setE.checkpointDamaged",
+   "label": "E121 Poškozené kontrolní stanoviště",
+   "glb": "E121_checkpointDamaged.glb",
+   "json": "E121_checkpointDamaged.json",
+   "render": "renders/E121.jpg"
+  },
+  {
+   "item": 122,
+   "id": "E122_watchtowerWood",
+   "asset_id": "setE.watchtowerWood",
+   "label": "E122 Dřevěná strážní věž",
+   "glb": "E122_watchtowerWood.glb",
+   "json": "E122_watchtowerWood.json",
+   "render": "renders/E122.jpg"
+  },
+  {
+   "item": 123,
+   "id": "E123_watchtowerConcrete",
+   "asset_id": "setE.watchtowerConcrete",
+   "label": "E123 Betonová strážní věž",
+   "glb": "E123_watchtowerConcrete.glb",
+   "json": "E123_watchtowerConcrete.json",
+   "render": "renders/E123.jpg"
+  },
+  {
+   "item": 124,
+   "id": "E124_watchtowerDamaged",
+   "asset_id": "setE.watchtowerDamaged",
+   "label": "E124 Poškozená strážní věž",
+   "glb": "E124_watchtowerDamaged.glb",
+   "json": "E124_watchtowerDamaged.json",
+   "render": "renders/E124.jpg"
+  },
+  {
+   "item": 125,
+   "id": "E125_bunkerSmall",
+   "asset_id": "setE.bunkerSmall",
+   "label": "E125 Malý bunkr",
+   "glb": "E125_bunkerSmall.glb",
+   "json": "E125_bunkerSmall.json",
+   "render": "renders/E125.jpg"
+  },
+  {
+   "item": 126,
+   "id": "E126_bunkerWide",
+   "asset_id": "setE.bunkerWide",
+   "label": "E126 Široký bunkr",
+   "glb": "E126_bunkerWide.glb",
+   "json": "E126_bunkerWide.json",
+   "render": "renders/E126.jpg"
+  },
+  {
+   "item": 127,
+   "id": "E127_bunkerDamaged",
+   "asset_id": "setE.bunkerDamaged",
+   "label": "E127 Poškozený bunkr",
+   "glb": "E127_bunkerDamaged.glb",
+   "json": "E127_bunkerDamaged.json",
+   "render": "renders/E127.jpg"
+  },
+  {
+   "item": 128,
+   "id": "E128_hescoLow",
+   "asset_id": "setE.hescoLow",
+   "label": "E128 Nízká HESCO stěna",
+   "glb": "E128_hescoLow.glb",
+   "json": "E128_hescoLow.json",
+   "render": "renders/E128.jpg"
+  },
+  {
+   "item": 129,
+   "id": "E129_hescoHigh",
+   "asset_id": "setE.hescoHigh",
+   "label": "E129 Vysoká HESCO stěna",
+   "glb": "E129_hescoHigh.glb",
+   "json": "E129_hescoHigh.json",
+   "render": "renders/E129.jpg"
+  },
+  {
+   "item": 130,
+   "id": "E130_hescoCorner",
+   "asset_id": "setE.hescoCorner",
+   "label": "E130 Rohová HESCO stěna",
+   "glb": "E130_hescoCorner.glb",
+   "json": "E130_hescoCorner.json",
+   "render": "renders/E130.jpg"
+  },
+  {
+   "item": 131,
+   "id": "E131_hescoGap",
+   "asset_id": "setE.hescoGap",
+   "label": "E131 HESCO stěna s průchodem",
+   "glb": "E131_hescoGap.glb",
+   "json": "E131_hescoGap.json",
+   "render": "renders/E131.jpg"
+  },
+  {
+   "item": 132,
+   "id": "E132_tentSmall",
+   "asset_id": "setE.tentSmall",
+   "label": "E132 Malý vojenský stan",
+   "glb": "E132_tentSmall.glb",
+   "json": "E132_tentSmall.json",
+   "render": "renders/E132.jpg"
+  },
+  {
+   "item": 133,
+   "id": "E133_tentLarge",
+   "asset_id": "setE.tentLarge",
+   "label": "E133 Velký vojenský stan",
+   "glb": "E133_tentLarge.glb",
+   "json": "E133_tentLarge.json",
+   "render": "renders/E133.jpg"
+  },
+  {
+   "item": 134,
+   "id": "E134_mastLow",
+   "asset_id": "setE.mastLow",
+   "label": "E134 Nízký anténní stožár",
+   "glb": "E134_mastLow.glb",
+   "json": "E134_mastLow.json",
+   "render": "renders/E134.jpg"
+  },
+  {
+   "item": 135,
+   "id": "E135_mastHigh",
+   "asset_id": "setE.mastHigh",
+   "label": "E135 Vysoký anténní stožár",
+   "glb": "E135_mastHigh.glb",
+   "json": "E135_mastHigh.json",
+   "render": "renders/E135.jpg"
+  }
+ ]
+}

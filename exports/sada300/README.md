@@ -57,6 +57,12 @@ Přízemní budovy zůstávají přístupné; jejich kolize se slučují (stejn�
   dílny, čerpací stanice (přístřešek 12 × 8 m, stojany, obslužná budova se sklem), městská věž
   14 m (žebříky a podesty uvnitř), kupole (lepí se nahoru), škola a úřad (patrové → uzavřené,
   interiér přepínačem; úřad má pochozí střechu po vnějším žebříku) a tři tržnice.
+- **E106–E135 (průmysl a vojenské):** plechové sklady (malý, velký s volnou středovou cestou,
+  poškozený), obloukové hangáry (skořepina z natočených desek), silo s obvodovou plošinou,
+  vodojem s lávkou, nádrže, potrubní mosty (vysoký se servisní lávkou), portálový jeřáb,
+  kontrolní stanoviště (vč. poškozeného), strážní věže (dřevěná, betonová, poškozená), bunkry
+  (zalomený vstup bez průhledu, poškozený se sutí jako druhým vstupem), HESCO (4 typy),
+  stany (plachta zastaví hráče, ne střelu) a anténní stožáry (lana bez kolize).
 
 ## Editor: magnet budov
 
@@ -115,6 +121,9 @@ střešní moduly, balkony) se dál lepí na stěnu / střechu jako dřív.
   (kolize jen pro pohyb).
 - **Kolize D:** přístupné budovy s mnoha otvory mají 25–61 kvádrů (věž 61 kvůli střílnám ve
   dvou stupních); uzavřená škola 7 a úřad 10.
+
+- **Kolize E:** velký sklad a velký hangár mají 40–60 kvádrů (regály, sloupy, čelní stěny
+  hangáru po elipse); ostatní 1–24.
 
 **Neotestováno přímo ve hře** (multiplayer, skuteční hráči): vše výše pochází ze simulace
 a renderů editoru.

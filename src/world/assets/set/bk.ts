@@ -291,6 +291,17 @@ export function rail(a: P2, b: P2, y: number, h = 1.0): Part[] {
   const parts: Part[] = [];
   const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
   const alongX = Math.abs(b[1] - a[1]) < 1e-6;
+  if (!alongX && Math.abs(b[0] - a[0]) > 1e-6) {
+    // Šikmé zábradlí: natočené madlo, příčka a kolize (jen pro pohyb).
+    const yaw = Math.atan2(b[0] - a[0], b[1] - a[1]);
+    const cx = (a[0] + b[0]) / 2, cz = (a[1] + b[1]) / 2;
+    parts.push({ shape: 'box', pos: [cx, y + h, cz], rot: [0, yaw, 0], size: [0.05, 0.05, len], material: 'paintedMetal' });
+    parts.push({ shape: 'box', pos: [cx, y + h * 0.5, cz], rot: [0, yaw, 0], size: [0.03, 0.04, len], material: 'paintedMetal' });
+    const n = Math.max(1, Math.round(len / 1.2));
+    for (let i = 0; i <= n; i++) parts.push({ shape: 'box', pos: [a[0] + ((b[0] - a[0]) * i) / n, y + h / 2, a[1] + ((b[1] - a[1]) * i) / n], size: [0.05, h, 0.05], material: 'paintedMetal' });
+    parts.push({ shape: 'box', pos: [cx, y + h / 2, cz], rot: [0, yaw, 0], size: [0.06, h, len], material: 'paintedMetal', collide: true, render: false, moveOnly: true });
+    return parts;
+  }
   const c: [number, number, number] = [(a[0] + b[0]) / 2, y, (a[1] + b[1]) / 2];
   parts.push({ shape: 'box', pos: [c[0], y + h, c[2]], size: alongX ? [len, 0.05, 0.05] : [0.05, 0.05, len], material: 'paintedMetal' });
   parts.push({ shape: 'box', pos: [c[0], y + h * 0.5, c[2]], size: alongX ? [len, 0.04, 0.03] : [0.03, 0.04, len], material: 'paintedMetal' });

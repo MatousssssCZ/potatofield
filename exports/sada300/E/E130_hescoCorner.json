@@ -1,0 +1,138 @@
+{
+ "schema_version": "1.1",
+ "id": "E130_hescoCorner",
+ "asset_id": "setE.hescoCorner",
+ "label_cs": "E130 Rohová HESCO stěna",
+ "category": "sada300_E",
+ "asset_kind": "building",
+ "footprint_m": [
+  3.01,
+  3.01
+ ],
+ "height_m": 2.2299,
+ "target_m": [
+  3,
+  3,
+  2.2
+ ],
+ "bounds_m": {
+  "min": [
+   -1.51,
+   0,
+   -1.51
+  ],
+  "max": [
+   1.5,
+   2.2299,
+   1.5
+  ]
+ },
+ "triangles": {
+  "LOD0": 1720
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "chainLink",
+  "hescoFill",
+  "sand"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    1.05,
+    -1
+   ],
+   "size": [
+    3,
+    2.1,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1,
+    1.05,
+    0.5
+   ],
+   "size": [
+    1,
+    2.1,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    1.2,
+    0,
+    0.6
+   ],
+   "note": "v koutě"
+  },
+  {
+   "p": [
+    0,
+    0,
+    0.2
+   ]
+  },
+  {
+   "p": [
+    -0.1,
+    0,
+    1.2
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Ramena se překrývají v rohu (jeden souvislý objem) – žádná štěrbina."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -3,
+    1.5,
+    -3
+   ],
+   "to": [
+    0.5,
+    1.5,
+    0.5
+   ],
+   "expect_hit": true,
+   "note": "kout kryje"
+  }
+ ]
+}
