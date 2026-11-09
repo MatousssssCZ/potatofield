@@ -1,4 +1,5 @@
 import type { LadderLocal, Part } from '../../parts';
+import { MODE } from './close';
 
 /**
  * Stavebnice budov sady 300. Lokální souřadnice budovy: počátek = střed půdorysu u země,
@@ -101,6 +102,11 @@ export function wall(a: P2, b: P2, y0: number, h: number, t: number, ops: Op[], 
   for (const op of sorted) {
     if (op.bare) continue;
     const ow = op.w, oh = op.t - op.b;
+    // Uzavřená budova (BF2): okno = tmavé sklo, dveře = zavřené křídlo (zapuštěné v ostění).
+    if (MODE.closed) {
+      if (op.kind === 'window') parts.push({ shape: 'box', pos: at(op.c, op.b + oh / 2, -0.02), size: size(ow - 0.02, oh - 0.02, 0.03), material: 'glass' });
+      else parts.push({ shape: 'box', pos: at(op.c, op.b + (oh - 0.02) / 2, -0.06), size: size(ow - 0.02, oh - 0.02, 0.06), material: 'woodDark' });
+    }
     // Nadpraží (vystupuje o 4 cm) a venkovní parapet.
     parts.push({ shape: 'box', pos: at(op.c, op.t + 0.08, t / 2 + 0.02), size: size(ow + 0.26, 0.16, 0.06), material: trim });
     if (op.kind === 'window') {
@@ -112,7 +118,7 @@ export function wall(a: P2, b: P2, y0: number, h: number, t: number, ops: Op[], 
       // Dveřní zárubeň.
       for (const s of [-1, 1]) parts.push({ shape: 'box', pos: at(op.c + (s * (ow + 0.06)) / 2, op.b + oh / 2, t / 2 + 0.01), size: size(0.06, oh, 0.05), material: trim });
     }
-    if (op.leaf) {
+    if (op.leaf && !MODE.closed) {
       // Křídlo otevřené o ~180° a přiklopené k vnitřnímu líci vedle otvoru (vzhled, bez kolize).
       const lw = ow - 0.08;
       const before = op.c - ow / 2 - lw / 2 - 0.03, after = op.c + ow / 2 + lw / 2 + 0.03;
@@ -457,5 +463,51 @@ export function stairHouse(c: Core, y: number, mat: string, trim: string, vest =
   for (const [xx, out] of [[X0 + t / 2, -1], [X1 - t / 2, 1]] as const) parts.push(...wall([xx, Z0 + t], [xx, Z1 - t], y, h, t, [win(1.0, { w: 0.6, b: 1.4, t: 2.0 })], mat, { out: [out, 0], trim }));
   parts.push(...slab([X0 - 0.05, Z0 - 0.05, X1 + 0.05, Z1 + 0.05], y + h + 0.2, 0.2, [], 'concreteLight'));
   parts.push({ shape: 'box', pos: [cx, y + h + 0.33, (Z0 + Z1) / 2], size: [X1 - X0 + 0.1, 0.06, Z1 - Z0 + 0.1], material: trim });
+  return parts;
+}
+
+/**
+ * Stěna v libovolném směru (zkosené nároží, vychýlené hliněné zdi): natočené kvádry kolem otvorů.
+ * `out` = +1 / −1 vnější strana vlevo / vpravo od směru a→b (pro lišty a parapet).
+ * `ext` prodlouží stěnu na obou koncích (překryv rohů u nepravoúhlých půdorysů).
+ */
+export function wallLine(a: P2, b: P2, y0: number, h: number, t: number, ops: Op[], mat: string, out: 1 | -1, o: { trim?: string; ext?: number; collideInfill?: boolean } = {}): Part[] {
+  const ext = o.ext ?? 0;
+  const dx = b[0] - a[0], dz = b[1] - a[1];
+  const L0 = Math.hypot(dx, dz);
+  const ux = dx / L0, uz = dz / L0;
+  const A: P2 = [a[0] - ux * ext, a[1] - uz * ext];
+  const L = L0 + 2 * ext;
+  const yaw = Math.atan2(ux, uz);
+  // Normála (lokální +X boxu) = (cos yaw, −sin yaw); vnější strana podle `out`.
+  const nx = Math.cos(yaw) * out, nz = -Math.sin(yaw) * out;
+  const at = (u: number, v: number, w = 0): [number, number, number] => [A[0] + ux * u + nx * w, y0 + v, A[1] + uz * u + nz * w];
+  const rot: [number, number, number] = [0, yaw, 0];
+  const parts: Part[] = [];
+  const seg = (u0: number, u1: number, v0: number, v1: number) => {
+    if (u1 - u0 < 1e-3 || v1 - v0 < 1e-3) return;
+    parts.push({ shape: 'box', pos: at((u0 + u1) / 2, (v0 + v1) / 2), rot, size: [t, v1 - v0, u1 - u0], material: mat, collide: true });
+  };
+  const sorted = [...ops].map((q) => ({ ...q, c: q.c + ext })).sort((p, q) => p.c - q.c);
+  let cur = 0;
+  for (const op of sorted) {
+    const u0 = Math.max(cur, op.c - op.w / 2), u1 = Math.min(L, op.c + op.w / 2);
+    seg(cur, u0, 0, h);
+    seg(u0, u1, 0, op.b);
+    seg(u0, u1, op.t, h);
+    cur = u1;
+  }
+  seg(cur, L, 0, h);
+  const trim = o.trim ?? 'sandstone';
+  for (const op of sorted) {
+    if (op.bare) continue;
+    const ow = op.w, oh = op.t - op.b;
+    parts.push({ shape: 'box', pos: at(op.c, op.t + 0.08, t / 2 + 0.02), rot, size: [0.06, 0.16, ow + 0.26], material: trim });
+    if (op.kind === 'window') parts.push({ shape: 'box', pos: at(op.c, op.b - 0.04, t / 2 + 0.05), rot, size: [0.12, 0.08, ow + 0.2], material: trim });
+    if (MODE.closed) {
+      const glass = op.kind === 'window';
+      parts.push({ shape: 'box', pos: at(op.c, op.b + oh / 2, glass ? -0.02 : -0.06), rot, size: [glass ? 0.03 : 0.06, oh - 0.02, ow - 0.02], material: glass ? 'glass' : 'woodDark', collide: !!o.collideInfill });
+    }
+  }
   return parts;
 }

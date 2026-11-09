@@ -21,8 +21,8 @@ export interface WalkResult {
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
 /** Projde trasu hráčem v simulaci (stejné kolize jako server). */
-export async function walkRoute(assetId: string, route: Waypoint[]): Promise<WalkResult> {
-  const o: MapObject = { id: 'b', assetId, generatorVersion: 1, transform: { position: [0, 0, 0], rotation: [0, 0, 0] }, params: resolveParams(getAsset(assetId)!, {}), seed: 7 };
+export async function walkRoute(assetId: string, route: Waypoint[], params: MapObject['params'] = {}): Promise<WalkResult> {
+  const o: MapObject = { id: 'b', assetId, generatorVersion: 1, transform: { position: [0, 0, 0], rotation: [0, 0, 0] }, params: resolveParams(getAsset(assetId)!, params), seed: 7 };
   const g = generateObject(o);
   const phys = await makeWorld(collidersForMap([g]));
   const [x0, y0, z0] = route[0].p;

@@ -1,4 +1,5 @@
 import type { LadderLocal, Part } from '../../parts';
+import { MODE, closeParts, mergeColliders, type ClosedSpec } from './close';
 import { registerAsset, type AssetDef, type Params } from '../../registry';
 import {
   M, acBox, bands, chair, crate, door, ladderDef, ladderParts, landing, mattress, parapet, rail, rug, shelf, slab, spout, stairs, table, tank, wall, win,
@@ -70,18 +71,54 @@ export const roofSlab = (r: Rect, y: number, holes: Rect[] = [], top: string = R
 const D2 = (...a: number[]) => a;
 void D2;
 
-export function reg(item: number, id: string, label: string, def: Omit<AssetDef, 'assetId' | 'label' | 'category' | 'generatorVersion' | 'params' | 'materials' | 'defaultMaterial'> & { params?: AssetDef['params']; defaultMaterial?: string }, meta: Omit<SetMeta, 'item'>) {
+/**
+ * Registrace modelu sady. `closed` = budova s více nadzemními podlažími je zvenku plná (BF2):
+ * bez interiéru, okna se sklem, dveře zavřené, kolize = plné objemy. `interior` = model má hotový
+ * interiér, který jde zapnout parametrem „Přístupný interiér“ (výchozí vypnuto).
+ * Kolize všech modelů se slučují (méně kvádrů, stejný tvar).
+ */
+export function reg(
+  item: number,
+  id: string,
+  label: string,
+  def: Omit<AssetDef, 'assetId' | 'label' | 'category' | 'generatorVersion' | 'params' | 'materials' | 'defaultMaterial'> & { params?: AssetDef['params']; defaultMaterial?: string; closed?: ClosedSpec; interior?: boolean },
+  meta: Omit<SetMeta, 'item'>,
+) {
   const assetId = `setA.${id}`;
   SET_META[assetId] = { item, ...meta };
+  const { closed, interior, generate, ladders, ...rest } = def;
+  const params = [...(def.params ?? [])];
+  if (closed && interior) params.push({ key: 'interior', label: 'Přístupný interiér (mimo styl BF2)', type: 'bool', default: false });
+  const isClosed = (p: Params) => !!closed && !(interior && p.interior);
   registerAsset({
     assetId,
     label: `A${String(item).padStart(2, '0')} ${label}`,
     category: 'setA',
     generatorVersion: 1,
-    params: def.params ?? [],
     materials: WALL_MATS,
     defaultMaterial: def.defaultMaterial ?? 'plasterWarm',
-    ...def,
+    ...rest,
+    params,
+    generate(p, seed, mat, ctx) {
+      const c = isClosed(p);
+      MODE.closed = c;
+      let parts: Part[];
+      try {
+        parts = generate(p, seed, mat, ctx);
+      } finally {
+        MODE.closed = false;
+      }
+      if (c) parts = closeParts(parts, closed!, mat);
+      return mergeColliders(parts);
+    },
+    // Uzavřená budova: žebříky uvnitř (poklopy) neplatí, venkovní zůstávají.
+    ladders: ladders
+      ? (p) => {
+          const L = ladders(p);
+          if (!isClosed(p)) return L;
+          return L.filter((l) => !closed!.solids.some((b) => l.base[0] > b[0] + 0.05 && l.base[0] < b[3] - 0.05 && l.base[2] > b[2] + 0.05 && l.base[2] < b[5] - 0.05 && l.base[1] >= b[1] && l.base[1] < b[4] - 0.05));
+        }
+      : undefined,
   });
 }
 
@@ -325,7 +362,8 @@ export function hatch(h: Rect, yFloor: number, yRoof: number): { parts: Part[]; 
   parts.push({ shape: 'box', pos: [(h[0] + h[2]) / 2, yRoof + 0.05, h[1] - 0.05], size: [h[2] - h[0] + 0.1, 0.1, 0.1], material: 'paintedMetal' });
   parts.push({ shape: 'box', pos: [(h[0] + h[2]) / 2, yRoof + 0.05, h[3] + 0.05], size: [h[2] - h[0] + 0.1, 0.1, 0.1], material: 'paintedMetal' });
   parts.push({ shape: 'box', pos: [h[2] + 0.05, yRoof + 0.05, lz], size: [0.1, 0.1, h[3] - h[1]], material: 'paintedMetal' });
-  parts.push({ shape: 'box', pos: [h[2] + 0.1, yRoof + (h[2] - h[0]) / 2, lz], rot: [0, 0, 0.15], size: [0.05, h[2] - h[0], h[3] - h[1]], material: 'paintedMetal' });
+  if (MODE.closed) parts.push({ shape: 'box', pos: [(h[0] + h[2]) / 2, yRoof + 0.04, lz], size: [h[2] - h[0] + 0.1, 0.06, h[3] - h[1] + 0.1], material: 'paintedMetal' });
+  else parts.push({ shape: 'box', pos: [h[2] + 0.1, yRoof + (h[2] - h[0]) / 2, lz], rot: [0, 0, 0.15], size: [0.05, h[2] - h[0], h[3] - h[1]], material: 'paintedMetal' });
   return { parts, ladder: ladderDef(lx, lz, yFloor, yRoof - yFloor, 'x-') };
 }
 
@@ -397,6 +435,8 @@ function pilotHouse(W: number, recess: boolean, mat: string): Part[] {
 }
 
 reg(5, 'house2Recess', 'Dvoupodlažní dům s hlubokým výklenkem (pilot, upravený)', {
+  closed: { solids: [[-4, 0, -4, 4, 6.3, 4]], holes: [[-1.0, 0, -4.0, 1.0, 2.95, -2.55]] },
+  interior: true,
   describe: () => '8 × 8 m, 2 podlaží po 3,15 m, výklenek 2,0 × 1,45 m, vnitřní schody, zadní žebřík; doplněná okna',
   ladders: () => [ladderDef(-1.5, 4.05, 0, 6.3, 'z-')],
   generate: (_p, _s, mat) => pilotHouse(8, true, mat),
@@ -422,6 +462,8 @@ reg(5, 'house2Recess', 'Dvoupodlažní dům s hlubokým výklenkem (pilot, uprav
 });
 
 reg(6, 'house2Plain', 'Dvoupodlažní dům bez výklenku (pilot, upravený)', {
+  closed: { solids: [[-3.6, 0, -4, 3.6, 6.3, 4]] },
+  interior: true,
   describe: () => '7,2 × 8 m, 2 podlaží po 3,15 m, přímý vstup 1,4 m se stříškou, chodba a dva pokoje; doplněná okna',
   ladders: () => [ladderDef(-1.5, 4.05, 0, 6.3, 'z-')],
   generate: (_p, _s, mat) => pilotHouse(7.2, false, mat),
@@ -454,6 +496,8 @@ reg(6, 'house2Plain', 'Dvoupodlažní dům bez výklenku (pilot, upravený)', {
 // ---------------------------------------------------------------------------
 const A07_HATCH: Rect = [-2.6, -1.4, -1.4, -0.2];
 reg(7, 'house2SideRecess', 'Dvoupodlažní dům s bočním zapuštěným vstupem', {
+  closed: { solids: [[-4, 0, -3.5, 4, 6.4, 3.5]], holes: [[1.7, 0, -3.5, 3.7, 3.0, -1.7]] },
+  interior: true,
   describe: () => '8 × 7 m, 2 podlaží, výklenek 2,0 × 1,8 m vlevo, balkon, schody u zadní stěny, poklop na střechu',
   ladders: () => [hatch(A07_HATCH, 3.2, 6.4).ladder],
   generate(_p, _seed, mat) {
@@ -529,6 +573,8 @@ reg(7, 'house2SideRecess', 'Dvoupodlažní dům s bočním zapuštěným vstupem
 // ---------------------------------------------------------------------------
 const A08_HATCH: Rect = [-3.4, -0.6, -2.2, 0.6];
 reg(8, 'house2Arcade', 'Dvoupodlažní dům s podloubím', {
+  closed: { solids: [[-5, 0, -1.5, 5, 6.4, 4], [-5, 2.65, -4, 5, 6.4, -1.5]] },
+  interior: true,
   describe: () => '10 × 8 m, podloubí 2,5 m hluboké, světlost 2,65 m, 3 sloupy',
   ladders: () => [hatch(A08_HATCH, 3.2, 6.4).ladder],
   generate(_p, _seed, mat) {
@@ -586,6 +632,8 @@ reg(8, 'house2Arcade', 'Dvoupodlažní dům s podloubím', {
 // terasa s atikou, dveře z patra na terasu, žebřík z terasy na nejvyšší střechu.
 // ---------------------------------------------------------------------------
 reg(9, 'house2Setback', 'Dvoupodlažní dům s ustoupeným patrem', {
+  closed: { solids: [[-4.5, 0, -4, 4.5, 3.2, 4], [-4.5, 3.2, -2, 1.5, 6.4, 4]] },
+  interior: true,
   describe: () => 'přízemí 9 × 8 m, patro 6 × 6 m, terasa ve tvaru L, žebřík na horní střechu',
   ladders: () => [ladderDef(1.55, 1.0, 3.2, 3.2, 'x-')],
   generate(_p, _seed, mat) {

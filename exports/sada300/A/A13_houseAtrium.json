@@ -51,6 +51,74 @@
  "collision": [
   {
    "center": [
+    -1.2,
+    0.45,
+    0.4
+   ],
+   "size": [
+    1.2,
+    0.8,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -7.22,
+    2.3,
+    -4
+   ],
+   "size": [
+    0.85,
+    0.6,
+    0.42
+   ],
+   "rotX": 0,
+   "rotY": -1.5708,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -3.5,
+    1.03,
+    -5.45
+   ],
+   "size": [
+    1,
+    1.9,
+    0.4
+   ],
+   "rotX": 3.1416,
+   "rotY": 0,
+   "rotZ": 3.1416,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    3.5,
+    1.03,
+    -5.45
+   ],
+   "size": [
+    1,
+    1.9,
+    0.4
+   ],
+   "rotX": 3.1416,
+   "rotY": 0,
+   "rotZ": 3.1416,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
     0,
     0.04,
     0
@@ -59,6 +127,74 @@
     13.98,
     0.08,
     11.98
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -5.025,
+    3.1,
+    0
+   ],
+   "size": [
+    4.05,
+    0.2,
+    12.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    3.1,
+    -4.275
+   ],
+   "size": [
+    6,
+    0.2,
+    3.55
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    3.1,
+    4.275
+   ],
+   "size": [
+    6,
+    0.2,
+    3.55
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    5.025,
+    3.1,
+    0
+   ],
+   "size": [
+    4.05,
+    0.2,
+    12.1
    ],
    "rotX": 0,
    "rotY": 0,
@@ -1258,74 +1394,6 @@
   },
   {
    "center": [
-    -5.025,
-    3.1,
-    0
-   ],
-   "size": [
-    4.05,
-    0.2,
-    12.1
-   ],
-   "rotX": 0,
-   "rotY": 0,
-   "rotZ": 0,
-   "kind": "box",
-   "surface": "concrete"
-  },
-  {
-   "center": [
-    0,
-    3.1,
-    -4.275
-   ],
-   "size": [
-    6,
-    0.2,
-    3.55
-   ],
-   "rotX": 0,
-   "rotY": 0,
-   "rotZ": 0,
-   "kind": "box",
-   "surface": "concrete"
-  },
-  {
-   "center": [
-    0,
-    3.1,
-    4.275
-   ],
-   "size": [
-    6,
-    0.2,
-    3.55
-   ],
-   "rotX": 0,
-   "rotY": 0,
-   "rotZ": 0,
-   "kind": "box",
-   "surface": "concrete"
-  },
-  {
-   "center": [
-    5.025,
-    3.1,
-    0
-   ],
-   "size": [
-    4.05,
-    0.2,
-    12.1
-   ],
-   "rotX": 0,
-   "rotY": 0,
-   "rotZ": 0,
-   "kind": "box",
-   "surface": "concrete"
-  },
-  {
-   "center": [
     0,
     3.7,
     -5.875
@@ -1479,23 +1547,6 @@
   },
   {
    "center": [
-    -1.2,
-    0.45,
-    0.4
-   ],
-   "size": [
-    1.2,
-    0.8,
-    1.2
-   ],
-   "rotX": 0,
-   "rotY": 0,
-   "rotZ": 0,
-   "kind": "cylinder",
-   "surface": "concrete"
-  },
-  {
-   "center": [
     1.6,
     0.27,
     -1.4
@@ -1513,23 +1564,6 @@
   },
   {
    "center": [
-    -7.22,
-    2.3,
-    -4
-   ],
-   "size": [
-    0.85,
-    0.6,
-    0.42
-   ],
-   "rotX": 0,
-   "rotY": -1.5708,
-   "rotZ": 0,
-   "kind": "box",
-   "surface": "concrete"
-  },
-  {
-   "center": [
     -5.3,
     0.81,
     1.8
@@ -1542,23 +1576,6 @@
    "rotX": 0,
    "rotY": 0,
    "rotZ": 0,
-   "kind": "box",
-   "surface": "wood"
-  },
-  {
-   "center": [
-    -3.5,
-    1.03,
-    -5.45
-   ],
-   "size": [
-    1,
-    1.9,
-    0.4
-   ],
-   "rotX": 3.1416,
-   "rotY": 0,
-   "rotZ": 3.1416,
    "kind": "box",
    "surface": "wood"
   },
@@ -1593,23 +1610,6 @@
    "rotX": 0,
    "rotY": 0,
    "rotZ": 0,
-   "kind": "box",
-   "surface": "wood"
-  },
-  {
-   "center": [
-    3.5,
-    1.03,
-    -5.45
-   ],
-   "size": [
-    1,
-    1.9,
-    0.4
-   ],
-   "rotX": 3.1416,
-   "rotY": 0,
-   "rotZ": 3.1416,
    "kind": "box",
    "surface": "wood"
   },

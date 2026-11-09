@@ -50,6 +50,23 @@
  "collision": [
   {
    "center": [
+    3.6,
+    1.03,
+    1.5
+   ],
+   "size": [
+    1,
+    1.9,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": -1.5708,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
     0,
     0.04,
     0
@@ -58,6 +75,57 @@
     7.98,
     0.08,
     5.98
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    3.1,
+    0
+   ],
+   "size": [
+    8.1,
+    0.2,
+    6.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.04,
+    -2.25
+   ],
+   "size": [
+    2,
+    0.08,
+    1.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -2.6,
+    2.2,
+    3.22
+   ],
+   "size": [
+    0.85,
+    0.6,
+    0.42
    ],
    "rotX": 0,
    "rotY": 0,
@@ -612,40 +680,6 @@
   {
    "center": [
     0,
-    3.1,
-    0
-   ],
-   "size": [
-    8.1,
-    0.2,
-    6.1
-   ],
-   "rotX": 0,
-   "rotY": 0,
-   "rotZ": 0,
-   "kind": "box",
-   "surface": "concrete"
-  },
-  {
-   "center": [
-    0,
-    0.04,
-    -2.25
-   ],
-   "size": [
-    2,
-    0.08,
-    1.5
-   ],
-   "rotX": 0,
-   "rotY": 0,
-   "rotZ": 0,
-   "kind": "box",
-   "surface": "concrete"
-  },
-  {
-   "center": [
-    0,
     3.7,
     -2.875
    ],
@@ -730,23 +764,6 @@
   },
   {
    "center": [
-    -2.6,
-    2.2,
-    3.22
-   ],
-   "size": [
-    0.85,
-    0.6,
-    0.42
-   ],
-   "rotX": 0,
-   "rotY": 0,
-   "rotZ": 0,
-   "kind": "box",
-   "surface": "concrete"
-  },
-  {
-   "center": [
     2.2,
     0.81,
     -1.2
@@ -758,23 +775,6 @@
    ],
    "rotX": 0,
    "rotY": 0,
-   "rotZ": 0,
-   "kind": "box",
-   "surface": "wood"
-  },
-  {
-   "center": [
-    3.6,
-    1.03,
-    1.5
-   ],
-   "size": [
-    1,
-    1.9,
-    0.4
-   ],
-   "rotX": 0,
-   "rotY": -1.5708,
    "rotZ": 0,
    "kind": "box",
    "surface": "wood"

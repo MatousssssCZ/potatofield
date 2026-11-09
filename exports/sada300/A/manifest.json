@@ -181,6 +181,96 @@
    "glb": "A20_cornerShop.glb",
    "json": "A20_cornerShop.json",
    "render": "renders/A20.jpg"
+  },
+  {
+   "item": 21,
+   "id": "A21_cornerTwoShops",
+   "asset_id": "setA.cornerTwoShops",
+   "label": "A21 Rohový dům se dvěma výlohami",
+   "glb": "A21_cornerTwoShops.glb",
+   "json": "A21_cornerTwoShops.json",
+   "render": "renders/A21.jpg"
+  },
+  {
+   "item": 22,
+   "id": "A22_cornerChamfer",
+   "asset_id": "setA.cornerChamfer",
+   "label": "A22 Rohový dům se zkoseným nárožím",
+   "glb": "A22_cornerChamfer.glb",
+   "json": "A22_cornerChamfer.json",
+   "render": "renders/A22.jpg"
+  },
+  {
+   "item": 23,
+   "id": "A23_mudSmall",
+   "asset_id": "setA.mudSmall",
+   "label": "A23 Malý hliněný dům",
+   "glb": "A23_mudSmall.glb",
+   "json": "A23_mudSmall.json",
+   "render": "renders/A23.jpg"
+  },
+  {
+   "item": 24,
+   "id": "A24_mudTwoRooms",
+   "asset_id": "setA.mudTwoRooms",
+   "label": "A24 Hliněný dům se dvěma místnostmi",
+   "glb": "A24_mudTwoRooms.glb",
+   "json": "A24_mudTwoRooms.json",
+   "render": "renders/A24.jpg"
+  },
+  {
+   "item": 25,
+   "id": "A25_mudAnnex",
+   "asset_id": "setA.mudAnnex",
+   "label": "A25 Hliněný dům s přístavkem",
+   "glb": "A25_mudAnnex.glb",
+   "json": "A25_mudAnnex.json",
+   "render": "renders/A25.jpg"
+  },
+  {
+   "item": 26,
+   "id": "A26_mudIrregular",
+   "asset_id": "setA.mudIrregular",
+   "label": "A26 Hliněný dům s nepravidelným půdorysem",
+   "glb": "A26_mudIrregular.glb",
+   "json": "A26_mudIrregular.json",
+   "render": "renders/A26.jpg"
+  },
+  {
+   "item": 27,
+   "id": "A27_villaTerrace",
+   "asset_id": "setA.villaTerrace",
+   "label": "A27 Vila s dvorem a terasou",
+   "glb": "A27_villaTerrace.glb",
+   "json": "A27_villaTerrace.json",
+   "render": "renders/A27.jpg"
+  },
+  {
+   "item": 28,
+   "id": "A28_villaWalled",
+   "asset_id": "setA.villaWalled",
+   "label": "A28 Vila s obvodovou zdí",
+   "glb": "A28_villaWalled.glb",
+   "json": "A28_villaWalled.json",
+   "render": "renders/A28.jpg"
+  },
+  {
+   "item": 29,
+   "id": "A29_damaged2",
+   "asset_id": "setA.damaged2",
+   "label": "A29 Poškozený dvoupodlažní dům",
+   "glb": "A29_damaged2.glb",
+   "json": "A29_damaged2.json",
+   "render": "renders/A29.jpg"
+  },
+  {
+   "item": 30,
+   "id": "A30_damaged3",
+   "asset_id": "setA.damaged3",
+   "label": "A30 Poškozený třípodlažní činžák",
+   "glb": "A30_damaged3.glb",
+   "json": "A30_damaged3.json",
+   "render": "renders/A30.jpg"
   }
  ]
 }

@@ -69,8 +69,10 @@ mapě** (assety, které mapa už obsahuje, s počtem). Klik vloží asset do st�
 | Testovat | **F5** / tlačítko ▶ Testovat |
 | Kontrola | **✓ Kontrola**: u každého problému **Ukázat** (vybere a zaměří) a kde to jde **Opravit** (položit na zem, odsunout předměty, které stojí v sobě, přesunout spawn na volné místo); **Opravit vše** |
 
-- **Sada 300** (kategorie „Sada 300 · A Obytné budovy“ …): modely podle zadání sady 300,
-  přístupné budovy s ověřeným průchodem (test `tests/set300.test.ts`). Export GLB + JSON,
+- **Sada 300** (kategorie „Sada 300 · A Obytné budovy“ …): modely podle zadání sady 300 s ověřeným
+  průchodem (test `tests/set300.test.ts`). Budovy s více nadzemními podlažími jsou jako v BF2
+  uzavřené (okna se sklem, zavřené dveře, kolize = plné objemy); otevřené zůstávají výklenky,
+  podloubí, průjezdy a zřícené části. Starší modely mají interiér na přepínač „Přístupný interiér“. Export GLB + JSON,
   manifest, rendery a validační report v `exports/sada300/` (`npx tsx scripts/export-set.ts A`).
 - **Palmy** (Příroda): *Palma* (datlovník / štíhlá, výška, náklon, počet listů, převislost),
   *Random palma* (každé vložení trochu jiná – výška, náklon a jeho směr, listy; „Míra rozdílů“ drží

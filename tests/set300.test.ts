@@ -22,7 +22,9 @@ export const PILOT_ROUTES: Record<string, Waypoint[]> = {
 describe('sada 300 – A obytné budovy: průchodnost', () => {
   for (const [id, meta] of Object.entries(SET_META)) {
     it(`A${String(meta.item).padStart(2, '0')} ${id}: trasa vstup → místnosti → patra → střecha`, async () => {
-      const r = await walkRoute(id, meta.route);
+      // Patrové budovy jsou ve výchozím stavu uzavřené (BF2) – trasa interiéru s „Přístupný interiér“.
+      const hasInterior = getAsset(id)!.params.some((q) => q.key === 'interior');
+      const r = await walkRoute(id, meta.route, hasInterior ? { interior: true } : {});
       expect(r.failAt ?? null).toBeNull();
     }, 60000);
   }
@@ -58,6 +60,35 @@ describe('sada 300 – pilotní GLB domy (položky 5, 6)', () => {
     it(`${id}: průchod a výstup na střechu`, async () => {
       const r = await walkRoute(id, route);
       expect(r.failAt ?? null).toBeNull();
+    }, 60000);
+  }
+});
+
+
+describe('sada 300 – uzavřené patrové budovy (BF2)', () => {
+  const closedIds = Object.keys(SET_META).filter((id) => getAsset(id)!.params.some((q) => q.key === 'interior'));
+  it('patrové budovy mají přepínač interiéru, výchozí = uzavřeno', () => {
+    expect(closedIds.length).toBeGreaterThanOrEqual(13);
+    for (const id of closedIds) expect(resolveParams(getAsset(id)!, {}).interior).toBe(false);
+  });
+  for (const id of closedIds) {
+    it(`${id}: dovnitř nelze, kolizí výrazně méně, výklenky / průjezdy zůstanou`, async () => {
+      const def = getAsset(id)!;
+      const mk = (interior: boolean) => generateObject({ id: 'b', assetId: id, generatorVersion: 1, transform: { position: [0, 0, 0], rotation: [0, 0, 0] }, params: resolveParams(def, { interior }), seed: 1 });
+      const closed = mk(false), open = mk(true);
+      const nc = collidersForMap([closed]).length, no = collidersForMap([open]).length;
+      expect(nc).toBeLessThan(no);
+      expect(nc).toBeLessThanOrEqual(90);
+      // Uzavřená budova: žádný nábytek ani příčky uvnitř, okna se sklem.
+      expect(closed.parts.some((p) => p.material === 'glass')).toBe(true);
+      expect(closed.parts.length).toBeLessThan(open.parts.length);
+      // Pokud je v trase výklenek / průjezd / podloubí, musí jít dojít až tam i v uzavřené verzi.
+      const r = SET_META[id].route;
+      const k = r.findIndex((w) => /výklenek|průjezd|podloubí|krytý rohový/.test(w.note ?? ''));
+      if (k > 0) {
+        const res = await walkRoute(id, r.slice(0, k + 1));
+        expect(res.failAt ?? null).toBeNull();
+      }
     }, 60000);
   }
 });

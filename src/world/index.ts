@@ -11,6 +11,7 @@ import './assets/roads';
 import './assets/glbProps';
 import './assets/set/residential';
 import './assets/set/residential2';
+import './assets/set/residential3';
 
 export * from './registry';
 export * from './parts';

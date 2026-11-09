@@ -107,17 +107,19 @@ for (const id of ids) {
     tested_in_game: false,
   };
   fs.writeFileSync(path.join(outDir, `${file}.json`), JSON.stringify(json, null, 1));
-  const walk = await walkRoute(id, meta.route);
+  const hasInterior = def.params.some((q) => q.key === 'interior');
+  const walk = await walkRoute(id, meta.route, hasInterior ? { interior: true } : {});
+  const closedKind = hasInterior ? 'uzavřená (interiér volitelně)' : /Uzavřen/.test(meta.notes.join(' ')) ? 'uzavřená' : 'přístupná';
   const dims = `${json.footprint_m[0].toFixed(2)} × ${json.footprint_m[1].toFixed(2)} × ${json.height_m.toFixed(2)}`;
   manifest.push({ item: meta.item, id: file, asset_id: id, label: def.label, glb: `${file}.glb`, json: `${file}.json`, render: `renders/${section}${String(meta.item).padStart(2, "0")}.jpg` });
   report.push(
-    `| ${section}${String(meta.item).padStart(2, '0')} | ${def.label.replace(/^[A-Z]\d+ /, '')} | ${meta.target.join(' × ')} | ${dims} | ${tris} / 12000 | ${colParts.length}${colParts.length > 24 ? ' ⚠' : ''} | ${mats.size} | ${ladders.length} | ${walk.ok ? `✔ ${walk.reached}/${walk.total}` : `✘ bod ${walk.failAt!.index} (${walk.failAt!.reason})`} |`,
+    `| ${section}${String(meta.item).padStart(2, '0')} | ${def.label.replace(/^[A-Z]\d+ /, '')} | ${closedKind} | ${meta.target.join(' × ')} | ${dims} | ${tris} / 12000 | ${colParts.length}${colParts.length > 24 ? ' ⚠' : ''} | ${mats.size} | ${ladders.length} | ${walk.ok ? `✔ ${walk.reached}/${walk.total}` : `✘ bod ${walk.failAt!.index} (${walk.failAt!.reason})`} |`,
   );
   console.log('✓', file, tris, 'tris', colParts.length, 'kolizí', walk.ok ? 'trasa OK' : 'TRASA SELHALA');
 }
 fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify({ section, generated: new Date().toISOString().slice(0, 10), models: manifest }, null, 1));
 fs.writeFileSync(
   path.join(outDir, 'VALIDACE.md'),
-  `# Sada 300 · ${section} – validační report\n\nAutomaticky z \`scripts/export-set.ts\`. Trasa = simulovaný hráč (stejné kolize jako server) projde ulice → vchod → místnosti → patra → střecha.\n\n| # | Model | Cíl (m) | Skutečnost (m) | Trojúhelníky LOD0 | Kolizní kvádry | Materiály | Žebříky | Trasa |\n|---|---|---|---|---|---|---|---|---|\n${report.join('\n')}\n\n**Neotestováno přímo ve hře** (multiplayer, reálné ovládání): vše výše je ze simulace a renderů editoru.\n`,
+  `# Sada 300 · ${section} – validační report\n\nAutomaticky z \`scripts/export-set.ts\`. Trasa = simulovaný hráč (stejné kolize jako server) projde ulice → vchod → místnosti → patra → střecha. Budovy s více nadzemními podlažími jsou ve výchozím stavu uzavřené (styl BF2: bez interiéru, kolize = plné objemy); u starších (A05–A20) jde interiér zapnout parametrem „Přístupný interiér“ – trasa se testuje s ním. GLB/JSON jsou ve výchozí (uzavřené) podobě.\n\n| # | Model | Typ | Cíl (m) | Skutečnost (m) | Trojúhelníky LOD0 | Kolizní kvádry | Materiály | Žebříky | Trasa |\n|---|---|---|---|---|---|---|---|---|---|\n${report.join('\n')}\n\n**Neotestováno přímo ve hře** (multiplayer, reálné ovládání): vše výše je ze simulace a renderů editoru.\n`,
 );
 console.log('hotovo', outDir);

@@ -21,9 +21,22 @@ Pro každou dávku navíc vzniká podle zadání:
 Vygeneruje se příkazem `npx tsx scripts/export-set.ts A`. Rendery skriptem
 `node scripts/set/setshots.mjs exports/sada300/A/renders setA.` (Playwright, běžící `npm run dev`).
 
+## Patrové budovy = uzavřené (styl BF2)
+
+Budovy s více než jedním nadzemním podlažím jsou zvenku plné: okna mají tmavé sklo, dveře jsou
+zavřené, interiér se nevytváří a kolize je pár plných kvádrů objemu (A18: 26 místo 403).
+Otevřené zůstávají jen prostory, které slouží jako kryt nebo průchod: výklenky vstupů, podloubí,
+průjezdy, krytý rohový vstup, u poškozených domů zřícený roh a průraz. Starší modely A05–A20 mají
+hotový interiér; jde zapnout parametrem **„Přístupný interiér“** (výchozí vypnuto).
+Přízemní budovy zůstávají přístupné; jejich kolize se slučují (stejný tvar, méně kvádrů).
+
 ## Dávky
 
 - **A01–A10:** přízemní a dvoupodlažní domy (A05/A06 = upravené piloty).
+- **A21–A30:** rohový obchod se dvěma otvory, zkosené nároží (uzavřený), čtyři hliněné domy
+  (silné zdi se zaoblenou korunou, trámy, přístavek, vychýlené zdi), vila s podloubím a terasou,
+  vila s obvodovou zdí, poškozený dvoupodlažní dům (výstup po suti na odkrytou desku) a poškozený
+  činžák (průraz do vybydlené místnosti, zřícený horní roh, utržený balkon).
 - **A11–A20:** domy se dvory (protáhlý, L, centrální s krytou chodbou), činžáky se 3 a 5 podlažími
   (dvouramenné schodiště s mezipodestou přes všechna podlaží až do střešní nástavby, balkony,
   ustoupené patro s terasou, průjezdy 3,5 × 3,0 m, vystouplý schodišťový trakt), rohový dům
@@ -44,9 +57,8 @@ Vygeneruje se příkazem `npx tsx scripts/export-set.ts A`. Rendery skriptem
   4 kvádry. Statické kvádry jsou pro fyziku levné (na mapě s 50 budovami ~4000 kvádrů).
   Pokud chceš limit 24 dodržet striktně, musely by okna mít „plnou“ kolizi a střílet by se
   jimi nedalo.
-- **Kolize u činžáků (A14–A19):** dvouramenné schodiště, příčky a okna ve 3–5 podlažích dávají
-  150–430 kolizních kvádrů na budovu. Pokud by to na velkých mapách zatěžovalo fyziku, další krok
-  je slučovat souvislé kusy zdí každého podlaží do méně kvádrů (vzhled ani průchod se nezmění).
+- **Kolize:** uzavřené patrové budovy 10–62 kvádrů, přízemní 20–93 (skutečné otvory oken a dveří
+  rozdělují zdi; limit 24 by vyžadoval plná okna). Verze s interiérem (volitelná) mají víc.
 - **LOD:** procedurální budovy nemají LOD1/LOD2. Hra statické objekty slučuje podle materiálu,
   takže počet vykreslovaných částí je malý. LOD0 je vždy hluboko pod limitem 12 000.
 - **A05 a A06 (pilotní P):** GLB piloty prošly kontrolou průchodu (výklenek, schody na plnou

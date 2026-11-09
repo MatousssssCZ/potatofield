@@ -1,0 +1,324 @@
+{
+ "schema_version": "1.1",
+ "id": "A29_damaged2",
+ "asset_id": "setA.damaged2",
+ "label_cs": "A29 Poškozený dvoupodlažní dům",
+ "category": "sada300_A",
+ "asset_kind": "building",
+ "footprint_m": [
+  10.1282,
+  12.0743
+ ],
+ "height_m": 7.46,
+ "target_m": [
+  8,
+  7,
+  6.4
+ ],
+ "bounds_m": {
+  "min": [
+   -4.11,
+   -0.8973,
+   -8.4643
+  ],
+  "max": [
+   6.0182,
+   7.46,
+   3.61
+  ]
+ },
+ "triangles": {
+  "LOD0": 2616
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "brick",
+  "concreteDark",
+  "concreteLight",
+  "glass",
+  "metalSheetRust",
+  "plasterWarm",
+  "plasterWhite",
+  "sandstone",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    2.5,
+    1.5278,
+    -5.5963
+   ],
+   "size": [
+    2.6,
+    0.18,
+    5.36
+   ],
+   "rotX": -0.6398,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "ramp",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.25,
+    3.4547,
+    -3.35
+   ],
+   "size": [
+    0.45,
+    0.5094,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.75,
+    3.4748,
+    -3.35
+   ],
+   "size": [
+    0.45,
+    0.5496,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.85,
+    3.9361,
+    -3.1
+   ],
+   "size": [
+    0.3,
+    1.4723,
+    0.85
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.85,
+    3.7694,
+    -2.2
+   ],
+   "size": [
+    0.3,
+    1.1388,
+    0.85
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.85,
+    3.6629,
+    -1.3
+   ],
+   "size": [
+    0.3,
+    0.9257,
+    0.85
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.5,
+    6.9,
+    -3.375
+   ],
+   "size": [
+    5,
+    1,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    6.9,
+    3.375
+   ],
+   "size": [
+    8,
+    1,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -3.875,
+    6.9,
+    0
+   ],
+   "size": [
+    0.25,
+    1,
+    6.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.875,
+    6.9,
+    1.5
+   ],
+   "size": [
+    0.25,
+    1,
+    3.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.5,
+    3.2,
+    0
+   ],
+   "size": [
+    5,
+    6.4,
+    7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.5,
+    1.6,
+    0
+   ],
+   "size": [
+    3,
+    3.2,
+    7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.5,
+    4.8,
+    1.5
+   ],
+   "size": [
+    3,
+    3.2,
+    4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    2.5,
+    0,
+    -9.5
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    2.5,
+    0,
+    -8.4
+   ],
+   "note": "pata suti"
+  },
+  {
+   "p": [
+    2.5,
+    3.2,
+    -2.4
+   ],
+   "note": "odkrytá deska patra"
+  },
+  {
+   "p": [
+    1.6,
+    3.2,
+    -1.2
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Uzavřená budova (BF2) s otevřeným zřiceným rohem patra; výstup po suti (rampa 36°), pahýly zdí jako nízký kryt."
+ ],
+ "tested_in_game": false
+}

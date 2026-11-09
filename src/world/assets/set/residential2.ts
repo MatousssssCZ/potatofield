@@ -134,6 +134,8 @@ reg(11, 'houseLongYard', 'Dům s protáhlým dvorem', {
 // uzavřený zdí s bránou.
 // ---------------------------------------------------------------------------
 reg(12, 'houseLYard', 'Dům ve tvaru L se dvorem', {
+  closed: { solids: [[-6, 0, 2, 6, 6.4, 6], [-6, 0, -6, -2, 3.2, 2]] },
+  interior: true,
   describe: () => 'obálka 12 × 12 m, dvůr 8 × 8 m, zadní křídlo 2 podlaží s terasou, boční křídlo s pochozí střechou',
   ladders: () => [ladderDef(1.0, 1.95, S, S, 'z+')],
   generate(_p, _seed, mat) {
@@ -311,6 +313,8 @@ function slabs(r: Rect, floors: number, core: Rect, toRoof = true): Part[] {
 // střechu (nástavba), dva pokoje na podlaží, dva sloupce balkonů, vstup zapuštěný 1,5 m.
 // ---------------------------------------------------------------------------
 reg(14, 'flats3Recess', 'Třípodlažní činžák s výklenkem', {
+  closed: { solids: [[-5, 0, -4.5, 5, 9.6, 4.5]], holes: [[-1.0, 0, -4.5, 1.0, 3.0, -3.0]] },
+  interior: true,
   describe: () => '10 × 9 m, 3 podlaží, centrální schodiště na střechu, 2 sloupce balkonů, výklenek 2 × 1,5 m',
   generate(_p, _seed, mat) {
     const R: Rect = [-5, -4.5, 5, 4.5];
@@ -389,6 +393,8 @@ reg(14, 'flats3Recess', 'Třípodlažní činžák s výklenkem', {
 // okraje vede přímo ke schodišti, nepravidelné balkony (čelo i bok), boční okna.
 // ---------------------------------------------------------------------------
 reg(15, 'flats3SideEntry', 'Třípodlažní činžák s bočním vstupem', {
+  closed: { solids: [[-4.5, 0, -5.5, 4.5, 9.6, 5.5]], holes: [[-4.2, 0, -5.5, -2.2, 3.0, -3.7]] },
+  interior: true,
   describe: () => '9 × 11 m, 3 podlaží, výklenek 2,0 × 1,8 m vpravo přímo ke schodišti, nepravidelné balkony',
   generate(_p, _seed, mat) {
     const R: Rect = [-4.5, -5.5, 4.5, 5.5];
@@ -482,6 +488,8 @@ reg(15, 'flats3SideEntry', 'Třípodlažní činžák s bočním vstupem', {
 // přiléhající ke zdi, krátká centrální chodba, schodiště na střechu.
 // ---------------------------------------------------------------------------
 reg(16, 'flats3Narrow', 'Třípodlažní činžák s úzkými balkony', {
+  closed: { solids: [[-6, 0, -4, 6, 9.6, 4]] },
+  interior: true,
   describe: () => '12 × 8 m, 3 podlaží, tři okenní osy, mělké balkony 2 × 0,9 m, krátká chodba',
   generate(_p, _seed, mat) {
     const R: Rect = [-6, -4, 6, 4];
@@ -553,6 +561,8 @@ reg(16, 'flats3Narrow', 'Třípodlažní činžák s úzkými balkony', {
 // vzadu, terasa s atikou kolem, schodiště spojuje všechna podlaží, žebřík na horní střechu.
 // ---------------------------------------------------------------------------
 reg(17, 'flats3Setback', 'Činžák s ustoupeným posledním podlažím', {
+  closed: { solids: [[-5.5, 0, -4.5, 5.5, 6.4, 4.5], [-4, 6.4, -2.5, 4, 9.6, 4.5]] },
+  interior: true,
   describe: () => 'podlaží 1–2: 11 × 9 m, 3. podlaží 8 × 7 m, terasa ve tvaru U, žebřík na horní střechu',
   ladders: () => [ladderDef(4.05, 1.0, 2 * S, S, 'x-')],
   generate(_p, _seed, mat) {
@@ -626,6 +636,8 @@ reg(17, 'flats3Setback', 'Činžák s ustoupeným posledním podlažím', {
 // schodiště vedle průjezdu (vstup z průjezdu), v patrech chodba a pokoje, nástavba na střeše.
 // ---------------------------------------------------------------------------
 reg(18, 'flats5Passage', 'Pětipodlažní činžák s centrálním průjezdem', {
+  closed: { solids: [[-7, 0, -5.5, 7, 16, 5.5]], holes: [[-1.75, 0, -5.5, 1.75, 3.0, 5.5]] },
+  interior: true,
   describe: () => '14 × 11 m, 5 podlaží, průjezd 3,5 × 3,0 m, schodiště z průjezdu až na střechu',
   generate(_p, _seed, mat) {
     const R: Rect = [-7, -5.5, 7, 5.5];
@@ -717,6 +729,8 @@ reg(18, 'flats5Passage', 'Pětipodlažní činžák s centrálním průjezdem', 
 // obytný vstup vpravo, vystouplý schodišťový trakt vzadu, balkony v patrech.
 // ---------------------------------------------------------------------------
 reg(19, 'flats5SidePassage', 'Pětipodlažní činžák s bočním průjezdem', {
+  closed: { solids: [[-7.5, 0, -5, 7.5, 16, 5], [-7.5, 0, 5, -4.55, 16, 6.9]], holes: [[3.7, 0, -5, 7.2, 3.0, 5]] },
+  interior: true,
   describe: () => '15 × 10 m, 5 podlaží, boční průjezd 3,5 m, vystouplý schodišťový trakt, balkony',
   generate(_p, _seed, mat) {
     const R: Rect = [-7.5, -5, 7.5, 5];
@@ -819,6 +833,8 @@ reg(19, 'flats5SidePassage', 'Pětipodlažní činžák s bočním průjezdem', 
 // ---------------------------------------------------------------------------
 const A20_HATCH: Rect = [0.6, 0.4, 1.8, 1.6];
 reg(20, 'cornerShop', 'Rohový dům se zapuštěným rohovým vstupem', {
+  closed: { solids: [[-5, 0, -5, 5, 6.4, 5]], holes: [[-5, 0, -5, -2.5, 2.65, -2.5]] },
+  interior: true,
   describe: () => '10 × 10 m, 2 podlaží, rohový krytý vstup 2,5 × 2,5 m, obchod s výlohami do dvou ulic, schody do patra',
   ladders: () => [hatch(A20_HATCH, S, 2 * S).ladder],
   generate(_p, _seed, mat) {
