@@ -1,0 +1,113 @@
+{
+ "schema_version": "1.1",
+ "id": "J271_fridge",
+ "asset_id": "setJ.fridge",
+ "label_cs": "J271 Stará lednice",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.652,
+  0.685
+ ],
+ "height_m": 1.65,
+ "target_m": [
+  0.65,
+  0.68,
+  1.65
+ ],
+ "bounds_m": {
+  "min": [
+   -0.326,
+   0,
+   -0.36
+  ],
+  "max": [
+   0.326,
+   1.65,
+   0.325
+  ]
+ },
+ "triangles": {
+  "LOD0": 88
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "gunPolymer",
+  "metal",
+  "plasterWhite"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.81,
+    0
+   ],
+   "size": [
+    0.65,
+    1.54,
+    0.65
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -0.7,
+    0,
+    -0.7
+   ]
+  },
+  {
+   "p": [
+    0.7,
+    0,
+    -0.7
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    1.2,
+    -1
+   ],
+   "to": [
+    0,
+    1.2,
+    1
+   ],
+   "expect_hit": true,
+   "note": "kryje"
+  }
+ ]
+}

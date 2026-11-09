@@ -1,0 +1,95 @@
+{
+ "schema_version": "1.1",
+ "id": "J264_chairPlastic",
+ "asset_id": "setJ.chairPlastic",
+ "label_cs": "J264 Plastová židle",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.4934,
+  0.5294
+ ],
+ "height_m": 0.887,
+ "target_m": [
+  0.48,
+  0.48,
+  0.9
+ ],
+ "bounds_m": {
+  "min": [
+   -0.2467,
+   -0.0018,
+   -0.2352
+  ],
+  "max": [
+   0.2467,
+   0.887,
+   0.2941
+  ]
+ },
+ "triangles": {
+  "LOD0": 108
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "plasterWhite"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.23,
+    0
+   ],
+   "size": [
+    0.44,
+    0.46,
+    0.42
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster",
+   "blocks": "move"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -0.5,
+    0,
+    -0.5
+   ]
+  },
+  {
+   "p": [
+    0.5,
+    0,
+    -0.5
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false
+}

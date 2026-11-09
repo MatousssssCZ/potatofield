@@ -1,0 +1,276 @@
+{
+ "section": "J",
+ "generated": "2026-11-09",
+ "models": [
+  {
+   "item": 246,
+   "id": "J246_crateSmall",
+   "asset_id": "setJ.crateSmall",
+   "label": "J246 Malá dřevěná bedna (pilot)",
+   "glb": "J246_crateSmall.glb",
+   "json": "J246_crateSmall.json",
+   "render": "renders/J246.jpg"
+  },
+  {
+   "item": 247,
+   "id": "J247_crateLarge",
+   "asset_id": "setJ.crateLarge",
+   "label": "J247 Velká bedna s diagonální výztuhou (pilot)",
+   "glb": "J247_crateLarge.glb",
+   "json": "J247_crateLarge.json",
+   "render": "renders/J247.jpg"
+  },
+  {
+   "item": 248,
+   "id": "J248_crateStrapped",
+   "asset_id": "setJ.crateStrapped",
+   "label": "J248 Bedna s kovovými pásy (pilot)",
+   "glb": "J248_crateStrapped.glb",
+   "json": "J248_crateStrapped.json",
+   "render": "renders/J248.jpg"
+  },
+  {
+   "item": 249,
+   "id": "J249_crateMilitaryOpen",
+   "asset_id": "setJ.crateMilitaryOpen",
+   "label": "J249 Otevřená vojenská bedna",
+   "glb": "J249_crateMilitaryOpen.glb",
+   "json": "J249_crateMilitaryOpen.json",
+   "render": "renders/J249.jpg"
+  },
+  {
+   "item": 250,
+   "id": "J250_crateEmptyOpen",
+   "asset_id": "setJ.crateEmptyOpen",
+   "label": "J250 Otevřená prázdná bedna",
+   "glb": "J250_crateEmptyOpen.glb",
+   "json": "J250_crateEmptyOpen.json",
+   "render": "renders/J250.jpg"
+  },
+  {
+   "item": 251,
+   "id": "J251_drumMetal",
+   "asset_id": "setJ.drumMetal",
+   "label": "J251 Stojící kovový sud",
+   "glb": "J251_drumMetal.glb",
+   "json": "J251_drumMetal.json",
+   "render": "renders/J251.jpg"
+  },
+  {
+   "item": 252,
+   "id": "J252_drumPlastic",
+   "asset_id": "setJ.drumPlastic",
+   "label": "J252 Plastový sud",
+   "glb": "J252_drumPlastic.glb",
+   "json": "J252_drumPlastic.json",
+   "render": "renders/J252.jpg"
+  },
+  {
+   "item": 253,
+   "id": "J253_drumLying",
+   "asset_id": "setJ.drumLying",
+   "label": "J253 Ležící kovový sud",
+   "glb": "J253_drumLying.glb",
+   "json": "J253_drumLying.json",
+   "render": "renders/J253.jpg"
+  },
+  {
+   "item": 254,
+   "id": "J254_drumShot",
+   "asset_id": "setJ.drumShot",
+   "label": "J254 Prostřelený sud",
+   "glb": "J254_drumShot.glb",
+   "json": "J254_drumShot.json",
+   "render": "renders/J254.jpg"
+  },
+  {
+   "item": 255,
+   "id": "J255_pallet",
+   "asset_id": "setJ.pallet",
+   "label": "J255 Dřevěná paleta",
+   "glb": "J255_pallet.glb",
+   "json": "J255_pallet.json",
+   "render": "renders/J255.jpg"
+  },
+  {
+   "item": 256,
+   "id": "J256_palletStack",
+   "asset_id": "setJ.palletStack",
+   "label": "J256 Stoh palet",
+   "glb": "J256_palletStack.glb",
+   "json": "J256_palletStack.json",
+   "render": "renders/J256.jpg"
+  },
+  {
+   "item": 257,
+   "id": "J257_tireSingle",
+   "asset_id": "setJ.tireSingle",
+   "label": "J257 Samostatná pneumatika",
+   "glb": "J257_tireSingle.glb",
+   "json": "J257_tireSingle.json",
+   "render": "renders/J257.jpg"
+  },
+  {
+   "item": 258,
+   "id": "J258_tireStack",
+   "asset_id": "setJ.tireStack",
+   "label": "J258 Stoh pneumatik",
+   "glb": "J258_tireStack.glb",
+   "json": "J258_tireStack.json",
+   "render": "renders/J258.jpg"
+  },
+  {
+   "item": 259,
+   "id": "J259_jerrycan",
+   "asset_id": "setJ.jerrycan",
+   "label": "J259 Kanystr",
+   "glb": "J259_jerrycan.glb",
+   "json": "J259_jerrycan.json",
+   "render": "renders/J259.jpg"
+  },
+  {
+   "item": 260,
+   "id": "J260_gasBottle",
+   "asset_id": "setJ.gasBottle",
+   "label": "J260 Plynová láhev",
+   "glb": "J260_gasBottle.glb",
+   "json": "J260_gasBottle.json",
+   "render": "renders/J260.jpg"
+  },
+  {
+   "item": 261,
+   "id": "J261_sack",
+   "asset_id": "setJ.sack",
+   "label": "J261 Pytel s moukou / cementem",
+   "glb": "J261_sack.glb",
+   "json": "J261_sack.json",
+   "render": "renders/J261.jpg"
+  },
+  {
+   "item": 262,
+   "id": "J262_tableWood",
+   "asset_id": "setJ.tableWood",
+   "label": "J262 Dřevěný stůl",
+   "glb": "J262_tableWood.glb",
+   "json": "J262_tableWood.json",
+   "render": "renders/J262.jpg"
+  },
+  {
+   "item": 263,
+   "id": "J263_chairWood",
+   "asset_id": "setJ.chairWood",
+   "label": "J263 Dřevěná židle",
+   "glb": "J263_chairWood.glb",
+   "json": "J263_chairWood.json",
+   "render": "renders/J263.jpg"
+  },
+  {
+   "item": 264,
+   "id": "J264_chairPlastic",
+   "asset_id": "setJ.chairPlastic",
+   "label": "J264 Plastová židle",
+   "glb": "J264_chairPlastic.glb",
+   "json": "J264_chairPlastic.json",
+   "render": "renders/J264.jpg"
+  },
+  {
+   "item": 265,
+   "id": "J265_shelfMetal",
+   "asset_id": "setJ.shelfMetal",
+   "label": "J265 Kovový regál",
+   "glb": "J265_shelfMetal.glb",
+   "json": "J265_shelfMetal.json",
+   "render": "renders/J265.jpg"
+  },
+  {
+   "item": 266,
+   "id": "J266_wardrobe",
+   "asset_id": "setJ.wardrobe",
+   "label": "J266 Dřevěná skříň",
+   "glb": "J266_wardrobe.glb",
+   "json": "J266_wardrobe.json",
+   "render": "renders/J266.jpg"
+  },
+  {
+   "item": 267,
+   "id": "J267_bed",
+   "asset_id": "setJ.bed",
+   "label": "J267 Jednoduchá postel",
+   "glb": "J267_bed.glb",
+   "json": "J267_bed.json",
+   "render": "renders/J267.jpg"
+  },
+  {
+   "item": 268,
+   "id": "J268_mattressFloor",
+   "asset_id": "setJ.mattressFloor",
+   "label": "J268 Matrace na zemi",
+   "glb": "J268_mattressFloor.glb",
+   "json": "J268_mattressFloor.json",
+   "render": "renders/J268.jpg"
+  },
+  {
+   "item": 269,
+   "id": "J269_sofa",
+   "asset_id": "setJ.sofa",
+   "label": "J269 Opotřebovaný gauč",
+   "glb": "J269_sofa.glb",
+   "json": "J269_sofa.json",
+   "render": "renders/J269.jpg"
+  },
+  {
+   "item": 270,
+   "id": "J270_rugLarge",
+   "asset_id": "setJ.rugLarge",
+   "label": "J270 Koberec",
+   "glb": "J270_rugLarge.glb",
+   "json": "J270_rugLarge.json",
+   "render": "renders/J270.jpg"
+  },
+  {
+   "item": 271,
+   "id": "J271_fridge",
+   "asset_id": "setJ.fridge",
+   "label": "J271 Stará lednice",
+   "glb": "J271_fridge.glb",
+   "json": "J271_fridge.json",
+   "render": "renders/J271.jpg"
+  },
+  {
+   "item": 272,
+   "id": "J272_stove",
+   "asset_id": "setJ.stove",
+   "label": "J272 Starý sporák",
+   "glb": "J272_stove.glb",
+   "json": "J272_stove.json",
+   "render": "renders/J272.jpg"
+  },
+  {
+   "item": 273,
+   "id": "J273_crtTv",
+   "asset_id": "setJ.crtTv",
+   "label": "J273 Stará televize",
+   "glb": "J273_crtTv.glb",
+   "json": "J273_crtTv.json",
+   "render": "renders/J273.jpg"
+  },
+  {
+   "item": 274,
+   "id": "J274_radio",
+   "asset_id": "setJ.radio",
+   "label": "J274 Stolní rádio",
+   "glb": "J274_radio.glb",
+   "json": "J274_radio.json",
+   "render": "renders/J274.jpg"
+  },
+  {
+   "item": 275,
+   "id": "J275_debrisInterior",
+   "asset_id": "setJ.debrisInterior",
+   "label": "J275 Interiérová suť a papíry",
+   "glb": "J275_debrisInterior.glb",
+   "json": "J275_debrisInterior.json",
+   "render": "renders/J275.jpg"
+  }
+ ]
+}

@@ -1,0 +1,97 @@
+{
+ "schema_version": "1.1",
+ "id": "J270_rugLarge",
+ "asset_id": "setJ.rugLarge",
+ "label_cs": "J270 Koberec",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  2,
+  3
+ ],
+ "height_m": 0.1522,
+ "target_m": [
+  2,
+  3,
+  0.1
+ ],
+ "bounds_m": {
+  "min": [
+   -1,
+   -0.0722,
+   -1.5
+  ],
+  "max": [
+   1,
+   0.1522,
+   1.5
+  ]
+ },
+ "triangles": {
+  "LOD0": 36
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "fabricSand"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.005,
+    0
+   ],
+   "size": [
+    0.1,
+    0.01,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric",
+   "blocks": "move"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2
+   ]
+  },
+  {
+   "p": [
+    0,
+    0,
+    2
+   ],
+   "note": "přes koberec (bez kolize)"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Bez kolize – nic nezachytí pohyb (formálně 1 cm uprostřed pro editor)."
+ ],
+ "tested_in_game": false
+}

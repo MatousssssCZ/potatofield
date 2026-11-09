@@ -1,0 +1,162 @@
+{
+ "schema_version": "1.1",
+ "id": "J250_crateEmptyOpen",
+ "asset_id": "setJ.crateEmptyOpen",
+ "label_cs": "J250 Otevřená prázdná bedna",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.0154,
+  0.6
+ ],
+ "height_m": 0.6435,
+ "target_m": [
+  1.1,
+  0.6,
+  0.6
+ ],
+ "bounds_m": {
+  "min": [
+   -0.4,
+   -0.1035,
+   -0.3
+  ],
+  "max": [
+   0.6154,
+   0.6435,
+   0.3
+  ]
+ },
+ "triangles": {
+  "LOD0": 72
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "wood"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.015,
+    0
+   ],
+   "size": [
+    0.8,
+    0.03,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0,
+    0.3,
+    -0.2875
+   ],
+   "size": [
+    0.8,
+    0.6,
+    0.025
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0,
+    0.3,
+    0.2875
+   ],
+   "size": [
+    0.8,
+    0.6,
+    0.025
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -0.3875,
+    0.3,
+    0
+   ],
+   "size": [
+    0.025,
+    0.6,
+    0.55
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.3875,
+    0.3,
+    0
+   ],
+   "size": [
+    0.025,
+    0.6,
+    0.55
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1,
+    0,
+    -1
+   ]
+  },
+  {
+   "p": [
+    1,
+    0,
+    -1
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false
+}

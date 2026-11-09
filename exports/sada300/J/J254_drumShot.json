@@ -1,0 +1,97 @@
+{
+ "schema_version": "1.1",
+ "id": "J254_drumShot",
+ "asset_id": "setJ.drumShot",
+ "label_cs": "J254 Prostřelený sud",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.6596,
+  0.6252
+ ],
+ "height_m": 0.925,
+ "target_m": [
+  0.63,
+  0.63,
+  0.92
+ ],
+ "bounds_m": {
+  "min": [
+   -0.31,
+   0,
+   -0.315
+  ],
+  "max": [
+   0.3496,
+   0.925,
+   0.3102
+  ]
+ },
+ "triangles": {
+  "LOD0": 328
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "metal",
+  "metalSheetRust",
+  "paintedMetalRed"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.45,
+    0
+   ],
+   "size": [
+    0.6,
+    0.9,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -0.7,
+    0,
+    -0.7
+   ]
+  },
+  {
+   "p": [
+    0.7,
+    0,
+    -0.7
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false
+}

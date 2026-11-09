@@ -1,0 +1,94 @@
+{
+ "schema_version": "1.1",
+ "id": "J261_sack",
+ "asset_id": "setJ.sack",
+ "label_cs": "J261 Pytel s moukou / cementem",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.62,
+  0.3947
+ ],
+ "height_m": 0.1969,
+ "target_m": [
+  0.62,
+  0.4,
+  0.2
+ ],
+ "bounds_m": {
+  "min": [
+   -0.31,
+   -0.0002,
+   -0.1934
+  ],
+  "max": [
+   0.31,
+   0.1969,
+   0.2014
+  ]
+ },
+ "triangles": {
+  "LOD0": 116
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "fabricSand"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.08,
+    0
+   ],
+   "size": [
+    0.52,
+    0.12,
+    0.34
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -0.5,
+    0,
+    -0.5
+   ]
+  },
+  {
+   "p": [
+    0.5,
+    0,
+    -0.5
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false
+}

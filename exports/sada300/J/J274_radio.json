@@ -1,0 +1,99 @@
+{
+ "schema_version": "1.1",
+ "id": "J274_radio",
+ "asset_id": "setJ.radio",
+ "label_cs": "J274 Stolní rádio",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.35,
+  0.17
+ ],
+ "height_m": 0.22,
+ "target_m": [
+  0.35,
+  0.15,
+  0.22
+ ],
+ "bounds_m": {
+  "min": [
+   -0.175,
+   0,
+   -0.095
+  ],
+  "max": [
+   0.175,
+   0.22,
+   0.075
+  ]
+ },
+ "triangles": {
+  "LOD0": 116
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "chainLink",
+  "glass",
+  "metal",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.11,
+    0
+   ],
+   "size": [
+    0.35,
+    0.22,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -0.4,
+    0,
+    -0.4
+   ]
+  },
+  {
+   "p": [
+    0.4,
+    0,
+    -0.4
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Malé: v editoru postav na stůl (J262) – „Položit na zem“ ho posadí na desku."
+ ],
+ "tested_in_game": false
+}

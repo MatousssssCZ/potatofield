@@ -85,6 +85,11 @@ Přízemní budovy zůstávají přístupné; jejich kolize se slučují (stejn�
   markýzy, okenice dřevěné a kovové, parabola, cedule, rozvodná krabice) – v editoru se
   přilepí na fasádu; střešní doplňky (nádrž A podle pilotu, nádrž B, anténa, solární panel)
   se přilepí nahoru; sušák s prádlem (prádlo bez kolize).
+- **J246–J275 (rekvizity a interiér):** bedny podle pilotů (malá, s diagonálami, s pásy – víko
+  bez překrývajících se ploch), otevřené bedny, sudy (kovový, plastový, ležící, prostřelený),
+  palety, pneumatiky s otevřeným středem, kanystr, plynová láhev, pytel, nábytek (stůl, židle,
+  regál průstřelný mezi policemi, skříň s otevřeným křídlem, postel, matrace, gauč, koberec bez
+  kolize), lednice, sporák, CRT televize, rádio a interiérová suť bez kolize.
 
 ## Editor: magnet budov
 

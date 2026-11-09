@@ -1,0 +1,96 @@
+{
+ "schema_version": "1.1",
+ "id": "J267_bed",
+ "asset_id": "setJ.bed",
+ "label_cs": "J267 Jednoduchá postel",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.88,
+  2
+ ],
+ "height_m": 0.8,
+ "target_m": [
+  0.9,
+  2,
+  0.8
+ ],
+ "bounds_m": {
+  "min": [
+   -0.44,
+   0,
+   -1
+  ],
+  "max": [
+   0.44,
+   0.8,
+   1
+  ]
+ },
+ "triangles": {
+  "LOD0": 268
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "fabricSand",
+  "paintedMetal",
+  "plasterWhite"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.225,
+    0
+   ],
+   "size": [
+    0.9,
+    0.45,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "fabric"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.2,
+    0,
+    -1.2
+   ]
+  },
+  {
+   "p": [
+    1.2,
+    0,
+    -1.2
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false
+}

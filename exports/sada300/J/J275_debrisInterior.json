@@ -1,0 +1,100 @@
+{
+ "schema_version": "1.1",
+ "id": "J275_debrisInterior",
+ "asset_id": "setJ.debrisInterior",
+ "label_cs": "J275 Interiérová suť a papíry",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.1144,
+  2.155
+ ],
+ "height_m": 0.1244,
+ "target_m": [
+  2,
+  2,
+  0.15
+ ],
+ "bounds_m": {
+  "min": [
+   -0.9959,
+   -0.0444,
+   -1.1073
+  ],
+  "max": [
+   1.1184,
+   0.1244,
+   1.0478
+  ]
+ },
+ "triangles": {
+  "LOD0": 332
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "brick",
+  "concreteLight",
+  "plasterWarm",
+  "plasterWhite"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.005,
+    0
+   ],
+   "size": [
+    0.1,
+    0.01,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete",
+   "blocks": "move"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -1.4
+   ]
+  },
+  {
+   "p": [
+    0,
+    0,
+    1.4
+   ],
+   "note": "přes suť (bez kolize)"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Bez pohybové kolize (formálně jen 1 cm pro editor)."
+ ],
+ "tested_in_game": false
+}

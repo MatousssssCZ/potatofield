@@ -1,0 +1,214 @@
+{
+ "schema_version": "1.1",
+ "id": "J266_wardrobe",
+ "asset_id": "setJ.wardrobe",
+ "label_cs": "J266 Dřevěná skříň",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.3235,
+  1.1651
+ ],
+ "height_m": 1.9,
+ "target_m": [
+  1.75,
+  0.95,
+  1.9
+ ],
+ "bounds_m": {
+  "min": [
+   -0.6,
+   0,
+   -0.8651
+  ],
+  "max": [
+   0.7235,
+   1.9,
+   0.3
+  ]
+ },
+ "triangles": {
+  "LOD0": 132
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "metal",
+  "wood",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    0.66,
+    0.99,
+    -0.58
+   ],
+   "size": [
+    0.575,
+    1.78,
+    0.025
+   ],
+   "rotX": 3.1416,
+   "rotY": -1.3916,
+   "rotZ": 3.1416,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0,
+    0.04,
+    0
+   ],
+   "size": [
+    1.2,
+    0.08,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0,
+    1.8875,
+    0
+   ],
+   "size": [
+    1.2,
+    0.025,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0,
+    0.9775,
+    0.2875
+   ],
+   "size": [
+    1.2,
+    1.795,
+    0.025
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -0.5875,
+    0.9775,
+    -0.0125
+   ],
+   "size": [
+    0.025,
+    1.795,
+    0.575
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.5875,
+    0.9775,
+    -0.0125
+   ],
+   "size": [
+    0.025,
+    1.795,
+    0.575
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -0.2875,
+    0.9775,
+    -0.2875
+   ],
+   "size": [
+    0.575,
+    1.795,
+    0.025
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.2,
+    0,
+    -1.2
+   ]
+  },
+  {
+   "p": [
+    1.2,
+    0,
+    -1.2
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -0.3,
+    1.2,
+    -1
+   ],
+   "to": [
+    -0.3,
+    1.2,
+    1
+   ],
+   "expect_hit": true,
+   "note": "zavřená polovina kryje"
+  }
+ ]
+}

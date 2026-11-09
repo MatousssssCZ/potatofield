@@ -1,0 +1,96 @@
+{
+ "schema_version": "1.1",
+ "id": "J260_gasBottle",
+ "asset_id": "setJ.gasBottle",
+ "label_cs": "J260 Plynová láhev",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.3,
+  0.3
+ ],
+ "height_m": 1.2,
+ "target_m": [
+  0.3,
+  0.3,
+  1.2
+ ],
+ "bounds_m": {
+  "min": [
+   -0.15,
+   0,
+   -0.15
+  ],
+  "max": [
+   0.15,
+   1.2,
+   0.15
+  ]
+ },
+ "triangles": {
+  "LOD0": 280
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "metal",
+  "paintedMetal",
+  "paintedMetalRed"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.54,
+    0
+   ],
+   "size": [
+    0.3,
+    0.92,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -0.5,
+    0,
+    -0.5
+   ]
+  },
+  {
+   "p": [
+    0.5,
+    0,
+    -0.5
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false
+}

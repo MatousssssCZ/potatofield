@@ -1,0 +1,218 @@
+{
+ "schema_version": "1.1",
+ "id": "J265_shelfMetal",
+ "asset_id": "setJ.shelfMetal",
+ "label_cs": "J265 Kovový regál",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.5,
+  0.5
+ ],
+ "height_m": 2,
+ "target_m": [
+  1.5,
+  0.5,
+  2
+ ],
+ "bounds_m": {
+  "min": [
+   -0.75,
+   0,
+   -0.25
+  ],
+  "max": [
+   0.75,
+   2,
+   0.25
+  ]
+ },
+ "triangles": {
+  "LOD0": 156
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "crateFruitA",
+  "metal",
+  "paintedMetalBlue",
+  "wood"
+ ],
+ "collision": [
+  {
+   "center": [
+    -0.73,
+    1,
+    -0.23
+   ],
+   "size": [
+    0.04,
+    2,
+    0.04
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.73,
+    1,
+    0.23
+   ],
+   "size": [
+    0.04,
+    2,
+    0.04
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0.73,
+    1,
+    -0.23
+   ],
+   "size": [
+    0.04,
+    2,
+    0.04
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0.73,
+    1,
+    0.23
+   ],
+   "size": [
+    0.04,
+    2,
+    0.04
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    0.1,
+    0
+   ],
+   "size": [
+    1.5,
+    0.03,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    1.9,
+    0
+   ],
+   "size": [
+    1.5,
+    0.03,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    1,
+    0
+   ],
+   "size": [
+    1.5,
+    2,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1,
+    0,
+    -1
+   ]
+  },
+  {
+   "p": [
+    1,
+    0,
+    -1
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Kolize pro pohyb celý objem, pro střely jen spodní a horní police."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    1.3,
+    -1
+   ],
+   "to": [
+    0,
+    1.3,
+    1
+   ],
+   "expect_hit": false,
+   "note": "regál střelu propustí (mezi policemi)"
+  }
+ ]
+}

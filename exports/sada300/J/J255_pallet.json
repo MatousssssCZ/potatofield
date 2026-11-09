@@ -1,0 +1,104 @@
+{
+ "schema_version": "1.1",
+ "id": "J255_pallet",
+ "asset_id": "setJ.pallet",
+ "label_cs": "J255 Dřevěná paleta",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.2,
+  0.8
+ ],
+ "height_m": 0.1475,
+ "target_m": [
+  1.2,
+  0.8,
+  0.15
+ ],
+ "bounds_m": {
+  "min": [
+   -0.6,
+   0,
+   -0.4
+  ],
+  "max": [
+   0.6,
+   0.1475,
+   0.4
+  ]
+ },
+ "triangles": {
+  "LOD0": 240
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "wood",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.075,
+    0
+   ],
+   "size": [
+    1.2,
+    0.15,
+    0.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -0.9
+   ]
+  },
+  {
+   "p": [
+    0,
+    0.15,
+    0
+   ],
+   "note": "na paletě"
+  },
+  {
+   "p": [
+    0,
+    0,
+    0.9
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Paleta je nízká – dá se přejít (schod 0,15 m)."
+ ],
+ "tested_in_game": false
+}

@@ -1,0 +1,110 @@
+{
+ "schema_version": "1.1",
+ "id": "J258_tireStack",
+ "asset_id": "setJ.tireStack",
+ "label_cs": "J258 Stoh pneumatik",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.7864,
+  0.7664
+ ],
+ "height_m": 0.9,
+ "target_m": [
+  0.78,
+  0.75,
+  0.92
+ ],
+ "bounds_m": {
+  "min": [
+   -0.355,
+   0,
+   -0.3814
+  ],
+  "max": [
+   0.4314,
+   0.9,
+   0.385
+  ]
+ },
+ "triangles": {
+  "LOD0": 576
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "rubber"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.45,
+    0
+   ],
+   "size": [
+    0.72,
+    0.9,
+    0.72
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -0.8,
+    0,
+    -0.8
+   ]
+  },
+  {
+   "p": [
+    0.8,
+    0,
+    -0.8
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    0.5,
+    -1
+   ],
+   "to": [
+    0,
+    0.5,
+    1
+   ],
+   "expect_hit": true,
+   "note": "kryje vkleče"
+  }
+ ]
+}

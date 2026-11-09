@@ -1,0 +1,97 @@
+{
+ "schema_version": "1.1",
+ "id": "J273_crtTv",
+ "asset_id": "setJ.crtTv",
+ "label_cs": "J273 Stará televize",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.6,
+  0.529
+ ],
+ "height_m": 0.45,
+ "target_m": [
+  0.6,
+  0.5,
+  0.45
+ ],
+ "bounds_m": {
+  "min": [
+   -0.3,
+   0,
+   -0.279
+  ],
+  "max": [
+   0.3,
+   0.45,
+   0.25
+  ]
+ },
+ "triangles": {
+  "LOD0": 156
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "glass",
+  "gunPolymer",
+  "metal"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.225,
+    -0.1
+   ],
+   "size": [
+    0.6,
+    0.45,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -0.6,
+    0,
+    -0.6
+   ]
+  },
+  {
+   "p": [
+    0.6,
+    0,
+    -0.6
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false
+}

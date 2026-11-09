@@ -1,0 +1,113 @@
+{
+ "schema_version": "1.1",
+ "id": "J246_crateSmall",
+ "asset_id": "setJ.crateSmall",
+ "label_cs": "J246 Malá dřevěná bedna (pilot)",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.67,
+  0.57
+ ],
+ "height_m": 0.625,
+ "target_m": [
+  0.68,
+  0.605,
+  0.6
+ ],
+ "bounds_m": {
+  "min": [
+   -0.335,
+   0,
+   -0.285
+  ],
+  "max": [
+   0.335,
+   0.625,
+   0.285
+  ]
+ },
+ "triangles": {
+  "LOD0": 108
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "wood",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.3,
+    0
+   ],
+   "size": [
+    0.65,
+    0.6,
+    0.55
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -0.7,
+    0,
+    -0.7
+   ]
+  },
+  {
+   "p": [
+    0.7,
+    0,
+    -0.7
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Podle pilotu prop_crate_a (0,65 × 0,6 × 0,55 m, jedna kolize). Víko o 2,5 cm výš než tělo – žádné překrývající se plochy (bez blikání)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    0.4,
+    -1
+   ],
+   "to": [
+    0,
+    0.4,
+    1
+   ],
+   "expect_hit": true,
+   "note": "kryje vleže"
+  }
+ ]
+}

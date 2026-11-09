@@ -1,0 +1,111 @@
+{
+ "schema_version": "1.1",
+ "id": "J256_palletStack",
+ "asset_id": "setJ.palletStack",
+ "label_cs": "J256 Stoh palet",
+ "category": "sada300_J",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.302,
+  0.9007
+ ],
+ "height_m": 0.7475,
+ "target_m": [
+  1.25,
+  0.85,
+  0.75
+ ],
+ "bounds_m": {
+  "min": [
+   -0.6644,
+   0,
+   -0.4742
+  ],
+  "max": [
+   0.6375,
+   0.7475,
+   0.4265
+  ]
+ },
+ "triangles": {
+  "LOD0": 1200
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "wood",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.375,
+    0
+   ],
+   "size": [
+    1.2,
+    0.75,
+    0.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1,
+    0,
+    -1
+   ]
+  },
+  {
+   "p": [
+    1,
+    0,
+    -1
+   ],
+   "note": "kolem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    0.5,
+    -1
+   ],
+   "to": [
+    0,
+    0.5,
+    1
+   ],
+   "expect_hit": true,
+   "note": "kryje vleže"
+  }
+ ]
+}
