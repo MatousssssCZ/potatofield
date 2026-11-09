@@ -1,0 +1,99 @@
+{
+ "schema_version": "1.1",
+ "id": "I232_acUnitB",
+ "asset_id": "setI.acUnitB",
+ "label_cs": "I232 Klimatizace B",
+ "category": "sada300_I",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.35,
+  0.4817
+ ],
+ "height_m": 0.6,
+ "target_m": [
+  1.2,
+  0.5,
+  0.6
+ ],
+ "bounds_m": {
+  "min": [
+   -0.75,
+   0,
+   -0.48
+  ],
+  "max": [
+   0.6,
+   0.6,
+   0.0017
+  ]
+ },
+ "triangles": {
+  "LOD0": 332
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "acUnit",
+  "concreteDark",
+  "metal",
+  "plasterWhite"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.325,
+    -0.235
+   ],
+   "size": [
+    1.2,
+    0.55,
+    0.43
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.2,
+    0,
+    -1.2
+   ]
+  },
+  {
+   "p": [
+    1.2,
+    0,
+    -1.2
+   ],
+   "note": "kolem předmětu"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Odlišná silueta od pilotu: široká a nízká, dvě ventilační zóny."
+ ],
+ "tested_in_game": false
+}

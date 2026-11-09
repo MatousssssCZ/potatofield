@@ -1,0 +1,98 @@
+{
+ "schema_version": "1.1",
+ "id": "I238_satDish",
+ "asset_id": "setI.satDish",
+ "label_cs": "I238 Satelitní parabola",
+ "category": "sada300_I",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.9,
+  0.92
+ ],
+ "height_m": 0.8749,
+ "target_m": [
+  0.9,
+  0.95,
+  0.9
+ ],
+ "bounds_m": {
+  "min": [
+   -0.45,
+   0,
+   -0.92
+  ],
+  "max": [
+   0.45,
+   0.8749,
+   0
+  ]
+ },
+ "triangles": {
+  "LOD0": 224
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "gunPolymer",
+  "metal",
+  "plasterWhite"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.45,
+    -0.32
+   ],
+   "size": [
+    0.9,
+    0.05,
+    0.9
+   ],
+   "rotX": -1.9208,
+   "rotY": 0,
+   "rotZ": 3.1416,
+   "kind": "cylinder",
+   "surface": "plaster"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1,
+    0,
+    -1
+   ]
+  },
+  {
+   "p": [
+    1,
+    0,
+    -1
+   ],
+   "note": "kolem předmětu"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Kolize jen miska (malý kvádr pro zásah)."
+ ],
+ "tested_in_game": false
+}

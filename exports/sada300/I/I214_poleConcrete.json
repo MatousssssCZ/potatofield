@@ -1,0 +1,164 @@
+{
+ "schema_version": "1.1",
+ "id": "I214_poleConcrete",
+ "asset_id": "setI.poleConcrete",
+ "label_cs": "I214 Betonový elektrický sloup",
+ "category": "sada300_I",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.2,
+  0.7
+ ],
+ "height_m": 9,
+ "target_m": [
+  2.2,
+  0.7,
+  9
+ ],
+ "bounds_m": {
+  "min": [
+   -1.1,
+   0,
+   -0.35
+  ],
+  "max": [
+   1.1,
+   9,
+   0.35
+  ]
+ },
+ "triangles": {
+  "LOD0": 244
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "gunMetal"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.15,
+    0
+   ],
+   "size": [
+    0.7,
+    0.3,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    1.3875,
+    0
+   ],
+   "size": [
+    0.3,
+    2.175,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    3.5625,
+    0
+   ],
+   "size": [
+    0.265,
+    2.175,
+    0.265
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    5.7375,
+    0
+   ],
+   "size": [
+    0.23,
+    2.175,
+    0.23
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    7.9125,
+    0
+   ],
+   "size": [
+    0.195,
+    2.175,
+    0.195
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1,
+    0,
+    -1
+   ]
+  },
+  {
+   "p": [
+    1,
+    0,
+    -1
+   ],
+   "note": "kolem předmětu"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false
+}

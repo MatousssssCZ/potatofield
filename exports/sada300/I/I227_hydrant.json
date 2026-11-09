@@ -1,0 +1,111 @@
+{
+ "schema_version": "1.1",
+ "id": "I227_hydrant",
+ "asset_id": "setI.hydrant",
+ "label_cs": "I227 Hydrant",
+ "category": "sada300_I",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.48,
+  0.3043
+ ],
+ "height_m": 0.82,
+ "target_m": [
+  0.45,
+  0.32,
+  0.82
+ ],
+ "bounds_m": {
+  "min": [
+   -0.24,
+   0,
+   -0.1522
+  ],
+  "max": [
+   0.24,
+   0.82,
+   0.1522
+  ]
+ },
+ "triangles": {
+  "LOD0": 240
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "paintedMetalRed"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.04,
+    0
+   ],
+   "size": [
+    0.32,
+    0.08,
+    0.32
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    0.37,
+    0
+   ],
+   "size": [
+    0.22,
+    0.58,
+    0.22
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -0.7,
+    0,
+    -0.7
+   ]
+  },
+  {
+   "p": [
+    0.7,
+    0,
+    -0.7
+   ],
+   "note": "kolem předmětu"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false
+}

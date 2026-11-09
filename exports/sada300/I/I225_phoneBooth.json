@@ -1,0 +1,306 @@
+{
+ "schema_version": "1.1",
+ "id": "I225_phoneBooth",
+ "asset_id": "setI.phoneBooth",
+ "label_cs": "I225 Telefonní budka",
+ "category": "sada300_I",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.24,
+  1.24
+ ],
+ "height_m": 2.4,
+ "target_m": [
+  1.24,
+  1.24,
+  2.4
+ ],
+ "bounds_m": {
+  "min": [
+   -0.62,
+   0,
+   -0.62
+  ],
+  "max": [
+   0.62,
+   2.4,
+   0.62
+  ]
+ },
+ "triangles": {
+  "LOD0": 156
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteLight",
+  "glass",
+  "gunMetal",
+  "gunPolymer",
+  "paintedMetal"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.04,
+    0
+   ],
+   "size": [
+    1.2,
+    0.08,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    2.35,
+    0
+   ],
+   "size": [
+    1.24,
+    0.1,
+    1.24
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.57,
+    1.19,
+    -0.57
+   ],
+   "size": [
+    0.08,
+    2.22,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.57,
+    1.19,
+    0.57
+   ],
+   "size": [
+    0.08,
+    2.22,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0.57,
+    1.19,
+    -0.57
+   ],
+   "size": [
+    0.08,
+    2.22,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0.57,
+    1.19,
+    0.57
+   ],
+   "size": [
+    0.08,
+    2.22,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    0.49,
+    0.57
+   ],
+   "size": [
+    1.06,
+    0.82,
+    0.04
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.57,
+    0.49,
+    0
+   ],
+   "size": [
+    0.04,
+    0.82,
+    1.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0.57,
+    0.49,
+    0
+   ],
+   "size": [
+    0.04,
+    0.82,
+    1.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    1.575,
+    0.57
+   ],
+   "size": [
+    1.06,
+    1.35,
+    0.04
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    -0.57,
+    1.575,
+    0
+   ],
+   "size": [
+    0.04,
+    1.35,
+    1.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    0.57,
+    1.575,
+    0
+   ],
+   "size": [
+    0.04,
+    1.35,
+    1.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -1.4
+   ]
+  },
+  {
+   "p": [
+    0,
+    0.08,
+    0.05
+   ],
+   "note": "v budce"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Bez textu a log; sklo blokuje pohyb, ne střelu."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -2,
+    1.6,
+    0
+   ],
+   "to": [
+    2,
+    1.6,
+    0
+   ],
+   "expect_hit": false,
+   "note": "skla střelu propustí"
+  }
+ ]
+}

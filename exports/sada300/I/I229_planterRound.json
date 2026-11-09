@@ -1,0 +1,114 @@
+{
+ "schema_version": "1.1",
+ "id": "I229_planterRound",
+ "asset_id": "setI.planterRound",
+ "label_cs": "I229 Kulatý květináč",
+ "category": "sada300_I",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.8527,
+  0.8563
+ ],
+ "height_m": 0.705,
+ "target_m": [
+  0.86,
+  0.86,
+  0.7
+ ],
+ "bounds_m": {
+  "min": [
+   -0.4227,
+   0,
+   -0.4282
+  ],
+  "max": [
+   0.43,
+   0.705,
+   0.4282
+  ]
+ },
+ "triangles": {
+  "LOD0": 236
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "dirt"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.31,
+    0
+   ],
+   "size": [
+    0.8,
+    0.62,
+    0.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -0.9,
+    0,
+    -0.9
+   ]
+  },
+  {
+   "p": [
+    0.9,
+    0,
+    -0.9
+   ],
+   "note": "kolem předmětu"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Vnitřní stěna = tmavý prstenec nad zeminou (zemina 8 cm pod lemem)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    0.4,
+    -1
+   ],
+   "to": [
+    0,
+    0.4,
+    1
+   ],
+   "expect_hit": true,
+   "note": "kryje vleže"
+  }
+ ]
+}

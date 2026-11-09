@@ -1,0 +1,96 @@
+{
+ "schema_version": "1.1",
+ "id": "I243_tvAntenna",
+ "asset_id": "setI.tvAntenna",
+ "label_cs": "I243 Televizní anténa",
+ "category": "sada300_I",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.7,
+  1.2
+ ],
+ "height_m": 2,
+ "target_m": [
+  0.7,
+  1.2,
+  2
+ ],
+ "bounds_m": {
+  "min": [
+   -0.35,
+   0,
+   -0.5
+  ],
+  "max": [
+   0.35,
+   2,
+   0.7
+  ]
+ },
+ "triangles": {
+  "LOD0": 176
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "metal"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.02,
+    0
+   ],
+   "size": [
+    0.3,
+    0.04,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -0.8,
+    0,
+    -0.8
+   ]
+  },
+  {
+   "p": [
+    0.8,
+    0,
+    -0.8
+   ],
+   "note": "kolem předmětu"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Tenké díly bez kolize, kolize jen nízká patka."
+ ],
+ "tested_in_game": false
+}

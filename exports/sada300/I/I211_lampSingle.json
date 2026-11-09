@@ -1,0 +1,130 @@
+{
+ "schema_version": "1.1",
+ "id": "I211_lampSingle",
+ "asset_id": "setI.lampSingle",
+ "label_cs": "I211 Lampa s jedním ramenem",
+ "category": "sada300_I",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.36,
+  2.0722
+ ],
+ "height_m": 7.183,
+ "target_m": [
+  0.4,
+  2,
+  7.2
+ ],
+ "bounds_m": {
+  "min": [
+   -0.18,
+   0,
+   -1.92
+  ],
+  "max": [
+   0.18,
+   7.183,
+   0.1522
+  ]
+ },
+ "triangles": {
+  "LOD0": 264
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "lamp",
+  "paintedMetal"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.3,
+    0
+   ],
+   "size": [
+    0.32,
+    0.6,
+    0.32
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    3.8,
+    0
+   ],
+   "size": [
+    0.14,
+    6.4,
+    0.14
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1,
+    0,
+    -1
+   ]
+  },
+  {
+   "p": [
+    1,
+    0,
+    -1
+   ],
+   "note": "kolem předmětu"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Kolize jen stožár a patka; rameno a svítidlo jsou vysoko (vzhled)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    1.2,
+    -2
+   ],
+   "to": [
+    0,
+    1.2,
+    2
+   ],
+   "expect_hit": true,
+   "note": "stožár zastaví střelu"
+  }
+ ]
+}

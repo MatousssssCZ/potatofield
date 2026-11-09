@@ -1,0 +1,113 @@
+{
+ "schema_version": "1.1",
+ "id": "I222_binSmall",
+ "asset_id": "setI.binSmall",
+ "label_cs": "I222 Malý odpadkový koš",
+ "category": "sada300_I",
+ "asset_kind": "building",
+ "footprint_m": [
+  0.47,
+  0.472
+ ],
+ "height_m": 0.825,
+ "target_m": [
+  0.5,
+  0.6,
+  0.82
+ ],
+ "bounds_m": {
+  "min": [
+   -0.235,
+   0,
+   -0.3235
+  ],
+  "max": [
+   0.235,
+   0.825,
+   0.1485
+  ]
+ },
+ "triangles": {
+  "LOD0": 160
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "metal",
+  "paintedMetal"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.4,
+    0.12
+   ],
+   "size": [
+    0.06,
+    0.8,
+    0.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0,
+    0.55,
+    -0.1
+   ],
+   "size": [
+    0.45,
+    0.5,
+    0.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -0.8,
+    0,
+    -0.8
+   ]
+  },
+  {
+   "p": [
+    0.8,
+    0,
+    -0.8
+   ],
+   "note": "kolem předmětu"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [],
+ "tested_in_game": false
+}

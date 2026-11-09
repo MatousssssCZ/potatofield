@@ -1,0 +1,181 @@
+{
+ "schema_version": "1.1",
+ "id": "I241_roofTankA",
+ "asset_id": "setI.roofTankA",
+ "label_cs": "I241 Střešní nádrž A (pilot)",
+ "category": "sada300_I",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.34,
+  1.2905
+ ],
+ "height_m": 2.12,
+ "target_m": [
+  1.6,
+  1.35,
+  2.12
+ ],
+ "bounds_m": {
+  "min": [
+   -0.81,
+   0,
+   -0.6453
+  ],
+  "max": [
+   0.53,
+   2.12,
+   0.6453
+  ]
+ },
+ "triangles": {
+  "LOD0": 384
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "metal",
+  "paintedMetal"
+ ],
+ "collision": [
+  {
+   "center": [
+    -0.12,
+    1.3,
+    0
+   ],
+   "size": [
+    1.3,
+    1.48,
+    1.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.6,
+    0.3,
+    -0.48
+   ],
+   "size": [
+    0.08,
+    0.6,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.6,
+    0.3,
+    0.48
+   ],
+   "size": [
+    0.08,
+    0.6,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0.36,
+    0.3,
+    -0.48
+   ],
+   "size": [
+    0.08,
+    0.6,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0.36,
+    0.3,
+    0.48
+   ],
+   "size": [
+    0.08,
+    0.6,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.2,
+    0,
+    -1.2
+   ]
+  },
+  {
+   "p": [
+    1.2,
+    0,
+    -1.2
+   ],
+   "note": "kolem předmětu"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Podle pilotu roof_tank_a (Ø 1,3 m, nohy 0,6 m, kolize 2 kvádry → zde válec + nohy). Pata = spodek nohou, mount top: sedí na střeše bez mezery."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -2,
+    1.3,
+    0
+   ],
+   "to": [
+    0,
+    1.3,
+    0
+   ],
+   "expect_hit": true,
+   "note": "nádrž kryje"
+  }
+ ]
+}

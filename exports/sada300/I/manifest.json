@@ -1,0 +1,321 @@
+{
+ "section": "I",
+ "generated": "2026-11-09",
+ "models": [
+  {
+   "item": 211,
+   "id": "I211_lampSingle",
+   "asset_id": "setI.lampSingle",
+   "label": "I211 Lampa s jedním ramenem",
+   "glb": "I211_lampSingle.glb",
+   "json": "I211_lampSingle.json",
+   "render": "renders/I211.jpg"
+  },
+  {
+   "item": 212,
+   "id": "I212_lampDouble",
+   "asset_id": "setI.lampDouble",
+   "label": "I212 Lampa se dvěma rameny",
+   "glb": "I212_lampDouble.glb",
+   "json": "I212_lampDouble.json",
+   "render": "renders/I212.jpg"
+  },
+  {
+   "item": 213,
+   "id": "I213_poleWood",
+   "asset_id": "setI.poleWood",
+   "label": "I213 Dřevěný elektrický sloup",
+   "glb": "I213_poleWood.glb",
+   "json": "I213_poleWood.json",
+   "render": "renders/I213.jpg"
+  },
+  {
+   "item": 214,
+   "id": "I214_poleConcrete",
+   "asset_id": "setI.poleConcrete",
+   "label": "I214 Betonový elektrický sloup",
+   "glb": "I214_poleConcrete.glb",
+   "json": "I214_poleConcrete.json",
+   "render": "renders/I214.jpg"
+  },
+  {
+   "item": 215,
+   "id": "I215_signSmall",
+   "asset_id": "setI.signSmall",
+   "label": "I215 Malá směrová tabule",
+   "glb": "I215_signSmall.glb",
+   "json": "I215_signSmall.json",
+   "render": "renders/I215.jpg"
+  },
+  {
+   "item": 216,
+   "id": "I216_signLarge",
+   "asset_id": "setI.signLarge",
+   "label": "I216 Velká směrová tabule",
+   "glb": "I216_signLarge.glb",
+   "json": "I216_signLarge.json",
+   "render": "renders/I216.jpg"
+  },
+  {
+   "item": 217,
+   "id": "I217_signRound",
+   "asset_id": "setI.signRound",
+   "label": "I217 Kruhová značka",
+   "glb": "I217_signRound.glb",
+   "json": "I217_signRound.json",
+   "render": "renders/I217.jpg"
+  },
+  {
+   "item": 218,
+   "id": "I218_signTriangle",
+   "asset_id": "setI.signTriangle",
+   "label": "I218 Trojúhelníková značka",
+   "glb": "I218_signTriangle.glb",
+   "json": "I218_signTriangle.json",
+   "render": "renders/I218.jpg"
+  },
+  {
+   "item": 219,
+   "id": "I219_signRect",
+   "asset_id": "setI.signRect",
+   "label": "I219 Obdélníková značka",
+   "glb": "I219_signRect.glb",
+   "json": "I219_signRect.json",
+   "render": "renders/I219.jpg"
+  },
+  {
+   "item": 220,
+   "id": "I220_benchWood",
+   "asset_id": "setI.benchWood",
+   "label": "I220 Dřevěná lavička",
+   "glb": "I220_benchWood.glb",
+   "json": "I220_benchWood.json",
+   "render": "renders/I220.jpg"
+  },
+  {
+   "item": 221,
+   "id": "I221_benchMetal",
+   "asset_id": "setI.benchMetal",
+   "label": "I221 Kovová lavička",
+   "glb": "I221_benchMetal.glb",
+   "json": "I221_benchMetal.json",
+   "render": "renders/I221.jpg"
+  },
+  {
+   "item": 222,
+   "id": "I222_binSmall",
+   "asset_id": "setI.binSmall",
+   "label": "I222 Malý odpadkový koš",
+   "glb": "I222_binSmall.glb",
+   "json": "I222_binSmall.json",
+   "render": "renders/I222.jpg"
+  },
+  {
+   "item": 223,
+   "id": "I223_binMetal",
+   "asset_id": "setI.binMetal",
+   "label": "I223 Kovová popelnice",
+   "glb": "I223_binMetal.glb",
+   "json": "I223_binMetal.json",
+   "render": "renders/I223.jpg"
+  },
+  {
+   "item": 224,
+   "id": "I224_dumpster",
+   "asset_id": "setI.dumpster",
+   "label": "I224 Velký odpadový kontejner",
+   "glb": "I224_dumpster.glb",
+   "json": "I224_dumpster.json",
+   "render": "renders/I224.jpg"
+  },
+  {
+   "item": 225,
+   "id": "I225_phoneBooth",
+   "asset_id": "setI.phoneBooth",
+   "label": "I225 Telefonní budka",
+   "glb": "I225_phoneBooth.glb",
+   "json": "I225_phoneBooth.json",
+   "render": "renders/I225.jpg"
+  },
+  {
+   "item": 226,
+   "id": "I226_busStop",
+   "asset_id": "setI.busStop",
+   "label": "I226 Autobusová zastávka",
+   "glb": "I226_busStop.glb",
+   "json": "I226_busStop.json",
+   "render": "renders/I226.jpg"
+  },
+  {
+   "item": 227,
+   "id": "I227_hydrant",
+   "asset_id": "setI.hydrant",
+   "label": "I227 Hydrant",
+   "glb": "I227_hydrant.glb",
+   "json": "I227_hydrant.json",
+   "render": "renders/I227.jpg"
+  },
+  {
+   "item": 228,
+   "id": "I228_bollard",
+   "asset_id": "setI.bollard",
+   "label": "I228 Ochranný sloupek",
+   "glb": "I228_bollard.glb",
+   "json": "I228_bollard.json",
+   "render": "renders/I228.jpg"
+  },
+  {
+   "item": 229,
+   "id": "I229_planterRound",
+   "asset_id": "setI.planterRound",
+   "label": "I229 Kulatý květináč",
+   "glb": "I229_planterRound.glb",
+   "json": "I229_planterRound.json",
+   "render": "renders/I229.jpg"
+  },
+  {
+   "item": 230,
+   "id": "I230_planterRect",
+   "asset_id": "setI.planterRect",
+   "label": "I230 Obdélníkový květináč",
+   "glb": "I230_planterRect.glb",
+   "json": "I230_planterRect.json",
+   "render": "renders/I230.jpg"
+  },
+  {
+   "item": 231,
+   "id": "I231_acUnitA",
+   "asset_id": "setI.acUnitA",
+   "label": "I231 Klimatizace A (pilot)",
+   "glb": "I231_acUnitA.glb",
+   "json": "I231_acUnitA.json",
+   "render": "renders/I231.jpg"
+  },
+  {
+   "item": 232,
+   "id": "I232_acUnitB",
+   "asset_id": "setI.acUnitB",
+   "label": "I232 Klimatizace B",
+   "glb": "I232_acUnitB.glb",
+   "json": "I232_acUnitB.json",
+   "render": "renders/I232.jpg"
+  },
+  {
+   "item": 233,
+   "id": "I233_awningFlat",
+   "asset_id": "setI.awningFlat",
+   "label": "I233 Rovná markýza",
+   "glb": "I233_awningFlat.glb",
+   "json": "I233_awningFlat.json",
+   "render": "renders/I233.jpg"
+  },
+  {
+   "item": 234,
+   "id": "I234_awningSloped",
+   "asset_id": "setI.awningSloped",
+   "label": "I234 Šikmá markýza",
+   "glb": "I234_awningSloped.glb",
+   "json": "I234_awningSloped.json",
+   "render": "renders/I234.jpg"
+  },
+  {
+   "item": 235,
+   "id": "I235_awningTorn",
+   "asset_id": "setI.awningTorn",
+   "label": "I235 Utržená markýza",
+   "glb": "I235_awningTorn.glb",
+   "json": "I235_awningTorn.json",
+   "render": "renders/I235.jpg"
+  },
+  {
+   "item": 236,
+   "id": "I236_shuttersWood",
+   "asset_id": "setI.shuttersWood",
+   "label": "I236 Dřevěné okenice",
+   "glb": "I236_shuttersWood.glb",
+   "json": "I236_shuttersWood.json",
+   "render": "renders/I236.jpg"
+  },
+  {
+   "item": 237,
+   "id": "I237_shuttersMetal",
+   "asset_id": "setI.shuttersMetal",
+   "label": "I237 Kovové okenice",
+   "glb": "I237_shuttersMetal.glb",
+   "json": "I237_shuttersMetal.json",
+   "render": "renders/I237.jpg"
+  },
+  {
+   "item": 238,
+   "id": "I238_satDish",
+   "asset_id": "setI.satDish",
+   "label": "I238 Satelitní parabola",
+   "glb": "I238_satDish.glb",
+   "json": "I238_satDish.json",
+   "render": "renders/I238.jpg"
+  },
+  {
+   "item": 239,
+   "id": "I239_shopSign",
+   "asset_id": "setI.shopSign",
+   "label": "I239 Prázdná obchodní cedule",
+   "glb": "I239_shopSign.glb",
+   "json": "I239_shopSign.json",
+   "render": "renders/I239.jpg"
+  },
+  {
+   "item": 240,
+   "id": "I240_junctionBox",
+   "asset_id": "setI.junctionBox",
+   "label": "I240 Kabely a rozvodná krabice",
+   "glb": "I240_junctionBox.glb",
+   "json": "I240_junctionBox.json",
+   "render": "renders/I240.jpg"
+  },
+  {
+   "item": 241,
+   "id": "I241_roofTankA",
+   "asset_id": "setI.roofTankA",
+   "label": "I241 Střešní nádrž A (pilot)",
+   "glb": "I241_roofTankA.glb",
+   "json": "I241_roofTankA.json",
+   "render": "renders/I241.jpg"
+  },
+  {
+   "item": 242,
+   "id": "I242_roofTankB",
+   "asset_id": "setI.roofTankB",
+   "label": "I242 Střešní nádrž B",
+   "glb": "I242_roofTankB.glb",
+   "json": "I242_roofTankB.json",
+   "render": "renders/I242.jpg"
+  },
+  {
+   "item": 243,
+   "id": "I243_tvAntenna",
+   "asset_id": "setI.tvAntenna",
+   "label": "I243 Televizní anténa",
+   "glb": "I243_tvAntenna.glb",
+   "json": "I243_tvAntenna.json",
+   "render": "renders/I243.jpg"
+  },
+  {
+   "item": 244,
+   "id": "I244_solarPanel",
+   "asset_id": "setI.solarPanel",
+   "label": "I244 Solární panel",
+   "glb": "I244_solarPanel.glb",
+   "json": "I244_solarPanel.json",
+   "render": "renders/I244.jpg"
+  },
+  {
+   "item": 245,
+   "id": "I245_clothesline",
+   "asset_id": "setI.clothesline",
+   "label": "I245 Sušák s prádlem",
+   "glb": "I245_clothesline.glb",
+   "json": "I245_clothesline.json",
+   "render": "renders/I245.jpg"
+  }
+ ]
+}

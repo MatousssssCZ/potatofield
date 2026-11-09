@@ -79,6 +79,12 @@ Přízemní budovy zůstávají přístupné; jejich kolize se slučují (stejn�
   nákladový prostor, na boku), průchozí autobus, nákladní auta s plachtou, cisterna, dva tanky
   (otvor po věži, roztržený pás), dva transportéry (kola, na boku), vrtulník, motorka a kolo.
   Okna jsou prázdné otvory (průstřel), spodek karoserie kryje; převrácené vraky otáčejí i kolize.
+- **I211–I245 (uliční mobiliář):** lampy, elektrické sloupy, tabule a značky (prázdné plochy),
+  lavičky, koše, kontejner, telefonní budka, zastávka (sklo průstřelné), hydrant, sloupek,
+  květináče; nástěnné doplňky s pivotem na zadní ploše (klimatizace A podle pilotu a B, tři
+  markýzy, okenice dřevěné a kovové, parabola, cedule, rozvodná krabice) – v editoru se
+  přilepí na fasádu; střešní doplňky (nádrž A podle pilotu, nádrž B, anténa, solární panel)
+  se přilepí nahoru; sušák s prádlem (prádlo bez kolize).
 
 ## Editor: magnet budov
 

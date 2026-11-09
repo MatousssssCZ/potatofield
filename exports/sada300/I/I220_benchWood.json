@@ -1,0 +1,131 @@
+{
+ "schema_version": "1.1",
+ "id": "I220_benchWood",
+ "asset_id": "setI.benchWood",
+ "label_cs": "I220 Dřevěná lavička",
+ "category": "sada300_I",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.8,
+  0.478
+ ],
+ "height_m": 0.85,
+ "target_m": [
+  1.8,
+  0.5,
+  0.85
+ ],
+ "bounds_m": {
+  "min": [
+   -0.9,
+   0,
+   -0.25
+  ],
+  "max": [
+   0.9,
+   0.85,
+   0.228
+  ]
+ },
+ "triangles": {
+  "LOD0": 108
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteLight",
+  "wood"
+ ],
+ "collision": [
+  {
+   "center": [
+    -0.75,
+    0.21,
+    -0.025
+   ],
+   "size": [
+    0.12,
+    0.42,
+    0.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.75,
+    0.21,
+    -0.025
+   ],
+   "size": [
+    0.12,
+    0.42,
+    0.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.23,
+    -0.015
+   ],
+   "size": [
+    1.8,
+    0.46,
+    0.47
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.2,
+    0,
+    -1.2
+   ]
+  },
+  {
+   "p": [
+    1.2,
+    0,
+    -1.2
+   ],
+   "note": "kolem předmětu"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Kolize jeden nízký kvádr (překážka, kryt vleže)."
+ ],
+ "tested_in_game": false
+}

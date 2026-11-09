@@ -1,0 +1,132 @@
+{
+ "schema_version": "1.1",
+ "id": "I213_poleWood",
+ "asset_id": "setI.poleWood",
+ "label_cs": "I213 Dřevěný elektrický sloup",
+ "category": "sada300_I",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.8,
+  0.2874
+ ],
+ "height_m": 8.0013,
+ "target_m": [
+  1.8,
+  0.3,
+  8.2
+ ],
+ "bounds_m": {
+  "min": [
+   -0.9,
+   -0.0018,
+   -0.1556
+  ],
+  "max": [
+   0.9,
+   8.0013,
+   0.1318
+  ]
+ },
+ "triangles": {
+  "LOD0": 636
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "plasterWhite",
+  "wood",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    -0.0146,
+    1.3333,
+    -0.0131
+   ],
+   "size": [
+    0.26,
+    2.667,
+    0.26
+   ],
+   "rotX": -3.1268,
+   "rotY": -0.8396,
+   "rotZ": 3.1416,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -0.0003,
+    4,
+    -0.0072
+   ],
+   "size": [
+    0.24,
+    2.6676,
+    0.24
+   ],
+   "rotX": 0.026,
+   "rotY": 0.9874,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.015,
+    6.6667,
+    0.0031
+   ],
+   "size": [
+    0.22,
+    2.6669,
+    0.22
+   ],
+   "rotX": -3.1294,
+   "rotY": -0.9984,
+   "rotZ": -3.1416,
+   "kind": "cylinder",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1,
+    0,
+    -1
+   ]
+  },
+  {
+   "p": [
+    1,
+    0,
+    -1
+   ],
+   "note": "kolem předmětu"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Dlouhé vedení není součástí modelu (připojí se zvlášť)."
+ ],
+ "tested_in_game": false
+}
