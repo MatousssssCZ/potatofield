@@ -1,0 +1,166 @@
+{
+ "schema_version": "1.1",
+ "id": "B54_stairStraight",
+ "asset_id": "setB.stairStraight",
+ "label_cs": "B54 Přímé venkovní schodiště",
+ "category": "sada300_B",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.4,
+  6.8979
+ ],
+ "height_m": 4.2721,
+ "target_m": [
+  1.4,
+  6.6,
+  4.2
+ ],
+ "bounds_m": {
+  "min": [
+   -0.8,
+   0,
+   -3.5979
+  ],
+  "max": [
+   0.6,
+   4.2721,
+   3.3
+  ]
+ },
+ "triangles": {
+  "LOD0": 500
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    1.5226,
+    -0.5541
+   ],
+   "size": [
+    1.2,
+    0.18,
+    6.2769
+   ],
+   "rotX": -0.535,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "ramp",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.6,
+    2.1,
+    -0.6
+   ],
+   "size": [
+    0.18,
+    1,
+    6.3769
+   ],
+   "rotX": -0.535,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    1.6,
+    2.7
+   ],
+   "size": [
+    1.2,
+    3.2,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.69,
+    3.7,
+    2.675
+   ],
+   "size": [
+    0.18,
+    1,
+    1.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -4.2
+   ],
+   "note": "pata schodů"
+  },
+  {
+   "p": [
+    0,
+    3.2,
+    2.7
+   ],
+   "note": "horní podesta"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Stupně 0,178 / 0,30 m. Strana +X je pro zeď domu (bez zábradlí), výstup z podesty na +Z nebo +X."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -3,
+    3.7,
+    2.7
+   ],
+   "to": [
+    0,
+    3.7,
+    2.7
+   ],
+   "expect_hit": true,
+   "note": "plné zábradlí podesty kryje"
+  }
+ ]
+}

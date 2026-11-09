@@ -12,6 +12,7 @@ import './assets/glbProps';
 import './assets/set/residential';
 import './assets/set/residential2';
 import './assets/set/residential3';
+import './assets/set/modules';
 
 export * from './registry';
 export * from './parts';

@@ -1,0 +1,172 @@
+{
+ "schema_version": "1.1",
+ "id": "B32_facade4Door",
+ "asset_id": "setB.facade4Door",
+ "label_cs": "B32 Fasáda 4 m s dveřmi",
+ "category": "sada300_B",
+ "asset_kind": "building",
+ "footprint_m": [
+  4,
+  0.38
+ ],
+ "height_m": 3.2,
+ "target_m": [
+  4,
+  0.3,
+  3.2
+ ],
+ "bounds_m": {
+  "min": [
+   -2,
+   0,
+   -0.23
+  ],
+  "max": [
+   2,
+   3.2,
+   0.15
+  ]
+ },
+ "triangles": {
+  "LOD0": 144
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "plasterWarm",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    -1.05,
+    1.6,
+    0
+   ],
+   "size": [
+    1.9,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.5,
+    2.75,
+    0
+   ],
+   "size": [
+    1.2,
+    0.9,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.55,
+    1.6,
+    0
+   ],
+   "size": [
+    0.9,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0.5,
+    0,
+    -2
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    0.5,
+    0,
+    0
+   ],
+   "note": "dveřní otvor"
+  },
+  {
+   "p": [
+    0.5,
+    0,
+    2
+   ],
+   "note": "za fasádou"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Dveřní otvor 1,2 × 2,3 m bez křídla, posunutý o 0,5 m od středu."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0.5,
+    1.5,
+    -3
+   ],
+   "to": [
+    0.5,
+    1.5,
+    3
+   ],
+   "expect_hit": false,
+   "note": "dveřní otvor volný"
+  },
+  {
+   "from": [
+    -1.2,
+    1.5,
+    -3
+   ],
+   "to": [
+    -1.2,
+    1.5,
+    3
+   ],
+   "expect_hit": true,
+   "note": "plná část kryje"
+  }
+ ]
+}

@@ -3,6 +3,7 @@ import { SET_META } from '../src/world/assets/set/residential';
 import { collidersForMap, generateObject, getAsset, resolveParams } from '../src/world';
 import { buildObjectGeometry } from '../src/client/render/geometry';
 import { walkRoute, type Waypoint } from './setWalk';
+import { makeWorld } from './helpers';
 
 /** Pilotní GLB domy (položky 5 a 6): průchod výklenkem/vstupem, schody, patro; střecha zadním žebříkem. */
 export const PILOT_ROUTES: Record<string, Waypoint[]> = {
@@ -19,9 +20,11 @@ export const PILOT_ROUTES: Record<string, Waypoint[]> = {
   ],
 };
 
-describe('sada 300 – A obytné budovy: průchodnost', () => {
+const sec = (id: string) => id.slice(3, 4);
+
+describe('sada 300: průchodnost', () => {
   for (const [id, meta] of Object.entries(SET_META)) {
-    it(`A${String(meta.item).padStart(2, '0')} ${id}: trasa vstup → místnosti → patra → střecha`, async () => {
+    it(`${sec(id)}${String(meta.item).padStart(2, '0')} ${id}: trasa vstup → místnosti → patra → střecha`, async () => {
       // Patrové budovy jsou ve výchozím stavu uzavřené (BF2) – trasa interiéru s „Přístupný interiér“.
       const hasInterior = getAsset(id)!.params.some((q) => q.key === 'interior');
       const r = await walkRoute(id, meta.route, hasInterior ? { interior: true } : {});
@@ -30,7 +33,7 @@ describe('sada 300 – A obytné budovy: průchodnost', () => {
   }
 });
 
-describe('sada 300 – A obytné budovy: limity', () => {
+describe('sada 300: limity', () => {
   for (const id of Object.keys(SET_META)) {
     it(`${id}: trojúhelníky ≤ 12000, rozměry podle zadání`, () => {
       const o = { id: 'b', assetId: id, generatorVersion: 1, transform: { position: [0, 0, 0] as [number, number, number], rotation: [0, 0, 0] as [number, number, number] }, params: resolveParams(getAsset(id)!, {}), seed: 1 };
@@ -90,5 +93,23 @@ describe('sada 300 – uzavřené patrové budovy (BF2)', () => {
         expect(res.failAt ?? null).toBeNull();
       }
     }, 60000);
+  }
+});
+
+describe('sada 300: kryt a průstřel (paprsky střel)', () => {
+  for (const [id, meta] of Object.entries(SET_META)) {
+    if (!meta.rays?.length) continue;
+    it(`${id}: okna a otvory propustí, zdi a pilíře kryjí`, async () => {
+      const g = generateObject({ id: 'b', assetId: id, generatorVersion: 1, transform: { position: [0, 0, 0], rotation: [0, 0, 0] }, params: resolveParams(getAsset(id)!, {}), seed: 1 });
+      const phys = await makeWorld(collidersForMap([g]));
+      const bad: string[] = [];
+      for (const r of meta.rays!) {
+        const d = [r.to[0] - r.from[0], r.to[1] - r.from[1], r.to[2] - r.from[2]];
+        const l = Math.hypot(d[0], d[1], d[2]);
+        const hit = phys.castRay({ x: r.from[0], y: r.from[1], z: r.from[2] }, { x: d[0] / l, y: d[1] / l, z: d[2] / l }, l);
+        if (!!hit !== r.hit) bad.push(`${r.note}: čekáno ${r.hit ? 'zásah' : 'volno'}, ${hit ? `zásah ${hit.distance.toFixed(2)} m` : 'volno'}`);
+      }
+      expect(bad).toEqual([]);
+    });
   }
 });

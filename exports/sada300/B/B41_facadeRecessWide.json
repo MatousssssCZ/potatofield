@@ -1,0 +1,302 @@
+{
+ "schema_version": "1.1",
+ "id": "B41_facadeRecessWide",
+ "asset_id": "setB.facadeRecessWide",
+ "label_cs": "B41 Výklenek se širokým ostěním",
+ "category": "sada300_B",
+ "asset_kind": "building",
+ "footprint_m": [
+  5.04,
+  2.02
+ ],
+ "height_m": 3.2,
+ "target_m": [
+  5,
+  1.9,
+  3.2
+ ],
+ "bounds_m": {
+  "min": [
+   -2.54,
+   0,
+   -1.07
+  ],
+  "max": [
+   2.5,
+   3.2,
+   0.95
+  ]
+ },
+ "triangles": {
+  "LOD0": 240
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "lamp",
+  "paving",
+  "plasterWarm",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    -1.8,
+    1.6,
+    -0.725
+   ],
+   "size": [
+    1.4,
+    3.2,
+    0.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    2.925,
+    -0.725
+   ],
+   "size": [
+    2.2,
+    0.55,
+    0.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.8,
+    1.6,
+    -0.725
+   ],
+   "size": [
+    1.4,
+    3.2,
+    0.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.25,
+    1.6,
+    0.075
+   ],
+   "size": [
+    0.3,
+    3.2,
+    1.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.25,
+    1.6,
+    0.075
+   ],
+   "size": [
+    0.3,
+    3.2,
+    1.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.825,
+    1.6,
+    0.8
+   ],
+   "size": [
+    1.15,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.35,
+    2.75,
+    0.8
+   ],
+   "size": [
+    1.2,
+    0.9,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.175,
+    1.6,
+    0.8
+   ],
+   "size": [
+    0.45,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    3.1,
+    0.075
+   ],
+   "size": [
+    2.2,
+    0.2,
+    1.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.03,
+    -0.2
+   ],
+   "size": [
+    2.24,
+    0.06,
+    1.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2.95
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    0.35,
+    0.06,
+    -0.3500000000000001
+   ],
+   "note": "výklenek"
+  },
+  {
+   "p": [
+    0.35,
+    0.06,
+    0.25
+   ],
+   "note": "u dveří"
+  },
+  {
+   "p": [
+    0.35,
+    0,
+    2.15
+   ],
+   "note": "za dveřmi"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Přední zeď 0,45 m (zesílené pilíře), dveře posunuté o 0,35 m – vedle nich plná zeď jako kryt.",
+  "Napojení: přední líc v z = −0,95."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    4.5,
+    1.4,
+    -2.45
+   ],
+   "to": [
+    -0.8,
+    1.4,
+    0.35000000000000003
+   ],
+   "expect_hit": true,
+   "note": "boční stěna výklenku kryje"
+  },
+  {
+   "from": [
+    0.35,
+    1.4,
+    -3.95
+   ],
+   "to": [
+    0.35,
+    1.4,
+    2.65
+   ],
+   "expect_hit": false,
+   "note": "osa výklenku a dveří volná"
+  }
+ ]
+}

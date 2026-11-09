@@ -1,0 +1,174 @@
+{
+ "schema_version": "1.1",
+ "id": "B50_roof4x8",
+ "asset_id": "setB.roof4x8",
+ "label_cs": "B50 Střecha 4 × 8 m",
+ "category": "sada300_B",
+ "asset_kind": "building",
+ "footprint_m": [
+  4.04,
+  8.49
+ ],
+ "height_m": 1.26,
+ "target_m": [
+  4,
+  8,
+  1.2
+ ],
+ "bounds_m": {
+  "min": [
+   -2.02,
+   -0.5,
+   -4.45
+  ],
+  "max": [
+   2.02,
+   1.26,
+   4.04
+  ]
+ },
+ "triangles": {
+  "LOD0": 96
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "metal",
+  "plasterWarm",
+  "roof",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.1,
+    0
+   ],
+   "size": [
+    4,
+    0.2,
+    8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.7,
+    -3.9
+   ],
+   "size": [
+    4,
+    1,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.9,
+    0.7,
+    0.1
+   ],
+   "size": [
+    0.2,
+    1,
+    7.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -2.6,
+    0,
+    3
+   ],
+   "note": "u otevřené strany"
+  },
+  {
+   "p": [
+    -1.2,
+    0.2,
+    3
+   ],
+   "note": "na střeše"
+  },
+  {
+   "p": [
+    0.8,
+    0.2,
+    -3.2
+   ],
+   "note": "roh s atikou"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Atika jen na přední a levé (+X) straně; pravá a zadní strana navazují na další moduly."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    0.9,
+    -6
+   ],
+   "to": [
+    0,
+    0.9,
+    0
+   ],
+   "expect_hit": true,
+   "note": "přední atika"
+  },
+  {
+   "from": [
+    4,
+    0.9,
+    0
+   ],
+   "to": [
+    0,
+    0.9,
+    0
+   ],
+   "expect_hit": true,
+   "note": "levá atika"
+  }
+ ]
+}

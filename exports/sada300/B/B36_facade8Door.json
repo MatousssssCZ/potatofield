@@ -1,0 +1,288 @@
+{
+ "schema_version": "1.1",
+ "id": "B36_facade8Door",
+ "asset_id": "setB.facade8Door",
+ "label_cs": "B36 Fasáda 8 m s dveřmi",
+ "category": "sada300_B",
+ "asset_kind": "building",
+ "footprint_m": [
+  8,
+  0.41
+ ],
+ "height_m": 3.2,
+ "target_m": [
+  8,
+  0.3,
+  3.2
+ ],
+ "bounds_m": {
+  "min": [
+   -4,
+   0,
+   -0.26
+  ],
+  "max": [
+   4,
+   3.2,
+   0.15
+  ]
+ },
+ "triangles": {
+  "LOD0": 372
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "plasterWarm",
+  "sandstone",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    -3.4,
+    1.6,
+    0
+   ],
+   "size": [
+    1.2,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.2,
+    2.75,
+    0
+   ],
+   "size": [
+    1.2,
+    0.9,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.85,
+    1.6,
+    0
+   ],
+   "size": [
+    1.5,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.6,
+    0.5,
+    0
+   ],
+   "size": [
+    1.4,
+    1,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.6,
+    2.75,
+    0
+   ],
+   "size": [
+    1.4,
+    0.9,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.7,
+    1.6,
+    0
+   ],
+   "size": [
+    0.8,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.8,
+    0.5,
+    0
+   ],
+   "size": [
+    1.4,
+    1,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.8,
+    2.75,
+    0
+   ],
+   "size": [
+    1.4,
+    0.9,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.75,
+    1.6,
+    0
+   ],
+   "size": [
+    0.5,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -2.2,
+    0,
+    -2
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    -2.2,
+    0,
+    0
+   ],
+   "note": "dveřní otvor"
+  },
+  {
+   "p": [
+    -2.2,
+    0,
+    2
+   ],
+   "note": "za fasádou"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Konce zdí plné (0,5 m od otvorů) – napojení rohů a dalších fasád."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -2.2,
+    1.5,
+    -3
+   ],
+   "to": [
+    -2.2,
+    1.5,
+    3
+   ],
+   "expect_hit": false,
+   "note": "dveře volné"
+  },
+  {
+   "from": [
+    0.6,
+    1.6,
+    -3
+   ],
+   "to": [
+    0.6,
+    1.6,
+    3
+   ],
+   "expect_hit": false,
+   "note": "okno"
+  },
+  {
+   "from": [
+    -0.9,
+    1.6,
+    -3
+   ],
+   "to": [
+    -0.9,
+    1.6,
+    3
+   ],
+   "expect_hit": true,
+   "note": "pilíř mezi dveřmi a oknem"
+  }
+ ]
+}

@@ -27,11 +27,15 @@ export interface SetMeta {
   route: { p: [number, number, number]; ladder?: boolean; teleport?: boolean; note?: string }[];
   walkableRoof: boolean;
   notes: string[];
+  /** Kontrola střel: paprsek z `from` do `to` má / nemá narazit (okno = průstřel, zeď = kryt). */
+  rays?: { from: [number, number, number]; to: [number, number, number]; hit: boolean; note?: string }[];
   /** Pohled kamery do interiéru pro rendery [pozice, cíl]. */
   view?: [[number, number, number], [number, number, number]];
 }
 
 export const SET_META: Record<string, SetMeta> = {};
+
+export type SetSection = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K';
 
 /** Plášť obdélníkové hmoty: otvory zadané v absolutní souřadnici (x pro čelo/záda, z pro boky). */
 export function shell(r: Rect, y0: number, h: number, ops: { front?: Op[]; back?: Op[]; left?: Op[]; right?: Op[] }, mat: string, skip: ('front' | 'back' | 'left' | 'right')[] = []): Part[] {
@@ -83,8 +87,9 @@ export function reg(
   label: string,
   def: Omit<AssetDef, 'assetId' | 'label' | 'category' | 'generatorVersion' | 'params' | 'materials' | 'defaultMaterial'> & { params?: AssetDef['params']; defaultMaterial?: string; closed?: ClosedSpec; interior?: boolean },
   meta: Omit<SetMeta, 'item'>,
+  section: SetSection = 'A',
 ) {
-  const assetId = `setA.${id}`;
+  const assetId = `set${section}.${id}`;
   SET_META[assetId] = { item, ...meta };
   const { closed, interior, generate, ladders, ...rest } = def;
   const params = [...(def.params ?? [])];
@@ -92,8 +97,8 @@ export function reg(
   const isClosed = (p: Params) => !!closed && !(interior && p.interior);
   registerAsset({
     assetId,
-    label: `A${String(item).padStart(2, '0')} ${label}`,
-    category: 'setA',
+    label: `${section}${String(item).padStart(2, '0')} ${label}`,
+    category: `set${section}`,
     generatorVersion: 1,
     materials: WALL_MATS,
     defaultMaterial: def.defaultMaterial ?? 'plasterWarm',

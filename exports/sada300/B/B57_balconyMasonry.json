@@ -1,0 +1,174 @@
+{
+ "schema_version": "1.1",
+ "id": "B57_balconyMasonry",
+ "asset_id": "setB.balconyMasonry",
+ "label_cs": "B57 Balkon se zděným zábradlím",
+ "category": "sada300_B",
+ "asset_kind": "building",
+ "footprint_m": [
+  3.06,
+  1.43
+ ],
+ "height_m": 1.24,
+ "target_m": [
+  3,
+  1.4,
+  1.2
+ ],
+ "bounds_m": {
+  "min": [
+   -1.53,
+   -0.04,
+   -1.43
+  ],
+  "max": [
+   1.53,
+   1.24,
+   0
+  ]
+ },
+ "triangles": {
+  "LOD0": 96
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "plasterWarm",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.09,
+    -0.7
+   ],
+   "size": [
+    3,
+    0.18,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.68,
+    -1.325
+   ],
+   "size": [
+    3,
+    1,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.425,
+    0.68,
+    -0.625
+   ],
+   "size": [
+    0.15,
+    1,
+    1.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.425,
+    0.68,
+    -0.625
+   ],
+   "size": [
+    0.15,
+    1,
+    1.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1,
+    0.18,
+    -0.4
+   ],
+   "note": "na balkonu"
+  },
+  {
+   "p": [
+    -1,
+    0.18,
+    -0.5
+   ]
+  },
+  {
+   "p": [
+    1,
+    0.18,
+    -0.5
+   ],
+   "note": "podél zábradlí"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "V editoru se přilepí zadní hranou na fasádu (mount wall, zadní hrana z = 0)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    0.8,
+    -3
+   ],
+   "to": [
+    0,
+    0.8,
+    -0.2
+   ],
+   "expect_hit": true,
+   "note": "zděné zábradlí kryje"
+  }
+ ]
+}

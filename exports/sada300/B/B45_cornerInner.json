@@ -1,0 +1,139 @@
+{
+ "schema_version": "1.1",
+ "id": "B45_cornerInner",
+ "asset_id": "setB.cornerInner",
+ "label_cs": "B45 Vnitřní roh",
+ "category": "sada300_B",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.08,
+  2.08
+ ],
+ "height_m": 3.2,
+ "target_m": [
+  2,
+  2,
+  3.2
+ ],
+ "bounds_m": {
+  "min": [
+   -1,
+   0,
+   -1
+  ],
+  "max": [
+   1.08,
+   3.2,
+   1.08
+  ]
+ },
+ "triangles": {
+  "LOD0": 48
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "plasterWarm",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    1.6,
+    0.85
+   ],
+   "size": [
+    2,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.85,
+    1.6,
+    -0.15
+   ],
+   "size": [
+    0.3,
+    3.2,
+    1.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -0.8,
+    0,
+    0.3
+   ],
+   "note": "podél ramene"
+  },
+  {
+   "p": [
+    0.3,
+    0,
+    0.3
+   ],
+   "note": "až do kouta"
+  },
+  {
+   "p": [
+    0.3,
+    0,
+    -0.8
+   ],
+   "note": "podél druhého ramene"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Na pochozí straně (kout) žádné lišty ani sokl – hráč se o nic nezachytí."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -2,
+    1.5,
+    -2
+   ],
+   "to": [
+    2,
+    1.5,
+    2
+   ],
+   "expect_hit": true,
+   "note": "kout kryje proti střelbě z dvora ven"
+  }
+ ]
+}

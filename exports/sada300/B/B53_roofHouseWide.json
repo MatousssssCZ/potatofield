@@ -1,0 +1,292 @@
+{
+ "schema_version": "1.1",
+ "id": "B53_roofHouseWide",
+ "asset_id": "setB.roofHouseWide",
+ "label_cs": "B53 Širší střešní nástavba",
+ "category": "sada300_B",
+ "asset_kind": "building",
+ "footprint_m": [
+  4.21,
+  3.7
+ ],
+ "height_m": 2.815,
+ "target_m": [
+  4,
+  3.5,
+  2.8
+ ],
+ "bounds_m": {
+  "min": [
+   -2.1,
+   0,
+   -1.85
+  ],
+  "max": [
+   2.11,
+   2.815,
+   1.85
+  ]
+ },
+ "triangles": {
+  "LOD0": 228
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteLight",
+  "plasterWarm",
+  "roof",
+  "sandstone",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    -1.775,
+    1.325,
+    -1.625
+   ],
+   "size": [
+    0.45,
+    2.65,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1,
+    2.425,
+    -1.625
+   ],
+   "size": [
+    1.1,
+    0.45,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.775,
+    1.325,
+    -1.625
+   ],
+   "size": [
+    2.45,
+    2.65,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    1.325,
+    1.625
+   ],
+   "size": [
+    4,
+    2.65,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.875,
+    1.325,
+    0
+   ],
+   "size": [
+    0.25,
+    2.65,
+    3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.875,
+    1.325,
+    -0.9
+   ],
+   "size": [
+    0.25,
+    2.65,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.875,
+    0.6,
+    0
+   ],
+   "size": [
+    0.25,
+    1.2,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.875,
+    2.225,
+    0
+   ],
+   "size": [
+    0.25,
+    0.85,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.875,
+    1.325,
+    0.9
+   ],
+   "size": [
+    0.25,
+    2.65,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    2.725,
+    0
+   ],
+   "size": [
+    4.2,
+    0.15,
+    3.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1,
+    0,
+    -2.8
+   ],
+   "note": "střecha"
+  },
+  {
+   "p": [
+    -1,
+    0,
+    -1.2
+   ],
+   "note": "dveře"
+  },
+  {
+   "p": [
+    0.6,
+    0,
+    0.5
+   ],
+   "note": "horní podesta"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Uvnitř volná plocha 3,5 × 3 m pro horní podestu a výstup schodiště."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    3,
+    1.5,
+    0
+   ],
+   "to": [
+    0,
+    1.5,
+    0
+   ],
+   "expect_hit": false,
+   "note": "boční okno – průstřel"
+  },
+  {
+   "from": [
+    3,
+    1.5,
+    1.2
+   ],
+   "to": [
+    0,
+    1.5,
+    1.2
+   ],
+   "expect_hit": true,
+   "note": "stěna vedle okna"
+  }
+ ]
+}

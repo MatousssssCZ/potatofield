@@ -1,0 +1,339 @@
+{
+ "schema_version": "1.1",
+ "id": "B37_facade8Shops",
+ "asset_id": "setB.facade8Shops",
+ "label_cs": "B37 Fasáda 8 m s výlohami",
+ "category": "sada300_B",
+ "asset_kind": "building",
+ "footprint_m": [
+  8,
+  0.44
+ ],
+ "height_m": 3.2,
+ "target_m": [
+  8,
+  0.3,
+  3.2
+ ],
+ "bounds_m": {
+  "min": [
+   -4,
+   0,
+   -0.29
+  ],
+  "max": [
+   4,
+   3.2,
+   0.15
+  ]
+ },
+ "triangles": {
+  "LOD0": 396
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "paintedMetal",
+  "plasterWarm",
+  "sandstone",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    -3.7,
+    1.6,
+    0
+   ],
+   "size": [
+    0.6,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.2,
+    0.225,
+    0
+   ],
+   "size": [
+    2.4,
+    0.45,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.2,
+    2.85,
+    0
+   ],
+   "size": [
+    2.4,
+    0.7,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.8,
+    1.6,
+    0
+   ],
+   "size": [
+    0.4,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    2.85,
+    0
+   ],
+   "size": [
+    1.2,
+    0.7,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.8,
+    1.6,
+    0
+   ],
+   "size": [
+    0.4,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.2,
+    0.225,
+    0
+   ],
+   "size": [
+    2.4,
+    0.45,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.2,
+    2.85,
+    0
+   ],
+   "size": [
+    2.4,
+    0.7,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.7,
+    1.6,
+    0
+   ],
+   "size": [
+    0.6,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -3.7,
+    1.5,
+    -0.2
+   ],
+   "size": [
+    0.6,
+    3,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    3.7,
+    1.5,
+    -0.2
+   ],
+   "size": [
+    0.6,
+    3,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    0,
+    0,
+    0
+   ],
+   "note": "vstup mezi výlohami"
+  },
+  {
+   "p": [
+    0,
+    0,
+    2
+   ],
+   "note": "obchod"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Lišta 2,82–2,9 m slouží k přilepení markýzy (rekvizita).",
+  "Výlohy bez skla (průstřel)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -2.2,
+    1.5,
+    -3
+   ],
+   "to": [
+    -2.2,
+    1.5,
+    3
+   ],
+   "expect_hit": false,
+   "note": "výloha"
+  },
+  {
+   "from": [
+    2.2,
+    1.5,
+    -3
+   ],
+   "to": [
+    2.2,
+    1.5,
+    3
+   ],
+   "expect_hit": false,
+   "note": "výloha"
+  },
+  {
+   "from": [
+    -3.7,
+    1.5,
+    -3
+   ],
+   "to": [
+    -3.7,
+    1.5,
+    3
+   ],
+   "expect_hit": true,
+   "note": "krajní pilíř kryje"
+  },
+  {
+   "from": [
+    -2.2,
+    0.25,
+    -3
+   ],
+   "to": [
+    -2.2,
+    0.25,
+    3
+   ],
+   "expect_hit": true,
+   "note": "sokl kryje vleže"
+  }
+ ]
+}

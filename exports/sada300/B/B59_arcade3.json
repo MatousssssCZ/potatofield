@@ -1,0 +1,384 @@
+{
+ "schema_version": "1.1",
+ "id": "B59_arcade3",
+ "asset_id": "setB.arcade3",
+ "label_cs": "B59 Podloubí se třemi oblouky",
+ "category": "sada300_B",
+ "asset_kind": "building",
+ "footprint_m": [
+  5.08,
+  2.1
+ ],
+ "height_m": 3.6,
+ "target_m": [
+  5,
+  2,
+  3.6
+ ],
+ "bounds_m": {
+  "min": [
+   -2.54,
+   0,
+   -1.1
+  ],
+  "max": [
+   2.54,
+   3.6,
+   1
+  ]
+ },
+ "triangles": {
+  "LOD0": 480
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteLight",
+  "plasterWarm",
+  "plazaTile",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    -2.3,
+    1.7,
+    -0.75
+   ],
+   "size": [
+    0.4,
+    3.4,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.7667,
+    1.7,
+    -0.75
+   ],
+   "size": [
+    0.4,
+    3.4,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.7667,
+    1.7,
+    -0.75
+   ],
+   "size": [
+    0.4,
+    3.4,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.3,
+    1.7,
+    -0.75
+   ],
+   "size": [
+    0.4,
+    3.4,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.9111,
+    3.2671,
+    -0.75
+   ],
+   "size": [
+    0.3778,
+    0.2657,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.5333,
+    3.2833,
+    -0.75
+   ],
+   "size": [
+    0.3778,
+    0.2333,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.1556,
+    3.2671,
+    -0.75
+   ],
+   "size": [
+    0.3778,
+    0.2657,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.3778,
+    3.2671,
+    -0.75
+   ],
+   "size": [
+    0.3778,
+    0.2657,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    3.2833,
+    -0.75
+   ],
+   "size": [
+    0.3778,
+    0.2333,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.3778,
+    3.2671,
+    -0.75
+   ],
+   "size": [
+    0.3778,
+    0.2657,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.1556,
+    3.2671,
+    -0.75
+   ],
+   "size": [
+    0.3778,
+    0.2657,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.5333,
+    3.2833,
+    -0.75
+   ],
+   "size": [
+    0.3778,
+    0.2333,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.9111,
+    3.2671,
+    -0.75
+   ],
+   "size": [
+    0.3778,
+    0.2657,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    3.5,
+    0
+   ],
+   "size": [
+    5,
+    0.2,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.02,
+    0.25
+   ],
+   "size": [
+    5,
+    0.04,
+    1.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2.5
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    0,
+    0.04,
+    0.4
+   ],
+   "note": "podloubí (prostřední oblouk)"
+  },
+  {
+   "p": [
+    -1.5,
+    0.04,
+    0.4
+   ]
+  },
+  {
+   "p": [
+    -1.5,
+    0,
+    -2.5
+   ],
+   "note": "ven krajním obloukem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Oblouky: vzhled z 8 svislých plátků, kolize ze 3 hrubších (nikdy pod viditelným obloukem); patka 2,6 m = minimální světlá výška u pilíře.",
+  "Zadní strana otevřená – napojí se fasáda (např. B32/B36)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -2.3,
+    1.5,
+    -3
+   ],
+   "to": [
+    -2.3,
+    1.5,
+    0.5
+   ],
+   "expect_hit": true,
+   "note": "krajní pilíř kryje"
+  },
+  {
+   "from": [
+    0,
+    2,
+    -3
+   ],
+   "to": [
+    0,
+    2,
+    0.5
+   ],
+   "expect_hit": false,
+   "note": "oblouk otevřený"
+  }
+ ]
+}

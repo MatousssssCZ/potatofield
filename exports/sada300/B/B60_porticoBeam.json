@@ -1,0 +1,221 @@
+{
+ "schema_version": "1.1",
+ "id": "B60_porticoBeam",
+ "asset_id": "setB.porticoBeam",
+ "label_cs": "B60 Podloubí s rovnými překlady",
+ "category": "sada300_B",
+ "asset_kind": "building",
+ "footprint_m": [
+  4.08,
+  2.56
+ ],
+ "height_m": 3.4,
+ "target_m": [
+  4,
+  2.5,
+  3.4
+ ],
+ "bounds_m": {
+  "min": [
+   -2.04,
+   0,
+   -1.31
+  ],
+  "max": [
+   2.04,
+   3.4,
+   1.25
+  ]
+ },
+ "triangles": {
+  "LOD0": 96
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "paving",
+  "plasterWarm",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    -1.525,
+    1.35,
+    -0.975
+   ],
+   "size": [
+    0.45,
+    2.7,
+    0.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.525,
+    1.35,
+    -0.975
+   ],
+   "size": [
+    0.45,
+    2.7,
+    0.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    3.3,
+    0
+   ],
+   "size": [
+    4,
+    0.2,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.02,
+    0.275
+   ],
+   "size": [
+    4,
+    0.04,
+    1.95
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    2.95,
+    -0.975
+   ],
+   "size": [
+    4,
+    0.5,
+    0.55
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2.6
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    0,
+    0.04,
+    0.4
+   ],
+   "note": "podloubí"
+  },
+  {
+   "p": [
+    -1.6,
+    0.04,
+    0.8
+   ]
+  },
+  {
+   "p": [
+    -2.8,
+    0,
+    0.8
+   ],
+   "note": "ven bokem"
+  },
+  {
+   "p": [
+    -2.8,
+    0,
+    -2.4
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Sloupy 0,45 m posunuté 0,25 m od krajů, aby se dvě podloubí vedle sebe nesrazila sloupy."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -1.5,
+    1.5,
+    -3
+   ],
+   "to": [
+    -1.5,
+    1.5,
+    0.5
+   ],
+   "expect_hit": true,
+   "note": "sloup kryje"
+  },
+  {
+   "from": [
+    0,
+    2.2,
+    -3
+   ],
+   "to": [
+    0,
+    2.2,
+    0.5
+   ],
+   "expect_hit": false,
+   "note": "mezi sloupy volno"
+  }
+ ]
+}

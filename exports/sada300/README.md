@@ -41,12 +41,21 @@ Přízemní budovy zůstávají přístupné; jejich kolize se slučují (stejn�
   (dvouramenné schodiště s mezipodestou přes všechna podlaží až do střešní nástavby, balkony,
   ustoupené patro s terasou, průjezdy 3,5 × 3,0 m, vystouplý schodišťový trakt), rohový dům
   s krytým rohovým vstupem a výlohami do dvou ulic.
+- **B31–B60 (stavební moduly):** fasády 4 m a 8 m (okno, dveře, výloha, slepá), fasády
+  s výklenkem (B39/B40 podle pilotů, široký a poškozený), vnější a vnitřní rohy, štít, požární
+  zeď, střešní moduly s atikou (lepí se nahoru), dvě střešní nástavby, tři venkovní schodiště
+  (přímé, zalomené, do dvou podlaží), dva balkony (lepí se na zeď) a dvě podloubí.
+  Konvence: pivot = střed půdorysu u paty, uliční líc −Z, zdi 0,3 m, výška fasád 3,2 m
+  (parametr „Výška stěny“ 2,6–4,6 m). Rendery pro B nejsou – ověřeno testy (průchod + střely).
 
 ## Validace
 
 - **Průchod:** u každého modelu projde simulovaný hráč (stejné kolize a pohyb jako server)
   zadanou trasu: ulice → vchod → všechny místnosti → schody / žebřík → patra → pochozí střecha.
   Totéž hlídá test `tests/set300.test.ts`, takže žádná pozdější úprava průchod nerozbije.
+- **Kryt a průstřel (od B):** u modelů jsou zadané paprsky střel – okny, výlohami, otvory a
+  mezi sloupy musí střela projít, zdmi, pilíři, atikami a plným zábradlím ne. Kovové zábradlí
+  balkonů a schodů střely propustí (kolize jen pro pohyb).
 - **Míry:** dveře 1,2 × 2,25 m, parapety 1,0 m, atiky 1,0 m (u druhého křídla A04 0,6 m),
   stupně ≤ 0,185 m / 0,3 m, kolize schodů jako rampa, šířka ramen ≥ 1,1 m.
 
@@ -66,6 +75,14 @@ Přízemní budovy zůstávají přístupné; jejich kolize se slučují (stejn�
   Okna do GLB vyříznout nejde, proto jsou A05/A06 věrné procedurální verze se stejnými
   rozměry z JSON a doplněnými okny. Původní GLB zůstávají beze změny v kategorii
   „Modely GLB (ChatGPT)“.
+
+- **B39/B40 (pilotní P):** výklenky podle pilotů mod_facade_recess_a/b (2,0 × 1,5 m a
+  2,0 × 2,0 m, nadpraží 2,7 m, dveře 1,2 × 2,4 m, výška 3,5 m). Úprava: B39 má šířku 4,0 m místo
+  4,2 m, aby seděla do rastru 4 m s rovnými fasádami. Pivot = střed půdorysu, takže přední líc
+  výklenkového modulu leží o 0,75 m (B39) / 1,0 m (B40) před lícem rovné fasády – při skládání
+  do řady je potřeba modul posunout (v popisu modelu je uvedeno).
+- **B55 zalomené schodiště:** půdorys 2,75 × 4,9 m místo ~3 × 4,5 m – horní podesta 1,0 m
+  navíc, aby výstup nevedl rovnou do dveří.
 
 **Neotestováno přímo ve hře** (multiplayer, skuteční hráči): vše výše pochází ze simulace
 a renderů editoru.

@@ -1,0 +1,276 @@
+{
+ "section": "B",
+ "generated": "2026-11-09",
+ "models": [
+  {
+   "item": 31,
+   "id": "B31_facade4Window",
+   "asset_id": "setB.facade4Window",
+   "label": "B31 Fasáda 4 m s oknem",
+   "glb": "B31_facade4Window.glb",
+   "json": "B31_facade4Window.json",
+   "render": "renders/B31.jpg"
+  },
+  {
+   "item": 32,
+   "id": "B32_facade4Door",
+   "asset_id": "setB.facade4Door",
+   "label": "B32 Fasáda 4 m s dveřmi",
+   "glb": "B32_facade4Door.glb",
+   "json": "B32_facade4Door.json",
+   "render": "renders/B32.jpg"
+  },
+  {
+   "item": 33,
+   "id": "B33_facade4Shop",
+   "asset_id": "setB.facade4Shop",
+   "label": "B33 Fasáda 4 m s výlohou",
+   "glb": "B33_facade4Shop.glb",
+   "json": "B33_facade4Shop.json",
+   "render": "renders/B33.jpg"
+  },
+  {
+   "item": 34,
+   "id": "B34_facade4Blank",
+   "asset_id": "setB.facade4Blank",
+   "label": "B34 Slepá fasáda 4 m",
+   "glb": "B34_facade4Blank.glb",
+   "json": "B34_facade4Blank.json",
+   "render": "renders/B34.jpg"
+  },
+  {
+   "item": 35,
+   "id": "B35_facade8Windows",
+   "asset_id": "setB.facade8Windows",
+   "label": "B35 Fasáda 8 m s okny",
+   "glb": "B35_facade8Windows.glb",
+   "json": "B35_facade8Windows.json",
+   "render": "renders/B35.jpg"
+  },
+  {
+   "item": 36,
+   "id": "B36_facade8Door",
+   "asset_id": "setB.facade8Door",
+   "label": "B36 Fasáda 8 m s dveřmi",
+   "glb": "B36_facade8Door.glb",
+   "json": "B36_facade8Door.json",
+   "render": "renders/B36.jpg"
+  },
+  {
+   "item": 37,
+   "id": "B37_facade8Shops",
+   "asset_id": "setB.facade8Shops",
+   "label": "B37 Fasáda 8 m s výlohami",
+   "glb": "B37_facade8Shops.glb",
+   "json": "B37_facade8Shops.json",
+   "render": "renders/B37.jpg"
+  },
+  {
+   "item": 38,
+   "id": "B38_facade8Blank",
+   "asset_id": "setB.facade8Blank",
+   "label": "B38 Slepá fasáda 8 m",
+   "glb": "B38_facade8Blank.glb",
+   "json": "B38_facade8Blank.json",
+   "render": "renders/B38.jpg"
+  },
+  {
+   "item": 39,
+   "id": "B39_facadeRecessA",
+   "asset_id": "setB.facadeRecessA",
+   "label": "B39 Fasáda s výklenkem A (pilot)",
+   "glb": "B39_facadeRecessA.glb",
+   "json": "B39_facadeRecessA.json",
+   "render": "renders/B39.jpg"
+  },
+  {
+   "item": 40,
+   "id": "B40_facadeRecessB",
+   "asset_id": "setB.facadeRecessB",
+   "label": "B40 Fasáda s výklenkem B (pilot)",
+   "glb": "B40_facadeRecessB.glb",
+   "json": "B40_facadeRecessB.json",
+   "render": "renders/B40.jpg"
+  },
+  {
+   "item": 41,
+   "id": "B41_facadeRecessWide",
+   "asset_id": "setB.facadeRecessWide",
+   "label": "B41 Výklenek se širokým ostěním",
+   "glb": "B41_facadeRecessWide.glb",
+   "json": "B41_facadeRecessWide.json",
+   "render": "renders/B41.jpg"
+  },
+  {
+   "item": 42,
+   "id": "B42_facadeRecessDamaged",
+   "asset_id": "setB.facadeRecessDamaged",
+   "label": "B42 Poškozený fasádní výklenek",
+   "glb": "B42_facadeRecessDamaged.glb",
+   "json": "B42_facadeRecessDamaged.json",
+   "render": "renders/B42.jpg"
+  },
+  {
+   "item": 43,
+   "id": "B43_cornerOuter",
+   "asset_id": "setB.cornerOuter",
+   "label": "B43 Vnější roh",
+   "glb": "B43_cornerOuter.glb",
+   "json": "B43_cornerOuter.json",
+   "render": "renders/B43.jpg"
+  },
+  {
+   "item": 44,
+   "id": "B44_cornerOuterPier",
+   "asset_id": "setB.cornerOuterPier",
+   "label": "B44 Vnější roh se zesíleným nárožím",
+   "glb": "B44_cornerOuterPier.glb",
+   "json": "B44_cornerOuterPier.json",
+   "render": "renders/B44.jpg"
+  },
+  {
+   "item": 45,
+   "id": "B45_cornerInner",
+   "asset_id": "setB.cornerInner",
+   "label": "B45 Vnitřní roh",
+   "glb": "B45_cornerInner.glb",
+   "json": "B45_cornerInner.json",
+   "render": "renders/B45.jpg"
+  },
+  {
+   "item": 46,
+   "id": "B46_cornerInnerWindow",
+   "asset_id": "setB.cornerInnerWindow",
+   "label": "B46 Vnitřní roh s oknem",
+   "glb": "B46_cornerInnerWindow.glb",
+   "json": "B46_cornerInnerWindow.json",
+   "render": "renders/B46.jpg"
+  },
+  {
+   "item": 47,
+   "id": "B47_gableWall",
+   "asset_id": "setB.gableWall",
+   "label": "B47 Štítová stěna",
+   "glb": "B47_gableWall.glb",
+   "json": "B47_gableWall.json",
+   "render": "renders/B47.jpg"
+  },
+  {
+   "item": 48,
+   "id": "B48_fireWall",
+   "asset_id": "setB.fireWall",
+   "label": "B48 Stěna s požární zdí",
+   "glb": "B48_fireWall.glb",
+   "json": "B48_fireWall.json",
+   "render": "renders/B48.jpg"
+  },
+  {
+   "item": 49,
+   "id": "B49_roof4x4",
+   "asset_id": "setB.roof4x4",
+   "label": "B49 Střecha 4 × 4 m",
+   "glb": "B49_roof4x4.glb",
+   "json": "B49_roof4x4.json",
+   "render": "renders/B49.jpg"
+  },
+  {
+   "item": 50,
+   "id": "B50_roof4x8",
+   "asset_id": "setB.roof4x8",
+   "label": "B50 Střecha 4 × 8 m",
+   "glb": "B50_roof4x8.glb",
+   "json": "B50_roof4x8.json",
+   "render": "renders/B50.jpg"
+  },
+  {
+   "item": 51,
+   "id": "B51_roofDamagedParapet",
+   "asset_id": "setB.roofDamagedParapet",
+   "label": "B51 Střecha s poškozenou atikou",
+   "glb": "B51_roofDamagedParapet.glb",
+   "json": "B51_roofDamagedParapet.json",
+   "render": "renders/B51.jpg"
+  },
+  {
+   "item": 52,
+   "id": "B52_roofHouseSmall",
+   "asset_id": "setB.roofHouseSmall",
+   "label": "B52 Malá střešní nástavba",
+   "glb": "B52_roofHouseSmall.glb",
+   "json": "B52_roofHouseSmall.json",
+   "render": "renders/B52.jpg"
+  },
+  {
+   "item": 53,
+   "id": "B53_roofHouseWide",
+   "asset_id": "setB.roofHouseWide",
+   "label": "B53 Širší střešní nástavba",
+   "glb": "B53_roofHouseWide.glb",
+   "json": "B53_roofHouseWide.json",
+   "render": "renders/B53.jpg"
+  },
+  {
+   "item": 54,
+   "id": "B54_stairStraight",
+   "asset_id": "setB.stairStraight",
+   "label": "B54 Přímé venkovní schodiště",
+   "glb": "B54_stairStraight.glb",
+   "json": "B54_stairStraight.json",
+   "render": "renders/B54.jpg"
+  },
+  {
+   "item": 55,
+   "id": "B55_stairDogleg",
+   "asset_id": "setB.stairDogleg",
+   "label": "B55 Zalomené venkovní schodiště",
+   "glb": "B55_stairDogleg.glb",
+   "json": "B55_stairDogleg.json",
+   "render": "renders/B55.jpg"
+  },
+  {
+   "item": 56,
+   "id": "B56_stairTwoLevels",
+   "asset_id": "setB.stairTwoLevels",
+   "label": "B56 Schodiště do dvou podlaží",
+   "glb": "B56_stairTwoLevels.glb",
+   "json": "B56_stairTwoLevels.json",
+   "render": "renders/B56.jpg"
+  },
+  {
+   "item": 57,
+   "id": "B57_balconyMasonry",
+   "asset_id": "setB.balconyMasonry",
+   "label": "B57 Balkon se zděným zábradlím",
+   "glb": "B57_balconyMasonry.glb",
+   "json": "B57_balconyMasonry.json",
+   "render": "renders/B57.jpg"
+  },
+  {
+   "item": 58,
+   "id": "B58_balconyMetal",
+   "asset_id": "setB.balconyMetal",
+   "label": "B58 Balkon s kovovým zábradlím",
+   "glb": "B58_balconyMetal.glb",
+   "json": "B58_balconyMetal.json",
+   "render": "renders/B58.jpg"
+  },
+  {
+   "item": 59,
+   "id": "B59_arcade3",
+   "asset_id": "setB.arcade3",
+   "label": "B59 Podloubí se třemi oblouky",
+   "glb": "B59_arcade3.glb",
+   "json": "B59_arcade3.json",
+   "render": "renders/B59.jpg"
+  },
+  {
+   "item": 60,
+   "id": "B60_porticoBeam",
+   "asset_id": "setB.porticoBeam",
+   "label": "B60 Podloubí s rovnými překlady",
+   "glb": "B60_porticoBeam.glb",
+   "json": "B60_porticoBeam.json",
+   "render": "renders/B60.jpg"
+  }
+ ]
+}

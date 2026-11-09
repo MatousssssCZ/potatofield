@@ -1,0 +1,341 @@
+{
+ "schema_version": "1.1",
+ "id": "B56_stairTwoLevels",
+ "asset_id": "setB.stairTwoLevels",
+ "label_cs": "B56 Schodiště do dvou podlaží",
+ "category": "sada300_B",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.525,
+  7.8
+ ],
+ "height_m": 7.425,
+ "target_m": [
+  2.5,
+  7.8,
+  7.4
+ ],
+ "bounds_m": {
+  "min": [
+   -1.275,
+   0,
+   -3.9
+  ],
+  "max": [
+   1.25,
+   7.425,
+   3.9
+  ]
+ },
+ "triangles": {
+  "LOD0": 1092
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "paintedMetal"
+ ],
+ "collision": [
+  {
+   "center": [
+    0.65,
+    1.5226,
+    0.0459
+   ],
+   "size": [
+    1.2,
+    0.18,
+    6.2769
+   ],
+   "rotX": -0.535,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "ramp",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.65,
+    4.6547,
+    0
+   ],
+   "size": [
+    1.2,
+    0.25,
+    6.2769
+   ],
+   "rotX": 0.535,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.25,
+    5.3,
+    0
+   ],
+   "size": [
+    0.06,
+    1,
+    6.2769
+   ],
+   "rotX": 0.535,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    -0.05,
+    5.3,
+    0
+   ],
+   "size": [
+    0.06,
+    1,
+    6.2769
+   ],
+   "rotX": 0.535,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    0,
+    1.6,
+    3.3
+   ],
+   "size": [
+    2.5,
+    3.2,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    6.275,
+    -3.3
+   ],
+   "size": [
+    2.5,
+    0.25,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.1,
+    3.075,
+    -3.75
+   ],
+   "size": [
+    0.3,
+    6.15,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.1,
+    3.075,
+    -3.75
+   ],
+   "size": [
+    0.3,
+    6.15,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.65,
+    6.025,
+    -2.825
+   ],
+   "size": [
+    1.2,
+    0.25,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.22,
+    3.7,
+    3.285
+   ],
+   "size": [
+    0.06,
+    1,
+    1.17
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    0,
+    3.7,
+    3.87
+   ],
+   "size": [
+    2.44,
+    1,
+    0.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    0,
+    6.9,
+    -3.87
+   ],
+   "size": [
+    2.44,
+    1,
+    0.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    -1.22,
+    6.9,
+    -3.285
+   ],
+   "size": [
+    0.06,
+    1,
+    1.17
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0.65,
+    0,
+    -4.4
+   ],
+   "note": "pod podestou 2"
+  },
+  {
+   "p": [
+    0.65,
+    0,
+    -2.6
+   ],
+   "note": "pata ramene 1"
+  },
+  {
+   "p": [
+    0.65,
+    3.2,
+    3.3
+   ],
+   "note": "podesta 1 (výstup 1. patro)"
+  },
+  {
+   "p": [
+    -0.65,
+    3.2,
+    3.3
+   ]
+  },
+  {
+   "p": [
+    -0.65,
+    6.4,
+    -3.3
+   ],
+   "note": "podesta 2 (výstup 2. patro)"
+  },
+  {
+   "p": [
+    0.65,
+    6.4,
+    -3.3
+   ],
+   "note": "výstup na +X"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Výstupy obou podest jsou na straně +X (zeď domu), ostatní volné strany mají zábradlí.",
+  "Rameno 2 je tenká deska nad pruhem vedle ramene 1 – pod ním zůstává průchozí výška."
+ ],
+ "tested_in_game": false
+}

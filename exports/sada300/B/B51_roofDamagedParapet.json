@@ -1,0 +1,298 @@
+{
+ "schema_version": "1.1",
+ "id": "B51_roofDamagedParapet",
+ "asset_id": "setB.roofDamagedParapet",
+ "label_cs": "B51 Střecha s poškozenou atikou",
+ "category": "sada300_B",
+ "asset_kind": "building",
+ "footprint_m": [
+  4.04,
+  4.08
+ ],
+ "height_m": 1.26,
+ "target_m": [
+  4,
+  4,
+  1.2
+ ],
+ "bounds_m": {
+  "min": [
+   -2.02,
+   0,
+   -2.04
+  ],
+  "max": [
+   2.02,
+   1.26,
+   2.04
+  ]
+ },
+ "triangles": {
+  "LOD0": 300
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "plasterWarm",
+  "roof",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.1,
+    0
+   ],
+   "size": [
+    4,
+    0.2,
+    4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.9,
+    0.7,
+    0.1
+   ],
+   "size": [
+    0.2,
+    1,
+    3.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.9,
+    0.7,
+    -0.8
+   ],
+   "size": [
+    0.2,
+    1,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.3,
+    0.7,
+    -1.9
+   ],
+   "size": [
+    1.4,
+    1,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.4,
+    0.5756,
+    -1.9
+   ],
+   "size": [
+    0.4,
+    0.7512,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    0.4488,
+    -1.9
+   ],
+   "size": [
+    0.4,
+    0.4977,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.4,
+    0.3261,
+    -1.9
+   ],
+   "size": [
+    0.4,
+    0.2521,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.8,
+    0.3733,
+    -1.9
+   ],
+   "size": [
+    0.4,
+    0.3466,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.2,
+    0.5027,
+    -1.9
+   ],
+   "size": [
+    0.4,
+    0.6053,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.7,
+    0.7,
+    -1.9
+   ],
+   "size": [
+    0.6,
+    1,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    2.6
+   ]
+  },
+  {
+   "p": [
+    0,
+    0.2,
+    1.2
+   ],
+   "note": "na střeše"
+  },
+  {
+   "p": [
+    -1.4,
+    0.2,
+    -1.4
+   ]
+  },
+  {
+   "p": [
+    1.4,
+    0.2,
+    -1.4
+   ],
+   "note": "za ulomenou atikou"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Pochozí plocha desky zůstává celistvá; kusy atiky na střeše bez kolize (nepřekáží)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -1.3,
+    0.9,
+    -4
+   ],
+   "to": [
+    -1.3,
+    0.9,
+    0
+   ],
+   "expect_hit": true,
+   "note": "celá část atiky kryje"
+  },
+  {
+   "from": [
+    0.4,
+    1,
+    -4
+   ],
+   "to": [
+    0.4,
+    1,
+    0
+   ],
+   "expect_hit": false,
+   "note": "ulomené místo – průstřel nad 0,6 m"
+  }
+ ]
+}

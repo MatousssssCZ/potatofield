@@ -1,0 +1,127 @@
+{
+ "schema_version": "1.1",
+ "id": "B48_fireWall",
+ "asset_id": "setB.fireWall",
+ "label_cs": "B48 Stěna s požární zdí",
+ "category": "sada300_B",
+ "asset_kind": "building",
+ "footprint_m": [
+  6.08,
+  0.4
+ ],
+ "height_m": 4.48,
+ "target_m": [
+  6,
+  0.3,
+  4.4
+ ],
+ "bounds_m": {
+  "min": [
+   -3.04,
+   0,
+   -0.2
+  ],
+  "max": [
+   3.04,
+   4.48,
+   0.2
+  ]
+ },
+ "triangles": {
+  "LOD0": 48
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "metal",
+  "plasterWarm"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    2.2,
+    0
+   ],
+   "size": [
+    6,
+    4.4,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -2.8,
+    0,
+    -1
+   ]
+  },
+  {
+   "p": [
+    2.8,
+    0,
+    -1
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Oplechování v 3,4 m ukazuje výšku sousední střechy; nad ní 1 m krytu pro hráče na střeše."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    4.2,
+    -3
+   ],
+   "to": [
+    0,
+    4.2,
+    3
+   ],
+   "expect_hit": true,
+   "note": "nad sousední střechou (3,4 m) stále kryt 1 m"
+  },
+  {
+   "from": [
+    2.5,
+    1.5,
+    -3
+   ],
+   "to": [
+    2.5,
+    1.5,
+    3
+   ],
+   "expect_hit": true,
+   "note": "slepá"
+  }
+ ]
+}

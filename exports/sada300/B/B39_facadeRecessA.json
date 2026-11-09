@@ -1,0 +1,304 @@
+{
+ "schema_version": "1.1",
+ "id": "B39_facadeRecessA",
+ "asset_id": "setB.facadeRecessA",
+ "label_cs": "B39 Fasáda s výklenkem A (pilot)",
+ "category": "sada300_B",
+ "asset_kind": "building",
+ "footprint_m": [
+  4,
+  1.9
+ ],
+ "height_m": 3.5,
+ "target_m": [
+  4.3,
+  1.975,
+  3.58
+ ],
+ "bounds_m": {
+  "min": [
+   -2,
+   0,
+   -1
+  ],
+  "max": [
+   2,
+   3.5,
+   0.9
+  ]
+ },
+ "triangles": {
+  "LOD0": 192
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "lamp",
+  "paving",
+  "plasterWarm",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    -1.5,
+    1.75,
+    -0.75
+   ],
+   "size": [
+    1,
+    3.5,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    3.1,
+    -0.75
+   ],
+   "size": [
+    2,
+    0.8,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.5,
+    1.75,
+    -0.75
+   ],
+   "size": [
+    1,
+    3.5,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.15,
+    1.75,
+    0
+   ],
+   "size": [
+    0.3,
+    3.5,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.15,
+    1.75,
+    0
+   ],
+   "size": [
+    0.3,
+    3.5,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.95,
+    1.75,
+    0.75
+   ],
+   "size": [
+    0.7,
+    3.5,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    2.95,
+    0.75
+   ],
+   "size": [
+    1.2,
+    1.1,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.95,
+    1.75,
+    0.75
+   ],
+   "size": [
+    0.7,
+    3.5,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    3.4,
+    0
+   ],
+   "size": [
+    2,
+    0.2,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.03,
+    -0.2
+   ],
+   "size": [
+    2.04,
+    0.06,
+    1.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2.9
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    0,
+    0.06,
+    -0.30000000000000004
+   ],
+   "note": "výklenek"
+  },
+  {
+   "p": [
+    0,
+    0.06,
+    0.19999999999999996
+   ],
+   "note": "u dveří"
+  },
+  {
+   "p": [
+    0,
+    0,
+    2.0999999999999996
+   ],
+   "note": "za dveřmi"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Podle pilotu mod_facade_recess_a: výklenek 2,0 × 1,5 m, boční krycí stěny 0,3 m, nadpraží 2,7 m, dveře 1,2 × 2,4 m, výška 3,5 m.",
+  "Úprava: šířka 4,0 m místo 4,2 m (pilíře 1,0 m), aby modul seděl do rastru 4 m s rovnými fasádami B31–B34.",
+  "Napojení: přední líc je v z = −0,90 (pivot = střed půdorysu); rovná fasáda má líc v −0,15 → posun 0,75 m.",
+  "Výška stěny je parametr (výchozí 3,5 m podle pilotu, pro řadu s B31–B38 nastavit 3,2 m)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    4,
+    1.4,
+    -2.4
+   ],
+   "to": [
+    -0.7,
+    1.4,
+    0.3
+   ],
+   "expect_hit": true,
+   "note": "boční stěna výklenku kryje"
+  },
+  {
+   "from": [
+    0,
+    1.4,
+    -3.9
+   ],
+   "to": [
+    0,
+    1.4,
+    2.6
+   ],
+   "expect_hit": false,
+   "note": "osa výklenku a dveří volná"
+  }
+ ]
+}

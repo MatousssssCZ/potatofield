@@ -11,6 +11,8 @@ import { allAssets, generateObject, laddersForMap, resolveParams, SET_META, surf
 import { buildObjectGeometry } from '../src/client/render/geometry';
 import { MATERIALS, tileOf } from '../src/client/render/materials';
 import { walkRoute } from '../tests/setWalk';
+import { makeWorld } from '../tests/helpers';
+import { collidersForMap } from '../src/world';
 
 const section = process.argv[2] ?? 'A';
 const outDir = `exports/sada300/${section}`;
@@ -109,17 +111,31 @@ for (const id of ids) {
   fs.writeFileSync(path.join(outDir, `${file}.json`), JSON.stringify(json, null, 1));
   const hasInterior = def.params.some((q) => q.key === 'interior');
   const walk = await walkRoute(id, meta.route, hasInterior ? { interior: true } : {});
+  // Paprsky střel (kryt / průstřel) podle metadat.
+  let rays = '–';
+  if (meta.rays?.length) {
+    const g = generateObject({ id: 'b', assetId: id, generatorVersion: 1, transform: { position: [0, 0, 0], rotation: [0, 0, 0] }, params: resolveParams(def, {}), seed: 1 });
+    const phys = await makeWorld(collidersForMap([g]));
+    const ok = meta.rays.filter((r) => {
+      const d = [r.to[0] - r.from[0], r.to[1] - r.from[1], r.to[2] - r.from[2]];
+      const l = Math.hypot(d[0], d[1], d[2]);
+      return !!phys.castRay({ x: r.from[0], y: r.from[1], z: r.from[2] }, { x: d[0] / l, y: d[1] / l, z: d[2] / l }, l) === r.hit;
+    }).length;
+    rays = `${ok === meta.rays.length ? '✔' : '✘'} ${ok}/${meta.rays.length}`;
+    (json as Record<string, unknown>).bullet_checks = meta.rays.map((r) => ({ from: r.from, to: r.to, expect_hit: r.hit, note: r.note }));
+    fs.writeFileSync(path.join(outDir, `${file}.json`), JSON.stringify(json, null, 1));
+  }
   const closedKind = hasInterior ? 'uzavřená (interiér volitelně)' : /Uzavřen/.test(meta.notes.join(' ')) ? 'uzavřená' : 'přístupná';
   const dims = `${json.footprint_m[0].toFixed(2)} × ${json.footprint_m[1].toFixed(2)} × ${json.height_m.toFixed(2)}`;
   manifest.push({ item: meta.item, id: file, asset_id: id, label: def.label, glb: `${file}.glb`, json: `${file}.json`, render: `renders/${section}${String(meta.item).padStart(2, "0")}.jpg` });
   report.push(
-    `| ${section}${String(meta.item).padStart(2, '0')} | ${def.label.replace(/^[A-Z]\d+ /, '')} | ${closedKind} | ${meta.target.join(' × ')} | ${dims} | ${tris} / 12000 | ${colParts.length}${colParts.length > 24 ? ' ⚠' : ''} | ${mats.size} | ${ladders.length} | ${walk.ok ? `✔ ${walk.reached}/${walk.total}` : `✘ bod ${walk.failAt!.index} (${walk.failAt!.reason})`} |`,
+    `| ${section}${String(meta.item).padStart(2, '0')} | ${def.label.replace(/^[A-Z]\d+ /, '')} | ${closedKind} | ${meta.target.join(' × ')} | ${dims} | ${tris} / 12000 | ${colParts.length}${colParts.length > 24 ? ' ⚠' : ''} | ${mats.size} | ${ladders.length} | ${walk.ok ? `✔ ${walk.reached}/${walk.total}` : `✘ bod ${walk.failAt!.index} (${walk.failAt!.reason})`} | ${rays} |`,
   );
   console.log('✓', file, tris, 'tris', colParts.length, 'kolizí', walk.ok ? 'trasa OK' : 'TRASA SELHALA');
 }
 fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify({ section, generated: new Date().toISOString().slice(0, 10), models: manifest }, null, 1));
 fs.writeFileSync(
   path.join(outDir, 'VALIDACE.md'),
-  `# Sada 300 · ${section} – validační report\n\nAutomaticky z \`scripts/export-set.ts\`. Trasa = simulovaný hráč (stejné kolize jako server) projde ulice → vchod → místnosti → patra → střecha. Budovy s více nadzemními podlažími jsou ve výchozím stavu uzavřené (styl BF2: bez interiéru, kolize = plné objemy); u starších (A05–A20) jde interiér zapnout parametrem „Přístupný interiér“ – trasa se testuje s ním. GLB/JSON jsou ve výchozí (uzavřené) podobě.\n\n| # | Model | Typ | Cíl (m) | Skutečnost (m) | Trojúhelníky LOD0 | Kolizní kvádry | Materiály | Žebříky | Trasa |\n|---|---|---|---|---|---|---|---|---|---|\n${report.join('\n')}\n\n**Neotestováno přímo ve hře** (multiplayer, reálné ovládání): vše výše je ze simulace a renderů editoru.\n`,
+  `# Sada 300 · ${section} – validační report\n\nAutomaticky z \`scripts/export-set.ts\`. Trasa = simulovaný hráč (stejné kolize jako server) projde trasu modelu (ulice → vchod → místnosti → patra → střecha; u modulů průchod otvorem, výklenkem, po schodech). Kryt/průstřel = paprsky střel: okna a otvory musí propustit, zdi, pilíře a atiky krýt. Budovy s více nadzemními podlažími jsou ve výchozím stavu uzavřené (styl BF2: bez interiéru, kolize = plné objemy); u starších (A05–A20) jde interiér zapnout parametrem „Přístupný interiér“ – trasa se testuje s ním. GLB/JSON jsou ve výchozí (uzavřené) podobě.\n\n| # | Model | Typ | Cíl (m) | Skutečnost (m) | Trojúhelníky LOD0 | Kolizní kvádry | Materiály | Žebříky | Trasa | Kryt/průstřel |\n|---|---|---|---|---|---|---|---|---|---|---|\n${report.join('\n')}\n\n**Neotestováno přímo ve hře** (multiplayer, reálné ovládání): vše výše je ze simulace a renderů editoru.\n`,
 );
 console.log('hotovo', outDir);

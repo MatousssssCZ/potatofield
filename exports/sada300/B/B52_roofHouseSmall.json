@@ -1,0 +1,226 @@
+{
+ "schema_version": "1.1",
+ "id": "B52_roofHouseSmall",
+ "asset_id": "setB.roofHouseSmall",
+ "label_cs": "B52 Malá střešní nástavba",
+ "category": "sada300_B",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.7,
+  3.2
+ ],
+ "height_m": 2.715,
+ "target_m": [
+  2.5,
+  3,
+  2.7
+ ],
+ "bounds_m": {
+  "min": [
+   -1.35,
+   0,
+   -1.6
+  ],
+  "max": [
+   1.35,
+   2.715,
+   1.6
+  ]
+ },
+ "triangles": {
+  "LOD0": 132
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteLight",
+  "plasterWarm",
+  "roof",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    -0.775,
+    1.275,
+    -1.375
+   ],
+   "size": [
+    0.95,
+    2.55,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.25,
+    2.375,
+    -1.375
+   ],
+   "size": [
+    1.1,
+    0.35,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.025,
+    1.275,
+    -1.375
+   ],
+   "size": [
+    0.45,
+    2.55,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    1.275,
+    1.375
+   ],
+   "size": [
+    2.5,
+    2.55,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.125,
+    1.275,
+    0
+   ],
+   "size": [
+    0.25,
+    2.55,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.125,
+    1.275,
+    0
+   ],
+   "size": [
+    0.25,
+    2.55,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    2.625,
+    0
+   ],
+   "size": [
+    2.7,
+    0.15,
+    3.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0.25,
+    0,
+    -2.6
+   ],
+   "note": "střecha před nástavbou"
+  },
+  {
+   "p": [
+    0.25,
+    0,
+    -1
+   ],
+   "note": "dveře"
+  },
+  {
+   "p": [
+    0,
+    0,
+    0.6
+   ],
+   "note": "uvnitř (místo pro výstup schodů)"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Spodní část otevřená – pod nástavbu se napojí schodiště (B54–B56 nebo vlastní)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -3,
+    1.5,
+    0
+   ],
+   "to": [
+    3,
+    1.5,
+    0
+   ],
+   "expect_hit": true,
+   "note": "boční stěny kryjí"
+  }
+ ]
+}
