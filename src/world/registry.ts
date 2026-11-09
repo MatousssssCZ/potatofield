@@ -42,6 +42,11 @@ export interface MountSpec {
   back?: number;
 }
 
+export interface TerrainCut {
+  rect: [number, number, number, number];
+  depth: number;
+}
+
 export interface AssetDef {
   assetId: string;
   label: string;
@@ -57,6 +62,11 @@ export interface AssetDef {
   generate(p: Params, seed: number, material: string, ctx: GenContext): Part[];
   /** Generátor čte terén (např. plot kopíruje svah) – po změně terénu se přegeneruje. */
   usesTerrain?(p: Params): boolean;
+  /**
+   * Snížení terénu pod předmětem (sklepní vstup): lokální obdélník [x0, z0, x1, z1] a hloubka pod patou.
+   * Provede ho „Dorovnat terén pod předměty“ / Kontrola; předmět musí přechod zakrýt vlastní plochou.
+   */
+  terrainCut?(p: Params): TerrainCut;
   /** Doplněk se tažením přilepí na budovu (viz MountSpec). */
   mount?: MountSpec;
   /** Žebříky objektu (pro simulaci lezení). */

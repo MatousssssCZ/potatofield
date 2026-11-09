@@ -1,0 +1,318 @@
+{
+ "schema_version": "1.1",
+ "id": "C83_verandaWide",
+ "asset_id": "setC.verandaWide",
+ "label_cs": "C83 Široká veranda",
+ "category": "sada300_C",
+ "asset_kind": "building",
+ "footprint_m": [
+  5.3,
+  3.4
+ ],
+ "height_m": 3.27,
+ "target_m": [
+  5,
+  3.4,
+  3.3
+ ],
+ "bounds_m": {
+  "min": [
+   -2.65,
+   0,
+   -1.7
+  ],
+  "max": [
+   2.65,
+   3.27,
+   1.7
+  ]
+ },
+ "triangles": {
+  "LOD0": 400
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "concreteLight",
+  "plasterWarm",
+  "plasterWhite",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.1767,
+    -1.2056
+   ],
+   "size": [
+    1.6,
+    0.18,
+    1.0345
+   ],
+   "rotX": -0.5155,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "ramp",
+   "surface": "sand"
+  },
+  {
+   "center": [
+    -2.25,
+    1.81,
+    -0.55
+   ],
+   "size": [
+    0.24,
+    2.6,
+    0.24
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.1,
+    1.81,
+    -0.55
+   ],
+   "size": [
+    0.24,
+    2.6,
+    0.24
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.1,
+    1.81,
+    -0.55
+   ],
+   "size": [
+    0.24,
+    2.6,
+    0.24
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.25,
+    1.81,
+    -0.55
+   ],
+   "size": [
+    0.24,
+    2.6,
+    0.24
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    0.255,
+    0.45
+   ],
+   "size": [
+    5,
+    0.51,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "sand"
+  },
+  {
+   "center": [
+    0,
+    3.19,
+    0.375
+   ],
+   "size": [
+    5.3,
+    0.16,
+    2.65
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    2.985,
+    -0.55
+   ],
+   "size": [
+    5.3,
+    0.25,
+    0.24
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.375,
+    0.96,
+    0.45
+   ],
+   "size": [
+    0.25,
+    0.9,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.675,
+    0.96,
+    -0.675
+   ],
+   "size": [
+    1.65,
+    0.9,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.375,
+    0.96,
+    0.45
+   ],
+   "size": [
+    0.25,
+    0.9,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.675,
+    0.96,
+    -0.675
+   ],
+   "size": [
+    1.65,
+    0.9,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -3
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    0,
+    0.51,
+    0.2
+   ],
+   "note": "podesta"
+  },
+  {
+   "p": [
+    -1.6,
+    0.51,
+    1
+   ]
+  },
+  {
+   "p": [
+    1.6,
+    0.51,
+    1
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Zídky 0,9 m nad podestou na bocích a vpředu vedle schodů."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -4,
+    0.9,
+    0.6
+   ],
+   "to": [
+    0,
+    0.9,
+    0.6
+   ],
+   "expect_hit": true,
+   "note": "boční zídka kryje"
+  }
+ ]
+}

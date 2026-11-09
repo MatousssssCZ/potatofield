@@ -1,0 +1,249 @@
+{
+ "schema_version": "1.1",
+ "id": "C73_passageStraight",
+ "asset_id": "setC.passageStraight",
+ "label_cs": "C73 Přímý průjezd domem",
+ "category": "sada300_C",
+ "asset_kind": "building",
+ "footprint_m": [
+  3.8,
+  6.16
+ ],
+ "height_m": 3.6,
+ "target_m": [
+  3.8,
+  6,
+  3.6
+ ],
+ "bounds_m": {
+  "min": [
+   -1.9,
+   0,
+   -3.08
+  ],
+  "max": [
+   1.9,
+   3.6,
+   3.08
+  ]
+ },
+ "triangles": {
+  "LOD0": 192
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteLight",
+  "paving",
+  "plasterWarm",
+  "sandstone",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    -1.7,
+    1.8,
+    -1.275
+   ],
+   "size": [
+    0.4,
+    3.6,
+    3.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.7,
+    2.9,
+    1
+   ],
+   "size": [
+    0.4,
+    1.4,
+    1.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.7,
+    1.8,
+    2.275
+   ],
+   "size": [
+    0.4,
+    3.6,
+    1.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.7,
+    1.8,
+    0
+   ],
+   "size": [
+    0.4,
+    3.6,
+    6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.58,
+    1.1,
+    1
+   ],
+   "size": [
+    0.08,
+    2.16,
+    1.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0,
+    3.3,
+    0
+   ],
+   "size": [
+    3,
+    0.6,
+    6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.02,
+    0
+   ],
+   "size": [
+    3,
+    0.04,
+    6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -4.5
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    0,
+    0.04,
+    -1
+   ],
+   "note": "průjezd"
+  },
+  {
+   "p": [
+    0,
+    0.04,
+    2
+   ]
+  },
+  {
+   "p": [
+    0,
+    0,
+    4.5
+   ],
+   "note": "dvůr"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Dveře do schodišťového prostoru jsou zavřené (BF2) – průjezd se vkládá do uzavřené budovy.",
+  "Střecha (3,6 m) je pochozí deska pro napojení horní hmoty."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -4,
+    1.5,
+    0
+   ],
+   "to": [
+    4,
+    1.5,
+    0
+   ],
+   "expect_hit": true,
+   "note": "boční zdi kryjí"
+  },
+  {
+   "from": [
+    0,
+    1.5,
+    -5
+   ],
+   "to": [
+    0,
+    1.5,
+    5
+   ],
+   "expect_hit": false,
+   "note": "průjezd průstřelný podélně"
+  }
+ ]
+}

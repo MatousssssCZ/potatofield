@@ -113,3 +113,31 @@ describe('sada 300: kryt a průstřel (paprsky střel)', () => {
     });
   }
 });
+
+describe('sada 300: průlezy vleže a sklepní vstupy', () => {
+  for (const [id, meta] of Object.entries(SET_META)) {
+    if (!meta.crawl?.length) continue;
+    it(`${id}: průlez jen vleže (vestoje ani v dřepu neprojde)`, async () => {
+      const stand = await walkRoute(id, meta.route.map((w) => ({ ...w, stance: undefined })));
+      const crouch = await walkRoute(id, meta.route.map((w) => ({ ...w, stance: w.stance ? ('crouch' as const) : undefined })));
+      expect(stand.failAt).toBeTruthy();
+      expect(crouch.failAt).toBeTruthy();
+    }, 60000);
+  }
+  const cellars = Object.keys(SET_META).filter((id) => getAsset(id)!.terrainCut);
+  it('sklepní vstupy existují', () => expect(cellars.length).toBe(3));
+  for (const id of cellars) {
+    it(`${id}: bez snížení terénu dolů nejde, se snížením projde na mřížce 1 m i 2 m`, async () => {
+      const def = getAsset(id)!;
+      const cut = def.terrainCut;
+      def.terrainCut = undefined;
+      try {
+        expect((await walkRoute(id, SET_META[id].route)).failAt).toBeTruthy();
+      } finally {
+        def.terrainCut = cut;
+      }
+      expect((await walkRoute(id, SET_META[id].route, {}, { spacing: 1 })).failAt ?? null).toBeNull();
+      expect((await walkRoute(id, SET_META[id].route, { apron: 4.1 }, { spacing: 2 })).failAt ?? null).toBeNull();
+    }, 60000);
+  }
+});

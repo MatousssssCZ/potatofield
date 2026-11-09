@@ -1,0 +1,223 @@
+{
+ "schema_version": "1.1",
+ "id": "C69_gateWood",
+ "asset_id": "setC.gateWood",
+ "label_cs": "C69 Brána s dřevěnými vraty",
+ "category": "sada300_C",
+ "asset_kind": "building",
+ "footprint_m": [
+  7.06,
+  0.59
+ ],
+ "height_m": 3.48,
+ "target_m": [
+  7,
+  0.6,
+  3.4
+ ],
+ "bounds_m": {
+  "min": [
+   -3.53,
+   0,
+   -0.26
+  ],
+  "max": [
+   3.53,
+   3.48,
+   0.33
+  ]
+ },
+ "triangles": {
+  "LOD0": 168
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "metal",
+  "plasterWarm",
+  "sandstone",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    -2.5,
+    1.7,
+    0
+   ],
+   "size": [
+    2,
+    3.4,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.5,
+    1.7,
+    0
+   ],
+   "size": [
+    2,
+    3.4,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    3.1,
+    0
+   ],
+   "size": [
+    3,
+    0.6,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.275,
+    1.4,
+    0.27
+   ],
+   "size": [
+    1.45,
+    2.7,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    2.275,
+    1.4,
+    0.27
+   ],
+   "size": [
+    1.45,
+    2.7,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0,
+    0.02,
+    0
+   ],
+   "size": [
+    3,
+    0.04,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "sand"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2.5
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    1,
+    0.04,
+    0
+   ],
+   "note": "v bráně"
+  },
+  {
+   "p": [
+    0,
+    0,
+    2.5
+   ],
+   "note": "dvůr"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Otvor 3,0 × 2,8 m; křídla 1,45 m otevřená o ~180° k vnitřnímu líci, kovové příčné pásy."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    1.5,
+    -3
+   ],
+   "to": [
+    0,
+    1.5,
+    3
+   ],
+   "expect_hit": false,
+   "note": "průjezd volný"
+  },
+  {
+   "from": [
+    2.5,
+    1.5,
+    -3
+   ],
+   "to": [
+    2.5,
+    1.5,
+    3
+   ],
+   "expect_hit": true,
+   "note": "zeď a otevřené křídlo kryjí"
+  }
+ ]
+}

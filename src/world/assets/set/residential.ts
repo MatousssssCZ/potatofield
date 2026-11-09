@@ -24,7 +24,9 @@ export interface SetMeta {
   /** Cílové rozměry ze zadání [šířka, hloubka, výška]. */
   target: [number, number, number];
   /** Trasa hráče v lokálních souřadnicích: [x, y podlahy, z]; `ladder` = úsek po žebříku. */
-  route: { p: [number, number, number]; ladder?: boolean; teleport?: boolean; note?: string }[];
+  route: { p: [number, number, number]; ladder?: boolean; teleport?: boolean; stance?: 'prone' | 'crouch'; note?: string }[];
+  /** Herní data: průlezy jen vleže / v dřepu (nejsou to dveře) – střed otvoru, šířka a světlá výška. */
+  crawl?: { at: [number, number, number]; w: number; h: number; stance: 'prone' | 'crouch'; note: string }[];
   walkableRoof: boolean;
   notes: string[];
   /** Kontrola střel: paprsek z `from` do `to` má / nemá narazit (okno = průstřel, zeď = kryt). */

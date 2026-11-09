@@ -49,3 +49,30 @@ describe('dorovnání terénu pod předměty', () => {
     for (const [x, z] of footprintPoints(o, fp)) expect(heightAt(t, x, z)!).toBeCloseTo(0.2, 2);
   });
 });
+
+describe('prohlubeň pod sklepním vstupem', () => {
+  it('terén v obdélníku prohlubně klesne na dno, dlážděné okolí zakryje přechod', async () => {
+    const { makeFlatTerrain } = await import('../src/shared/map/schema');
+    const { generateObject, getAsset, resolveParams } = await import('../src/world');
+    const { localFootprint, planTerrainFit, cutApronNeeded, cutPending } = await import('../src/world/groundFit');
+    const { heightAt, writeRegion } = await import('../src/world/terrain');
+    for (const [spacing, yaw] of [[1, 0], [1, 0.6], [2, 0]] as const) {
+      const t = makeFlatTerrain(80, 80, spacing);
+      const def = getAsset('setC.cellarStraight')!;
+      const apron = cutApronNeeded(t, yaw) + 0.05;
+      const o = { id: 'c', assetId: def.assetId, generatorVersion: 1, transform: { position: [3, 0, -2] as [number, number, number], rotation: [0, yaw, 0] as [number, number, number] }, params: resolveParams(def, { apron }), seed: 1 };
+      const cut = def.terrainCut!(o.params);
+      expect(cutPending(t, o, cut)).toBe(true);
+      const g = generateObject(o);
+      const plan = planTerrainFit(t, [{ object: o, fp: localFootprint(g.parts), base: 0, cut }])!;
+      writeRegion(t, plan.region, plan.after);
+      expect(cutPending(t, o, cut)).toBe(false);
+      // Každý bod obdélníku prohlubně je pod dnem schodů; terén za dlážděným okolím zůstal.
+      const c = Math.cos(yaw), s = Math.sin(yaw);
+      const w = (x: number, z: number) => heightAt(t, 3 + c * x + s * z, -2 - s * x + c * z)!;
+      for (let x = cut.rect[0]; x <= cut.rect[2]; x += 0.25) for (let z = cut.rect[1]; z <= cut.rect[3]; z += 0.25) expect(w(x, z)).toBeLessThan(-1.8);
+      const fp = localFootprint(g.parts);
+      for (const [x, z] of [[fp[0] - 0.05, 0], [fp[2] + 0.05, 0], [0, fp[1] - 0.05], [0, fp[3] + 0.05]]) expect(Math.abs(w(x, z))).toBeLessThan(1e-3);
+    }
+  });
+});

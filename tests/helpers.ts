@@ -6,10 +6,10 @@ import type { ColliderDef } from '../src/world/parts';
 import { quatFromEuler } from '../src/shared/math';
 import { makeFlatTerrain } from '../src/shared/map/schema';
 
-export async function makeWorld(extra: ColliderDef[] = []) {
+export async function makeWorld(extra: ColliderDef[] = [], terrain = makeFlatTerrain(400, 400, 2)) {
   const phys = await PhysicsWorld.create();
   // Rovný terén 400×400 m (výškové pole jako ve skutečných mapách), y = 0.
-  phys.setTerrain(makeFlatTerrain(400, 400, 2));
+  phys.setTerrain(terrain);
   phys.addColliders(extra);
   return phys;
 }

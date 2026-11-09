@@ -30,9 +30,11 @@ for (const id of ids) {
     const { buildEmptyMap } = await import('/src/world/maps/empty.ts');
     const reg = await import('/src/world/index.ts');
     const SET_META = reg.SET_META;
-    const d = buildEmptyMap('Render', 128, 2);
+    const d = buildEmptyMap('Render', 128, reg.getAsset(id).terrainCut ? 1 : 2);
     d.objects.push({ id: 'b', assetId: id, generatorVersion: 1, transform: { position: [0, 0, 0], rotation: [0, 0, 0] }, params: reg.resolveParams(reg.getAsset(id), {}), seed: 7 });
     window.__pf.openDoc(d, false);
+    // Sklepní vstupy: terén pod schody snížit stejně jako tlačítko v editoru.
+    if (reg.getAsset(id).terrainCut) window.__pf.fitTerrainToObjects();
     window.__pf.editor.select([]);
     window.__pf.editor.spawnMarker.visible = false;
     const g = reg.generateObject(d.objects[0]);

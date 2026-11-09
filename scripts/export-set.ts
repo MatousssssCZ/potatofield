@@ -106,6 +106,8 @@ for (const id of ids) {
     uv_units: 'meters',
     collision_rotation_order: 'Rz @ Ry @ Rx on column vectors; radians',
     notes: meta.notes,
+    ...(meta.crawl ? { crawl_passages: meta.crawl } : {}),
+    ...(def.terrainCut ? { terrain_cut: def.terrainCut(resolveParams(def, {})) } : {}),
     tested_in_game: false,
   };
   fs.writeFileSync(path.join(outDir, `${file}.json`), JSON.stringify(json, null, 1));

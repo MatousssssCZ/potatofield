@@ -1,0 +1,429 @@
+{
+ "schema_version": "1.1",
+ "id": "C75_passageDamaged",
+ "asset_id": "setC.passageDamaged",
+ "label_cs": "C75 Poškozený průjezd",
+ "category": "sada300_C",
+ "asset_kind": "building",
+ "footprint_m": [
+  7.1,
+  6.16
+ ],
+ "height_m": 3.6,
+ "target_m": [
+  7.1,
+  6,
+  3.6
+ ],
+ "bounds_m": {
+  "min": [
+   -1.9,
+   -0.1158,
+   -3.08
+  ],
+  "max": [
+   5.2,
+   3.6,
+   3.08
+  ]
+ },
+ "triangles": {
+  "LOD0": 688
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "brick",
+  "concreteDark",
+  "concreteLight",
+  "metalSheetRust",
+  "paving",
+  "plasterWarm",
+  "sandstone",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    -1.7,
+    1.8,
+    -1.275
+   ],
+   "size": [
+    0.4,
+    3.6,
+    3.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.7,
+    2.9,
+    1
+   ],
+   "size": [
+    0.4,
+    1.4,
+    1.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.7,
+    1.8,
+    2.275
+   ],
+   "size": [
+    0.4,
+    3.6,
+    1.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.7,
+    1.8,
+    -2
+   ],
+   "size": [
+    0.4,
+    3.6,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.7,
+    3.1,
+    0.2
+   ],
+   "size": [
+    0.4,
+    1,
+    2.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.7,
+    1.8,
+    2.2
+   ],
+   "size": [
+    0.4,
+    3.6,
+    1.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    5.05,
+    1.5,
+    0.1
+   ],
+   "size": [
+    0.3,
+    3,
+    3.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.55,
+    1.5,
+    -1.75
+   ],
+   "size": [
+    3.3,
+    3,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.55,
+    1.5,
+    1.75
+   ],
+   "size": [
+    3.3,
+    3,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.58,
+    1.1,
+    1
+   ],
+   "size": [
+    0.08,
+    2.16,
+    1.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    3.55,
+    3.125,
+    -0.75
+   ],
+   "size": [
+    3.3,
+    0.25,
+    2.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    3.4,
+    0.02,
+    0
+   ],
+   "size": [
+    3,
+    0.04,
+    3.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.7,
+    3.3,
+    0
+   ],
+   "size": [
+    1.6,
+    0.6,
+    6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.75,
+    3.3,
+    -1.6
+   ],
+   "size": [
+    1.3,
+    0.6,
+    2.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.75,
+    3.3,
+    2.45
+   ],
+   "size": [
+    1.3,
+    0.6,
+    1.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.45,
+    3.3,
+    0
+   ],
+   "size": [
+    0.1,
+    0.6,
+    6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.02,
+    0
+   ],
+   "size": [
+    3,
+    0.04,
+    6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -4.5
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    0,
+    0.04,
+    -1
+   ],
+   "note": "průjezd"
+  },
+  {
+   "p": [
+    1,
+    0.04,
+    0.2
+   ]
+  },
+  {
+   "p": [
+    3.4,
+    0.04,
+    0.2
+   ],
+   "note": "průraz do vedlejší místnosti"
+  },
+  {
+   "p": [
+    1,
+    0.04,
+    0.2
+   ]
+  },
+  {
+   "p": [
+    0,
+    0.04,
+    2
+   ]
+  },
+  {
+   "p": [
+    0,
+    0,
+    4.5
+   ],
+   "note": "dvůr"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Hlavní cesta (osa 3 m) zůstává volná, suť jen u stěny průrazu a pod otvorem ve stropě (bez kolize)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0.7,
+    4.5,
+    0.8
+   ],
+   "to": [
+    0.7,
+    1,
+    0.8
+   ],
+   "expect_hit": false,
+   "note": "odkrytým stropem lze střílet shora"
+  }
+ ]
+}

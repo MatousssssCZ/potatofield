@@ -1,0 +1,274 @@
+{
+ "schema_version": "1.1",
+ "id": "C71_gateArch",
+ "asset_id": "setC.gateArch",
+ "label_cs": "C71 Klenutá dvorní brána",
+ "category": "sada300_C",
+ "asset_kind": "building",
+ "footprint_m": [
+  8,
+  2.32
+ ],
+ "height_m": 4.12,
+ "target_m": [
+  8,
+  2,
+  4
+ ],
+ "bounds_m": {
+  "min": [
+   -4,
+   0,
+   -0.42
+  ],
+  "max": [
+   4,
+   4.12,
+   1.9
+  ]
+ },
+ "triangles": {
+  "LOD0": 420
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "metal",
+  "plasterWarm",
+  "sandstone",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    -3.2,
+    1.3,
+    0
+   ],
+   "size": [
+    1.6,
+    2.6,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.2,
+    1.3,
+    0
+   ],
+   "size": [
+    1.6,
+    2.6,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.95,
+    2,
+    0
+   ],
+   "size": [
+    0.9,
+    4,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.95,
+    2,
+    0
+   ],
+   "size": [
+    0.9,
+    4,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1,
+    3.7071,
+    0
+   ],
+   "size": [
+    1,
+    0.5858,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    3.75,
+    0
+   ],
+   "size": [
+    1,
+    0.5,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1,
+    3.7071,
+    0
+   ],
+   "size": [
+    1,
+    0.5858,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.55,
+    1.05,
+    1.15
+   ],
+   "size": [
+    0.08,
+    2,
+    1.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    1.55,
+    1.05,
+    1.15
+   ],
+   "size": [
+    0.08,
+    2,
+    1.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2.5
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    0,
+    0,
+    0
+   ],
+   "note": "pod obloukem"
+  },
+  {
+   "p": [
+    0,
+    0,
+    3
+   ],
+   "note": "dvůr"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Světlá výška 2,0 m u pilířů, 3,5 m ve vrcholu; vrata ustoupená za vnitřní líc (nezužují 3 m)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    2.8,
+    -3
+   ],
+   "to": [
+    0,
+    2.8,
+    3
+   ],
+   "expect_hit": false,
+   "note": "pod vrcholem oblouku volno"
+  },
+  {
+   "from": [
+    -1.95,
+    1.5,
+    -3
+   ],
+   "to": [
+    -1.95,
+    1.5,
+    3
+   ],
+   "expect_hit": true,
+   "note": "pilíř kryje"
+  }
+ ]
+}

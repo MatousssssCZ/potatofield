@@ -1,0 +1,231 @@
+{
+ "section": "C",
+ "generated": "2026-11-09",
+ "models": [
+  {
+   "item": 61,
+   "id": "C61_entryArchA",
+   "asset_id": "setC.entryArchA",
+   "label": "C61 Klenutý vstup A (pilot)",
+   "glb": "C61_entryArchA.glb",
+   "json": "C61_entryArchA.json",
+   "render": "renders/C61.jpg"
+  },
+  {
+   "item": 62,
+   "id": "C62_entryArchB",
+   "asset_id": "setC.entryArchB",
+   "label": "C62 Klenutý vstup B (pilot)",
+   "glb": "C62_entryArchB.glb",
+   "json": "C62_entryArchB.json",
+   "render": "renders/C62.jpg"
+  },
+  {
+   "item": 63,
+   "id": "C63_entryArchStone",
+   "asset_id": "setC.entryArchStone",
+   "label": "C63 Klenutý vstup s kamenným ostěním",
+   "glb": "C63_entryArchStone.glb",
+   "json": "C63_entryArchStone.json",
+   "render": "renders/C63.jpg"
+  },
+  {
+   "item": 64,
+   "id": "C64_entryArchDamaged",
+   "asset_id": "setC.entryArchDamaged",
+   "label": "C64 Poškozený klenutý vstup",
+   "glb": "C64_entryArchDamaged.glb",
+   "json": "C64_entryArchDamaged.json",
+   "render": "renders/C64.jpg"
+  },
+  {
+   "item": 65,
+   "id": "C65_entryRectStep",
+   "asset_id": "setC.entryRectStep",
+   "label": "C65 Pravoúhlý vstup se schodkem",
+   "glb": "C65_entryRectStep.glb",
+   "json": "C65_entryRectStep.json",
+   "render": "renders/C65.jpg"
+  },
+  {
+   "item": 66,
+   "id": "C66_entryRectWide",
+   "asset_id": "setC.entryRectWide",
+   "label": "C66 Široký pravoúhlý vstup",
+   "glb": "C66_entryRectWide.glb",
+   "json": "C66_entryRectWide.json",
+   "render": "renders/C66.jpg"
+  },
+  {
+   "item": 67,
+   "id": "C67_entryRectAsym",
+   "asset_id": "setC.entryRectAsym",
+   "label": "C67 Asymetrický pravoúhlý vstup",
+   "glb": "C67_entryRectAsym.glb",
+   "json": "C67_entryRectAsym.json",
+   "render": "renders/C67.jpg"
+  },
+  {
+   "item": 68,
+   "id": "C68_entryRectDamaged",
+   "asset_id": "setC.entryRectDamaged",
+   "label": "C68 Poškozený pravoúhlý vstup",
+   "glb": "C68_entryRectDamaged.glb",
+   "json": "C68_entryRectDamaged.json",
+   "render": "renders/C68.jpg"
+  },
+  {
+   "item": 69,
+   "id": "C69_gateWood",
+   "asset_id": "setC.gateWood",
+   "label": "C69 Brána s dřevěnými vraty",
+   "glb": "C69_gateWood.glb",
+   "json": "C69_gateWood.json",
+   "render": "renders/C69.jpg"
+  },
+  {
+   "item": 70,
+   "id": "C70_gateMetal",
+   "asset_id": "setC.gateMetal",
+   "label": "C70 Brána s kovovými vraty",
+   "glb": "C70_gateMetal.glb",
+   "json": "C70_gateMetal.json",
+   "render": "renders/C70.jpg"
+  },
+  {
+   "item": 71,
+   "id": "C71_gateArch",
+   "asset_id": "setC.gateArch",
+   "label": "C71 Klenutá dvorní brána",
+   "glb": "C71_gateArch.glb",
+   "json": "C71_gateArch.json",
+   "render": "renders/C71.jpg"
+  },
+  {
+   "item": 72,
+   "id": "C72_gateDamaged",
+   "asset_id": "setC.gateDamaged",
+   "label": "C72 Poškozená dvorní brána",
+   "glb": "C72_gateDamaged.glb",
+   "json": "C72_gateDamaged.json",
+   "render": "renders/C72.jpg"
+  },
+  {
+   "item": 73,
+   "id": "C73_passageStraight",
+   "asset_id": "setC.passageStraight",
+   "label": "C73 Přímý průjezd domem",
+   "glb": "C73_passageStraight.glb",
+   "json": "C73_passageStraight.json",
+   "render": "renders/C73.jpg"
+  },
+  {
+   "item": 74,
+   "id": "C74_passageVault",
+   "asset_id": "setC.passageVault",
+   "label": "C74 Klenutý průjezd",
+   "glb": "C74_passageVault.glb",
+   "json": "C74_passageVault.json",
+   "render": "renders/C74.jpg"
+  },
+  {
+   "item": 75,
+   "id": "C75_passageDamaged",
+   "asset_id": "setC.passageDamaged",
+   "label": "C75 Poškozený průjezd",
+   "glb": "C75_passageDamaged.glb",
+   "json": "C75_passageDamaged.json",
+   "render": "renders/C75.jpg"
+  },
+  {
+   "item": 76,
+   "id": "C76_shopShutterHalf",
+   "asset_id": "setC.shopShutterHalf",
+   "label": "C76 Obchod s částečně staženou roletou",
+   "glb": "C76_shopShutterHalf.glb",
+   "json": "C76_shopShutterHalf.json",
+   "render": "renders/C76.jpg"
+  },
+  {
+   "item": 77,
+   "id": "C77_shopShutterWide",
+   "asset_id": "setC.shopShutterWide",
+   "label": "C77 Široký obchodní průlez",
+   "glb": "C77_shopShutterWide.glb",
+   "json": "C77_shopShutterWide.json",
+   "render": "renders/C77.jpg"
+  },
+  {
+   "item": 78,
+   "id": "C78_shopShutterDamaged",
+   "asset_id": "setC.shopShutterDamaged",
+   "label": "C78 Poškozená obchodní roleta",
+   "glb": "C78_shopShutterDamaged.glb",
+   "json": "C78_shopShutterDamaged.json",
+   "render": "renders/C78.jpg"
+  },
+  {
+   "item": 79,
+   "id": "C79_cellarStraight",
+   "asset_id": "setC.cellarStraight",
+   "label": "C79 Přímý vstup do sklepa",
+   "glb": "C79_cellarStraight.glb",
+   "json": "C79_cellarStraight.json",
+   "render": "renders/C79.jpg"
+  },
+  {
+   "item": 80,
+   "id": "C80_cellarDogleg",
+   "asset_id": "setC.cellarDogleg",
+   "label": "C80 Zalomený vstup do sklepa",
+   "glb": "C80_cellarDogleg.glb",
+   "json": "C80_cellarDogleg.json",
+   "render": "renders/C80.jpg"
+  },
+  {
+   "item": 81,
+   "id": "C81_cellarCovered",
+   "asset_id": "setC.cellarCovered",
+   "label": "C81 Krytý sklepní vstup",
+   "glb": "C81_cellarCovered.glb",
+   "json": "C81_cellarCovered.json",
+   "render": "renders/C81.jpg"
+  },
+  {
+   "item": 82,
+   "id": "C82_verandaSmall",
+   "asset_id": "setC.verandaSmall",
+   "label": "C82 Malá krytá veranda",
+   "glb": "C82_verandaSmall.glb",
+   "json": "C82_verandaSmall.json",
+   "render": "renders/C82.jpg"
+  },
+  {
+   "item": 83,
+   "id": "C83_verandaWide",
+   "asset_id": "setC.verandaWide",
+   "label": "C83 Široká veranda",
+   "glb": "C83_verandaWide.glb",
+   "json": "C83_verandaWide.json",
+   "render": "renders/C83.jpg"
+  },
+  {
+   "item": 84,
+   "id": "C84_wallBreachPlaster",
+   "asset_id": "setC.wallBreachPlaster",
+   "label": "C84 Proražená omítnutá zeď",
+   "glb": "C84_wallBreachPlaster.glb",
+   "json": "C84_wallBreachPlaster.json",
+   "render": "renders/C84.jpg"
+  },
+  {
+   "item": 85,
+   "id": "C85_wallBreachBrick",
+   "asset_id": "setC.wallBreachBrick",
+   "label": "C85 Proražená cihlová zeď",
+   "glb": "C85_wallBreachBrick.glb",
+   "json": "C85_wallBreachBrick.json",
+   "render": "renders/C85.jpg"
+  }
+ ]
+}

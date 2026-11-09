@@ -1,6 +1,7 @@
 import type { MapObject, TerrainData } from '../shared/map/schema';
 import { quatFromEuler, rotate } from '../shared/math';
 import type { Part } from './parts';
+import type { TerrainCut } from './registry';
 import { heightAt, readRegion, type Region } from './terrain';
 
 /**
@@ -28,13 +29,28 @@ export function localFootprint(parts: Part[]): [number, number, number, number] 
 }
 
 /** Body ve světě pro kontrolu podpory: rohy půdorysu (mírně dovnitř), středy hran a střed. */
-export function footprintPoints(o: MapObject, fp: [number, number, number, number]): [number, number][] {
+export function footprintPoints(o: MapObject, fp: [number, number, number, number], cut?: TerrainCut): [number, number][] {
   const [x0, z0, x1, z1] = fp;
   const ix = Math.min(0.05, (x1 - x0) / 4), iz = Math.min(0.05, (z1 - z0) / 4);
   const xs = [x0 + ix, (x0 + x1) / 2, x1 - ix], zs = [z0 + iz, (z0 + z1) / 2, z1 - iz];
   const out: [number, number][] = [];
-  for (const x of xs) for (const z of zs) out.push(toWorld(o, x, z));
+  // Body v prohlubni (sklepní schody) se nepočítají – terén tam je záměrně níž.
+  const inCut = (x: number, z: number) => !!cut && x > cut.rect[0] - 0.3 && x < cut.rect[2] + 0.3 && z > cut.rect[1] - 0.3 && z < cut.rect[3] + 0.3;
+  for (const x of xs) for (const z of zs) if (!inCut(x, z)) out.push(toWorld(o, x, z));
   return out;
+}
+
+/** Potřebuje předmět ještě snížit terén? (střed prohlubně je výš než dno − 0,1 m) */
+export function cutPending(t: TerrainData, o: MapObject, cut: TerrainCut): boolean {
+  const s = o.transform.scale ?? 1;
+  const [wx, wz] = toWorld(o, (cut.rect[0] + cut.rect[2]) / 2, (cut.rect[1] + cut.rect[3]) / 2);
+  const h = heightAt(t, wx, wz);
+  return h !== null && h > o.transform.position[1] - cut.depth * s + 0.1;
+}
+
+/** Šířka plochy kolem prohlubně, kterou musí předmět zakrýt (přechod terénu o jednu buňku mřížky). */
+export function cutApronNeeded(t: TerrainData, yaw: number): number {
+  return t.spacing * (Math.abs(Math.cos(yaw)) + Math.abs(Math.sin(yaw))) + t.spacing;
 }
 
 export function toWorld(o: MapObject, x: number, z: number): [number, number] {
@@ -48,6 +64,8 @@ export interface Pad {
   fp: [number, number, number, number];
   /** Cílová výška terénu pod předmětem (pata předmětu). */
   base: number;
+  /** Prohlubeň pod předmětem (sklepní vstup). */
+  cut?: TerrainCut;
 }
 
 const smooth = (x: number) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
@@ -69,9 +87,13 @@ export function planTerrainFit(t: TerrainData, pads: Pad[]): { region: Region; b
     const [wx, wz] = toWorld(p.object, cx, cz);
     // Převýšení pod půdorysem → šířka přechodu (svah max. ~1 : 2,5).
     let diff = 0;
-    for (const [x, z] of footprintPoints(p.object, p.fp)) diff = Math.max(diff, Math.abs((heightAt(t, x, z) ?? p.base) - p.base));
+    for (const [x, z] of footprintPoints(p.object, p.fp, p.cut)) diff = Math.max(diff, Math.abs((heightAt(t, x, z) ?? p.base) - p.base));
     const blend = Math.min(14, Math.max(3, diff * 2.5));
-    return { ...p, wx, wz, hx, hz, yaw: p.object.transform.rotation[1], blend, reach: Math.hypot(hx, hz) + margin + blend };
+    // Prohlubeň v osách předmětu vůči středu půdorysu; rezerva = buňka mřížky natočená s předmětem.
+    const yaw = p.object.transform.rotation[1];
+    const cm = t.spacing * (Math.abs(Math.cos(yaw)) + Math.abs(Math.sin(yaw))) * 1.02;
+    const cut = p.cut ? { x0: (p.cut.rect[0] - cx) * s - cm, z0: (p.cut.rect[1] - cz) * s - cm, x1: (p.cut.rect[2] - cx) * s + cm, z1: (p.cut.rect[3] - cz) * s + cm, y: p.base - p.cut.depth * s - 0.15 } : null;
+    return { ...p, wx, wz, hx, hz, yaw, blend, cutL: cut, reach: Math.hypot(hx, hz) + margin + blend };
   });
   let gx0 = Infinity, gz0 = Infinity, gx1 = -Infinity, gz1 = -Infinity;
   for (const p of prepared) {
@@ -100,6 +122,13 @@ export function planTerrainFit(t: TerrainData, pads: Pad[]): { region: Region; b
         // Do lokálních os předmětu.
         const c = Math.cos(p.yaw), s = Math.sin(p.yaw);
         const lx = c * dx0 - s * dz0, lz = s * dx0 + c * dz0;
+        // Prohlubeň má přednost (dno schodů), nic jiného ji nepřepíše.
+        if (p.cutL && lx > p.cutL.x0 && lx < p.cutL.x1 && lz > p.cutL.z0 && lz < p.cutL.z1) {
+          best = 2;
+          bestD = -1;
+          target = p.cutL.y;
+          continue;
+        }
         const d = Math.hypot(Math.max(0, Math.abs(lx) - p.hx), Math.max(0, Math.abs(lz) - p.hz));
         const w = d <= margin ? 1 : 1 - smooth((d - margin) / p.blend);
         if (w > best + 1e-9 || (Math.abs(w - best) < 1e-9 && w > 0 && d < bestD)) {
@@ -109,7 +138,7 @@ export function planTerrainFit(t: TerrainData, pads: Pad[]): { region: Region; b
         }
       }
       if (best <= 0) continue;
-      const h = h0 + (target - h0) * best;
+      const h = best >= 2 ? Math.min(h0, target) : h0 + (target - h0) * best;
       if (Math.abs(h - h0) > 1e-4) {
         after.heights[k] = Math.round(h * 1000) / 1000;
         changed++;

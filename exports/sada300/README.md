@@ -47,6 +47,11 @@ Přízemní budovy zůstávají přístupné; jejich kolize se slučují (stejn�
   (přímé, zalomené, do dvou podlaží), dva balkony (lepí se na zeď) a dvě podloubí.
   Konvence: pivot = střed půdorysu u paty, uliční líc −Z, zdi 0,3 m, výška fasád 3,2 m
   (parametr „Výška stěny“ 2,6–4,6 m). Rendery pro B nejsou – ověřeno testy (průchod + střely).
+- **C61–C85 (vstupy a průchody):** klenuté vstupy s valenou klenbou (C61/C62 podle pilotů,
+  kamenné ostění, poškozený), pravoúhlé vstupy (se schodem, široký, asymetrický, poškozený),
+  čtyři brány (dřevěná, kovová, klenutá, poškozená), tři průjezdy 3 × 3 × 6 m (rovný, klenutý,
+  poškozený), tři obchody s roletou (průlez jen vleže), tři sklepní vstupy 1,8 m pod terén,
+  dvě verandy a dvě proražené zdi.
 
 ## Editor: magnet budov
 
@@ -90,6 +95,16 @@ střešní moduly, balkony) se dál lepí na stěnu / střechu jako dřív.
   do řady je potřeba modul posunout (v popisu modelu je uvedeno).
 - **B55 zalomené schodiště:** půdorys 2,75 × 4,9 m místo ~3 × 4,5 m – horní podesta 1,0 m
   navíc, aby výstup nevedl rovnou do dveří.
+
+- **Průlezy pod roletou (C76–C78):** nejsou to dveře – v JSON `crawl_passages` (stance prone,
+  světlá výška 0,65 / 0,7 / 0,8 m). Test ověřuje, že vleže projde a vestoje ani v dřepu ne.
+- **Sklepní vstupy (C79–C81):** terén je výšková mřížka bez děr, proto model nese „snížit terén“
+  (JSON `terrain_cut`). Editor ho provede tlačítkem „Dorovnat terén pod předměty“ nebo
+  v Kontrole („Snížit terén“). Dlážděné okolí (parametr, výchozí 2,2 m) zakrývá přechod terénu;
+  na mapě s mřížkou 2 m musí mít aspoň 4,1 m – Kontrola na to upozorní. Sklep za dveřmi má
+  strop 0,65 m nad terénem (nízký kryt), protože světlá výška 2,2 m se do 1,8 m hloubky nevejde.
+- **C61/C62 (pilotní P):** šířka 4,0 m místo 4,2 m (stejně jako B39); oblouk je skutečná valená
+  klenba v celé hloubce výklenku (pilot měl rovný strop), patka 2,2 m podle pilotu.
 
 **Neotestováno přímo ve hře** (multiplayer, skuteční hráči): vše výše pochází ze simulace
 a renderů editoru.

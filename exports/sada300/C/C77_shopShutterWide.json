@@ -1,0 +1,376 @@
+{
+ "schema_version": "1.1",
+ "id": "C77_shopShutterWide",
+ "asset_id": "setC.shopShutterWide",
+ "label_cs": "C77 Široký obchodní průlez",
+ "category": "sada300_C",
+ "asset_kind": "building",
+ "footprint_m": [
+  6.1,
+  4.87
+ ],
+ "height_m": 3.412,
+ "target_m": [
+  6,
+  4.5,
+  3.2
+ ],
+ "bounds_m": {
+  "min": [
+   -3.05,
+   0,
+   -2.57
+  ],
+  "max": [
+   3.05,
+   3.412,
+   2.3
+  ]
+ },
+ "triangles": {
+  "LOD0": 240
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteLight",
+  "metal",
+  "plasterWarm",
+  "plazaTile",
+  "roof",
+  "sandstone",
+  "shutter",
+  "shutterBox",
+  "wood"
+ ],
+ "collision": [
+  {
+   "center": [
+    -2.5,
+    1.6,
+    -2
+   ],
+   "size": [
+    1,
+    3.2,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.5,
+    1.6,
+    -2
+   ],
+   "size": [
+    1,
+    3.2,
+    0.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    2.9,
+    -2.1
+   ],
+   "size": [
+    4,
+    0.6,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.85,
+    1.6,
+    0.25
+   ],
+   "size": [
+    0.3,
+    3.2,
+    4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.85,
+    1.6,
+    0.25
+   ],
+   "size": [
+    0.3,
+    3.2,
+    4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.35,
+    1.6,
+    2.1
+   ],
+   "size": [
+    2.7,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.6,
+    2.725,
+    2.1
+   ],
+   "size": [
+    1.2,
+    0.95,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.95,
+    1.6,
+    2.1
+   ],
+   "size": [
+    1.5,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    3.3,
+    0
+   ],
+   "size": [
+    6.1,
+    0.2,
+    4.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.02,
+    0.1
+   ],
+   "size": [
+    5.4,
+    0.04,
+    3.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    2.76,
+    -2.41
+   ],
+   "size": [
+    4.1,
+    0.36,
+    0.32
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    1.65,
+    -2.37
+   ],
+   "size": [
+    4,
+    1.9,
+    0.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.8,
+    0.5,
+    1.05
+   ],
+   "size": [
+    1.4,
+    1,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    1.2,
+    0,
+    -4
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    1.2,
+    0,
+    -3.2
+   ]
+  },
+  {
+   "p": [
+    1.2,
+    0.04,
+    -0.4
+   ],
+   "stance": "prone",
+   "note": "průlez vleže"
+  },
+  {
+   "p": [
+    1.2,
+    0.04,
+    0
+   ],
+   "note": "vstát (volný prostor za roletou)"
+  },
+  {
+   "p": [
+    0.6,
+    0,
+    3.2
+   ],
+   "note": "zadní dveře"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Za roletou 3,5 m volné hloubky – vstávání bez zachycení o pult (pult je vzadu vlevo)."
+ ],
+ "crawl_passages": [
+  {
+   "at": [
+    0,
+    0.35,
+    -2.37
+   ],
+   "w": 4,
+   "h": 0.7,
+   "stance": "prone",
+   "note": "roleta 0,7 m – průlez vleže v celé šířce 4 m"
+  }
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -2.3,
+    1.5,
+    -4
+   ],
+   "to": [
+    -2.3,
+    1.5,
+    0
+   ],
+   "expect_hit": true,
+   "note": "silný sloupek kryje"
+  },
+  {
+   "from": [
+    0,
+    0.35,
+    -4
+   ],
+   "to": [
+    0,
+    0.35,
+    0
+   ],
+   "expect_hit": false,
+   "note": "pod roletou volno"
+  }
+ ]
+}

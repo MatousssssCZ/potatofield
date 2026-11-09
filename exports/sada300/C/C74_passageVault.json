@@ -1,0 +1,267 @@
+{
+ "schema_version": "1.1",
+ "id": "C74_passageVault",
+ "asset_id": "setC.passageVault",
+ "label_cs": "C74 Klenutý průjezd",
+ "category": "sada300_C",
+ "asset_kind": "building",
+ "footprint_m": [
+  3.8,
+  6.16
+ ],
+ "height_m": 3.6,
+ "target_m": [
+  3.8,
+  6,
+  3.6
+ ],
+ "bounds_m": {
+  "min": [
+   -1.9,
+   0,
+   -3.08
+  ],
+  "max": [
+   1.9,
+   3.6,
+   3.08
+  ]
+ },
+ "triangles": {
+  "LOD0": 276
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "paving",
+  "plasterWarm",
+  "sandstone",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    -1.7,
+    1.8,
+    -1.275
+   ],
+   "size": [
+    0.4,
+    3.6,
+    3.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.7,
+    2.9,
+    1
+   ],
+   "size": [
+    0.4,
+    1.4,
+    1.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.7,
+    1.8,
+    2.275
+   ],
+   "size": [
+    0.4,
+    3.6,
+    1.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.7,
+    1.8,
+    0
+   ],
+   "size": [
+    0.4,
+    3.6,
+    6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.125,
+    3.3424,
+    0
+   ],
+   "size": [
+    0.75,
+    0.5152,
+    6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    3.4,
+    0
+   ],
+   "size": [
+    1.5,
+    0.4,
+    6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.125,
+    3.3424,
+    0
+   ],
+   "size": [
+    0.75,
+    0.5152,
+    6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.58,
+    1.1,
+    1
+   ],
+   "size": [
+    0.08,
+    2.16,
+    1.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0,
+    0.02,
+    0
+   ],
+   "size": [
+    3,
+    0.04,
+    6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -4.5
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    0,
+    0.04,
+    -1
+   ],
+   "note": "průjezd"
+  },
+  {
+   "p": [
+    0,
+    0.04,
+    2
+   ]
+  },
+  {
+   "p": [
+    0,
+    0,
+    4.5
+   ],
+   "note": "dvůr"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Klenba začíná ve 2,7 m – boční průchozí výška neklesne pod 2,6 m. Kolize klenby ze 4 hrubších plátků (nikdy pod viditelnou klenbou)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -1.45,
+    2.65,
+    -5
+   ],
+   "to": [
+    -1.45,
+    2.65,
+    5
+   ],
+   "expect_hit": false,
+   "note": "u boční stěny volno do 2,7 m"
+  }
+ ]
+}

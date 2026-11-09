@@ -1,12 +1,17 @@
 import type { MapObject } from '../src/shared/map/schema';
 import { collidersForMap, generateObject, getAsset, laddersForMap, resolveParams } from '../src/world';
-import { Sim, makeWorld } from './helpers';
+import { BTN, Sim, makeWorld } from './helpers';
+import { makeFlatTerrain } from '../src/shared/map/schema';
+import { localFootprint, planTerrainFit } from '../src/world/groundFit';
+import { writeRegion } from '../src/world/terrain';
 
 export interface Waypoint {
   p: [number, number, number];
   ladder?: boolean;
   /** Přesun bez chůze (začátek další dílčí trasy). */
   teleport?: boolean;
+  /** Úsek vleže (průlez pod roletou) nebo v dřepu. */
+  stance?: 'prone' | 'crouch';
   note?: string;
 }
 
@@ -21,10 +26,18 @@ export interface WalkResult {
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
 /** Projde trasu hráčem v simulaci (stejné kolize jako server). */
-export async function walkRoute(assetId: string, route: Waypoint[], params: MapObject['params'] = {}): Promise<WalkResult> {
-  const o: MapObject = { id: 'b', assetId, generatorVersion: 1, transform: { position: [0, 0, 0], rotation: [0, 0, 0] }, params: resolveParams(getAsset(assetId)!, params), seed: 7 };
+export async function walkRoute(assetId: string, route: Waypoint[], params: MapObject['params'] = {}, opts: { spacing?: number } = {}): Promise<WalkResult> {
+  const def = getAsset(assetId)!;
+  const o: MapObject = { id: 'b', assetId, generatorVersion: 1, transform: { position: [0, 0, 0], rotation: [0, 0, 0] }, params: resolveParams(def, params), seed: 7 };
   const g = generateObject(o);
-  const phys = await makeWorld(collidersForMap([g]));
+  // Terén jako v editoru; sklepní vstupy si ho sníží stejnou funkcí jako „Dorovnat terén“.
+  const terrain = makeFlatTerrain(400, 400, opts.spacing ?? 2);
+  const cut = def.terrainCut?.(o.params);
+  if (cut) {
+    const plan = planTerrainFit(terrain, [{ object: o, fp: localFootprint(g.parts), base: 0, cut }]);
+    if (plan) writeRegion(terrain, plan.region, plan.after);
+  }
+  const phys = await makeWorld(collidersForMap([g]), terrain);
   const [x0, y0, z0] = route[0].p;
   const sim = new Sim(phys, { x: x0, y: y0 + 0.05, z: z0 }, 0);
   sim.ctrl.ladders = laddersForMap([g]);
@@ -38,8 +51,15 @@ export async function walkRoute(assetId: string, route: Waypoint[], params: MapO
       sim.settle();
       continue;
     }
+    // Postoj úseku: leh se přepíná stiskem, dřep se drží.
+    const wantProne = w.stance === 'prone';
+    if (wantProne !== sim.s.proneToggle) {
+      sim.run(1, { pressed: BTN.PRONE });
+      sim.run(60);
+    }
+    const held = w.stance === 'crouch' ? BTN.CROUCH : 0;
     const d0 = Math.hypot(w.p[0] - sim.s.pos.x, w.p[2] - sim.s.pos.z) + Math.abs(w.p[1] - sim.s.pos.y);
-    const limit = Math.ceil(60 * (d0 / 1.0 + 4));
+    const limit = Math.ceil(60 * (d0 / (wantProne ? 0.4 : 1.0) + 4));
     let ok = false, best = Infinity, still = 0;
     for (let k = 0; k < limit; k++) {
       const dx = w.p[0] - sim.s.pos.x, dz = w.p[2] - sim.s.pos.z;
@@ -51,7 +71,7 @@ export async function walkRoute(assetId: string, route: Waypoint[], params: MapO
       if (sim.s.ladder) sim.run(1, { moveZ: 1 });
       else {
         const want = Math.atan2(-dx, -dz);
-        sim.run(1, { moveZ: dist < 0.6 ? 0.5 : 1, lookDYaw: wrap(want - sim.s.yaw) });
+        sim.run(1, { moveZ: dist < 0.6 ? 0.5 : 1, lookDYaw: wrap(want - sim.s.yaw), held });
       }
       ticks++;
       if (dist < best - 0.01) {

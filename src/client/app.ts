@@ -18,7 +18,7 @@ import { insertMarker, renderTerrainPanel, type GameUiState } from './editor/uiG
 import { debugLines } from '../shared/physics/world';
 import { heightAt } from '../world/terrain';
 import type { MapObject } from '../shared/map/schema';
-import { footprintPoints, localFootprint, planTerrainFit, type Pad } from '../world/groundFit';
+import { cutApronNeeded, cutPending, footprintPoints, localFootprint, planTerrainFit, type Pad } from '../world/groundFit';
 import { EnvironmentRig } from './render/environment';
 import { preloadGunModels } from './render/weapons/glbWeapon';
 import { preloadSoldierModel } from './render/soldier/mannequin';
@@ -383,7 +383,7 @@ export class App {
     const g = generateObject(o, t, this.ed.doc.objects);
     const fp = localFootprint(g.parts);
     let terrainMin = Infinity, objTop = -Infinity, by: string | undefined;
-    for (const [x, z] of footprintPoints(o, fp)) {
+    for (const [x, z] of footprintPoints(o, fp, this.cutOf(o))) {
       const th = heightAt(t, x, z);
       if (th !== null) terrainMin = Math.min(terrainMin, th);
       // Jiný předmět pod patou (paprsek jen kousek nad patou → nechytí střechu nad sebou).
@@ -398,6 +398,12 @@ export class App {
     }
     if (isFinite(objTop)) return { y: objTop, onObject: true, by };
     return isFinite(terrainMin) ? { y: terrainMin, onObject: false } : null;
+  }
+
+  /** Prohlubeň v terénu, kterou předmět potřebuje (sklepní vstup), jinak undefined. */
+  private cutOf(o: MapObject) {
+    const def = getAsset(o.assetId);
+    return def?.terrainCut?.(resolveParams(def, o.params));
   }
 
   /** Jedno tlačítko: všechny předměty dosednou na zem (nebo na předmět pod sebou). */
@@ -447,10 +453,11 @@ export class App {
       if (!sup || sup.onObject) continue;
       const g = generateObject(o, t, this.ed.doc.objects);
       const fp = localFootprint(g.parts);
-      // Upravit jen tam, kde terén pod půdorysem od paty skutečně odbíhá.
-      const pts = footprintPoints(o, fp).map(([x, z]) => heightAt(t, x, z) ?? o.transform.position[1]);
-      if (pts.every((h) => Math.abs(h - o.transform.position[1]) < 0.02)) continue;
-      pads.push({ object: o, fp, base: o.transform.position[1] });
+      const cut = this.cutOf(o);
+      // Upravit jen tam, kde terén pod půdorysem od paty skutečně odbíhá (nebo chybí prohlubeň).
+      const pts = footprintPoints(o, fp, cut).map(([x, z]) => heightAt(t, x, z) ?? o.transform.position[1]);
+      if (pts.every((h) => Math.abs(h - o.transform.position[1]) < 0.02) && !(cut && cutPending(t, o, cut))) continue;
+      pads.push({ object: o, fp, base: o.transform.position[1], cut });
     }
     const plan = planTerrainFit(t, pads);
     if (!plan) return null;
@@ -1119,6 +1126,18 @@ export class App {
         show: [o.id],
         fix: { label: 'Položit na zem', order: 1, changes: () => this.groundChanges(one) },
       });
+    }
+    // Sklepní vstupy: terén pod schody musí být snížený a dlážděné okolí dost široké.
+    for (const o of doc.objects) {
+      const cut = this.cutOf(o);
+      if (!cut) continue;
+      const one = new Set([o.id]);
+      if (cutPending(doc.terrain, o, cut))
+        issues.push({ severity: 'warning', path: nameOf(o), message: 'schody vedou pod terén – terén pod nimi je potřeba snížit', show: [o.id], fix: { label: 'Snížit terén', order: 2, changes: () => { const r = this.terrainFitChange(one); return r ? [r.change] : []; } } });
+      const need = cutApronNeeded(doc.terrain, o.transform.rotation[1]);
+      const apron = Number(resolveParams(getAsset(o.assetId)!, o.params).apron ?? Infinity);
+      if (apron < need - 1e-3)
+        issues.push({ severity: 'warning', path: nameOf(o), message: `dlážděné okolí ${apron.toFixed(1)} m nezakryje přechod terénu (mřížka ${doc.terrain.spacing} m) – nastav aspoň ${Math.ceil(need * 10) / 10} m`, show: [o.id] });
     }
     // Překrývající se předměty.
     for (const ov of ovl) {

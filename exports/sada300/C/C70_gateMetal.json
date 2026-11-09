@@ -1,0 +1,223 @@
+{
+ "schema_version": "1.1",
+ "id": "C70_gateMetal",
+ "asset_id": "setC.gateMetal",
+ "label_cs": "C70 Brána s kovovými vraty",
+ "category": "sada300_C",
+ "asset_kind": "building",
+ "footprint_m": [
+  8.06,
+  2.19
+ ],
+ "height_m": 3.2,
+ "target_m": [
+  8,
+  2.2,
+  3.2
+ ],
+ "bounds_m": {
+  "min": [
+   -4.03,
+   0,
+   -0.24
+  ],
+  "max": [
+   4.03,
+   3.2,
+   1.95
+  ]
+ },
+ "triangles": {
+  "LOD0": 204
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "metalSheet",
+  "paintedMetal",
+  "plasterWarm",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    -3.025,
+    1.5,
+    0
+   ],
+   "size": [
+    1.95,
+    3,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.025,
+    1.5,
+    0
+   ],
+   "size": [
+    1.95,
+    3,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.9,
+    1.6,
+    0
+   ],
+   "size": [
+    0.3,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -1.79,
+    1.475,
+    1.075
+   ],
+   "size": [
+    0.05,
+    2.85,
+    1.75
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    1.9,
+    1.6,
+    0
+   ],
+   "size": [
+    0.3,
+    3.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    1.79,
+    1.475,
+    1.075
+   ],
+   "size": [
+    0.05,
+    2.85,
+    1.75
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2.5
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    -1.2,
+    0,
+    1.2
+   ],
+   "note": "mezi křídly"
+  },
+  {
+   "p": [
+    0,
+    0,
+    3
+   ],
+   "note": "dvůr"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Křídla 1,75 m otevřená o 90° do dvora, závěsy za hranou otvoru → průjezd celých 3,5 m."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    1.5,
+    -3
+   ],
+   "to": [
+    0,
+    1.5,
+    3
+   ],
+   "expect_hit": false,
+   "note": "průjezd volný"
+  },
+  {
+   "from": [
+    -3,
+    1.5,
+    1
+   ],
+   "to": [
+    0,
+    1.5,
+    1
+   ],
+   "expect_hit": true,
+   "note": "plechové křídlo kryje z boku"
+  }
+ ]
+}

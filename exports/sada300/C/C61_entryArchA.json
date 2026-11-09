@@ -1,0 +1,318 @@
+{
+ "schema_version": "1.1",
+ "id": "C61_entryArchA",
+ "asset_id": "setC.entryArchA",
+ "label_cs": "C61 Klenutý vstup A (pilot)",
+ "category": "sada300_C",
+ "asset_kind": "building",
+ "footprint_m": [
+  4,
+  1.8
+ ],
+ "height_m": 3.5,
+ "target_m": [
+  4.3,
+  1.83,
+  3.58
+ ],
+ "bounds_m": {
+  "min": [
+   -2,
+   0,
+   -0.95
+  ],
+  "max": [
+   2,
+   3.5,
+   0.85
+  ]
+ },
+ "triangles": {
+  "LOD0": 348
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "paving",
+  "plasterWarm",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    -1.4,
+    1.75,
+    -0.7
+   ],
+   "size": [
+    1.2,
+    3.5,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.4,
+    1.75,
+    -0.7
+   ],
+   "size": [
+    1.2,
+    3.5,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.5333,
+    3.2271,
+    -0.15
+   ],
+   "size": [
+    0.5333,
+    0.5458,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    3.25,
+    -0.15
+   ],
+   "size": [
+    0.5333,
+    0.5,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.5333,
+    3.2271,
+    -0.15
+   ],
+   "size": [
+    0.5333,
+    0.5458,
+    1.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.95,
+    1.75,
+    0
+   ],
+   "size": [
+    0.3,
+    3.5,
+    1.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.95,
+    1.75,
+    0
+   ],
+   "size": [
+    0.3,
+    3.5,
+    1.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.85,
+    1.75,
+    0.7
+   ],
+   "size": [
+    0.5,
+    3.5,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    2.95,
+    0.7
+   ],
+   "size": [
+    1.2,
+    1.1,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.85,
+    1.75,
+    0.7
+   ],
+   "size": [
+    0.5,
+    3.5,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    0.03,
+    -0.2
+   ],
+   "size": [
+    1.64,
+    0.06,
+    1.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2.85
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    0,
+    0.06,
+    -0.35
+   ],
+   "note": "výklenek"
+  },
+  {
+   "p": [
+    0,
+    0.06,
+    0.1499999999999999
+   ],
+   "note": "u dveří"
+  },
+  {
+   "p": [
+    0,
+    0,
+    2.05
+   ],
+   "note": "za dveřmi"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Podle pilotu entry_recess_arch_a: výklenek 1,6 × 1,4 m, dveře 1,2 × 2,4 m, výška 3,5 m.",
+  "Úprava: šířka 4,0 m místo 4,2 m (rastr 4 m jako B39). Oblouk je skutečný: valená klenba přes celou hloubku výklenku (pilot měl rovný strop).",
+  "Patka oblouku 2,2 m = nejnižší světlá výška u bočních stěn, ve středu 3,0 m."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    4,
+    1.4,
+    -2.35
+   ],
+   "to": [
+    -0.5,
+    1.4,
+    0.24999999999999994
+   ],
+   "expect_hit": true,
+   "note": "hráč ve výklenku je ze strany krytý"
+  },
+  {
+   "from": [
+    0,
+    1.4,
+    -3.85
+   ],
+   "to": [
+    0,
+    1.4,
+    2.55
+   ],
+   "expect_hit": false,
+   "note": "osa vstupu a dveří volná"
+  }
+ ]
+}

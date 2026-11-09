@@ -15,31 +15,31 @@ import { TRIM, reg, type SetMeta } from './residential';
  * - okna jsou skutečné otvory (průstřel), pilíře a plné zdi jsou kryt.
  */
 const t = M.wall;
-const FACE = -t / 2; // přední líc rovné fasády
+export const FACE = -t / 2; // přední líc rovné fasády
 const B = 'B' as const;
 
 type Meta = Omit<SetMeta, 'item'>;
 const regB = (item: number, id: string, label: string, def: Parameters<typeof reg>[3], meta: Meta) => reg(item, id, label, def, meta, B);
 
-const n = (p: Params, k: string) => p[k] as number;
-const heightParam = (def: number) => ({ key: 'h', label: 'Výška stěny', type: 'number' as const, min: 2.6, max: 4.6, step: 0.1, unit: 'm', default: def });
+export const n = (p: Params, k: string) => p[k] as number;
+export const heightParam = (def: number) => ({ key: 'h', label: 'Výška stěny', type: 'number' as const, min: 2.6, max: 4.6, step: 0.1, unit: 'm', default: def });
 
 // ---------------------------------------------------------------------------
 // Pomocné díly
 // ---------------------------------------------------------------------------
 
 /** Kvádr podle rozsahů [x0, x1] × [y0, y1] × [z0, z1]. */
-function bx(x0: number, x1: number, y0: number, y1: number, z0: number, z1: number, material: string, collide = true): Part {
+export function bx(x0: number, x1: number, y0: number, y1: number, z0: number, z1: number, material: string, collide = true): Part {
   return { shape: 'box', pos: [(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2], size: [x1 - x0, y1 - y0, z1 - z0], material, collide };
 }
 
 /** Rovná stěna podél X v ose z = zc s otvory v absolutní souřadnici x; vnější strana −Z. */
-function wallX(x0: number, x1: number, zc: number, y0: number, h: number, ops: Op[], mat: string, thick = t, trim = TRIM, out: P2 | null = [0, -1]): Part[] {
+export function wallX(x0: number, x1: number, zc: number, y0: number, h: number, ops: Op[], mat: string, thick = t, trim = TRIM, out: P2 | null = [0, -1]): Part[] {
   return wall([x0, zc], [x1, zc], y0, h, thick, ops.map((o) => ({ ...o, c: o.c - x0 })), mat, out ? { out, trim } : { plain: true });
 }
 
 /** Pás na předním líci (sokl, římsa, pás cedule) s mezerami (např. dveře); jen vzhled. */
-function faceStrip(x0: number, x1: number, y0: number, y1: number, face: number, depth: number, mat: string, gaps: P2[] = []): Part[] {
+export function faceStrip(x0: number, x1: number, y0: number, y1: number, face: number, depth: number, mat: string, gaps: P2[] = []): Part[] {
   const parts: Part[] = [];
   let cur = x0;
   for (const [g0, g1] of [...gaps].sort((a, b) => a[0] - b[0])) {
@@ -50,12 +50,12 @@ function faceStrip(x0: number, x1: number, y0: number, y1: number, face: number,
   return parts;
 }
 
-const doorOp = (c: number, w = 1.2, h = 2.3): Op => ({ c, w, b: 0, t: h, kind: 'door' });
-const winOp = (c: number, w = 1.4, b = 1.0, top = 2.3): Op => ({ c, w, b, t: top, kind: 'window' });
+export const doorOp = (c: number, w = 1.2, h = 2.3): Op => ({ c, w, b: 0, t: h, kind: 'door' });
+export const winOp = (c: number, w = 1.4, b = 1.0, top = 2.3): Op => ({ c, w, b, t: top, kind: 'window' });
 const gapsOf = (ops: Op[]): P2[] => ops.filter((o) => o.b < 0.3).map((o) => [o.c - o.w / 2 - 0.05, o.c + o.w / 2 + 0.05]);
 
 /** Ostění: vystupující šambrána kolem otvoru na předním líci (boky + nadpraží), jen vzhled. */
-function surround(o: Op, face: number, mat: string, w = 0.14, d = 0.05): Part[] {
+export function surround(o: Op, face: number, mat: string, w = 0.14, d = 0.05): Part[] {
   const x0 = o.c - o.w / 2, x1 = o.c + o.w / 2;
   return [
     bx(x0 - w, x0, o.b, o.t, face - d, face, mat, false),
@@ -64,7 +64,7 @@ function surround(o: Op, face: number, mat: string, w = 0.14, d = 0.05): Part[] 
 }
 
 /** Suť: hranaté kusy (jen vzhled, nízké, mimo průchozí osu podle zadání). */
-function rubble(x: number, z: number, n: number, spread: [number, number], seed: number, size = 0.45): Part[] {
+export function rubble(x: number, z: number, n: number, spread: [number, number], seed: number, size = 0.45): Part[] {
   const r = rng(seed);
   const parts: Part[] = [];
   for (let i = 0; i < n; i++) {
@@ -85,7 +85,7 @@ function facade(L: number, h: number, ops: Op[], mat: string, o: { plinth?: numb
 }
 
 /** Paprsky střel kolmo přes stěnu (v x, výška y): `hit` = má narazit. */
-const thru = (x: number, y: number, hit: boolean, note: string, z0 = -3, z1 = 3) => ({ from: [x, y, z0] as [number, number, number], to: [x, y, z1] as [number, number, number], hit, note });
+export const thru = (x: number, y: number, hit: boolean, note: string, z0 = -3, z1 = 3) => ({ from: [x, y, z0] as [number, number, number], to: [x, y, z1] as [number, number, number], hit, note });
 
 // ---------------------------------------------------------------------------
 // B31–B38 Rovné fasády 4 m a 8 m
@@ -831,7 +831,7 @@ regB(58, 'balconyMetal', 'Balkon s kovovým zábradlím', {
  * Vzhled = 8 plátků (spodní hrana v nejnižším bodě oblouku), kolize = 3 hrubší plátky
  * s hranou v nejvyšším bodě – kolize tak nikdy nezasahuje pod viditelný oblouk.
  */
-function archFill(xc: number, w: number, ys: number, top: number, z0: number, z1: number, mat: string): Part[] {
+export function archFill(xc: number, w: number, ys: number, top: number, z0: number, z1: number, mat: string): Part[] {
   const r = w / 2, parts: Part[] = [];
   const slices = (n: number, low: boolean, collide: boolean) => {
     for (let i = 0; i < n; i++) {
