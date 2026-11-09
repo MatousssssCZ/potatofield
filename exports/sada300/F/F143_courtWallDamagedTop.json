@@ -1,0 +1,229 @@
+{
+ "schema_version": "1.1",
+ "id": "F143_courtWallDamagedTop",
+ "asset_id": "setF.courtWallDamagedTop",
+ "label_cs": "F143 Zeď s poškozeným vrškem",
+ "category": "sada300_F",
+ "asset_kind": "building",
+ "footprint_m": [
+  4,
+  0.38
+ ],
+ "height_m": 2.06,
+ "target_m": [
+  4,
+  0.38,
+  2.06
+ ],
+ "bounds_m": {
+  "min": [
+   -2,
+   0,
+   -0.19
+  ],
+  "max": [
+   2,
+   2.06,
+   0.19
+  ]
+ },
+ "triangles": {
+  "LOD0": 156
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "plasterWarm",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.6,
+    0
+   ],
+   "size": [
+    4,
+    1.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.65,
+    1.6,
+    0
+   ],
+   "size": [
+    0.7,
+    0.8,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.95,
+    1.275,
+    0
+   ],
+   "size": [
+    0.7,
+    0.15,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.15,
+    1.6,
+    0
+   ],
+   "size": [
+    0.9,
+    0.8,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.6,
+    1.35,
+    0
+   ],
+   "size": [
+    0.6,
+    0.3,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.15,
+    1.475,
+    0
+   ],
+   "size": [
+    0.5,
+    0.55,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.7,
+    1.225,
+    0
+   ],
+   "size": [
+    0.6,
+    0.05,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.6,
+    0,
+    -1
+   ]
+  },
+  {
+   "p": [
+    1.6,
+    0,
+    -1
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Spodních 1,2 m souvislý kryt; horní hrana s odlomy 1,25–2,0 m."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -1,
+    1.6,
+    -3
+   ],
+   "to": [
+    -1,
+    1.6,
+    3
+   ],
+   "expect_hit": false,
+   "note": "odlomem lze střílet vestoje"
+  },
+  {
+   "from": [
+    -1,
+    1,
+    -3
+   ],
+   "to": [
+    -1,
+    1,
+    3
+   ],
+   "expect_hit": true,
+   "note": "spodní část kryje"
+  }
+ ]
+}

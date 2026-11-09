@@ -1,0 +1,193 @@
+{
+ "schema_version": "1.1",
+ "id": "F159_gateSlideMesh",
+ "asset_id": "setF.gateSlideMesh",
+ "label_cs": "F159 Posuvná pletivová brána",
+ "category": "sada300_F",
+ "asset_kind": "building",
+ "footprint_m": [
+  12.3,
+  0.5971
+ ],
+ "height_m": 2.56,
+ "target_m": [
+  12.6,
+  1,
+  2.56
+ ],
+ "bounds_m": {
+  "min": [
+   -8.3,
+   -0.01,
+   -0.19
+  ],
+  "max": [
+   4,
+   2.56,
+   0.4071
+  ]
+ },
+ "triangles": {
+  "LOD0": 260
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "chainLink",
+  "gunMetal",
+  "metal",
+  "paintedMetal",
+  "plasterWarm",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    -5.55,
+    1,
+    0
+   ],
+   "size": [
+    5.5,
+    2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.4,
+    1,
+    0
+   ],
+   "size": [
+    1.2,
+    2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.65,
+    1.25,
+    0
+   ],
+   "size": [
+    0.3,
+    2.5,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    2.65,
+    1.25,
+    0
+   ],
+   "size": [
+    0.3,
+    2.5,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -5.45,
+    1.06,
+    0.35
+   ],
+   "size": [
+    5.12,
+    1.92,
+    0.01
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete",
+   "blocks": "move"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2
+   ]
+  },
+  {
+   "p": [
+    0,
+    0,
+    0.3
+   ],
+   "note": "průjezd 5 m"
+  },
+  {
+   "p": [
+    0,
+    0,
+    2.5
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Pletivo křídla průstřelné (kolize jen pro pohyb)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    1.5,
+    -3
+   ],
+   "to": [
+    0,
+    1.5,
+    3
+   ],
+   "expect_hit": false,
+   "note": "průjezd volný"
+  }
+ ]
+}

@@ -1,0 +1,139 @@
+{
+ "schema_version": "1.1",
+ "id": "F157_railingCorner",
+ "asset_id": "setF.railingCorner",
+ "label_cs": "F157 Rohové kovové zábradlí",
+ "category": "sada300_F",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.06,
+  2.06
+ ],
+ "height_m": 1.025,
+ "target_m": [
+  2,
+  2,
+  1.03
+ ],
+ "bounds_m": {
+  "min": [
+   -1.03,
+   0,
+   -1.03
+  ],
+  "max": [
+   1.03,
+   1.025,
+   1.03
+  ]
+ },
+ "triangles": {
+  "LOD0": 224
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "paintedMetal"
+ ],
+ "collision": [
+  {
+   "center": [
+    0.1,
+    0.5,
+    -1
+   ],
+   "size": [
+    1.8,
+    1,
+    0.06
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  },
+  {
+   "center": [
+    -1,
+    0.5,
+    0.1
+   ],
+   "size": [
+    0.06,
+    1,
+    1.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0.8,
+    0,
+    -0.5
+   ],
+   "note": "uvnitř"
+  },
+  {
+   "p": [
+    -0.5,
+    0,
+    -0.5
+   ],
+   "note": "roh"
+  },
+  {
+   "p": [
+    -0.5,
+    0,
+    0.8
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Konce ramen bez sloupku navazují na F156 (sloupek dodá rovný díl)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -2,
+    0.6,
+    0.3
+   ],
+   "to": [
+    0,
+    0.6,
+    0.3
+   ],
+   "expect_hit": false,
+   "note": "průstřelné"
+  }
+ ]
+}

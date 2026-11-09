@@ -1,0 +1,126 @@
+{
+ "schema_version": "1.1",
+ "id": "F144_stoneWall",
+ "asset_id": "setF.stoneWall",
+ "label_cs": "F144 Rovná kamenná zídka",
+ "category": "sada300_F",
+ "asset_kind": "building",
+ "footprint_m": [
+  4.2649,
+  0.6799
+ ],
+ "height_m": 1.0688,
+ "target_m": [
+  4,
+  0.6,
+  1
+ ],
+ "bounds_m": {
+  "min": [
+   -2.1407,
+   0,
+   -0.34
+  ],
+  "max": [
+   2.1242,
+   1.0688,
+   0.34
+  ]
+ },
+ "triangles": {
+  "LOD0": 384
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "rock",
+  "stoneWall"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.5,
+    0
+   ],
+   "size": [
+    4,
+    1,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.6,
+    0,
+    -1.2
+   ]
+  },
+  {
+   "p": [
+    1.6,
+    0,
+    -1.2
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Kolize: jádro + horní pás (souvislé), kameny jsou vzhled."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    0.7,
+    -3
+   ],
+   "to": [
+    0,
+    0.7,
+    3
+   ],
+   "expect_hit": true,
+   "note": "kryje vkleče"
+  },
+  {
+   "from": [
+    0,
+    1.4,
+    -3
+   ],
+   "to": [
+    0,
+    1.4,
+    3
+   ],
+   "expect_hit": false,
+   "note": "vestoje přes ni"
+  }
+ ]
+}

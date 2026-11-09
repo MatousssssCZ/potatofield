@@ -1,0 +1,163 @@
+{
+ "schema_version": "1.1",
+ "id": "F136_courtWall",
+ "asset_id": "setF.courtWall",
+ "label_cs": "F136 Rovná dvorní zeď (pilot)",
+ "category": "sada300_F",
+ "asset_kind": "building",
+ "footprint_m": [
+  4.525,
+  0.53
+ ],
+ "height_m": 2.3,
+ "target_m": [
+  4.15,
+  0.55,
+  2.3
+ ],
+ "bounds_m": {
+  "min": [
+   -2.265,
+   0,
+   -0.265
+  ],
+  "max": [
+   2.26,
+   2.3,
+   0.265
+  ]
+ },
+ "triangles": {
+  "LOD0": 72
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteLight",
+  "plasterWarm",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    1,
+    0
+   ],
+   "size": [
+    4,
+    2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2,
+    1.1,
+    0
+   ],
+   "size": [
+    0.45,
+    2.2,
+    0.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    2,
+    1.0975,
+    0
+   ],
+   "size": [
+    0.44,
+    2.195,
+    0.44
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.6,
+    0,
+    -1
+   ]
+  },
+  {
+   "p": [
+    1.6,
+    0,
+    -1
+   ],
+   "note": "podél zdi"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Podle pilotu wall_courtyard_a: zeď 4 × 2 × 0,3 m, pilíře 0,45 × 2,2 m. Úprava: osy pilířů ve ±2,0 m (pilot ±1,8 m), aby modul měřil 4 m a navazoval na roh F137 i na další moduly.",
+  "Pravý pilíř je o 1 cm menší – při překrytí s pilířem souseda se neperou plochy (bez blikání). Vypnutím „Koncové pilíře“ zůstane jen levý pilíř a magnet moduly řadí bez zdvojení."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    1.7,
+    -3
+   ],
+   "to": [
+    0,
+    1.7,
+    3
+   ],
+   "expect_hit": true,
+   "note": "zeď kryje stojícího"
+  },
+  {
+   "from": [
+    -2,
+    2.1,
+    -3
+   ],
+   "to": [
+    -2,
+    2.1,
+    3
+   ],
+   "expect_hit": true,
+   "note": "pilíř"
+  }
+ ]
+}

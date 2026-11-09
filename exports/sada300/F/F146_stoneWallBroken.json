@@ -1,0 +1,272 @@
+{
+ "schema_version": "1.1",
+ "id": "F146_stoneWallBroken",
+ "asset_id": "setF.stoneWallBroken",
+ "label_cs": "F146 Zbořená kamenná zídka",
+ "category": "sada300_F",
+ "asset_kind": "building",
+ "footprint_m": [
+  4.2649,
+  2.1926
+ ],
+ "height_m": 1.0382,
+ "target_m": [
+  4,
+  0.6,
+  1
+ ],
+ "bounds_m": {
+  "min": [
+   -2.1407,
+   -0.0227,
+   -1.0515
+  ],
+  "max": [
+   2.1242,
+   1.0382,
+   1.1411
+  ]
+ },
+ "triangles": {
+  "LOD0": 1664
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "rock",
+  "stoneWall"
+ ],
+ "collision": [
+  {
+   "center": [
+    1.5,
+    0.175,
+    -0.8
+   ],
+   "size": [
+    0.5,
+    0.35,
+    0.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.9,
+    0.14,
+    -0.6
+   ],
+   "size": [
+    0.4,
+    0.28,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.6,
+    0.1575,
+    0.8
+   ],
+   "size": [
+    0.45,
+    0.315,
+    0.405
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.2,
+    0.1225,
+    1
+   ],
+   "size": [
+    0.35,
+    0.245,
+    0.315
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "blob",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.6,
+    0.5,
+    0
+   ],
+   "size": [
+    0.8,
+    1,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1,
+    0.325,
+    0
+   ],
+   "size": [
+    0.4,
+    0.65,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.15,
+    0
+   ],
+   "size": [
+    1.6,
+    0.3,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1,
+    0.325,
+    0
+   ],
+   "size": [
+    0.4,
+    0.65,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.6,
+    0.5,
+    0
+   ],
+   "size": [
+    0.8,
+    1,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -1.4
+   ],
+   "note": "před zídkou"
+  },
+  {
+   "p": [
+    0,
+    0.3,
+    0
+   ],
+   "note": "přes sníženou část"
+  },
+  {
+   "p": [
+    0,
+    0,
+    1.4
+   ],
+   "note": "za zídkou"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Snížená část 0,3 m je překročitelná; kameny leží mimo osu průchodu."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    0.5,
+    -3
+   ],
+   "to": [
+    0,
+    0.5,
+    3
+   ],
+   "expect_hit": false,
+   "note": "uprostřed už nekryje"
+  },
+  {
+   "from": [
+    1.6,
+    0.6,
+    -3
+   ],
+   "to": [
+    1.6,
+    0.6,
+    3
+   ],
+   "expect_hit": true,
+   "note": "okraje kryjí"
+  }
+ ]
+}

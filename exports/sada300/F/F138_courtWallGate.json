@@ -1,0 +1,206 @@
+{
+ "schema_version": "1.1",
+ "id": "F138_courtWallGate",
+ "asset_id": "setF.courtWallGate",
+ "label_cs": "F138 Zeď s otevřenou bránou (pilot)",
+ "category": "sada300_F",
+ "asset_kind": "building",
+ "footprint_m": [
+  4.08,
+  1.87
+ ],
+ "height_m": 3.08,
+ "target_m": [
+  4.1,
+  1.8,
+  3.08
+ ],
+ "bounds_m": {
+  "min": [
+   -2.04,
+   0,
+   -0.825
+  ],
+  "max": [
+   2.04,
+   3.08,
+   1.045
+  ]
+ },
+ "triangles": {
+  "LOD0": 204
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "metalSheet",
+  "paintedMetal",
+  "plasterWarm",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    -1.4,
+    1.5,
+    -0.6
+   ],
+   "size": [
+    1.2,
+    3,
+    0.35
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.4,
+    1.5,
+    -0.6
+   ],
+   "size": [
+    1.2,
+    3,
+    0.35
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    2.7,
+    -0.6
+   ],
+   "size": [
+    1.6,
+    0.6,
+    0.35
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.84,
+    1.1,
+    0.32
+   ],
+   "size": [
+    0.04,
+    2.02,
+    1.37
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0.84,
+    1.1,
+    0.32
+   ],
+   "size": [
+    0.04,
+    2.02,
+    1.37
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2.2
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    0,
+    0,
+    -0.6
+   ],
+   "note": "branka 1,6 m"
+  },
+  {
+   "p": [
+    0,
+    0,
+    1.6
+   ],
+   "note": "dvůr"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Podle pilotu wall_courtyard_c: otvor 1,6 × 2,4 m, křídla 1,45 m kolmo do dvora, závěsy za hranou otvoru (průchod 1,6 m nezúžen)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    1.5,
+    -3
+   ],
+   "to": [
+    0,
+    1.5,
+    3
+   ],
+   "expect_hit": false,
+   "note": "otvor volný"
+  },
+  {
+   "from": [
+    -2,
+    1.2,
+    0.5
+   ],
+   "to": [
+    0,
+    1.2,
+    0.5
+   ],
+   "expect_hit": true,
+   "note": "otevřené křídlo kryje z boku"
+  }
+ ]
+}

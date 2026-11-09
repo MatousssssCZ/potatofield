@@ -63,6 +63,11 @@ Přízemní budovy zůstávají přístupné; jejich kolize se slučují (stejn�
   kontrolní stanoviště (vč. poškozeného), strážní věže (dřevěná, betonová, poškozená), bunkry
   (zalomený vstup bez průhledu, poškozený se sutí jako druhým vstupem), HESCO (4 typy),
   stany (plachta zastaví hráče, ne střelu) a anténní stožáry (lana bez kolize).
+- **F136–F160 (zdi, ploty, brány):** dvorní zdi podle pilotů (rovná, roh, branka s otevřenými
+  křídly), nízká zeď, zeď se širokou bránou, proražená, sesutá a s poškozeným vrškem, kamenné
+  zídky (rovná, rohová, zbořená), betonové T-stěny, pletivové ploty s ostnatým vrškem (rovný,
+  rohový, brána), plechové a dřevěné ploty (i poškozené s průchodem), kovové zábradlí a tři
+  posuvné brány (kolejnice bez kolize).
 
 ## Editor: magnet budov
 
@@ -124,6 +129,10 @@ střešní moduly, balkony) se dál lepí na stěnu / střechu jako dřív.
 
 - **Kolize E:** velký sklad a velký hangár mají 40–60 kvádrů (regály, sloupy, čelní stěny
   hangáru po elipse); ostatní 1–24.
+
+- **F136–F138 (pilotní P):** osy pilířů posunuté z ±1,8 na ±2,0 m, aby modul měřil 4 m a roh
+  i další moduly navazovaly. Pravý pilíř je o 1 cm menší, takže dva moduly se společným
+  pilířem neblikají. Parametr „Koncové pilíře“ – vypnout při řazení modulů za sebou.
 
 **Neotestováno přímo ve hře** (multiplayer, skuteční hráči): vše výše pochází ze simulace
 a renderů editoru.

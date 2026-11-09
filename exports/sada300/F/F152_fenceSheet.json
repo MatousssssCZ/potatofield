@@ -1,0 +1,232 @@
+{
+ "schema_version": "1.1",
+ "id": "F152_fenceSheet",
+ "asset_id": "setF.fenceSheet",
+ "label_cs": "F152 Plechový plot",
+ "category": "sada300_F",
+ "asset_kind": "building",
+ "footprint_m": [
+  4.08,
+  0.14
+ ],
+ "height_m": 2.1,
+ "target_m": [
+  4,
+  0.2,
+  2.1
+ ],
+ "bounds_m": {
+  "min": [
+   -2.04,
+   0,
+   -0.04
+  ],
+  "max": [
+   2.04,
+   2.1,
+   0.1
+  ]
+ },
+ "triangles": {
+  "LOD0": 232
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "metalSheet",
+  "metalSheetRust",
+  "paintedMetal"
+ ],
+ "collision": [
+  {
+   "center": [
+    -2,
+    1.05,
+    0.06
+   ],
+   "size": [
+    0.08,
+    2.1,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.67,
+    1.05,
+    0.06
+   ],
+   "size": [
+    0.08,
+    2.1,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0.67,
+    1.05,
+    0.06
+   ],
+   "size": [
+    0.08,
+    2.1,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    2,
+    1.05,
+    0.06
+   ],
+   "size": [
+    0.08,
+    2.1,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -1.475,
+    0.9762,
+    -0.03
+   ],
+   "size": [
+    1.05,
+    1.8523,
+    0.02
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.575,
+    0.9812,
+    0
+   ],
+   "size": [
+    1.15,
+    1.8624,
+    0.02
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    0.375,
+    1.0727,
+    -0.03
+   ],
+   "size": [
+    1.15,
+    2.0454,
+    0.02
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    1.375,
+    1.0449,
+    0
+   ],
+   "size": [
+    1.25,
+    1.9898,
+    0.02
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.6,
+    0,
+    -1
+   ]
+  },
+  {
+   "p": [
+    1.6,
+    0,
+    -1
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Tabule mají kolizi (plný plot); průstřel řeší případně hra materiálem plechu."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0.3,
+    1.2,
+    -3
+   ],
+   "to": [
+    0.3,
+    1.2,
+    3
+   ],
+   "expect_hit": true,
+   "note": "plech zastaví hráče i střelu (kryt slabý, ale plný)"
+  }
+ ]
+}

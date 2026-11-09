@@ -1,0 +1,231 @@
+{
+ "section": "F",
+ "generated": "2026-11-09",
+ "models": [
+  {
+   "item": 136,
+   "id": "F136_courtWall",
+   "asset_id": "setF.courtWall",
+   "label": "F136 Rovná dvorní zeď (pilot)",
+   "glb": "F136_courtWall.glb",
+   "json": "F136_courtWall.json",
+   "render": "renders/F136.jpg"
+  },
+  {
+   "item": 137,
+   "id": "F137_courtWallCorner",
+   "asset_id": "setF.courtWallCorner",
+   "label": "F137 Rohová dvorní zeď (pilot)",
+   "glb": "F137_courtWallCorner.glb",
+   "json": "F137_courtWallCorner.json",
+   "render": "renders/F137.jpg"
+  },
+  {
+   "item": 138,
+   "id": "F138_courtWallGate",
+   "asset_id": "setF.courtWallGate",
+   "label": "F138 Zeď s otevřenou bránou (pilot)",
+   "glb": "F138_courtWallGate.glb",
+   "json": "F138_courtWallGate.json",
+   "render": "renders/F138.jpg"
+  },
+  {
+   "item": 139,
+   "id": "F139_courtWallLow",
+   "asset_id": "setF.courtWallLow",
+   "label": "F139 Nízká dvorní zeď",
+   "glb": "F139_courtWallLow.glb",
+   "json": "F139_courtWallLow.json",
+   "render": "renders/F139.jpg"
+  },
+  {
+   "item": 140,
+   "id": "F140_courtWallWideGate",
+   "asset_id": "setF.courtWallWideGate",
+   "label": "F140 Dvorní zeď se širokou bránou",
+   "glb": "F140_courtWallWideGate.glb",
+   "json": "F140_courtWallWideGate.json",
+   "render": "renders/F140.jpg"
+  },
+  {
+   "item": 141,
+   "id": "F141_courtWallBreach",
+   "asset_id": "setF.courtWallBreach",
+   "label": "F141 Zeď s průchozím proražením",
+   "glb": "F141_courtWallBreach.glb",
+   "json": "F141_courtWallBreach.json",
+   "render": "renders/F141.jpg"
+  },
+  {
+   "item": 142,
+   "id": "F142_courtWallCollapsed",
+   "asset_id": "setF.courtWallCollapsed",
+   "label": "F142 Sesutá dvorní zeď",
+   "glb": "F142_courtWallCollapsed.glb",
+   "json": "F142_courtWallCollapsed.json",
+   "render": "renders/F142.jpg"
+  },
+  {
+   "item": 143,
+   "id": "F143_courtWallDamagedTop",
+   "asset_id": "setF.courtWallDamagedTop",
+   "label": "F143 Zeď s poškozeným vrškem",
+   "glb": "F143_courtWallDamagedTop.glb",
+   "json": "F143_courtWallDamagedTop.json",
+   "render": "renders/F143.jpg"
+  },
+  {
+   "item": 144,
+   "id": "F144_stoneWall",
+   "asset_id": "setF.stoneWall",
+   "label": "F144 Rovná kamenná zídka",
+   "glb": "F144_stoneWall.glb",
+   "json": "F144_stoneWall.json",
+   "render": "renders/F144.jpg"
+  },
+  {
+   "item": 145,
+   "id": "F145_stoneWallCorner",
+   "asset_id": "setF.stoneWallCorner",
+   "label": "F145 Rohová kamenná zídka",
+   "glb": "F145_stoneWallCorner.glb",
+   "json": "F145_stoneWallCorner.json",
+   "render": "renders/F145.jpg"
+  },
+  {
+   "item": 146,
+   "id": "F146_stoneWallBroken",
+   "asset_id": "setF.stoneWallBroken",
+   "label": "F146 Zbořená kamenná zídka",
+   "glb": "F146_stoneWallBroken.glb",
+   "json": "F146_stoneWallBroken.json",
+   "render": "renders/F146.jpg"
+  },
+  {
+   "item": 147,
+   "id": "F147_tWall",
+   "asset_id": "setF.tWall",
+   "label": "F147 Betonová T-stěna",
+   "glb": "F147_tWall.glb",
+   "json": "F147_tWall.json",
+   "render": "renders/F147.jpg"
+  },
+  {
+   "item": 148,
+   "id": "F148_tWallDamaged",
+   "asset_id": "setF.tWallDamaged",
+   "label": "F148 Poškozená T-stěna",
+   "glb": "F148_tWallDamaged.glb",
+   "json": "F148_tWallDamaged.json",
+   "render": "renders/F148.jpg"
+  },
+  {
+   "item": 149,
+   "id": "F149_fenceMesh",
+   "asset_id": "setF.fenceMesh",
+   "label": "F149 Rovný pletivový plot",
+   "glb": "F149_fenceMesh.glb",
+   "json": "F149_fenceMesh.json",
+   "render": "renders/F149.jpg"
+  },
+  {
+   "item": 150,
+   "id": "F150_fenceMeshCorner",
+   "asset_id": "setF.fenceMeshCorner",
+   "label": "F150 Rohový pletivový plot",
+   "glb": "F150_fenceMeshCorner.glb",
+   "json": "F150_fenceMeshCorner.json",
+   "render": "renders/F150.jpg"
+  },
+  {
+   "item": 151,
+   "id": "F151_fenceMeshGate",
+   "asset_id": "setF.fenceMeshGate",
+   "label": "F151 Pletivová brána",
+   "glb": "F151_fenceMeshGate.glb",
+   "json": "F151_fenceMeshGate.json",
+   "render": "renders/F151.jpg"
+  },
+  {
+   "item": 152,
+   "id": "F152_fenceSheet",
+   "asset_id": "setF.fenceSheet",
+   "label": "F152 Plechový plot",
+   "glb": "F152_fenceSheet.glb",
+   "json": "F152_fenceSheet.json",
+   "render": "renders/F152.jpg"
+  },
+  {
+   "item": 153,
+   "id": "F153_fenceSheetDamaged",
+   "asset_id": "setF.fenceSheetDamaged",
+   "label": "F153 Poškozený plechový plot",
+   "glb": "F153_fenceSheetDamaged.glb",
+   "json": "F153_fenceSheetDamaged.json",
+   "render": "renders/F153.jpg"
+  },
+  {
+   "item": 154,
+   "id": "F154_fenceWood",
+   "asset_id": "setF.fenceWood",
+   "label": "F154 Dřevěný plot",
+   "glb": "F154_fenceWood.glb",
+   "json": "F154_fenceWood.json",
+   "render": "renders/F154.jpg"
+  },
+  {
+   "item": 155,
+   "id": "F155_fenceWoodDamaged",
+   "asset_id": "setF.fenceWoodDamaged",
+   "label": "F155 Poškozený dřevěný plot",
+   "glb": "F155_fenceWoodDamaged.glb",
+   "json": "F155_fenceWoodDamaged.json",
+   "render": "renders/F155.jpg"
+  },
+  {
+   "item": 156,
+   "id": "F156_railing",
+   "asset_id": "setF.railing",
+   "label": "F156 Rovné kovové zábradlí",
+   "glb": "F156_railing.glb",
+   "json": "F156_railing.json",
+   "render": "renders/F156.jpg"
+  },
+  {
+   "item": 157,
+   "id": "F157_railingCorner",
+   "asset_id": "setF.railingCorner",
+   "label": "F157 Rohové kovové zábradlí",
+   "glb": "F157_railingCorner.glb",
+   "json": "F157_railingCorner.json",
+   "render": "renders/F157.jpg"
+  },
+  {
+   "item": 158,
+   "id": "F158_gateSlideIndustrial",
+   "asset_id": "setF.gateSlideIndustrial",
+   "label": "F158 Průmyslová posuvná brána",
+   "glb": "F158_gateSlideIndustrial.glb",
+   "json": "F158_gateSlideIndustrial.json",
+   "render": "renders/F158.jpg"
+  },
+  {
+   "item": 159,
+   "id": "F159_gateSlideMesh",
+   "asset_id": "setF.gateSlideMesh",
+   "label": "F159 Posuvná pletivová brána",
+   "glb": "F159_gateSlideMesh.glb",
+   "json": "F159_gateSlideMesh.json",
+   "render": "renders/F159.jpg"
+  },
+  {
+   "item": 160,
+   "id": "F160_gateSlideDamaged",
+   "asset_id": "setF.gateSlideDamaged",
+   "label": "F160 Poškozená posuvná brána",
+   "glb": "F160_gateSlideDamaged.glb",
+   "json": "F160_gateSlideDamaged.json",
+   "render": "renders/F160.jpg"
+  }
+ ]
+}

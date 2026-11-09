@@ -765,7 +765,7 @@ regC(83, 'verandaWide', 'Široká veranda', {
  * Zeď z plátků podél X: v každém plátku je otvor [lo, hi] (null = plná). Okraje otvoru dostanou
  * vnitřní zdivo (cihla) jako vzhled.
  */
-function brokenWall(W: number, h: number, th: number, slice: number, open: (xc: number) => [number, number] | null, mat: string, edgeMat: string, bricks: boolean, seed: number): Part[] {
+export function brokenWall(W: number, h: number, th: number, slice: number, open: (xc: number) => [number, number] | null, mat: string, edgeMat: string, bricks: boolean, seed: number): Part[] {
   const parts: Part[] = [];
   const r = rng(seed);
   const nS = Math.round(W / slice);

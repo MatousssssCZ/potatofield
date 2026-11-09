@@ -1,0 +1,252 @@
+{
+ "schema_version": "1.1",
+ "id": "F155_fenceWoodDamaged",
+ "asset_id": "setF.fenceWoodDamaged",
+ "label_cs": "F155 Poškozený dřevěný plot",
+ "category": "sada300_F",
+ "asset_kind": "building",
+ "footprint_m": [
+  4.1,
+  1.7877
+ ],
+ "height_m": 1.55,
+ "target_m": [
+  4,
+  1.3,
+  1.55
+ ],
+ "bounds_m": {
+  "min": [
+   -2.05,
+   0,
+   -1.6577
+  ],
+  "max": [
+   2.05,
+   1.55,
+   0.13
+  ]
+ },
+ "triangles": {
+  "LOD0": 360
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "wood",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    -2,
+    0.775,
+    0.08
+   ],
+   "size": [
+    0.1,
+    1.55,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0,
+    0.775,
+    0.08
+   ],
+   "size": [
+    0.1,
+    1.55,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    2,
+    0.775,
+    0.08
+   ],
+   "size": [
+    0.1,
+    1.55,
+    0.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -1.525,
+    0.75,
+    0.005
+   ],
+   "size": [
+    0.95,
+    1.5,
+    0.09
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    0.275,
+    0.75,
+    0.005
+   ],
+   "size": [
+    0.65,
+    1.5,
+    0.09
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    1,
+    0.375,
+    0.005
+   ],
+   "size": [
+    0.8,
+    0.75,
+    0.09
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    1.7,
+    0.75,
+    0.005
+   ],
+   "size": [
+    0.6,
+    1.5,
+    0.09
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -0.55,
+    0,
+    -1.4
+   ],
+   "note": "před plotem"
+  },
+  {
+   "p": [
+    -0.55,
+    0,
+    0
+   ],
+   "note": "mezera 1,0 m"
+  },
+  {
+   "p": [
+    -0.55,
+    0,
+    1.4
+   ],
+   "note": "za plotem"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Průchod 1,0 m (prkna i příčky chybí), kolize podle skutečných zbytků prken."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -0.55,
+    1,
+    -3
+   ],
+   "to": [
+    -0.55,
+    1,
+    3
+   ],
+   "expect_hit": false,
+   "note": "mezera"
+  },
+  {
+   "from": [
+    1,
+    1.2,
+    -3
+   ],
+   "to": [
+    1,
+    1.2,
+    3
+   ],
+   "expect_hit": false,
+   "note": "nad ulomenými prkny"
+  },
+  {
+   "from": [
+    1,
+    0.5,
+    -3
+   ],
+   "to": [
+    1,
+    0.5,
+    3
+   ],
+   "expect_hit": true,
+   "note": "spodek ulomené části kryje"
+  }
+ ]
+}

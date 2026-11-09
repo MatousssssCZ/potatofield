@@ -1,0 +1,179 @@
+{
+ "schema_version": "1.1",
+ "id": "F148_tWallDamaged",
+ "asset_id": "setF.tWallDamaged",
+ "label_cs": "F148 Poškozená T-stěna",
+ "category": "sada300_F",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.3992,
+  2.0429
+ ],
+ "height_m": 2.96,
+ "target_m": [
+  2,
+  1.2,
+  3
+ ],
+ "bounds_m": {
+  "min": [
+   -1,
+   -0.0972,
+   -1.4429
+  ],
+  "max": [
+   1.3992,
+   2.96,
+   0.6
+  ]
+ },
+ "triangles": {
+  "LOD0": 304
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "brick",
+  "concreteDark",
+  "concreteLight",
+  "metalSheetRust"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.15,
+    0
+   ],
+   "size": [
+    2,
+    0.3,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.4,
+    1.63,
+    0
+   ],
+   "size": [
+    1.2,
+    2.66,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.475,
+    1.25,
+    0
+   ],
+   "size": [
+    0.55,
+    1.9,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.875,
+    0.8,
+    0
+   ],
+   "size": [
+    0.25,
+    1,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.6,
+    0,
+    -1.2
+   ]
+  },
+  {
+   "p": [
+    1.6,
+    0,
+    -1.2
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Patka beze změny – stěna stojí stabilně."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -0.5,
+    2.5,
+    -3
+   ],
+   "to": [
+    -0.5,
+    2.5,
+    3
+   ],
+   "expect_hit": true,
+   "note": "levá část v plné výšce"
+  },
+  {
+   "from": [
+    0.9,
+    1.8,
+    -3
+   ],
+   "to": [
+    0.9,
+    1.8,
+    3
+   ],
+   "expect_hit": false,
+   "note": "odlomený roh"
+  }
+ ]
+}

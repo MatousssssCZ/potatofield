@@ -16,6 +16,7 @@ import './assets/set/modules';
 import './assets/set/entries';
 import './assets/set/shops';
 import './assets/set/industrial';
+import './assets/set/fences';
 
 export * from './registry';
 export * from './parts';

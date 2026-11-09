@@ -1,0 +1,209 @@
+{
+ "schema_version": "1.1",
+ "id": "F158_gateSlideIndustrial",
+ "asset_id": "setF.gateSlideIndustrial",
+ "label_cs": "F158 Průmyslová posuvná brána",
+ "category": "sada300_F",
+ "asset_kind": "building",
+ "footprint_m": [
+  10.3,
+  0.5971
+ ],
+ "height_m": 2.56,
+ "target_m": [
+  10.6,
+  1,
+  2.56
+ ],
+ "bounds_m": {
+  "min": [
+   -6.8,
+   -0.01,
+   -0.19
+  ],
+  "max": [
+   3.5,
+   2.56,
+   0.4071
+  ]
+ },
+ "triangles": {
+  "LOD0": 260
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteLight",
+  "gunMetal",
+  "metal",
+  "metalSheet",
+  "paintedMetal",
+  "plasterWarm",
+  "sandstone"
+ ],
+ "collision": [
+  {
+   "center": [
+    -4.55,
+    1,
+    0
+   ],
+   "size": [
+    4.5,
+    2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.9,
+    1,
+    0
+   ],
+   "size": [
+    1.2,
+    2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.15,
+    1.25,
+    0
+   ],
+   "size": [
+    0.3,
+    2.5,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    2.15,
+    1.25,
+    0
+   ],
+   "size": [
+    0.3,
+    2.5,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -4.45,
+    1.11,
+    0.35
+   ],
+   "size": [
+    4.12,
+    2.02,
+    0.04
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -2
+   ],
+   "note": "před bránou"
+  },
+  {
+   "p": [
+    0,
+    0,
+    0.3
+   ],
+   "note": "přes kolejnici"
+  },
+  {
+   "p": [
+    0,
+    0,
+    2.5
+   ],
+   "note": "za bránou"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Kolejnice 1,5 cm, bez kolize (pohyb nezachytí)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    0,
+    1.5,
+    -3
+   ],
+   "to": [
+    0,
+    1.5,
+    3
+   ],
+   "expect_hit": false,
+   "note": "průjezd volný"
+  },
+  {
+   "from": [
+    -4.5,
+    1.5,
+    -3
+   ],
+   "to": [
+    -4.5,
+    1.5,
+    3
+   ],
+   "expect_hit": true,
+   "note": "zeď + odsunuté křídlo"
+  }
+ ]
+}
