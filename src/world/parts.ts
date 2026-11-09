@@ -8,7 +8,7 @@ import { add, quatFromEuler, quatMul, rotate, scale, type Q, type V3 } from '../
  *
  * Souřadnice dílu jsou v lokálním prostoru objektu. `size` jsou plné rozměry.
  */
-export type PartShape = 'box' | 'wedge' | 'cylinder' | 'label' | 'blob' | 'card' | 'strip';
+export type PartShape = 'box' | 'wedge' | 'cylinder' | 'label' | 'blob' | 'card' | 'strip' | 'model';
 
 export interface Part {
   shape: PartShape;
@@ -44,6 +44,11 @@ export interface Part {
    * tloušťka dolů = size[1]. Kolize po úsecích (kvádry).
    */
   path?: [number, number, number][];
+  /**
+   * Model: ID sítě GLB (public/models/props/<id>.glb), vykreslí jen klient; `pos`/`size` = obálka
+   * modelu v lokálních souřadnicích (sám model se nijak neposouvá). Bez kolize – ta jsou zvláštní díly.
+   */
+  model?: string;
 }
 
 export type HitSurface = 'concrete' | 'plaster' | 'metal' | 'wood' | 'sand' | 'dirt' | 'asphalt' | 'brick' | 'flesh' | 'fabric';
@@ -91,7 +96,7 @@ export function partsToColliders(o: MapObject, parts: Part[]): ColliderDef[] {
   const { q, pos, s } = objectFrame(o);
   const out: ColliderDef[] = [];
   for (const part of parts) {
-    if (!part.collide || part.shape === 'label' || part.shape === 'card') continue;
+    if (!part.collide || part.shape === 'label' || part.shape === 'card' || part.shape === 'model') continue;
     if (part.shape === 'strip') {
       const path = part.path ?? [];
       for (let i = 0; i + 1 < path.length; i++) {

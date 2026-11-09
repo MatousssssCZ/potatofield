@@ -65,6 +65,10 @@ mapě** (assety, které mapa už obsahuje, s počtem). Klik vloží asset do st�
 | Uložení | automaticky po každé operaci (stav vlevo dole); **Ctrl+S** uloží hned |
 | Testovat | **F5** / tlačítko ▶ Testovat |
 
+- **Modely GLB (ChatGPT)**: kategorie katalogu s 22 modely z balíku FPS_Reference (domy se
+  zapuštěným vchodem, moduly fasád, zdi dvorů, palmy, keře, pytle, bedny, vrak, nádrž, klimatizace).
+  Vzhled je síť z GLB s našimi materiály, kolize a žebříky jsou z jejich JSON (platí i na serveru).
+  Další balík se přidá příkazem `node scripts/import-glb-props.mjs <složka>`.
 - **Katalog** (vlevo): klik vloží objekt doprostřed pohledu. Záložka **Scéna** = seznam objektů se
   skrytím (👁, jen editor) a zamčením (🔒).
 - **Vlastnosti** (vpravo): pozice, natočení, parametry generátoru s jednotkami a mezemi, materiál,

@@ -8,6 +8,7 @@ import './assets/cover';
 import './assets/nature';
 import './assets/town';
 import './assets/roads';
+import './assets/glbProps';
 
 export * from './registry';
 export * from './parts';

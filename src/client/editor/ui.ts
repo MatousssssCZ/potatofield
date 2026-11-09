@@ -9,6 +9,7 @@ import { renderMarkerInspector, renderScenarios, type GameUiState } from './uiGa
 const CATEGORY_LABELS: Record<AssetDef['category'], string> = {
   buildings: 'Budovy',
   nature: 'Příroda',
+  glb: 'Modely GLB (ChatGPT)',
   structures: 'Konstrukce',
   street: 'Ulice',
   cover: 'Kryty',

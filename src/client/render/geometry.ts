@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { Part } from '../../world/parts';
 import { tileOf } from './materials';
 import { blobRadius, icosphere } from '../../world/blob';
+import { modelMeshes } from './glbProps';
 
 /**
  * Převádí díly objektu na render geometrii v lokálním prostoru objektu.
@@ -32,6 +33,18 @@ class Builder {
     this.uv.push(uv[0], uv[1]);
     this.baseH.push(p.y);
     this.vcount++;
+  }
+  /** Hotová síť (model GLB): UV v metrech → děleno dlaždicí materiálu. */
+  mesh(pos: Float32Array, nrm: Float32Array, uv: Float32Array, index: Uint32Array, scale: number, tile: number) {
+    const b = this.vcount;
+    for (let i = 0; i < pos.length / 3; i++) {
+      this.pos.push(pos[i * 3] * scale, pos[i * 3 + 1] * scale, pos[i * 3 + 2] * scale);
+      this.nrm.push(nrm[i * 3], nrm[i * 3 + 1], nrm[i * 3 + 2]);
+      this.uv.push(uv[i * 2] / tile, uv[i * 2 + 1] / tile);
+      this.baseH.push(pos[i * 3 + 1] * scale);
+      this.vcount++;
+    }
+    for (const k of index) this.idx.push(b + k);
   }
   build(): THREE.BufferGeometry {
     const g = new THREE.BufferGeometry();
@@ -285,13 +298,27 @@ export interface ObjectGeometry {
 export function buildObjectGeometry(parts: Part[], scale = 1): ObjectGeometry {
   const builders = new Map<string, { b: Builder; cast: boolean }>();
   const labels: ObjectGeometry['labels'] = [];
-  for (const p of parts) {
+  for (let p of parts) {
     if (p.render === false) continue;
     if (p.shape === 'label') {
       labels.push({ text: p.text ?? '', style: p.material, matrix: partMatrix(p, scale).clone(), w: p.size[0], h: p.size[1] });
       continue;
     }
     const cast = p.castShadow !== false;
+    if (p.shape === 'model') {
+      const list = p.model ? modelMeshes(p.model) : undefined;
+      if (list) {
+        for (const m of list) {
+          const k = `${m.material}|${cast ? 1 : 0}`;
+          let e = builders.get(k);
+          if (!e) builders.set(k, (e = { b: new Builder(), cast }));
+          e.b.mesh(m.pos, m.nrm, m.uv, m.index, scale, tileOf(m.material));
+        }
+        continue;
+      }
+      // Model se nenačetl: obálka v materiálu „chybí“.
+      p = { ...p, shape: 'box', material: 'debugMissing' };
+    }
     const key = `${p.material}|${cast ? 1 : 0}`;
     let e = builders.get(key);
     if (!e) builders.set(key, (e = { b: new Builder(), cast }));
