@@ -1,0 +1,317 @@
+{
+ "schema_version": "1.1",
+ "id": "H199_vanSide",
+ "asset_id": "setH.vanSide",
+ "label_cs": "H199 Převrácená dodávka",
+ "category": "sada300_H",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.3644,
+  5.1797
+ ],
+ "height_m": 3.8868,
+ "target_m": [
+  2.3,
+  5.1,
+  2
+ ],
+ "bounds_m": {
+  "min": [
+   -2.4304,
+   0,
+   -2.544
+  ],
+  "max": [
+   -0.066,
+   3.8868,
+   2.6357
+  ]
+ },
+ "triangles": {
+  "LOD0": 400
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "burntMetal",
+  "gunMetal",
+  "metalSheetRust"
+ ],
+ "collision": [
+  {
+   "center": [
+    -0.425,
+    1.9434,
+    0
+   ],
+   "size": [
+    2,
+    0.25,
+    5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.4,
+    0.9684,
+    0.6
+   ],
+   "size": [
+    0.05,
+    1.7,
+    3.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.4,
+    2.9184,
+    0.6
+   ],
+   "size": [
+    0.05,
+    1.7,
+    3.8
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.125,
+    1.9434,
+    -1.265
+   ],
+   "size": [
+    1.9,
+    1.15,
+    0.07
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.825,
+    1.9434,
+    -1.9
+   ],
+   "size": [
+    2,
+    0.55,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.675,
+    0.9934,
+    -1.775
+   ],
+   "size": [
+    0.09,
+    0.09,
+    1.2748
+   ],
+   "rotX": -1.1247,
+   "rotY": 0,
+   "rotZ": 1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.675,
+    0.9934,
+    -1.3
+   ],
+   "size": [
+    0.08,
+    0.08,
+    1.15
+   ],
+   "rotX": -1.5708,
+   "rotY": 0,
+   "rotZ": 1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.675,
+    2.8934,
+    -1.775
+   ],
+   "size": [
+    0.09,
+    0.09,
+    1.2748
+   ],
+   "rotX": -1.1247,
+   "rotY": 0,
+   "rotZ": 1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.675,
+    2.8934,
+    -1.3
+   ],
+   "size": [
+    0.08,
+    0.08,
+    1.15
+   ],
+   "rotX": -1.5708,
+   "rotY": 0,
+   "rotZ": 1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -2.275,
+    1.9434,
+    -0.5
+   ],
+   "size": [
+    2,
+    0.05,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -2,
+    1.9434,
+    1.5
+   ],
+   "size": [
+    1.9,
+    0.05,
+    1.9
+   ],
+   "rotX": 0.3179,
+   "rotY": -0.0377,
+   "rotZ": 1.6848,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.375,
+    0.4734,
+    2.54
+   ],
+   "size": [
+    0.95,
+    1.65,
+    0.05
+   ],
+   "rotX": 0,
+   "rotY": -0.15,
+   "rotZ": 1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -1.375,
+    3.4134,
+    2.54
+   ],
+   "size": [
+    0.95,
+    1.65,
+    0.05
+   ],
+   "rotX": 0,
+   "rotY": 0.15,
+   "rotZ": 1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -2.2,
+    0,
+    -3
+   ]
+  },
+  {
+   "p": [
+    -2.2,
+    0,
+    3.4
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Kolize se otáčí s vozem (bok na zemi)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -3,
+    1,
+    0
+   ],
+   "to": [
+    0,
+    1,
+    0
+   ],
+   "expect_hit": true,
+   "note": "položená karoserie kryje"
+  }
+ ]
+}

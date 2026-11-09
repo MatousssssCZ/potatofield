@@ -1,0 +1,186 @@
+{
+ "section": "H",
+ "generated": "2026-11-09",
+ "models": [
+  {
+   "item": 191,
+   "id": "H191_sedanBurnt",
+   "asset_id": "setH.sedanBurnt",
+   "label": "H191 Ohořelý sedan",
+   "glb": "H191_sedanBurnt.glb",
+   "json": "H191_sedanBurnt.json",
+   "render": "renders/H191.jpg"
+  },
+  {
+   "item": 192,
+   "id": "H192_sedanAbandoned",
+   "asset_id": "setH.sedanAbandoned",
+   "label": "H192 Opuštěný sedan",
+   "glb": "H192_sedanAbandoned.glb",
+   "json": "H192_sedanAbandoned.json",
+   "render": "renders/H192.jpg"
+  },
+  {
+   "item": 193,
+   "id": "H193_sedanFlipped",
+   "asset_id": "setH.sedanFlipped",
+   "label": "H193 Převrácený sedan",
+   "glb": "H193_sedanFlipped.glb",
+   "json": "H193_sedanFlipped.json",
+   "render": "renders/H193.jpg"
+  },
+  {
+   "item": 194,
+   "id": "H194_smallBurnt",
+   "asset_id": "setH.smallBurnt",
+   "label": "H194 Ohořelé malé auto",
+   "glb": "H194_smallBurnt.glb",
+   "json": "H194_smallBurnt.json",
+   "render": "renders/H194.jpg"
+  },
+  {
+   "item": 195,
+   "id": "H195_smallCrashed",
+   "asset_id": "setH.smallCrashed",
+   "label": "H195 Havarované malé auto",
+   "glb": "H195_smallCrashed.glb",
+   "json": "H195_smallCrashed.json",
+   "render": "renders/H195.jpg"
+  },
+  {
+   "item": 196,
+   "id": "H196_pickupBurnt",
+   "asset_id": "setH.pickupBurnt",
+   "label": "H196 Ohořelý pickup (pilot)",
+   "glb": "H196_pickupBurnt.glb",
+   "json": "H196_pickupBurnt.json",
+   "render": "renders/H196.jpg"
+  },
+  {
+   "item": 197,
+   "id": "H197_pickupNoBed",
+   "asset_id": "setH.pickupNoBed",
+   "label": "H197 Pickup bez korby",
+   "glb": "H197_pickupNoBed.glb",
+   "json": "H197_pickupNoBed.json",
+   "render": "renders/H197.jpg"
+  },
+  {
+   "item": 198,
+   "id": "H198_vanBurnt",
+   "asset_id": "setH.vanBurnt",
+   "label": "H198 Ohořelá dodávka",
+   "glb": "H198_vanBurnt.glb",
+   "json": "H198_vanBurnt.json",
+   "render": "renders/H198.jpg"
+  },
+  {
+   "item": 199,
+   "id": "H199_vanSide",
+   "asset_id": "setH.vanSide",
+   "label": "H199 Převrácená dodávka",
+   "glb": "H199_vanSide.glb",
+   "json": "H199_vanSide.json",
+   "render": "renders/H199.jpg"
+  },
+  {
+   "item": 200,
+   "id": "H200_busWalkthrough",
+   "asset_id": "setH.busWalkthrough",
+   "label": "H200 Průchozí autobus",
+   "glb": "H200_busWalkthrough.glb",
+   "json": "H200_busWalkthrough.json",
+   "render": "renders/H200.jpg"
+  },
+  {
+   "item": 201,
+   "id": "H201_truckCanvas",
+   "asset_id": "setH.truckCanvas",
+   "label": "H201 Nákladní auto s plachtou",
+   "glb": "H201_truckCanvas.glb",
+   "json": "H201_truckCanvas.json",
+   "render": "renders/H201.jpg"
+  },
+  {
+   "item": 202,
+   "id": "H202_truckCanvasDamaged",
+   "asset_id": "setH.truckCanvasDamaged",
+   "label": "H202 Nákladní auto s poškozenou plachtou",
+   "glb": "H202_truckCanvasDamaged.glb",
+   "json": "H202_truckCanvasDamaged.json",
+   "render": "renders/H202.jpg"
+  },
+  {
+   "item": 203,
+   "id": "H203_tankerTruck",
+   "asset_id": "setH.tankerTruck",
+   "label": "H203 Silniční cisterna",
+   "glb": "H203_tankerTruck.glb",
+   "json": "H203_tankerTruck.json",
+   "render": "renders/H203.jpg"
+  },
+  {
+   "item": 204,
+   "id": "H204_tankNoTurret",
+   "asset_id": "setH.tankNoTurret",
+   "label": "H204 Tank s odtrženou věží",
+   "glb": "H204_tankNoTurret.glb",
+   "json": "H204_tankNoTurret.json",
+   "render": "renders/H204.jpg"
+  },
+  {
+   "item": 205,
+   "id": "H205_tankBrokenTrack",
+   "asset_id": "setH.tankBrokenTrack",
+   "label": "H205 Tank s poškozenými pásy",
+   "glb": "H205_tankBrokenTrack.glb",
+   "json": "H205_tankBrokenTrack.json",
+   "render": "renders/H205.jpg"
+  },
+  {
+   "item": 206,
+   "id": "H206_apcBurnt",
+   "asset_id": "setH.apcBurnt",
+   "label": "H206 Ohořelý obrněný transportér",
+   "glb": "H206_apcBurnt.glb",
+   "json": "H206_apcBurnt.json",
+   "render": "renders/H206.jpg"
+  },
+  {
+   "item": 207,
+   "id": "H207_apcSide",
+   "asset_id": "setH.apcSide",
+   "label": "H207 Převrácený transportér",
+   "glb": "H207_apcSide.glb",
+   "json": "H207_apcSide.json",
+   "render": "renders/H207.jpg"
+  },
+  {
+   "item": 208,
+   "id": "H208_heliWreck",
+   "asset_id": "setH.heliWreck",
+   "label": "H208 Vrak vrtulníku",
+   "glb": "H208_heliWreck.glb",
+   "json": "H208_heliWreck.json",
+   "render": "renders/H208.jpg"
+  },
+  {
+   "item": 209,
+   "id": "H209_motorbikeWreck",
+   "asset_id": "setH.motorbikeWreck",
+   "label": "H209 Vrak motorky",
+   "glb": "H209_motorbikeWreck.glb",
+   "json": "H209_motorbikeWreck.json",
+   "render": "renders/H209.jpg"
+  },
+  {
+   "item": 210,
+   "id": "H210_bicycleBroken",
+   "asset_id": "setH.bicycleBroken",
+   "label": "H210 Poškozené jízdní kolo",
+   "glb": "H210_bicycleBroken.glb",
+   "json": "H210_bicycleBroken.json",
+   "render": "renders/H210.jpg"
+  }
+ ]
+}

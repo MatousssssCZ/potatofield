@@ -73,6 +73,12 @@ Přízemní budovy zůstávají přístupné; jejich kolize se slučují (stejn�
   profil, poškozená, s pletivem), betonové bloky a kostka, protitankové ježky z úhelníků (velké
   průhledy), čtyři typy suti, barikády z vraků, stolů a skříní, betonové roury (průchozí),
   stohy beden, zeď z pneumatik a hliněné valy (nízký se dá vyjít, vysoký jen rampou).
+- **H191–H210 (vraky vozidel):** délka vozidla podél Z, předek −Z (jako pilotní pickup).
+  Sedany (ohořelý, opuštěný s chybějícími dveřmi a prázdnou pneumatikou, převrácený), malá auta
+  (ohořelé, s rozmačkanou přídí), pickupy (H196 podle pilotu, bez korby), dodávky (otevřený
+  nákladový prostor, na boku), průchozí autobus, nákladní auta s plachtou, cisterna, dva tanky
+  (otvor po věži, roztržený pás), dva transportéry (kola, na boku), vrtulník, motorka a kolo.
+  Okna jsou prázdné otvory (průstřel), spodek karoserie kryje; převrácené vraky otáčejí i kolize.
 
 ## Editor: magnet budov
 

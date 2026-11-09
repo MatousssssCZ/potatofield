@@ -1,0 +1,281 @@
+{
+ "schema_version": "1.1",
+ "id": "H196_pickupBurnt",
+ "asset_id": "setH.pickupBurnt",
+ "label_cs": "H196 Ohořelý pickup (pilot)",
+ "category": "sada300_H",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.93,
+  4.66
+ ],
+ "height_m": 1.95,
+ "target_m": [
+  2.36,
+  4.73,
+  1.985
+ ],
+ "bounds_m": {
+  "min": [
+   -0.965,
+   0.0632,
+   -2.36
+  ],
+  "max": [
+   0.965,
+   1.95,
+   2.3
+  ]
+ },
+ "triangles": {
+  "LOD0": 440
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "burntMetal",
+  "concreteDark",
+  "gunMetal",
+  "metalSheetRust"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    1.06,
+    -1.56
+   ],
+   "size": [
+    1.76,
+    0.06,
+    1.25
+   ],
+   "rotX": -0.119,
+   "rotY": -0.0042,
+   "rotZ": -0.0348,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.865,
+    1.54,
+    -0.7
+   ],
+   "size": [
+    0.08,
+    0.08,
+    0.7432
+   ],
+   "rotX": -1.1553,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.865,
+    1.54,
+    0.375
+   ],
+   "size": [
+    0.09,
+    0.09,
+    0.6818
+   ],
+   "rotX": 1.6442,
+   "rotY": 0,
+   "rotZ": -3.1416,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.865,
+    1.54,
+    -0.7
+   ],
+   "size": [
+    0.08,
+    0.08,
+    0.7432
+   ],
+   "rotX": -1.1553,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.865,
+    1.54,
+    0.375
+   ],
+   "size": [
+    0.09,
+    0.09,
+    0.6818
+   ],
+   "rotX": 1.6442,
+   "rotY": 0,
+   "rotZ": -3.1416,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.4,
+    -0.005
+   ],
+   "size": [
+    1.85,
+    0.8,
+    4.55
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    1.91,
+    -0.11
+   ],
+   "size": [
+    1.56,
+    0.08,
+    1.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.885,
+    1.02,
+    1.325
+   ],
+   "size": [
+    0.08,
+    0.52,
+    1.75
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.885,
+    1.02,
+    1.325
+   ],
+   "size": [
+    0.08,
+    0.52,
+    1.75
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    1.02,
+    2.16
+   ],
+   "size": [
+    1.85,
+    0.52,
+    0.08
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.8,
+    0,
+    -3
+   ]
+  },
+  {
+   "p": [
+    -1.8,
+    0,
+    3
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Podle pilotu wreck_pickup_a: rozměry a kolize (spodek 1,85 × 0,8 × 4,55 m, střecha 1,91 m, bočnice korby). Úprava: čitelnější deformace kapoty, sloupky kabiny, sedadla, ráfky bez pneumatik."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -3,
+    0.6,
+    1.3
+   ],
+   "to": [
+    0,
+    0.6,
+    1.3
+   ],
+   "expect_hit": true,
+   "note": "korba kryje"
+  },
+  {
+   "from": [
+    -3,
+    1.5,
+    -0.2
+   ],
+   "to": [
+    3,
+    1.5,
+    -0.2
+   ],
+   "expect_hit": false,
+   "note": "otevřená kabina průstřelná"
+  }
+ ]
+}

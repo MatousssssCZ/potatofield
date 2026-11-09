@@ -1,0 +1,197 @@
+{
+ "schema_version": "1.1",
+ "id": "H207_apcSide",
+ "asset_id": "setH.apcSide",
+ "label_cs": "H207 Převrácený transportér",
+ "category": "sada300_H",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.5075,
+  8.9514
+ ],
+ "height_m": 2.92,
+ "target_m": [
+  2.5,
+  8.2,
+  3
+ ],
+ "bounds_m": {
+  "min": [
+   -0.076,
+   -0.02,
+   -3.4914
+  ],
+  "max": [
+   2.4315,
+   2.92,
+   5.46
+  ]
+ },
+ "triangles": {
+  "LOD0": 580
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "burntMetal",
+  "concreteDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    1.1,
+    1.45,
+    0.45
+   ],
+   "size": [
+    2.9,
+    1,
+    6.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": -1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.85,
+    2.68,
+    0.4
+   ],
+   "size": [
+    0.08,
+    0.6,
+    5.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": -1.1208,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.85,
+    0.22,
+    0.4
+   ],
+   "size": [
+    0.08,
+    0.6,
+    5.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": -2.0208,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    2.12,
+    1.45,
+    0.7
+   ],
+   "size": [
+    2,
+    0.08,
+    5.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": -1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.15,
+    1.45,
+    -3
+   ],
+   "size": [
+    2.8,
+    0.1,
+    1.25
+   ],
+   "rotX": 0.75,
+   "rotY": 0,
+   "rotZ": -1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.32,
+    1.45,
+    4.15
+   ],
+   "size": [
+    1.5,
+    0.08,
+    1.45
+   ],
+   "rotX": -0.45,
+   "rotY": 0,
+   "rotZ": -1.5708,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -3.2,
+    0,
+    -4.2
+   ]
+  },
+  {
+   "p": [
+    -3.2,
+    0,
+    4.6
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Kolize se otáčí s vozem."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -4.5,
+    1.5,
+    0
+   ],
+   "to": [
+    3.5,
+    1.5,
+    0
+   ],
+   "expect_hit": true,
+   "note": "položená korba kryje"
+  }
+ ]
+}

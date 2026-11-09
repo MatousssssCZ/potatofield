@@ -1,0 +1,133 @@
+{
+ "schema_version": "1.1",
+ "id": "H209_motorbikeWreck",
+ "asset_id": "setH.motorbikeWreck",
+ "label_cs": "H209 Vrak motorky",
+ "category": "sada300_H",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.0442,
+  2.0307
+ ],
+ "height_m": 0.592,
+ "target_m": [
+  1,
+  2,
+  0.4
+ ],
+ "bounds_m": {
+  "min": [
+   -1.0417,
+   -0.0335,
+   -1.02
+  ],
+  "max": [
+   0.0025,
+   0.592,
+   1.0107
+  ]
+ },
+ "triangles": {
+  "LOD0": 308
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "gunMetal",
+  "gunPolymer",
+  "metal",
+  "paintedMetalRed",
+  "rubber"
+ ],
+ "collision": [
+  {
+   "center": [
+    -0.8473,
+    0.2673,
+    -0.15
+   ],
+   "size": [
+    0.32,
+    0.2,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 1.4908,
+   "kind": "box",
+   "surface": "metal"
+  },
+  {
+   "center": [
+    -0.4486,
+    0.2353,
+    0
+   ],
+   "size": [
+    0.3,
+    0.3,
+    0.4
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 1.4908,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.4984,
+    0.2393,
+    0
+   ],
+   "size": [
+    0.4,
+    1,
+    2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 1.4908,
+   "kind": "box",
+   "surface": "metal"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1.2,
+    0,
+    -1.4
+   ]
+  },
+  {
+   "p": [
+    -1.2,
+    0,
+    1.4
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Kabely vynechány. Nízká překážka (lze překročit skokem)."
+ ],
+ "tested_in_game": false
+}

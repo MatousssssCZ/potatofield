@@ -1,0 +1,100 @@
+{
+ "schema_version": "1.1",
+ "id": "H210_bicycleBroken",
+ "asset_id": "setH.bicycleBroken",
+ "label_cs": "H210 Poškozené jízdní kolo",
+ "category": "sada300_H",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.3023,
+  1.8062
+ ],
+ "height_m": 0.4029,
+ "target_m": [
+  1,
+  1.7,
+  0.2
+ ],
+ "bounds_m": {
+  "min": [
+   -1.0664,
+   -0.0173,
+   -0.8028
+  ],
+  "max": [
+   0.2359,
+   0.4029,
+   1.0035
+  ]
+ },
+ "triangles": {
+  "LOD0": 392
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "chainLink",
+  "gunPolymer",
+  "metal",
+  "paintedMetalBlue",
+  "rubber"
+ ],
+ "collision": [
+  {
+   "center": [
+    -0.4294,
+    0.1224,
+    0.1328
+   ],
+   "size": [
+    0.2,
+    0.9,
+    1.7
+   ],
+   "rotX": 0.2996,
+   "rotY": 0.0148,
+   "rotZ": 1.523,
+   "kind": "box",
+   "surface": "metal",
+   "blocks": "move"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -1,
+    0,
+    -1.2
+   ]
+  },
+  {
+   "p": [
+    -1,
+    0,
+    1.2
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Řetěz a dráty jen materiálem; kolize jen pro pohyb (nízká)."
+ ],
+ "tested_in_game": false
+}

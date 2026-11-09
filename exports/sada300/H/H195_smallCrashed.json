@@ -1,0 +1,251 @@
+{
+ "schema_version": "1.1",
+ "id": "H195_smallCrashed",
+ "asset_id": "setH.smallCrashed",
+ "label_cs": "H195 Havarované malé auto",
+ "category": "sada300_H",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.773,
+  3.1528
+ ],
+ "height_m": 1.4773,
+ "target_m": [
+  2.9,
+  1.62,
+  1.45
+ ],
+ "bounds_m": {
+  "min": [
+   -0.8969,
+   0.0028,
+   -1.3428
+  ],
+  "max": [
+   0.8761,
+   1.4773,
+   1.81
+  ]
+ },
+ "triangles": {
+  "LOD0": 764
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "concreteDark",
+  "containerSand",
+  "fabricSand",
+  "gunMetal",
+  "gunPolymer",
+  "metal",
+  "paintedMetalRed",
+  "rubber"
+ ],
+ "collision": [
+  {
+   "center": [
+    -0.7191,
+    1.155,
+    -0.125
+   ],
+   "size": [
+    0.08,
+    0.08,
+    0.8069
+   ],
+   "rotX": -0.8201,
+   "rotY": 0.0398,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.7191,
+    1.155,
+    0.91
+   ],
+   "size": [
+    0.08,
+    0.08,
+    0.5904
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": 1.5337,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.7191,
+    1.155,
+    1.685
+   ],
+   "size": [
+    0.1,
+    0.1,
+    0.5912
+   ],
+   "rotX": 1.6337,
+   "rotY": 0.6306,
+   "rotZ": -3.1416,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.7191,
+    1.155,
+    -0.125
+   ],
+   "size": [
+    0.08,
+    0.08,
+    0.8069
+   ],
+   "rotX": -0.8201,
+   "rotY": -0.0398,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.7191,
+    1.155,
+    0.91
+   ],
+   "size": [
+    0.08,
+    0.08,
+    0.5904
+   ],
+   "rotX": 0,
+   "rotY": -1.5708,
+   "rotZ": -1.5337,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.7191,
+    1.155,
+    1.685
+   ],
+   "size": [
+    0.1,
+    0.1,
+    0.5912
+   ],
+   "rotX": 1.6337,
+   "rotY": -0.6306,
+   "rotZ": 3.1416,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.57,
+    0.3
+   ],
+   "size": [
+    1.62,
+    0.58,
+    2.9
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    1.42,
+    0.91
+   ],
+   "size": [
+    1.48,
+    0.06,
+    1.58
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -2,
+    0,
+    -2.5
+   ]
+  },
+  {
+   "p": [
+    -2,
+    0,
+    2.5
+   ]
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Zavěšení nemodelováno; kolo jen natočené."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -2.81,
+    0.6,
+    0
+   ],
+   "to": [
+    0,
+    0.6,
+    0
+   ],
+   "expect_hit": true,
+   "note": "karoserie kryje vkleče"
+  },
+  {
+   "from": [
+    -2.81,
+    1.15,
+    0.45
+   ],
+   "to": [
+    2.81,
+    1.15,
+    0.45
+   ],
+   "expect_hit": false,
+   "note": "prázdná okna – průstřel kabinou"
+  }
+ ]
+}

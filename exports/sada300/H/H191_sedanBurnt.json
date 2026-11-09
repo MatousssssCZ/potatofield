@@ -1,0 +1,247 @@
+{
+ "schema_version": "1.1",
+ "id": "H191_sedanBurnt",
+ "asset_id": "setH.sedanBurnt",
+ "label_cs": "H191 Ohořelý sedan",
+ "category": "sada300_H",
+ "asset_kind": "building",
+ "footprint_m": [
+  1.8865,
+  4.62
+ ],
+ "height_m": 1.4498,
+ "target_m": [
+  4.5,
+  1.8,
+  1.4
+ ],
+ "bounds_m": {
+  "min": [
+   -0.92,
+   -0.0194,
+   -2.31
+  ],
+  "max": [
+   0.9665,
+   1.4498,
+   2.31
+  ]
+ },
+ "triangles": {
+  "LOD0": 600
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "burntMetal",
+  "concreteDark",
+  "gunMetal"
+ ],
+ "collision": [
+  {
+   "center": [
+    -0.8077,
+    1.15,
+    -0.725
+   ],
+   "size": [
+    0.08,
+    0.08,
+    0.7712
+   ],
+   "rotX": -0.7757,
+   "rotY": 0.0447,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.8077,
+    1.15,
+    0.225
+   ],
+   "size": [
+    0.08,
+    0.08,
+    0.5406
+   ],
+   "rotX": 0,
+   "rotY": 1.5708,
+   "rotZ": 1.5253,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -0.8077,
+    1.15,
+    1.1
+   ],
+   "size": [
+    0.1,
+    0.1,
+    0.6725
+   ],
+   "rotX": 2.2092,
+   "rotY": 0.0614,
+   "rotZ": -3.1416,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.8077,
+    1.15,
+    -0.725
+   ],
+   "size": [
+    0.08,
+    0.08,
+    0.7712
+   ],
+   "rotX": -0.7757,
+   "rotY": -0.0447,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.8077,
+    1.15,
+    0.225
+   ],
+   "size": [
+    0.08,
+    0.08,
+    0.5406
+   ],
+   "rotX": 0,
+   "rotY": -1.5708,
+   "rotZ": -1.5253,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0.8077,
+    1.15,
+    1.1
+   ],
+   "size": [
+    0.1,
+    0.1,
+    0.6725
+   ],
+   "rotX": 2.2092,
+   "rotY": -0.0614,
+   "rotZ": 3.1416,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.59,
+    0
+   ],
+   "size": [
+    1.8,
+    0.58,
+    4.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    1.39,
+    0.225
+   ],
+   "size": [
+    1.66,
+    0.06,
+    1.41
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": false,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -2.2,
+    0,
+    -3
+   ]
+  },
+  {
+   "p": [
+    -2.2,
+    0,
+    3
+   ],
+   "note": "podél vraku"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Saze řešené materiálem burntMetal; vrak je o 8 cm níž na ráfcích."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -2.9,
+    0.6,
+    0
+   ],
+   "to": [
+    0,
+    0.6,
+    0
+   ],
+   "expect_hit": true,
+   "note": "karoserie kryje vkleče"
+  },
+  {
+   "from": [
+    -2.9,
+    1.15,
+    -0.15
+   ],
+   "to": [
+    2.9,
+    1.15,
+    -0.15
+   ],
+   "expect_hit": false,
+   "note": "prázdná okna – průstřel kabinou"
+  }
+ ]
+}

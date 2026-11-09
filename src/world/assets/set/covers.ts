@@ -35,7 +35,11 @@ function bagRun(a: [number, number], b: [number, number], h: number, t: number, 
       if (u1 - u0 < 0.18) continue;
       const c = (u0 + u1) / 2, y = rh * (row + 0.5) - 0.01;
       // Vak: zploštělý, mírně přesahuje sousedy (stlačení), drobné natočení.
-      parts.push({ shape: 'blob', pos: [a[0] + ux * c, y, a[1] + uz * c], rot: [(r() - 0.5) * 0.08, yaw + (r() - 0.5) * 0.1, (r() - 0.5) * 0.08], size: [t * (0.95 + r() * 0.08), rh * 1.25, (u1 - u0) * 1.05], material: SAND, seed: Math.floor(r() * 9999), rough: 0.12, detail: 1 });
+      // Polštář: hranaté jádro (rovné boky, těsná spára) + měkký obal přes hrany.
+      const pos: V3 = [a[0] + ux * c, y, a[1] + uz * c], rot: V3 = [(r() - 0.5) * 0.06, yaw + (r() - 0.5) * 0.06, (r() - 0.5) * 0.06];
+      const l = u1 - u0 - 0.025;
+      parts.push({ shape: 'box', pos, rot, size: [t * 0.86, rh * 0.5, l * 0.86], material: SAND });
+      parts.push({ shape: 'blob', pos: [pos[0], y + rh * 0.04, pos[2]], rot, size: [t * 1.02, rh * 1.15, l * 1.04], material: SAND, seed: Math.floor(r() * 9999), rough: 0.08, detail: 1 });
     }
   }
   return parts;

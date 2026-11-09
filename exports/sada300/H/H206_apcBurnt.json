@@ -1,0 +1,205 @@
+{
+ "schema_version": "1.1",
+ "id": "H206_apcBurnt",
+ "asset_id": "setH.apcBurnt",
+ "label_cs": "H206 Ohořelý obrněný transportér",
+ "category": "sada300_H",
+ "asset_kind": "building",
+ "footprint_m": [
+  2.94,
+  8.97
+ ],
+ "height_m": 2.34,
+ "target_m": [
+  2.9,
+  8.2,
+  2.3
+ ],
+ "bounds_m": {
+  "min": [
+   -1.47,
+   -0.0314,
+   -3.4914
+  ],
+  "max": [
+   1.47,
+   2.34,
+   5.4786
+  ]
+ },
+ "triangles": {
+  "LOD0": 688
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "burntMetal",
+  "concreteDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    -1.23,
+    1.85,
+    0.4
+   ],
+   "size": [
+    0.08,
+    0.6,
+    5.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0.45,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.23,
+    1.85,
+    0.4
+   ],
+   "size": [
+    0.08,
+    0.6,
+    5.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": -0.45,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    1.15,
+    -3
+   ],
+   "size": [
+    2.8,
+    0.1,
+    1.25
+   ],
+   "rotX": 0.75,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    0.32,
+    4.15
+   ],
+   "size": [
+    1.5,
+    0.08,
+    1.45
+   ],
+   "rotX": -0.45,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    1.1,
+    0.45
+   ],
+   "size": [
+    2.9,
+    1,
+    6.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    2.12,
+    0.7
+   ],
+   "size": [
+    2,
+    0.08,
+    5.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [],
+ "route": [
+  {
+   "p": [
+    -2.4,
+    0,
+    -4.2
+   ]
+  },
+  {
+   "p": [
+    -2.4,
+    0,
+    4.6
+   ]
+  },
+  {
+   "p": [
+    0,
+    0,
+    5.2
+   ],
+   "note": "u sklopené rampy"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Výtvarný směr: kola (jednotně pro E/H). Prostor uvnitř je jen tmavý otvor (bez interiéru)."
+ ],
+ "tested_in_game": false,
+ "bullet_checks": [
+  {
+   "from": [
+    -3.5,
+    1.2,
+    0
+   ],
+   "to": [
+    0,
+    1.2,
+    0
+   ],
+   "expect_hit": true,
+   "note": "korba kryje stojícího"
+  }
+ ]
+}
