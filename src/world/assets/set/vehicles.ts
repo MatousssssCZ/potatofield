@@ -317,7 +317,7 @@ regH(200, 'busWalkthrough', 'Průchozí autobus', {
   describe: () => '10 × 2,5 × 3 m, chybějící přední a zadní dveře, schody 2 × 0,2 m, ulička 0,9 m, zbylá sedadla, prázdná okna',
   generate(_p, seed) {
     const r = rng(seed), parts: Part[] = [];
-    const W = 2.5, hw = W / 2, L = 10, z0 = -L / 2, z1 = L / 2, floor = 0.6, roof = 2.85, mat = 'containerSand';
+    const W = 2.5, hw = W / 2, L = 10, z0 = -L / 2, z1 = L / 2, floor = 0.6, roof = 2.85, mat = 'paintedMetalBlue';
     parts.push(bx(-hw, hw, 0.35, floor, z0, z1, mat), bx(-hw + 0.05, hw - 0.05, floor, floor + 0.02, z0, z1, 'rubber', false));
     // Boky: spodní plech do 1,3 m (kryt), sloupky po 1,25 m, okna prázdná; dveře na pravém boku (−X).
     const doors: [number, number][] = [[z0 + 0.3, z0 + 1.4], [z1 - 3.4, z1 - 2.3]];
@@ -380,7 +380,7 @@ function truckChassis(L: number, W: number, z0: number): Part[] {
 }
 
 function canvasTruck(seed: number, damaged: boolean): Part[] {
-  const r = rng(seed), W = 2.4, hw = W / 2, L = 7, z0 = -L / 2, mat = 'containerGreen', parts: Part[] = [];
+  const r = rng(seed), W = 2.4, hw = W / 2, L = 7, z0 = -L / 2, mat = 'paintedMetal', parts: Part[] = [];
   parts.push(...truckChassis(L, W, z0), ...truckCab(z0 + 0.2, W, mat, false));
   // Korba 4,6 m: podlaha 1,2 m, bočnice 0,6 m, oblouky a plachta; zadní plachta vyhrnutá.
   const b0 = z0 + 2.3, b1 = z0 + L;
@@ -466,7 +466,7 @@ regH(203, 'tankerTruck', 'Silniční cisterna', {
 // ---------------------------------------------------------------------------
 function tankHull(o: { burnt: boolean; brokenTrack?: boolean; hole?: boolean; seed: number }): Part[] {
   const r = rng(o.seed), parts: Part[] = [];
-  const L = 6.8, W = 3.4, hw = W / 2, mat = o.burnt ? BURNT : 'containerGreen';
+  const L = 6.8, W = 3.4, hw = W / 2, mat = o.burnt ? BURNT : 'paintedMetal';
   // Korba: vana mezi pásy, horní deska (s otvorem po věži), šikmý čelní plát.
   parts.push(bx(-1.15, 1.15, 0.45, 1.25, -L / 2 + 0.6, L / 2, mat));
   const top = 1.25, hr = 1.0;
@@ -511,7 +511,7 @@ regH(204, 'tankNoTurret', 'Tank s odtrženou věží', {
   generate(_p, seed) {
     const parts = tankHull({ burnt: true, hole: true, seed });
     // Věž vedle korby, překlopená na bok.
-    parts.push(...pose(turret(BURNT), [0.35, 1.9, 1.35], [3.7, 0, 1.0]));
+    parts.push(...pose(turret(BURNT), [0.22, 2.3, 0.18], [3.9, 0, 0.6]));
     return parts;
   },
 }, {
@@ -526,7 +526,7 @@ regH(205, 'tankBrokenTrack', 'Tank s poškozenými pásy', {
   describe: () => 'tank 6,8 m, pravý pás roztržený a ležící vedle, věž odsunutá šikmo na korbě, ohnuté blatníky',
   generate(_p, seed) {
     const parts = tankHull({ burnt: false, brokenTrack: true, seed });
-    parts.push(...pose(turret('containerGreen'), [0.06, 0.55, 0.04], [0.35, 1.38, 0.3], false));
+    parts.push(...pose(turret('paintedMetal'), [0.06, 0.55, 0.04], [0.35, 1.38, 0.3], false));
     return parts;
   },
 }, {
@@ -537,8 +537,8 @@ regH(205, 'tankBrokenTrack', 'Tank s poškozenými pásy', {
   notes: ['Pojezdová kola zjednodušená (6 válců na stranu), pás jako deska.'],
 });
 
-function apc(burnt: boolean, seed: number): Part[] {
-  const r = rng(seed), L = 7, W = 2.9, hw = W / 2, mat = burnt ? BURNT : 'containerSand', parts: Part[] = [];
+function apc(burnt: boolean, seed: number, onSide = false): Part[] {
+  const r = rng(seed), L = 7, W = 2.9, hw = W / 2, mat = burnt ? BURNT : 'paintedMetal', parts: Part[] = [];
   // Hranatá korba s šikmými boky nahoře a šikmou přídí.
   parts.push(bx(-hw, hw, 0.6, 1.6, -L / 2 + 0.9, L / 2, mat));
   for (const s of [-1, 1]) parts.push({ shape: 'box', pos: [s * (hw - 0.22), 1.85, 0.4], rot: [0, 0, -s * 0.45], size: [0.08, 0.6, L - 1.8], material: mat, collide: true });
@@ -546,11 +546,12 @@ function apc(burnt: boolean, seed: number): Part[] {
   parts.push({ shape: 'box', pos: [0, 1.15, -L / 2 + 0.5], rot: [0.75, 0, 0], size: [W - 0.1, 0.1, 1.25], material: mat, collide: true });
   // Otevřený zadní vstup: rampa sklopená k zemi, prázdný prostor (tmavý) za ní.
   parts.push(bx(-0.75, 0.75, 0.6, 1.9, L / 2 - 0.08, L / 2 + 0.002, DARK, false));
-  parts.push({ shape: 'box', pos: [0, 0.32, L / 2 + 0.65], rot: [-0.45, 0, 0], size: [1.5, 0.08, 1.45], material: mat, collide: true });
+  if (!onSide) parts.push({ shape: 'box', pos: [0, 0.32, L / 2 + 0.65], rot: [-0.45, 0, 0], size: [1.5, 0.08, 1.45], material: mat, collide: true });
+  // Na boku: rampa utržená, zadní otvor zůstává (tmavý).
   // 8 velkých kol, poklopy, prázdný držák zbraně (bez zbraně).
   for (let i = 0; i < 4; i++) for (const x of [-hw + 0.2, hw - 0.2]) parts.push(...wheel(x, 0.6, -L / 2 + 1.3 + i * 1.45, 0.6, 0.4, { burnt }));
   parts.push({ shape: 'cylinder', pos: [0, 2.25, -0.6], size: [0.9, 0.18, 0.9], material: mat }, { shape: 'cylinder', pos: [-0.6, 2.2, 1.6], size: [0.6, 0.08, 0.6], material: mat });
-  if (burnt) parts.push(...rubble(0, L / 2 + 1.5, 3, [1.2, 0.8], seed, 0.3).map((p) => ({ ...p, material: DARK })));
+  if (burnt && !onSide) parts.push(...rubble(0, L / 2 + 1.5, 3, [1.2, 0.8], seed, 0.3).map((p) => ({ ...p, material: DARK })));
   void r;
   return parts;
 }
@@ -571,7 +572,7 @@ regH(206, 'apcBurnt', 'Ohořelý obrněný transportér', {
 regH(207, 'apcSide', 'Převrácený transportér', {
   describe: () => 'transportér ležící na boku, viditelný podvozek a kola, poškozená střešní část',
   generate(_p, seed) {
-    const parts = apc(true, seed + 2).filter((p) => !(p.pos[1] > 2.0 && p.shape === 'cylinder'));
+    const parts = apc(true, seed + 2, true).filter((p) => !(p.pos[1] > 2.0 && p.shape === 'cylinder'));
     parts.push({ shape: 'box', pos: [0.5, 2.0, 1.2], rot: [0.3, 0, 0.5], size: [1.0, 0.06, 1.2], material: BURNT });
     return pose(parts, [0, 0, -Math.PI / 2]);
   },
@@ -589,7 +590,7 @@ regH(207, 'apcSide', 'Převrácený transportér', {
 regH(208, 'heliWreck', 'Vrak vrtulníku', {
   describe: () => 'trup 8 m (kabina + odlomená ocasní trubka vedle), tři velké listy rotoru na zemi, ližiny; kolize jen hlavních částí',
   generate(_p, seed) {
-    const r = rng(seed), mat = 'containerGreen', parts: Part[] = [];
+    const r = rng(seed), mat = 'paintedMetal', parts: Part[] = [];
     // Trup: kabina se zaobleným nosem, prázdná okna, otevřený boční vstup.
     parts.push(bx(-1.0, 1.0, 0.45, 2.3, -1.5, 2.2, mat), { shape: 'cylinder', pos: [0, 1.35, -1.6], rot: [Math.PI / 2, 0, 0], size: [2.0, 0.6, 1.8], material: mat, collide: true });
     parts.push(bx(-0.95, 0.95, 1.4, 2.25, -2.2, -1.8, 'burntMetal', false), bx(1.0, 1.005, 0.6, 2.0, -0.6, 1.0, DARK, false));
