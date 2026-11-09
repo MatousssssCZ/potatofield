@@ -8,7 +8,7 @@ import { add, quatFromEuler, quatMul, rotate, scale, type Q, type V3 } from '../
  *
  * Souřadnice dílu jsou v lokálním prostoru objektu. `size` jsou plné rozměry.
  */
-export type PartShape = 'box' | 'wedge' | 'cylinder' | 'label' | 'blob' | 'card' | 'strip' | 'model';
+export type PartShape = 'box' | 'wedge' | 'cylinder' | 'label' | 'blob' | 'card' | 'strip' | 'model' | 'frond';
 
 export interface Part {
   shape: PartShape;
@@ -49,6 +49,13 @@ export interface Part {
    * modelu v lokálních souřadnicích (sám model se nijak neposouvá). Bez kolize – ta jsou zvláštní díly.
    */
   model?: string;
+  /**
+   * List palmy ('frond'): žebro z počátku podél lokální +Y (délka size[1]), šířka size[0],
+   * prověšení konce k lokální +Z o `bend` m (ve světě dolů), lístky do „V“ pod úhlem `fold` (rad)
+   * a kroucení podél délky `twist` (rad). Jen vzhled.
+   */
+  fold?: number;
+  twist?: number;
 }
 
 export type HitSurface = 'concrete' | 'plaster' | 'metal' | 'wood' | 'sand' | 'dirt' | 'asphalt' | 'brick' | 'flesh' | 'fabric';
@@ -96,7 +103,7 @@ export function partsToColliders(o: MapObject, parts: Part[]): ColliderDef[] {
   const { q, pos, s } = objectFrame(o);
   const out: ColliderDef[] = [];
   for (const part of parts) {
-    if (!part.collide || part.shape === 'label' || part.shape === 'card' || part.shape === 'model') continue;
+    if (!part.collide || part.shape === 'label' || part.shape === 'card' || part.shape === 'model' || part.shape === 'frond') continue;
     if (part.shape === 'strip') {
       const path = part.path ?? [];
       for (let i = 0; i + 1 < path.length; i++) {

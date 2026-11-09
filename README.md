@@ -65,6 +65,14 @@ mapě** (assety, které mapa už obsahuje, s počtem). Klik vloží asset do st�
 | Uložení | automaticky po každé operaci (stav vlevo dole); **Ctrl+S** uloží hned |
 | Testovat | **F5** / tlačítko ▶ Testovat |
 
+- **Palmy** (Příroda): *Palma* (datlovník / štíhlá, výška, náklon, počet listů, převislost),
+  *Random palma* (každé vložení trochu jiná – výška, náklon a jeho směr, listy; „Míra rozdílů“ drží
+  rozptyl) a *Palma v záhonu* (čtvercová / kruhová obruba z vybraného materiálu, zemina, palma).
+- **Sázení palem** (záložka Terén → 🌴 Sázet palmy): tah štětcem vysází háj Random palem s
+  rozestupem (druh, průměrná výška, míra rozdílů); **Mazat palmy** je v kruhu odebere. Jeden tah =
+  jedna položka historie.
+- **Měřítko**: každý předmět bez rozměrových parametrů (rekvizity, modely GLB, budovy) má čtyři
+  oranžové kostky v rozích u země – tažením ven / dovnitř se zvětší / zmenší (nebo pole Měřítko).
 - **Modely GLB (ChatGPT)**: kategorie katalogu s 22 modely z balíku FPS_Reference (domy se
   zapuštěným vchodem, moduly fasád, zdi dvorů, palmy, keře, pytle, bedny, vrak, nádrž, klimatizace).
   Vzhled je síť z GLB s našimi materiály, kolize a žebříky jsou z jejich JSON (platí i na serveru).

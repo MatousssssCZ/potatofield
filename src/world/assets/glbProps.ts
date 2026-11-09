@@ -42,6 +42,7 @@ export function glbPropParts(d: GlbPropData): Part[] {
 }
 
 for (const d of GLB_PROPS) {
+  // Budovy a moduly jen v rozumném rozsahu (výška pater a dveří).
   const rigid = d.kind !== 'building' && d.kind !== 'module';
   const def: AssetDef = {
     assetId: `glb.${d.id}`,
@@ -51,7 +52,7 @@ for (const d of GLB_PROPS) {
     params: [],
     materials: [d.materials[0] ?? 'concrete'],
     defaultMaterial: d.materials[0] ?? 'concrete',
-    uniformScale: rigid ? { min: 0.5, max: 2 } : undefined,
+    uniformScale: rigid ? { min: 0.25, max: 4 } : { min: 0.5, max: 2 },
     generate: () => glbPropParts(d),
     describe: () => `${KIND_LABEL[d.kind] ?? d.kind}, ${(d.bounds[1][0] - d.bounds[0][0]).toFixed(1)} × ${(d.bounds[1][2] - d.bounds[0][2]).toFixed(1)} × ${(d.bounds[1][1] - d.bounds[0][1]).toFixed(1)} m, ${d.tris} trojúhelníků`,
   };

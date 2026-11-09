@@ -67,8 +67,14 @@ export interface AssetDef {
 
 const registry = new Map<string, AssetDef>();
 
+/** Výchozí rozsah jednotného měřítka předmětů bez rozměrových parametrů. */
+export const DEFAULT_SCALE = { min: 0.25, max: 4 };
+
 export function registerAsset(def: AssetDef) {
   if (registry.has(def.assetId)) throw new Error(`duplicitní asset ${def.assetId}`);
+  // Každý předmět jde zvětšit: bez rozměrových parametrů aspoň jednotným měřítkem
+  // (kreslené ulice a herní markery ne – mají vlastní tvar / velikost).
+  if (!def.sizeParams && !def.uniformScale && def.category !== 'markers' && !def.params.some((q) => q.type === 'points')) def.uniformScale = DEFAULT_SCALE;
   registry.set(def.assetId, def);
 }
 

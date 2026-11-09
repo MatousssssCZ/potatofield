@@ -246,6 +246,60 @@ function addCard(b: Builder, part: Part, scale: number) {
   }
 }
 
+/**
+ * List palmy: žebro po oblouku (prověšení k +Z roste s kvadrátem délky), dvě poloviny lístků
+ * zvednuté do „V“ (úhel se ke špičce zmenšuje) a mírně zkroucené. UV: u 0 levý okraj, 0,5 žebro, 1 pravý.
+ */
+function addFrond(b: Builder, part: Part, scale: number) {
+  const m = partMatrix(part, scale).clone();
+  const nm = _n.getNormalMatrix(m).clone();
+  const w = part.size[0] / 2, L = part.size[1], droop = part.bend ?? 0, fold = part.fold ?? 0.5, twist = part.twist ?? 0;
+  const seg = 8;
+  const rows: { c: THREE.Vector3; l: THREE.Vector3; r: THREE.Vector3; nl: THREE.Vector3; nr: THREE.Vector3; t: number }[] = [];
+  for (let i = 0; i <= seg; i++) {
+    const t = i / seg;
+    // Délka oblouku zhruba zachovaná: s rostoucím prověšením se žebro zkracuje podél +Y.
+    const y = L * t * (1 - 0.18 * Math.min(1, droop / Math.max(L, 0.01)) * t);
+    const z = droop * t * t;
+    const c = new THREE.Vector3(0, y, z);
+    const tan = new THREE.Vector3(0, L * (1 - 0.36 * Math.min(1, droop / Math.max(L, 0.01)) * t), 2 * droop * t).normalize();
+    // Boční osa (X) kroucená kolem tečny; „nahoru“ = −Z kolmo k tečně.
+    const up = new THREE.Vector3(0, tan.z, -tan.y);
+    const side = new THREE.Vector3(1, 0, 0).applyAxisAngle(tan, twist * t);
+    const upT = up.clone().applyAxisAngle(tan, twist * t);
+    const f = fold * (1 - 0.45 * t);
+    // Báze listu (řapík) je úzká, lístky naplno od ~12 % délky.
+    const wt = w * Math.min(1, 0.25 + t * 6);
+    const l = c.clone().addScaledVector(side, -wt * Math.cos(f)).addScaledVector(upT, wt * Math.sin(f));
+    const r = c.clone().addScaledVector(side, wt * Math.cos(f)).addScaledVector(upT, wt * Math.sin(f));
+    const nl = new THREE.Vector3().crossVectors(tan, l.clone().sub(c)).normalize();
+    const nr = new THREE.Vector3().crossVectors(r.clone().sub(c), tan).normalize();
+    // Obě poloviny mají normálu „nahoru“ (ke světlu), aby list nebyl z jedné strany tmavý.
+    if (nl.dot(upT) < 0) nl.negate();
+    if (nr.dot(upT) < 0) nr.negate();
+    rows.push({ c, l, r, nl, nr, t });
+  }
+  const W = (v: THREE.Vector3) => v.clone().applyMatrix4(m);
+  const N = (v: THREE.Vector3) => v.clone().applyMatrix3(nm).normalize();
+  for (const half of [0, 1] as const) {
+    const base = b.vcount;
+    for (const r of rows) {
+      const n = N(half ? r.nr : r.nl);
+      if (half === 0) {
+        b.vert(W(r.l), n, [0, r.t]);
+        b.vert(W(r.c), n, [0.5, r.t]);
+      } else {
+        b.vert(W(r.c), n, [0.5, r.t]);
+        b.vert(W(r.r), n, [1, r.t]);
+      }
+    }
+    for (let i = 0; i < seg; i++) {
+      const a = base + i * 2;
+      b.idx.push(a, a + 1, a + 3, a, a + 3, a + 2);
+    }
+  }
+}
+
 /** Pás podél lomené čáry: horní plocha, boky a čela. UV v metrech (u napříč, v podél). */
 function addStrip(b: Builder, part: Part, scale: number) {
   const path = part.path ?? [];
@@ -327,6 +381,7 @@ export function buildObjectGeometry(parts: Part[], scale = 1): ObjectGeometry {
     else if (p.shape === 'cylinder') addCylinder(e.b, p, scale);
     else if (p.shape === 'blob') addBlob(e.b, p, scale);
     else if (p.shape === 'card') addCard(e.b, p, scale);
+    else if (p.shape === 'frond') addFrond(e.b, p, scale);
     else if (p.shape === 'strip') addStrip(e.b, p, scale);
   }
   const byMaterial = new Map<string, { geometry: THREE.BufferGeometry; castShadow: boolean }>();

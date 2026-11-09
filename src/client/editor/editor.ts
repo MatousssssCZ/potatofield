@@ -6,6 +6,17 @@ import { buildObjectGeometry } from '../render/geometry';
 import type { WorldView } from '../render/worldView';
 import { cmds, type Command, type EditorDoc, type History } from './editorDoc';
 import { MarkerView, markerId } from './markers';
+export interface PlantBrush {
+  erase: boolean;
+  /** Rozestup palem (m). */
+  spacing: number;
+  kind: string;
+  height: number;
+  variance: number;
+}
+
+const isPalm = (assetId: string) => assetId.startsWith('nature.palm') || assetId.startsWith('glb.tree_palm');
+
 import { applyBrush, heightAt, readRegion, unionRegion, type Brush, type Region } from '../../world/terrain';
 
 export const TEST_SPAWN_ID = '__testSpawn';
@@ -25,6 +36,8 @@ interface HandleInfo {
   kind: 'rotate' | 'size' | 'uniform' | 'point' | 'addPoint';
   axis?: 'x' | 'y' | 'z';
   sign?: 1 | -1;
+  /** Jednotné měřítko: roh obálky u země (znaménka x, z). */
+  corner?: [number, number];
   index?: number;
 }
 
@@ -62,6 +75,12 @@ export class Editor {
   onTerrainPreview: () => void = () => {};
   private stroke: { snapshot: ReturnType<typeof readRegion>; full: number[]; dirt?: number[]; urban?: number[]; region: Region | null } | null = null;
   brushPoint: THREE.Vector3 | null = null;
+  /**
+   * Sázení palem štětcem (v režimu terénu místo úprav výšek): tah vysází palmy s rozestupem,
+   * každá je „Random palma“ s vlastním semínkem; `erase` palmy v kruhu maže.
+   */
+  plant: PlantBrush | null = null;
+  private plantStroke: { added: MapObject[]; removed: Set<string> } | null = null;
   private brushRing: THREE.Line;
   private pointerNdc = new THREE.Vector2(9, 9);
   /** Kreslení nové ulice: body ve světě, náhled. */
@@ -294,7 +313,8 @@ export class Editor {
     if (e.button !== 0) return;
     this.pointerNdc = this.ndc(e.clientX, e.clientY);
     if (this.terrainMode) {
-      this.beginStroke(e.shiftKey);
+      if (this.plant) this.beginPlant();
+      else this.beginStroke(e.shiftKey);
       return;
     }
     if (this.roadDraft) {
@@ -359,6 +379,10 @@ export class Editor {
     }
     if (e.button === 0 && this.stroke) {
       this.endStroke();
+      return;
+    }
+    if (e.button === 0 && this.plantStroke) {
+      this.endPlant();
       return;
     }
     if (e.button !== 0) return;
@@ -616,7 +640,9 @@ export class Editor {
         if (!def.sizeParams[axis]) continue;
         for (const sign of axis === 'y' ? ([1] as const) : ([1, -1] as const)) add(cube(), this.handleMat.size, { kind: 'size', axis, sign });
       }
-    } else if (def.uniformScale) add(cube(), this.handleMat.uniform, { kind: 'uniform', axis: 'y', sign: 1 });
+    } else if (def.uniformScale)
+      // Jednotné měřítko: čtyři rohy u země (vždy na očích, i u vysokých předmětů); tažení ven = větší.
+      for (const corner of [[1, 1], [1, -1], [-1, 1], [-1, -1]] as [number, number][]) add(cube(), this.handleMat.uniform, { kind: 'uniform', axis: 'x', sign: 1, corner });
     const ps = def.params.find((q) => q.type === 'points');
     if (ps) {
       const pts = parsePoints(String(resolveParams(def, o.params)[ps.key]));
@@ -663,7 +689,7 @@ export class Editor {
       } else if ((info.kind === 'size' || info.kind === 'uniform') && g && lb) {
         const lc = lb.getCenter(new THREE.Vector3());
         const local = lc.clone();
-        if (info.kind === 'uniform') local.set(lb.max.x, lb.max.y, lb.max.z);
+        if (info.kind === 'uniform') local.set(info.corner![0] > 0 ? lb.max.x : lb.min.x, lb.min.y + 0.2, info.corner![1] > 0 ? lb.max.z : lb.min.z);
         else local[info.axis!] = info.sign! > 0 ? lb.max[info.axis!] : lb.min[info.axis!];
         if (info.axis === 'y' && info.kind === 'size') local.y = lb.max.y + 0.15;
         c.position.copy(local.applyMatrix4(g.matrixWorld));
@@ -698,7 +724,7 @@ export class Editor {
         c.scale.setScalar(r);
       } else if (info.kind === 'point') c.scale.setScalar(k * 0.9);
       else if (info.kind === 'addPoint') c.scale.setScalar(k * 0.6);
-      else c.scale.setScalar(k * 1.1);
+      else c.scale.setScalar(k * 1.6);
     }
   }
 
@@ -787,8 +813,12 @@ export class Editor {
     const axis = info.axis!, sign = info.sign!;
     const uniform = info.kind === 'uniform';
     const local = new THREE.Vector3(axis === 'x' ? 1 : 0, axis === 'y' ? 1 : 0, axis === 'z' ? 1 : 0).multiplyScalar(sign);
-    const dir = uniform ? new THREE.Vector3(0, 1, 0) : local.applyQuaternion(g.quaternion).normalize();
-    const ext = (lb.max[axis] - lb.min[axis]) * g.scale.x;
+    // Jednotné měřítko: směr od paty předmětu k rohu (vodorovně), délka = vzdálenost paty od rohu.
+    const pivot = g.position.clone();
+    const toCorner = point.clone().sub(pivot).setY(0);
+    if (toCorner.lengthSq() < 0.01) toCorner.set(0.1, 0, 0);
+    const dir = uniform ? toCorner.clone().normalize() : local.applyQuaternion(g.quaternion).normalize();
+    const ext = uniform ? toCorner.length() : (lb.max[axis] - lb.min[axis]) * g.scale.x;
     const opp = sign > 0 ? lb.min[axis] : lb.max[axis];
     this.drag = { kind: 'size', id, axis, sign, origin: point.clone(), dir, ext: Math.max(0.05, ext), opp, f: 1, uniform };
     this.handles.visible = false;
@@ -1270,6 +1300,7 @@ export class Editor {
       this.brushRing.geometry.dispose();
       this.brushRing.geometry = new THREE.BufferGeometry().setFromPoints(pts);
     }
+    if (this.plantStroke && p) this.stepPlant(p, Math.min(dt, 0.1));
     if (this.stroke && p) {
       const r = applyBrush(t, this.brush, p.x, p.z, Math.min(dt, 0.1));
       this.stroke.region = unionRegion(this.stroke.region, r);
@@ -1291,7 +1322,78 @@ export class Editor {
   }
 
   get stroking() {
-    return this.stroke !== null;
+    return this.stroke !== null || this.plantStroke !== null;
+  }
+
+  // ---------------- sázení palem ----------------
+
+  private beginPlant() {
+    if (!this.terrainHit()) return;
+    this.plantStroke = { added: [], removed: new Set() };
+  }
+
+  /** Jeden krok tahu: pár náhodných pokusů v kruhu, přijmout jen s rozestupem od ostatních palem. */
+  private stepPlant(p: THREE.Vector3, dt: number) {
+    const pl = this.plant!, st = this.plantStroke!;
+    const R = this.brush.radius;
+    const t = this.ed.doc.terrain;
+    if (pl.erase) {
+      for (const o of this.ed.doc.objects) {
+        if (!isPalm(o.assetId) || st.removed.has(o.id)) continue;
+        if (Math.hypot(o.transform.position[0] - p.x, o.transform.position[2] - p.z) > R) continue;
+        st.removed.add(o.id);
+        const g = this.world.objects.get(o.id);
+        if (g) g.visible = false;
+      }
+      return;
+    }
+    const def = getAsset('nature.palmRandom')!;
+    const sp = Math.max(1, pl.spacing);
+    // Hustota ~ plocha / rozestup² za ~0,7 s tahu (víc pokusů než míst – většina se odmítne).
+    const tries = Math.min(40, Math.ceil(((Math.PI * R * R) / (sp * sp)) * dt * 4) + 1);
+    const others = (): [number, number][] => [
+      ...this.ed.doc.objects.filter((o) => isPalm(o.assetId)).map((o) => [o.transform.position[0], o.transform.position[2]] as [number, number]),
+      ...st.added.map((o) => [o.transform.position[0], o.transform.position[2]] as [number, number]),
+    ];
+    let near = others();
+    for (let i = 0; i < tries; i++) {
+      const a = Math.random() * Math.PI * 2, rr = Math.sqrt(Math.random()) * R;
+      const x = p.x + Math.cos(a) * rr, z = p.z + Math.sin(a) * rr;
+      // Lehce nepravidelný rozestup (0,8–1,2×), ať háj nepůsobí jako mřížka.
+      const need = sp * (0.8 + Math.random() * 0.4);
+      if (near.some(([ox, oz]) => Math.hypot(ox - x, oz - z) < need)) continue;
+      const y = heightAt(t, x, z) ?? p.y;
+      const o: MapObject = {
+        id: this.ed.newId(),
+        assetId: def.assetId,
+        generatorVersion: def.generatorVersion,
+        transform: { position: [r4(x), r4(y), r4(z)], rotation: [0, r4(Math.random() * Math.PI * 2), 0] },
+        params: resolveParams(def, { kind: pl.kind, height: pl.height, variance: pl.variance }),
+        seed: (Math.random() * 0xffffffff) >>> 0,
+        material: def.defaultMaterial,
+      };
+      // newId počítá s objekty v dokumentu – zajistit unikátnost i v rámci tahu.
+      while (st.added.some((q) => q.id === o.id) || this.ed.getObject(o.id)) o.id = this.ed.newId() + '_' + st.added.length;
+      st.added.push(o);
+      near = [...near, [x, z]];
+      this.world.addObject(generateObject(o, t, this.ed.doc.objects));
+    }
+  }
+
+  private endPlant() {
+    const st = this.plantStroke;
+    this.plantStroke = null;
+    if (!st) return;
+    if (st.removed.size) {
+      this.history.execute(cmds.remove(this.ed, [...st.removed], `Smazat palmy (${st.removed.size})`));
+      this.onToast(`Smazáno palem: ${st.removed.size}`);
+    }
+    if (st.added.length) {
+      // Náhled odebrat – vložení přes historii objekty vygeneruje znovu (a jde vrátit jedním Ctrl+Z).
+      for (const o of st.added) this.world.removeObject(o.id);
+      this.history.execute(cmds.insert(this.ed, st.added, `Vysadit palmy (${st.added.length})`));
+      this.onToast(`Vysazeno palem: ${st.added.length}`);
+    }
   }
 
   dispose() {

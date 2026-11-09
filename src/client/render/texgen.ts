@@ -471,22 +471,35 @@ function crown(seed: number, base: string, dark: string, light: string): Recipe 
 }
 
 /** Palmový list (alfa): řapík u báze, středové žebro, šikmé lístky zužující se ke špičce. */
-function palmFrond(seed: number): Recipe {
-  const g = hex('#8a9a48'), dry = hex('#b29a5e'), rib = hex('#a49e6a');
+/**
+ * List palmy (zpeřený): u napříč (0,5 = žebro), v podél (0 báze → 1 špička). Lístky šikmo ke špičce,
+ * nejdelší ve středu listu, mezi nimi mezery (alfa); každý lístek má světlejší přehyb a vlastní odstín.
+ */
+function palmFrond(seed: number, green: string, dry: string, rib: string, dryAmt = 0.35): Recipe {
+  const g = hex(green), d = hex(dry), rb = hex(rib);
+  const N = 28; // lístků na polovinu listu
   return (u, v) => {
-    const x = Math.abs(u - 0.5) * 2; // 0 žebro, 1 okraj karty
-    const env = v < 0.14 ? 0 : Math.pow(Math.sin(Math.PI * Math.min(1, (v - 0.14) / 0.86)), 0.55) * (1 - 0.25 * v);
-    const ribW = 0.05 * (1 - v * 0.7);
+    const side = u < 0.5 ? 0 : 1;
+    const x = Math.abs(u - 0.5) * 2; // 0 žebro, 1 okraj
+    const ribW = 0.035 * (1 - v * 0.75) + 0.008;
     const isRib = x < ribW ? 1 : 0;
-    const k = mod(v * 16 - x * 5 + (u < 0.5 ? 0.37 : 0), 1);
-    const leaflet = k < 0.72 ? 1 : 0;
-    const tipFray = fbm(u, v, 12, 3, seed) * 0.25;
-    const inLeaf = x < env * (1 - tipFray) ? leaflet : 0;
+    // Obálka: řapík bez lístků, pak plný list, ke špičce kratší lístky.
+    const env = v < 0.1 ? 0 : Math.pow(Math.sin(Math.PI * Math.min(1, (v - 0.1) / 0.92)), 0.45) * (1 - 0.2 * v);
+    const kk = v * N - x * 3.6 + side * 0.5;
+    const idx = Math.floor(kk), kf = kk - idx;
+    const h = hash2(idx, side, seed);
+    const len = env * (0.86 + h * 0.14);
+    const xr = x / Math.max(0.01, len);
+    // Lístek: úzký pruh, ke konci se zužuje do špičky.
+    const wdt = 0.7 * (1 - 0.75 * xr * xr);
+    const inLeaf = x > ribW * 0.6 && xr < 1 && kf < wdt ? 1 : 0;
     const a = Math.max(isRib, inLeaf);
     const n = fbm(u, v, 8, 3, seed + 4);
-    let c = mixc(g, dry, smooth(0.55, 0.85, n) * 0.6 + smooth(0.6, 1, x / Math.max(0.01, env)) * 0.35);
-    c = isRib ? rib : mulc(c, 0.8 + (1 - Math.abs(k - 0.31) * 3) * 0.25);
-    return { c, h: 0.5 + inLeaf * 0.2 + isRib * 0.3, r: 0.7, m: 0, ao: 1, a };
+    const crease = 1 - Math.abs(kf / Math.max(0.01, wdt) - 0.5) * 2; // 1 = přehyb uprostřed lístku
+    let c = mixc(g, d, clamp01(smooth(0.55, 0.9, n) * dryAmt + smooth(0.75, 1, xr) * 0.45 + (h > 0.85 ? 0.35 : 0)));
+    c = mulc(c, 0.78 + crease * 0.3 + (h - 0.5) * 0.16);
+    if (isRib) c = mulc(rb, 0.9 + n * 0.2);
+    return { c, h: 0.4 + inLeaf * crease * 0.4 + isRib * 0.5, r: 0.72, m: 0, ao: 0.85 + crease * 0.15, a };
   };
 }
 
@@ -505,7 +518,7 @@ function bark(seed: number, base: string): Recipe {
 
 /** Kmen palmy: řady šupin po opadaných listech. */
 function palmBark(seed: number): Recipe {
-  const b = hex('#7d6a50'), d = hex('#4e4030');
+  const b = hex('#9a8566'), d = hex('#5e4e3a');
   return (u, v) => {
     const row = v * 10;
     const ri = Math.floor(row), rf = row - ri;
@@ -515,6 +528,28 @@ function palmBark(seed: number): Recipe {
     const n = fbm(u, v, 6, 4, seed);
     const c = mixc(d, b, clamp01(scale + n * 0.3));
     return { c, h: scale * 0.8 + n * 0.2, r: 0.95, m: 0, ao: 0.5 + scale * 0.5 };
+  };
+}
+
+/** Kmen datlovníku: kosočtverečné báze opadaných listů (vláknité, s tmavými spárami). */
+function palmBarkDate(seed: number): Recipe {
+  const b = hex('#a08a66'), d = hex('#5a4835'), f = hex('#c2a87c');
+  return (u, v) => {
+    // Mírně zvlněná mřížka (báze listů nejsou úplně pravidelné).
+    const wv = (fbm(u, v, 4, 2, seed + 9) - 0.5) * 0.6;
+    const p = u * 9 + wv, q = v * 11;
+    const a = p + q, c = p - q;
+    const ai = Math.floor(a), ci = Math.floor(c);
+    const af = a - ai, cf = c - ci;
+    // Vzdálenost k okraji buňky; báze listu přečnívá dolů (spodní okraj světlý a vystouplý).
+    const edge = Math.min(af, 1 - af, cf, 1 - cf) * 2;
+    const lower = clamp01((af + cf) - 1); // spodní polovina buňky
+    const h0 = hash2(ai, ci, seed);
+    const fib = fbm(u * 3, v * 0.6, 24, 2, seed + 3);
+    const scale = smooth(0.0, 0.35, edge);
+    let c0 = mixc(d, mixc(b, f, lower * 0.6 + h0 * 0.25), scale);
+    c0 = mulc(c0, 0.85 + fib * 0.3);
+    return { c: c0, h: scale * (0.6 + lower * 0.4) + fib * 0.15, r: 0.95, m: 0, ao: 0.45 + scale * 0.55 };
   };
 }
 
@@ -619,9 +654,12 @@ export const RECIPES: Record<string, { recipe: () => Recipe; normalStrength: num
   leafDry: { recipe: () => leafCard(451, '#9a8a55', '#5a4c2c', '#c2ad72'), normalStrength: 2 },
   crownOlive: { recipe: () => crown(461, '#7a845c', '#3a412a', '#a6ac82'), normalStrength: 4 },
   crownGreen: { recipe: () => crown(471, '#56702f', '#25331a', '#86a04c'), normalStrength: 4 },
-  palmFrond: { recipe: () => palmFrond(481), normalStrength: 2 },
+  palmFrond: { recipe: () => palmFrond(481, '#6f8a36', '#b0a056', '#b9b27a'), normalStrength: 2 },
+  palmFrondDate: { recipe: () => palmFrond(483, '#7f9258', '#a9a06a', '#c2b98a', 0.25), normalStrength: 2 },
+  palmFrondDry: { recipe: () => palmFrond(487, '#9a7a48', '#6d5434', '#a88d5e', 0.8), normalStrength: 2 },
   bark: { recipe: () => bark(491, '#6e604d'), normalStrength: 5 },
   palmBark: { recipe: () => palmBark(501), normalStrength: 5 },
+  palmBarkDate: { recipe: () => palmBarkDate(503), normalStrength: 6 },
   rock: { recipe: () => rock(511, '#9b9282'), normalStrength: 4 },
   rockWarm: { recipe: () => rock(521, '#a8916f'), normalStrength: 4 },
   stoneWall: { recipe: () => stoneWall(531), normalStrength: 5 },

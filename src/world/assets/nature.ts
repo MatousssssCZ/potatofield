@@ -72,6 +72,122 @@ export function foliage(center: [number, number, number], size: [number, number,
   return out;
 }
 
+export type PalmKind = 'date' | 'slender';
+
+export interface PalmSpec {
+  kind: PalmKind;
+  /** Výška kmene (m). */
+  height: number;
+  /** Náklon kmene (rad) a jeho směr (rad, kolem svislé osy). */
+  lean: number;
+  leanDir: number;
+  /** Počet zelených listů. */
+  fronds: number;
+  /** Převislost listů 0 (tuhé, vzhůru) – 1 (silně převislé). */
+  droop: number;
+  /** Suché visící listy pod korunou. */
+  dead: boolean;
+  /** Výška paty kmene (záhon). */
+  base?: number;
+}
+
+/**
+ * Palma: kmen po oblouku (náklon roste nahoru), pod korunou zbytky řapíků, koruna z listů
+ * ve fylotaxi (zlatý úhel): mladé listy vzhůru a kratší, starší delší a obloukem dolů,
+ * nejstarší suché visí. Datlovník = silný kmen s kosočtverečnými bázemi, hustá kulovitá
+ * koruna šedozelených tuhých listů; štíhlá palma = tenký prohnutý kmen, méně širších převislých listů.
+ */
+export function palmParts(sp: PalmSpec, seed: number): Part[] {
+  const r = rng(seed);
+  const date = sp.kind === 'date';
+  const H = sp.height, y0 = sp.base ?? 0;
+  const bark = date ? 'palmBarkDate' : 'palmBark';
+  const parts: Part[] = [];
+  const dx = Math.cos(sp.leanDir), dz = Math.sin(sp.leanDir);
+  const seg = 8;
+  const pts: [number, number, number][] = [];
+  const wob = (r() - 0.5) * 0.5;
+  for (let i = 0; i <= seg; i++) {
+    const t = i / seg;
+    // Štíhlá palma se prohýbá víc (esovitě), datlovník roste skoro rovně.
+    const off = Math.sin(sp.lean) * H * Math.pow(t, date ? 1.8 : 1.5) * 0.9;
+    const side = Math.sin(t * Math.PI) * wob * (date ? 0.1 : 0.35);
+    pts.push([dx * off - dz * side, y0 + H * t, dz * off + dx * side]);
+  }
+  const d0 = date ? 0.72 : 0.4, d1 = date ? 0.56 : 0.26;
+  for (let i = 0; i < seg; i++) {
+    const t0 = i / seg, t1 = (i + 1) / seg;
+    // Báze kmene rozšířená, jinak plynulé zúžení.
+    const w = (t: number) => d0 + (d1 - d0) * t + (t < 0.15 ? (0.15 - t) * (date ? 1.4 : 1.0) : 0);
+    parts.push(limb(pts[i], pts[i + 1], w(t0) + 0.01, w(t1), bark, t0 < 0.6));
+  }
+  parts.push({ shape: 'cylinder', pos: [pts[0][0], y0 + 0.15, pts[0][2]], size: [d0 * 1.45, 0.3, d0 * 1.45], taper: 0.7, material: bark });
+  const T = pts[seg];
+  const P = pts[seg - 1];
+  const up = [T[0] - P[0], T[1] - P[1], T[2] - P[2]];
+  const ul = Math.hypot(up[0], up[1], up[2]);
+  const at = (k: number): [number, number, number] => [T[0] + (up[0] / ul) * k, T[1] + (up[1] / ul) * k, T[2] + (up[2] / ul) * k];
+  // Hlava: krček z bází listů (zužuje se nahoru) a pahýly starých řapíků.
+  parts.push(limb(at(-0.7), at(0.35), d1 * 1.25, d1 * 0.55, bark));
+  const stubs = date ? 16 : 8;
+  for (let i = 0; i < stubs; i++) {
+    const az = i * 2.39996 + r() * 0.3;
+    const h = -0.15 - (i / stubs) * (date ? 0.9 : 0.5);
+    const a = at(h);
+    const L = (date ? 0.45 : 0.3) + r() * 0.15;
+    const el = -0.2 - r() * 0.5;
+    const b: [number, number, number] = [a[0] + Math.sin(az) * Math.cos(el) * L, a[1] + Math.sin(el) * L, a[2] + Math.cos(az) * Math.cos(el) * L];
+    parts.push(limb(a, b, date ? 0.16 : 0.1, 0.05, bark));
+  }
+  // Listy.
+  const F = Math.max(4, Math.round(sp.fronds));
+  const Lf = (date ? 3.0 : 3.4) + H * (date ? 0.13 : 0.16);
+  const droop = Math.max(0, Math.min(1, sp.droop));
+  const greens = date ? ['palmFrondDate', 'palmFrondDate', 'palmFrondDate', 'palmFrond'] : ['palmFrond', 'palmFrond', 'palmFrond', 'palmFrondDate'];
+  for (let i = 0; i < F; i++) {
+    const age = (i + r() * 0.6) / F; // 0 nejmladší (střed koruny) → 1 nejstarší
+    const az = i * 2.39996 + (r() - 0.5) * 0.35;
+    const el = (date ? 1.2 : 1.0) - age * (date ? 1.75 : 1.35) + (r() - 0.5) * 0.3;
+    const L = Lf * (0.6 + 0.4 * Math.min(1, age * 1.6)) * (0.9 + r() * 0.2);
+    const sag = L * (0.08 + (0.2 + 0.6 * droop) * Math.pow(age, 0.7)) * (0.85 + r() * 0.3) * (date ? 1 : 1.35);
+    const a = at(-0.05 - age * (date ? 0.45 : 0.3));
+    const out = 0.08 + age * 0.12;
+    parts.push({
+      shape: 'frond',
+      pos: [a[0] + Math.sin(az) * out, a[1], a[2] + Math.cos(az) * out],
+      rot: eulerYXZ(az, Math.PI / 2 - el, 0),
+      size: [(date ? 1.35 : 1.45) * (0.85 + r() * 0.3), L, 0],
+      bend: sag,
+      fold: (date ? 0.8 : 0.5) * (1 - age * 0.35),
+      twist: (r() - 0.5) * 0.8,
+      material: greens[Math.floor(r() * greens.length)],
+    });
+  }
+  if (sp.dead) {
+    const D = Math.round(F * (date ? 0.22 : 0.3));
+    for (let i = 0; i < D; i++) {
+      const az = r() * Math.PI * 2;
+      const a = at(-0.5 - r() * 0.5);
+      parts.push({
+        shape: 'frond',
+        pos: [a[0] + Math.sin(az) * 0.2, a[1], a[2] + Math.cos(az) * 0.2],
+        rot: eulerYXZ(az, Math.PI / 2 + 1.15 + r() * 0.3, 0),
+        size: [0.8, Lf * (0.6 + r() * 0.25), 0],
+        bend: 0.15,
+        fold: 0.25,
+        twist: (r() - 0.5) * 1.2,
+        material: 'palmFrondDry',
+      });
+    }
+  }
+  return parts;
+}
+
+const KIND_OPTIONS = [
+  { value: 'date', label: 'Datlovník (silný kmen, hustá koruna)' },
+  { value: 'slender', label: 'Štíhlá palma (prohnutý kmen, převislé listy)' },
+];
+
 registerAsset({
   assetId: 'nature.palm',
   label: 'Palma',
@@ -79,47 +195,101 @@ registerAsset({
   generatorVersion: 1,
   sizeParams: { y: 'height' },
   params: [
-    { key: 'height', label: 'Výška', type: 'number', min: 4, max: 15, step: 0.5, unit: 'm', default: 9 },
-    { key: 'lean', label: 'Náklon', type: 'number', min: 0, max: 30, step: 1, unit: '°', default: 8 },
-    { key: 'fronds', label: 'Počet listů', type: 'int', min: 6, max: 18, default: 13 },
+    { key: 'kind', label: 'Druh', type: 'enum', default: 'date', options: KIND_OPTIONS },
+    { key: 'height', label: 'Výška kmene', type: 'number', min: 2, max: 16, step: 0.5, unit: 'm', default: 7 },
+    { key: 'lean', label: 'Náklon', type: 'number', min: 0, max: 35, step: 1, unit: '°', default: 6 },
+    { key: 'fronds', label: 'Počet listů', type: 'int', min: 8, max: 48, default: 30 },
+    { key: 'droop', label: 'Převislost listů', type: 'number', min: 0, max: 1, step: 0.05, default: 0.5 },
     { key: 'dead', label: 'Suché visící listy', type: 'bool', default: true },
   ],
-  materials: ['palmBark'],
-  defaultMaterial: 'palmBark',
-  describe: (p) => `kmen ${n(p, 'height').toFixed(1)} m, koruna ⌀ ~${(n(p, 'height') * 0.55 + 2).toFixed(0)} m`,
+  materials: ['palmBarkDate'],
+  defaultMaterial: 'palmBarkDate',
+  describe: (p) => `kmen ${n(p, 'height').toFixed(1)} m, ${n(p, 'fronds')} listů`,
+  generate(p, seed) {
+    return palmParts({ kind: p.kind as PalmKind, height: n(p, 'height'), lean: (n(p, 'lean') * Math.PI) / 180, leanDir: 0, fronds: n(p, 'fronds'), droop: n(p, 'droop'), dead: !!p.dead }, seed);
+  },
+});
+
+/**
+ * Náhodná palma kolem zadaného průměru: každé vložení (nové semínko) dá trochu jinou výšku,
+ * náklon a jeho směr, počet listů a převislost; rozptyl drží „Míra rozdílů“ (0 = stejné).
+ */
+export function randomPalmSpec(kind: string, height: number, variance: number, seed: number): PalmSpec {
+  const r = rng(seed ^ 0x5bd1e995);
+  const v = Math.max(0, Math.min(1, variance));
+  const k: PalmKind = kind === 'mix' ? (r() < 0.5 ? 'date' : 'slender') : (kind as PalmKind);
+  const sym = () => r() * 2 - 1;
+  return {
+    kind: k,
+    height: Math.max(2, height * (1 + sym() * 0.25 * v)),
+    lean: ((3 + r() * 6 + r() * 14 * v) * Math.PI) / 180,
+    leanDir: r() * Math.PI * 2,
+    fronds: (k === 'date' ? 30 : 22) * (1 + sym() * 0.25 * v),
+    droop: 0.5 + sym() * 0.3 * v,
+    dead: r() < 0.6,
+  };
+}
+
+const RANDOM_PARAMS = [
+  { key: 'kind', label: 'Druh', type: 'enum' as const, default: 'date', options: [...KIND_OPTIONS, { value: 'mix', label: 'Mix obou druhů' }] },
+  { key: 'height', label: 'Průměrná výška', type: 'number' as const, min: 2, max: 16, step: 0.5, unit: 'm', default: 7 },
+  { key: 'variance', label: 'Míra rozdílů', type: 'number' as const, min: 0, max: 1, step: 0.05, default: 0.4 },
+];
+
+registerAsset({
+  assetId: 'nature.palmRandom',
+  label: 'Random palma',
+  category: 'nature',
+  generatorVersion: 1,
+  sizeParams: { y: 'height' },
+  params: RANDOM_PARAMS,
+  materials: ['palmBarkDate'],
+  defaultMaterial: 'palmBarkDate',
+  describe: () => 'každá vložená palma je trochu jiná (výška, náklon, listy)',
+  generate(p, seed) {
+    return palmParts(randomPalmSpec(String(p.kind), n(p, 'height'), n(p, 'variance'), seed), seed);
+  },
+});
+
+registerAsset({
+  assetId: 'nature.palmPlanter',
+  label: 'Palma v záhonu',
+  category: 'nature',
+  generatorVersion: 1,
+  sizeParams: { x: 'size', z: 'size' },
+  params: [
+    { key: 'shape', label: 'Tvar záhonu', type: 'enum', default: 'square', options: [{ value: 'square', label: 'Čtvercový' }, { value: 'round', label: 'Kruhový' }] },
+    { key: 'size', label: 'Šířka záhonu', type: 'number', min: 1, max: 4, step: 0.1, unit: 'm', default: 1.8 },
+    { key: 'rim', label: 'Výška obruby', type: 'number', min: 0.15, max: 1, step: 0.05, unit: 'm', default: 0.45 },
+    ...RANDOM_PARAMS,
+  ],
+  materials: ['stoneWall', 'sandstone', 'concrete', 'concreteLight', 'plasterWarm', 'brick'],
+  defaultMaterial: 'sandstone',
+  describe: (p) => `záhon ${n(p, 'size').toFixed(1)} m, obruba ${n(p, 'rim').toFixed(2)} m`,
   generate(p, seed, material) {
-    const H = n(p, 'height'), lean = (n(p, 'lean') * Math.PI) / 180;
-    const r = rng(seed);
+    const S = n(p, 'size'), R = n(p, 'rim'), t = 0.2;
     const parts: Part[] = [];
-    // Kmen: oblouk v rovině XY (náklon k +X), ohyb sílí nahoru.
-    const seg = 7;
-    const pts: [number, number, number][] = [];
-    for (let i = 0; i <= seg; i++) {
-      const t = i / seg;
-      pts.push([Math.sin(lean) * H * t * t * 0.9, H * t, (r() - 0.5) * 0.06 * i]);
-    }
-    for (let i = 0; i < seg; i++) {
-      const t = i / seg;
-      const d0 = 0.44 - 0.14 * t, d1 = 0.44 - 0.14 * ((i + 1) / seg);
-      parts.push(limb(pts[i], pts[i + 1], d0 + 0.01, d1, material, i < 4));
-    }
-    parts.push({ shape: 'cylinder', pos: [0, 0.18, 0], size: [0.62, 0.36, 0.62], taper: 0.75, material });
-    const top = pts[seg];
-    // Hlava: koule zbytků řapíků.
-    parts.push({ shape: 'blob', pos: [top[0], top[1] - 0.15, top[2]], size: [0.75, 0.9, 0.75], seed: Math.floor(r() * 1e6), rough: 0.4, material: 'palmBark' });
-    const F = n(p, 'fronds');
-    const len = 2.6 + H * 0.17;
-    for (let i = 0; i < F; i++) {
-      const az = (i / F) * Math.PI * 2 + r() * 0.4;
-      const up = i % 4 === 0 ? 0.55 + r() * 0.2 : 1.05 + r() * 0.35; // většina listů do stran, pár vzhůru
-      parts.push({ shape: 'card', pos: [top[0], top[1], top[2]], rot: eulerYXZ(az, up, (r() - 0.5) * 0.3), size: [1.1 + r() * 0.3, len * (0.85 + r() * 0.3), 0], bend: -len * (0.45 + r() * 0.2), material: 'palmFrond' });
-    }
-    if (p.dead) {
-      for (let i = 0; i < 5; i++) {
-        const az = r() * Math.PI * 2;
-        parts.push({ shape: 'card', pos: [top[0], top[1] - 0.3, top[2]], rot: eulerYXZ(az, 2.6 + r() * 0.3, 0), size: [0.8, len * 0.7, 0], bend: -0.2, material: 'leafDry' });
+    if (p.shape === 'round') {
+      // Kruhová obruba z krátkých kvádrů po obvodu.
+      const k = Math.max(10, Math.round(S * 7));
+      for (let i = 0; i < k; i++) {
+        const a = (i / k) * Math.PI * 2;
+        const rr = S / 2 - t / 2;
+        parts.push({ shape: 'box', pos: [Math.sin(a) * rr, R / 2, Math.cos(a) * rr], rot: [0, a, 0], size: [(Math.PI * S) / k + 0.02, R, t], material, collide: true });
       }
+      parts.push({ shape: 'cylinder', pos: [0, R - 0.12, 0], size: [S - t * 1.5, 0.1, S - t * 1.5], material: 'dirt' });
+    } else {
+      for (const sx of [-1, 1]) parts.push({ shape: 'box', pos: [(sx * (S - t)) / 2, R / 2, 0], size: [t, R, S], material, collide: true });
+      for (const sz of [-1, 1]) parts.push({ shape: 'box', pos: [0, R / 2, (sz * (S - t)) / 2], size: [S - 2 * t, R, t], material, collide: true });
+      // Krycí deska obruby (lehce přečnívá) a zemina uvnitř.
+      for (const sx of [-1, 1]) parts.push({ shape: 'box', pos: [(sx * (S - t)) / 2, R + 0.03, 0], size: [t + 0.05, 0.06, S + 0.05], material });
+      for (const sz of [-1, 1]) parts.push({ shape: 'box', pos: [0, R + 0.03, (sz * (S - t)) / 2], size: [S - 2 * t - 0.01, 0.06, t + 0.05], material });
+      parts.push({ shape: 'box', pos: [0, R - 0.12, 0], size: [S - 2 * t, 0.1, S - 2 * t], material: 'dirt' });
     }
+    const sp = randomPalmSpec(String(p.kind), n(p, 'height'), n(p, 'variance'), seed);
+    sp.base = R - 0.08;
+    sp.lean = Math.min(sp.lean, 0.12); // v záhonu rostou rovně
+    parts.push(...palmParts(sp, seed));
     return parts;
   },
 });

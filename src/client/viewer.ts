@@ -89,6 +89,7 @@ function build() {
   fp = new FPWeapon($<HTMLSelectElement>('#weapon').value, $<HTMLSelectElement>('#hands').value, $<HTMLSelectElement>('#q').value as never);
   camera.add(fp.root);
   (window as unknown as { __fp: FPWeapon }).__fp = fp;
+  (window as unknown as { __ps: typeof ps }).__ps = ps;
   rebuildPoints();
 }
 

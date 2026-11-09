@@ -1,7 +1,7 @@
 import type { ControlPoint, ControlPointOverride, Scenario, SpawnPoint, Team, TeamOwner, Zone } from '../../shared/map/schema';
 import type { BrushKind } from '../../world/terrain';
 import { cmds, type EditorDoc, type History } from './editorDoc';
-import type { Editor } from './editor';
+import type { Editor, PlantBrush } from './editor';
 import { markerId } from './markers';
 
 /** UI herních markerů, scénářů a terénních štětců. */
@@ -239,6 +239,9 @@ export function renderScenarios(root: HTMLElement, ed: EditorDoc, history: Histo
   root.appendChild(r);
 }
 
+/** Poslední nastavení štětce na palmy (zachová se mezi přepnutím štětců). */
+let PLANT_DEFAULT: PlantBrush = { erase: false, spacing: 5, kind: 'mix', height: 8, variance: 0.35 };
+
 /** Panel terénních štětců (záložka Terén). */
 export function renderTerrainPanel(root: HTMLElement, editor: Editor, onChange: () => void) {
   root.replaceChildren();
@@ -259,8 +262,9 @@ export function renderTerrainPanel(root: HTMLElement, editor: Editor, onChange: 
   ];
   const grid = el('div', { class: 'btnrow' });
   for (const [k, l] of kinds) {
-    const b = el('button', { class: editor.brush.kind === k ? 'on' : '' }, l);
+    const b = el('button', { class: !editor.plant && editor.brush.kind === k ? 'on' : '' }, l);
     b.addEventListener('click', () => {
+      editor.plant = null;
       editor.brush.kind = k;
       if (k === 'flatten') editor.brush.target = undefined;
       if (!editor.terrainMode) editor.setTerrainMode(true);
@@ -272,9 +276,39 @@ export function renderTerrainPanel(root: HTMLElement, editor: Editor, onChange: 
   const box = el('div', { style: 'margin-top:8px' });
   row(box, 'Poloměr', '1–40 m', num(editor.brush.radius, 1, 40, 0.5, (v) => (editor.brush.radius = v)));
   const paint = editor.brush.kind.startsWith('paint');
-  row(box, 'Síla', paint ? 'podíl/s' : 'm/s', num(editor.brush.strength, 0.05, 20, 0.05, (v) => (editor.brush.strength = v)));
-  if (editor.brush.kind === 'flatten') row(box, 'Cílová výška', 'Shift+klik nabere', num(editor.brush.target ?? 0, -999, 999, 0.1, (v) => (editor.brush.target = v)));
+  if (!editor.plant) row(box, 'Síla', paint ? 'podíl/s' : 'm/s', num(editor.brush.strength, 0.05, 20, 0.05, (v) => (editor.brush.strength = v)));
+  if (!editor.plant && editor.brush.kind === 'flatten') row(box, 'Cílová výška', 'Shift+klik nabere', num(editor.brush.target ?? 0, -999, 999, 0.1, (v) => (editor.brush.target = v)));
   root.appendChild(box);
+  // Sázení palem: štětec, který místo terénu hromadně vkládá „Random palmy“.
+  root.appendChild(el('div', { class: 'note', style: 'margin-top:10px;font-weight:600' }, 'Sázení palem (les, háj)'));
+  const prow = el('div', { class: 'btnrow' });
+  const pb = (label: string, erase: boolean) => {
+    const b = el('button', { class: editor.plant && editor.plant.erase === erase ? 'on' : '' }, label);
+    b.addEventListener('click', () => {
+      editor.plant = { ...(editor.plant ?? PLANT_DEFAULT), erase };
+      if (!editor.terrainMode) editor.setTerrainMode(true);
+      onChange();
+    });
+    prow.appendChild(b);
+  };
+  pb('🌴 Sázet palmy', false);
+  pb('Mazat palmy', true);
+  root.appendChild(prow);
+  if (editor.plant && !editor.plant.erase) {
+    const pl = editor.plant;
+    PLANT_DEFAULT = pl;
+    const pbox = el('div', { style: 'margin-top:6px' });
+    row(pbox, 'Rozestup', '2–15 m', num(pl.spacing, 2, 15, 0.5, (v) => (pl.spacing = v)));
+    const kind = sel([['date', 'Datlovník'], ['slender', 'Štíhlá palma'], ['mix', 'Mix obou']], pl.kind, (v) => (pl.kind = v));
+    row(pbox, 'Druh', '', kind);
+    row(pbox, 'Průměrná výška', '2–16 m', num(pl.height, 2, 16, 0.5, (v) => (pl.height = v)));
+    row(pbox, 'Míra rozdílů', '0 stejné – 1 hodně', num(pl.variance, 0, 1, 0.05, (v) => (pl.variance = v)));
+    root.appendChild(pbox);
+  }
+  if (editor.plant)
+    root.appendChild(
+      el('div', { class: 'note' }, editor.plant.erase ? 'Tah štětcem smaže palmy v kruhu (jeden tah = jedna položka historie).' : 'Tah štětcem vysází palmy v kruhu s daným rozestupem; každá je trochu jiná (výška, náklon, listy). Poloměr štětce = velikost lesa pod kurzorem. Jeden tah = jedna položka historie (Ctrl+Z vrátí celý tah).'),
+    );
   root.appendChild(
     el('div', { class: 'note' }, 'LMB táhne štětcem (jeden tah = jedna položka historie). Objekty se s terénem nehýbou – použijte „Položit na povrch“ ve vlastnostech objektu. Výškové pole neumí převisy ani tunely; ty tvoří objekty.'),
   );

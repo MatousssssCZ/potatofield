@@ -201,6 +201,17 @@ function armsOnly(src: THREE.BufferGeometry, sk: THREE.Skeleton, gloveColor: THR
   for (let j = sleeve.length; j < order.length; j++) col.set([gloveColor.r, gloveColor.g, gloveColor.b], j * 3);
   out.setAttribute('color', new THREE.BufferAttribute(col, 3));
   if (!out.getAttribute('uv')) out.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(order.length * 2), 2));
+  // Váhy jen na kosti paží: klíční kost a trup v FP stojí v klidové póze vysoko nad kamerou –
+  // vrcholy s částí váhy na nich se natahovaly přes obraz (míhající se kus rukávu při sprintu).
+  const oi = out.getAttribute('skinIndex') as THREE.BufferAttribute, ow = out.getAttribute('skinWeight') as THREE.BufferAttribute;
+  for (let v = 0; v < order.length; v++) {
+    let sum = 0;
+    for (let k = 0; k < 4; k++) {
+      if (!ARM.test(sk.bones[oi.getComponent(v, k)]?.name ?? '')) ow.setComponent(v, k, 0);
+      sum += ow.getComponent(v, k);
+    }
+    if (sum > 0) for (let k = 0; k < 4; k++) ow.setComponent(v, k, ow.getComponent(v, k) / sum);
+  }
   out.addGroup(0, sleeve.length, 0);
   out.addGroup(sleeve.length, hand.length, 1);
   out.computeBoundingSphere();
