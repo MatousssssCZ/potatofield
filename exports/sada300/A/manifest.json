@@ -1,0 +1,96 @@
+{
+ "section": "A",
+ "generated": "2026-11-09",
+ "models": [
+  {
+   "item": 1,
+   "id": "A01_house1Stairs",
+   "asset_id": "setA.house1Stairs",
+   "label": "A01 Přízemní dům s venkovními schody",
+   "glb": "A01_house1Stairs.glb",
+   "json": "A01_house1Stairs.json",
+   "render": "renders/A01.png"
+  },
+  {
+   "item": 2,
+   "id": "A02_houseRecess",
+   "asset_id": "setA.houseRecess",
+   "label": "A02 Přízemní dům se zapuštěným vstupem",
+   "glb": "A02_houseRecess.glb",
+   "json": "A02_houseRecess.json",
+   "render": "renders/A02.png"
+  },
+  {
+   "item": 3,
+   "id": "A03_houseSideStair",
+   "asset_id": "setA.houseSideStair",
+   "label": "A03 Přízemní dům s bočním schodištěm",
+   "glb": "A03_houseSideStair.glb",
+   "json": "A03_houseSideStair.json",
+   "render": "renders/A03.png"
+  },
+  {
+   "item": 4,
+   "id": "A04_houseL",
+   "asset_id": "setA.houseL",
+   "label": "A04 Přízemní dům s půdorysem L",
+   "glb": "A04_houseL.glb",
+   "json": "A04_houseL.json",
+   "render": "renders/A04.png"
+  },
+  {
+   "item": 5,
+   "id": "A05_house2Recess",
+   "asset_id": "setA.house2Recess",
+   "label": "A05 Dvoupodlažní dům s hlubokým výklenkem (pilot, upravený)",
+   "glb": "A05_house2Recess.glb",
+   "json": "A05_house2Recess.json",
+   "render": "renders/A05.png"
+  },
+  {
+   "item": 6,
+   "id": "A06_house2Plain",
+   "asset_id": "setA.house2Plain",
+   "label": "A06 Dvoupodlažní dům bez výklenku (pilot, upravený)",
+   "glb": "A06_house2Plain.glb",
+   "json": "A06_house2Plain.json",
+   "render": "renders/A06.png"
+  },
+  {
+   "item": 7,
+   "id": "A07_house2SideRecess",
+   "asset_id": "setA.house2SideRecess",
+   "label": "A07 Dvoupodlažní dům s bočním zapuštěným vstupem",
+   "glb": "A07_house2SideRecess.glb",
+   "json": "A07_house2SideRecess.json",
+   "render": "renders/A07.png"
+  },
+  {
+   "item": 8,
+   "id": "A08_house2Arcade",
+   "asset_id": "setA.house2Arcade",
+   "label": "A08 Dvoupodlažní dům s podloubím",
+   "glb": "A08_house2Arcade.glb",
+   "json": "A08_house2Arcade.json",
+   "render": "renders/A08.png"
+  },
+  {
+   "item": 9,
+   "id": "A09_house2Setback",
+   "asset_id": "setA.house2Setback",
+   "label": "A09 Dvoupodlažní dům s ustoupeným patrem",
+   "glb": "A09_house2Setback.glb",
+   "json": "A09_house2Setback.json",
+   "render": "renders/A09.png"
+  },
+  {
+   "item": 10,
+   "id": "A10_houseCourtyard",
+   "asset_id": "setA.houseCourtyard",
+   "label": "A10 Dům s malým uzavřeným dvorem",
+   "glb": "A10_houseCourtyard.glb",
+   "json": "A10_houseCourtyard.json",
+   "render": "renders/A10.png"
+  }
+ ]
+}

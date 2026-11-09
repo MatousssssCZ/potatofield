@@ -9,6 +9,8 @@ import './assets/nature';
 import './assets/town';
 import './assets/roads';
 import './assets/glbProps';
+import './assets/set/residential';
 
 export * from './registry';
 export * from './parts';
+export { SET_META } from './assets/set/residential';

@@ -45,7 +45,7 @@ export interface MountSpec {
 export interface AssetDef {
   assetId: string;
   label: string;
-  category: 'primitives' | 'cover' | 'range' | 'markers' | 'structures' | 'buildings' | 'street' | 'nature' | 'glb';
+  category: 'primitives' | 'cover' | 'range' | 'markers' | 'structures' | 'buildings' | 'street' | 'nature' | 'glb' | 'setA';
   generatorVersion: number;
   params: ParamSpec[];
   materials: string[];

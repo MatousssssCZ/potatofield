@@ -10,6 +10,7 @@ const CATEGORY_LABELS: Record<AssetDef['category'], string> = {
   buildings: 'Budovy',
   nature: 'Příroda',
   glb: 'Modely GLB (ChatGPT)',
+  setA: 'Sada 300 · A Obytné budovy',
   structures: 'Konstrukce',
   street: 'Ulice',
   cover: 'Kryty',

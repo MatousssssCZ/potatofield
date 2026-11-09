@@ -65,6 +65,9 @@ mapě** (assety, které mapa už obsahuje, s počtem). Klik vloží asset do st�
 | Uložení | automaticky po každé operaci (stav vlevo dole); **Ctrl+S** uloží hned |
 | Testovat | **F5** / tlačítko ▶ Testovat |
 
+- **Sada 300** (kategorie „Sada 300 · A Obytné budovy“ …): modely podle zadání sady 300,
+  přístupné budovy s ověřeným průchodem (test `tests/set300.test.ts`). Export GLB + JSON,
+  manifest, rendery a validační report v `exports/sada300/` (`npx tsx scripts/export-set.ts A`).
 - **Palmy** (Příroda): *Palma* (datlovník / štíhlá, výška, náklon, počet listů, převislost),
   *Random palma* (každé vložení trochu jiná – výška, náklon a jeho směr, listy; „Míra rozdílů“ drží
   rozptyl) a *Palma v záhonu* (čtvercová / kruhová obruba z vybraného materiálu, zemina, palma).
