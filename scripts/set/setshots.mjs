@@ -13,6 +13,7 @@ const ids = await p.evaluate(async (prefix) => {
   return reg.allAssets().map((a) => a.assetId).filter((id) => id.startsWith(prefix));
 }, prefix);
 const only = process.argv[4];
+const skipDone = !process.argv.includes('--all');
 for (const id of ids) {
   if (only && !id.includes(only)) continue;
   const info = await p.evaluate(async (id) => {
@@ -29,6 +30,7 @@ for (const id of ids) {
     for (const q of g.parts) for (let k = 0; k < 3; k++) { mn[k] = Math.min(mn[k], q.pos[k] - q.size[k] / 2); mx[k] = Math.max(mx[k], q.pos[k] + q.size[k] / 2); }
     return { label: reg.getAsset(id).label, mn, mx, meta: SET_META[id] };
   }, id);
+  if (skipDone && fs.existsSync(`${out}/A${String(info.meta.item).padStart(2, '0')}.jpg`)) continue;
   await p.waitForTimeout(2500);
   const c = [(info.mn[0] + info.mx[0]) / 2, (info.mn[1] + info.mx[1]) / 2, (info.mn[2] + info.mx[2]) / 2];
   const R = Math.max(info.mx[0] - info.mn[0], info.mx[2] - info.mn[2], info.mx[1]) * 1.15 + 4;
@@ -47,7 +49,16 @@ for (const id of ids) {
   }
   const sheet = await b.newPage({ viewport: { width: 1400, height: 940 } });
   await sheet.setContent(`<body style="margin:0;background:#1c1a16;color:#eee;font:15px Arial"><div style="padding:8px 12px;font-size:18px"><b>${info.label}</b> <span style="color:#bbb">· ${id} · obálka ${(info.mx[0]-info.mn[0]).toFixed(2)} × ${(info.mx[2]-info.mn[2]).toFixed(2)} × ${info.mx[1].toFixed(2)} m · cíl ${info.meta.target.join(' × ')} m</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:0 4px">${imgs.map((d, i) => `<div style="position:relative"><img style="width:100%;display:block" src="data:image/png;base64,${d}"><span style="position:absolute;left:6px;top:4px;background:#0008;padding:2px 6px">${['zepředu','zezadu','interiér','shora'][i]}</span></div>`).join('')}</div></body>`);
-  await sheet.screenshot({ path: `${out}/A${String(info.meta.item).padStart(2, '0')}.jpg`, fullPage: true, type: 'jpeg', quality: 85 });
+  // Prohlížeč (swiftshader) občas snímek odmítne – zkusit znovu.
+  for (let k = 0; k < 4; k++) {
+    try {
+      await sheet.screenshot({ path: `${out}/A${String(info.meta.item).padStart(2, '0')}.jpg`, fullPage: true, type: 'jpeg', quality: 85 });
+      break;
+    } catch (e) {
+      if (k === 3) throw e;
+      await sheet.waitForTimeout(2000);
+    }
+  }
   await sheet.close();
   console.log('✓', id);
 }

@@ -28,7 +28,7 @@
   ]
  },
  "triangles": {
-  "LOD0": 3708
+  "LOD0": 3192
  },
  "triangle_limits": {
   "LOD0": 12000
@@ -563,18 +563,18 @@
   {
    "center": [
     3.1,
-    1.5379,
-    -0.2036
+    1.4691,
+    -0.25
    ],
    "size": [
     1.15,
-    0.18,
+    0.25,
     5.9527
    ],
    "rotX": -0.5419,
    "rotY": 0,
    "rotZ": 0,
-   "kind": "ramp",
+   "kind": "box",
    "surface": "concrete"
   },
   {

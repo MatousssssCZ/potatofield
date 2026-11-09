@@ -11,9 +11,9 @@ import {
  * Rozměry jsou cílové rozměry ze zadání (N); detaily (lišty, rámy, nábytek) jsou jen vzhled.
  */
 
-const WALL_MATS = ['plasterWarm', 'plaster', 'plasterWhite', 'plasterOchre', 'sandstone', 'concreteLight'];
-const TRIM = 'sandstone';
-const FLOOR = 'concreteLight';
+export const WALL_MATS = ['plasterWarm', 'plaster', 'plasterWhite', 'plasterOchre', 'sandstone', 'concreteLight'];
+export const TRIM = 'sandstone';
+export const FLOOR = 'concreteLight';
 const ROOF = 'roof';
 const t = M.wall;
 
@@ -45,7 +45,7 @@ export function shell(r: Rect, y0: number, h: number, ops: { front?: Op[]; back?
 }
 
 /** Příčka (bez lišt) z a do b, otvory v absolutní souřadnici osy příčky. */
-function partition(a: P2, b: P2, y0: number, h: number, ops: Op[], mat: string): Part[] {
+export function partition(a: P2, b: P2, y0: number, h: number, ops: Op[], mat: string): Part[] {
   const alongX = Math.abs(b[1] - a[1]) < 1e-6;
   const start = alongX ? Math.min(a[0], b[0]) : Math.min(a[1], b[1]);
   const A: P2 = alongX ? [Math.min(a[0], b[0]), a[1]] : [a[0], Math.min(a[1], b[1])];
@@ -54,14 +54,14 @@ function partition(a: P2, b: P2, y0: number, h: number, ops: Op[], mat: string):
 }
 
 /** Podlaha přízemí (tenká deska nad terénem). */
-const groundFloor = (r: Rect): Part[] => [{ shape: 'box', pos: [(r[0] + r[2]) / 2, 0.04, (r[1] + r[3]) / 2], size: [r[2] - r[0] - 0.02, 0.08, r[3] - r[1] - 0.02], material: FLOOR, collide: true }];
+export const groundFloor = (r: Rect): Part[] => [{ shape: 'box', pos: [(r[0] + r[2]) / 2, 0.04, (r[1] + r[3]) / 2], size: [r[2] - r[0] - 0.02, 0.08, r[3] - r[1] - 0.02], material: FLOOR, collide: true }];
 
 /** Strop/střecha nad hmotou: deska s přesahem 0,05 m, spodní líc v y, otvory. */
 /**
  * Strop / střecha nad hmotou: betonová deska s přesahem 0,05 m (spodní líc v y) a otvory;
  * střešní deska navíc dostane tmavou hydroizolaci navrchu (jen vzhled).
  */
-const roofSlab = (r: Rect, y: number, holes: Rect[] = [], top: string = ROOF): Part[] => {
+export const roofSlab = (r: Rect, y: number, holes: Rect[] = [], top: string = ROOF): Part[] => {
   const out = slab([r[0] - 0.05, r[1] - 0.05, r[2] + 0.05, r[3] + 0.05], y + M.slab, M.slab, holes, 'concreteLight');
   if (top === ROOF) out.push(...slab([r[0] + 0.1, r[1] + 0.1, r[2] - 0.1, r[3] - 0.1], y + M.slab + 0.012, 0.012, holes.map((h) => [h[0] - 0.05, h[1] - 0.05, h[2] + 0.05, h[3] + 0.05] as Rect), ROOF, false));
   return out;
@@ -70,7 +70,7 @@ const roofSlab = (r: Rect, y: number, holes: Rect[] = [], top: string = ROOF): P
 const D2 = (...a: number[]) => a;
 void D2;
 
-function reg(item: number, id: string, label: string, def: Omit<AssetDef, 'assetId' | 'label' | 'category' | 'generatorVersion' | 'params' | 'materials' | 'defaultMaterial'> & { params?: AssetDef['params']; defaultMaterial?: string }, meta: Omit<SetMeta, 'item'>) {
+export function reg(item: number, id: string, label: string, def: Omit<AssetDef, 'assetId' | 'label' | 'category' | 'generatorVersion' | 'params' | 'materials' | 'defaultMaterial'> & { params?: AssetDef['params']; defaultMaterial?: string }, meta: Omit<SetMeta, 'item'>) {
   const assetId = `setA.${id}`;
   SET_META[assetId] = { item, ...meta };
   registerAsset({
@@ -318,7 +318,7 @@ reg(4, 'houseL', 'Přízemní dům s půdorysem L', {
 // ---------------------------------------------------------------------------
 
 /** Poklop ve střeše s volně stojícím žebříkem: otvor [x0, z0, x1, z1], žebřík u hrany x0 (lezec se dívá k −X). */
-function hatch(h: Rect, yFloor: number, yRoof: number): { parts: Part[]; ladder: LadderLocal } {
+export function hatch(h: Rect, yFloor: number, yRoof: number): { parts: Part[]; ladder: LadderLocal } {
   const lx = h[0] + 0.06, lz = (h[1] + h[3]) / 2;
   const parts = ladderParts(lx, lz, yFloor, yRoof - yFloor, 'x-');
   // Rám poklopu a odklopené víko (vzhled).
@@ -330,7 +330,7 @@ function hatch(h: Rect, yFloor: number, yRoof: number): { parts: Part[]; ladder:
 }
 
 /** Zábradlí kolem otvoru schodiště ve stropě (strany bez nástupu). */
-function wellRail(h: Rect, y: number, open: 'x-' | 'x+' | 'z-' | 'z+'): Part[] {
+export function wellRail(h: Rect, y: number, open: 'x-' | 'x+' | 'z-' | 'z+'): Part[] {
   const [x0, z0, x1, z1] = h;
   const out: Part[] = [];
   if (open !== 'z-') out.push(...rail([x0, z0], [x1, z0], y));

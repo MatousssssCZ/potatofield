@@ -1,3 +1,5 @@
+import { MOVEMENT } from '../../../shared/config/movement';
+import { stanceRecoil } from '../../../shared/sim/weapon';
 import * as THREE from 'three';
 import { BONES, LOWER_ARM, SHIN, THIGH, UPPER_ARM, aimBone, solveTwoBone, type BoneName } from './rig';
 import type { WeaponAction } from '../../../shared/sim/weapon';
@@ -174,7 +176,8 @@ export class SoldierAnimator {
     // --- Zbraň: o rameno, ve směru zamíření; sprint nízko, přebití náklon, kopnutí ---
     if (inp.shotSeq !== this.lastShot) {
       if (inp.shotSeq > this.lastShot) {
-        this.kickV += (style === 'heavy' ? 4 : 6);
+        // Kopnutí slábne v kleku a vleže (jako recoil v simulaci).
+        this.kickV += (style === 'heavy' ? 4 : 6) * stanceRecoil(MOVEMENT, inp.height).visual;
         this.fired = true;
         this.readyT = 1;
       }

@@ -10,6 +10,7 @@ import './assets/town';
 import './assets/roads';
 import './assets/glbProps';
 import './assets/set/residential';
+import './assets/set/residential2';
 
 export * from './registry';
 export * from './parts';

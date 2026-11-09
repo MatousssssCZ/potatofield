@@ -1,3 +1,6 @@
+import { REF_GRIP_VIEW } from './types';
+import { stanceRecoil } from '../../../shared/sim/weapon';
+import { MOVEMENT } from '../../../shared/config/movement';
 import * as THREE from 'three';
 import type { WeaponState } from '../../../shared/sim/weapon';
 import type { PlayerState } from '../../../shared/sim/player';
@@ -405,7 +408,8 @@ export class FPWeapon {
       if (this.lastSeq >= 0 && ws.shotSeq > this.maxSeq) {
         this.maxSeq = ws.shotSeq;
         this.onShot();
-        this.kickV += 9 * (1 - 0.3 * e);
+        // Kosmetické kopnutí slábne v kleku a vleže (stejný násobek jako recoil v simulaci).
+        this.kickV += 9 * (1 - 0.3 * e) * stanceRecoil(MOVEMENT, ps.height).visual;
         this.flashUntil = this.time + 0.045;
         this.flash.rotation.z = Math.random() * Math.PI;
         this.flash.scale.setScalar(0.85 + Math.random() * 0.4);
@@ -485,15 +489,21 @@ export class FPWeapon {
     const bt = belt && reloadT > 0 ? Math.sin(Math.min(1, reloadT * 1.08) * Math.PI) : 0;
     // Nabíjení po jednom: zbraň zvednutá a přetočená spodkem k hráči (nabíjecí otvor v obraze).
     const sgl = this.model.reloadStyle === 'single' && reloadT > 0 ? Math.min(1, reloadT * 8, (1 - reloadT) * 8) : 0;
+    // Sprint jako v BF2: zbraň se otočí kolem úchopu (ne kolem kamery) hlavní dolů a šikmo
+    // doleva a zůstane stabilně v pravé dolní části obrazu – nevykukuje od okraje při kývání.
+    const sp = sprintPose;
+    const sRot = new THREE.Euler(-sp * THREE.MathUtils.degToRad(17), sp * THREE.MathUtils.degToRad(24), sp * THREE.MathUtils.degToRad(15), 'XYZ');
+    const pivot = REF_GRIP_VIEW;
+    const pivotShift = pivot.clone().sub(pivot.clone().applyEuler(sRot));
     pr.position.set(
-      this.swayX * 0.1 + Math.cos(bobPhase) * bobH - sprintPose * 0.02 + tilt * 0.02 - bt * 0.015 - sgl * 0.06,
-      this.swayY * 0.1 + Math.sin(bobPhase * 2) * bobV - sprintPose * 0.08 - this.lower * 0.07 - (1 - this.equipT) * 0.35 - tilt * 0.03 - bt * 0.035 + sgl * 0.07,
-      kickBack + sprintPose * 0.02 + this.lower * 0.12 + bt * 0.03 + sgl * 0.04,
+      this.swayX * 0.1 + Math.cos(bobPhase) * bobH + pivotShift.x - sp * 0.025 + tilt * 0.02 - bt * 0.015 - sgl * 0.06,
+      this.swayY * 0.1 + Math.sin(bobPhase * 2) * bobV + pivotShift.y - sp * 0.03 - this.lower * 0.07 - (1 - this.equipT) * 0.35 - tilt * 0.03 - bt * 0.035 + sgl * 0.07,
+      kickBack + pivotShift.z + sp * 0.01 + this.lower * 0.12 + bt * 0.03 + sgl * 0.04,
     );
     pr.rotation.set(
-      -sprintPose * THREE.MathUtils.degToRad(20) + this.swayY * 0.6 + kickPitch - this.lower * 0.55 + (1 - this.equipT) * 0.6 + tilt * 0.18 - bt * 0.12 + sgl * 0.15,
-      sprintPose * THREE.MathUtils.degToRad(10) + this.swayX * 0.6 + tilt * 0.12,
-      sprintPose * THREE.MathUtils.degToRad(8) - tilt * 0.42 + bt * 0.22 - sgl * 0.75,
+      sRot.x + this.swayY * 0.6 + kickPitch - this.lower * 0.55 + (1 - this.equipT) * 0.6 + tilt * 0.18 - bt * 0.12 + sgl * 0.15,
+      sRot.y + this.swayX * 0.6 + tilt * 0.12,
+      sRot.z - tilt * 0.42 + bt * 0.22 - sgl * 0.75,
     );
     this.placeForearms();
 

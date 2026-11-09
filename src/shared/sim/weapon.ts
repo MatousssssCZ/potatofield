@@ -115,6 +115,27 @@ export function aimAngles(ps: PlayerState, ws: WeaponState) {
 }
 
 /** Rozptyl (rad, poloviční úhel) a jeho složky – pro debug panel i crosshair. */
+/**
+ * Zpětný ráz podle postoje (N): v kleku se zbraň opírá líp, vleže leží na zemi / dvojnožce.
+ * pitch / yaw = násobek kopnutí na ránu, penalty = násobek nárůstu rozptylu z palby, visual =
+ * kosmetické kopnutí modelu (klient). Plynule podle výšky těla jako rozptyl.
+ */
+export const STANCE_RECOIL = {
+  stand: { pitch: 1.0, yaw: 1.0, penalty: 1.0, visual: 1.0 },
+  crouch: { pitch: 0.72, yaw: 0.68, penalty: 0.8, visual: 0.75 },
+  prone: { pitch: 0.48, yaw: 0.4, penalty: 0.6, visual: 0.5 },
+};
+
+export function stanceRecoil(mv: MovementConfig, height: number) {
+  const st = mv.stances;
+  const lerp = (a: number, b: number, f: number) => a + (b - a) * clamp(f, 0, 1);
+  const pick = (k: keyof typeof STANCE_RECOIL.stand) =>
+    height >= st.crouch.height
+      ? lerp(STANCE_RECOIL.crouch[k], STANCE_RECOIL.stand[k], (height - st.crouch.height) / (st.stand.height - st.crouch.height))
+      : lerp(STANCE_RECOIL.prone[k], STANCE_RECOIL.crouch[k], (height - st.prone.height) / (st.crouch.height - st.prone.height));
+  return { pitch: pick('pitch'), yaw: pick('yaw'), penalty: pick('penalty'), visual: pick('visual') };
+}
+
 export function spreadOf(w: WeaponConfig, mv: MovementConfig, ps: PlayerState, ws: WeaponState, t: number) {
   const sp = w.spread;
   const st = mv.stances;
@@ -350,9 +371,10 @@ function fire(w: WeaponConfig, mv: MovementConfig, ps: PlayerState, ws: WeaponSt
     });
   }
   ws.mag--;
-  ws.recoilPitch += deg(w.recoil.pitchDeg);
-  ws.recoilYaw += deg(w.recoil.yawDeg) * (shotRandom(ctx.seed, ws.shotSeq, 2) * 2 - 1);
-  ws.firingPenalty = Math.min(w.spread.firingMaxDeg, ws.firingPenalty + w.spread.perShotDeg);
+  const sr = stanceRecoil(mv, ps.height);
+  ws.recoilPitch += deg(w.recoil.pitchDeg) * sr.pitch;
+  ws.recoilYaw += deg(w.recoil.yawDeg) * sr.yaw * (shotRandom(ctx.seed, ws.shotSeq, 2) * 2 - 1);
+  ws.firingPenalty = Math.min(w.spread.firingMaxDeg, ws.firingPenalty + w.spread.perShotDeg * sr.penalty);
   ws.lastShotAt = t;
   ws.shotSeq++;
   return out;

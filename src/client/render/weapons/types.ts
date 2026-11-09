@@ -71,7 +71,7 @@ export interface WeaponModel {
 }
 
 /** Referenční úchop M4A1 v pohledu: ostatní modely kladou hip pózu tak, aby rukojeť ležela na stejném místě. */
-const REF_GRIP_VIEW = new THREE.Vector3(0.16, -0.228, -0.294);
+export const REF_GRIP_VIEW = new THREE.Vector3(0.16, -0.228, -0.294);
 
 export function hipFromGrip(gripRight: THREE.Vector3, adjust: [number, number, number] = [0, 0, 0]): THREE.Vector3 {
   return REF_GRIP_VIEW.clone().sub(gripRight).add(new THREE.Vector3(...adjust));

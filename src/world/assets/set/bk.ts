@@ -105,10 +105,8 @@ export function wall(a: P2, b: P2, y0: number, h: number, t: number, ops: Op[], 
     parts.push({ shape: 'box', pos: at(op.c, op.t + 0.08, t / 2 + 0.02), size: size(ow + 0.26, 0.16, 0.06), material: trim });
     if (op.kind === 'window') {
       parts.push({ shape: 'box', pos: at(op.c, op.b - 0.04, t / 2 + 0.05), size: size(ow + 0.2, 0.08, 0.12), material: trim });
-      // Rám okna uprostřed tloušťky zdi + svislý sloupek (střela projde mezerami).
+      // Rám okna (boční rámy) uprostřed tloušťky zdi + svislý sloupek; vodorovně stačí nadpraží a parapet.
       for (const s of [-1, 1]) parts.push({ shape: 'box', pos: at(op.c + (s * (ow - 0.05)) / 2, op.b + oh / 2, 0), size: size(0.05, oh, 0.06), material: 'woodDark' });
-      parts.push({ shape: 'box', pos: at(op.c, op.b + 0.025, 0), size: size(ow, 0.05, 0.06), material: 'woodDark' });
-      parts.push({ shape: 'box', pos: at(op.c, op.t - 0.025, 0), size: size(ow, 0.05, 0.06), material: 'woodDark' });
       parts.push({ shape: 'box', pos: at(op.c, op.b + oh / 2, 0), size: size(0.04, oh, 0.05), material: 'woodDark' });
     } else {
       // Dveřní zárubeň.
@@ -230,13 +228,22 @@ export function stairs(x: number, z: number, dir: Dir, width: number, y0: number
     const bottom = o.solid ? y0 : top - rise - 0.12;
     const c = along((i + 0.5) * tread);
     parts.push({ shape: 'box', pos: [c[0], (top + bottom) / 2, c[1]], size: sz(tread, width, top - bottom), material: mat });
-    // Hrana stupně (tmavší linka, čitelnost).
-    const e = along(i * tread + 0.02);
-    parts.push({ shape: 'box', pos: [e[0], top - 0.012, e[1]], size: sz(0.04, width, 0.025), material: 'concreteDark' });
+    // Hrana stupně (tmavší linka, čitelnost) – jen u venkovních plných schodů (šetří trojúhelníky).
+    if (o.solid) {
+      const e = along(i * tread + 0.02);
+      parts.push({ shape: 'box', pos: [e[0], top - 0.012, e[1]], size: sz(0.04, width, 0.025), material: 'concreteDark' });
+    }
   }
   const mid = along(run / 2);
-  parts.push({ shape: 'wedge', pos: [mid[0], y0 + H / 2, mid[1]], rot: [0, yaw, 0], size: [width, H, run], material: mat, collide: true, render: false });
   const ang = Math.atan2(H, run), slopeL = Math.hypot(H, run);
+  if (o.solid) parts.push({ shape: 'wedge', pos: [mid[0], y0 + H / 2, mid[1]], rot: [0, yaw, 0], size: [width, H, run], material: mat, collide: true, render: false });
+  else {
+    // Vnitřní rameno: tenká šikmá deska (pod ní zůstane výška pro rameno o patro níž).
+    const th = 0.25;
+    const rot: [number, number, number] = dx !== 0 ? [0, 0, dx * ang] : [-dz * ang, 0, 0];
+    const nOff = th / 2 / Math.cos(ang);
+    parts.push({ shape: 'box', pos: [mid[0], y0 + H / 2 - nOff, mid[1]], rot, size: dx !== 0 ? [slopeL, th, width] : [width, th, slopeL], material: mat, collide: true, render: false });
+  }
   for (const side of ['left', 'right'] as const) {
     // Levá strana při výstupu = směr (−dz, dx) otočený… pro výstup k +z je levá strana +x.
     const sgn = side === 'left' ? 1 : -1;
@@ -394,4 +401,61 @@ export function acBox(x: number, z: number, y: number, out: P2): Part[] {
     { shape: 'box', pos: [x + out[0] * 0.22, y, z + out[1] * 0.22], rot: [0, rot, 0], size: [0.85, 0.6, 0.42], material: 'acUnit', collide: true },
     { shape: 'box', pos: [x + out[0] * 0.16, y - 0.36, z + out[1] * 0.16], rot: [0, rot, 0], size: [0.8, 0.04, 0.3], material: 'metal' },
   ];
+}
+
+// ---------------- dvouramenné schodiště (činžáky) ----------------
+
+export interface Core {
+  /** Půdorys schodišťového prostoru [x0, z0, x1, z1] (otvor ve stropech). */
+  rect: Rect;
+  /** Hrana nástupu/výstupu (z0): rameno A začíná, rameno B končí. */
+  zStart: number;
+  /** x ramene A (stoupá od z0 dozadu) a ramene B (vrací se dopředu). */
+  xa: number;
+  xb: number;
+  run: number;
+}
+
+/** Geometrie schodišťového jádra: ramena šířky w, dělicí zeď g, mezipodesta L (hloubka). */
+export function coreLayout(cx: number, zStart: number, w = 1.1, storey = M.storey, g = 0.15, L = 1.2, flip = false): Core {
+  const steps = Math.ceil(storey / 2 / M.riser - 1e-6);
+  const run = steps * M.tread;
+  const off = (w + g) / 2;
+  const xa = flip ? cx + off : cx - off, xb = flip ? cx - off : cx + off;
+  return { rect: [cx - w - g / 2, zStart, cx + w + g / 2, zStart + run + L], zStart, xa, xb, run };
+}
+
+/**
+ * Jedno podlaží dvouramenného schodiště od podlahy y0 o výšku `storey`: rameno A dozadu
+ * na mezipodestu, rameno B zpět dopředu na hranu zStart o patro výš. Mezi rameny plná
+ * dělicí zeď (kryje). Kolize ramen = rampy.
+ */
+export function coreFlights(c: Core, y0: number, storey: number, w: number, mat: string, wallMat: string): Part[] {
+  const parts: Part[] = [];
+  const yMid = y0 + storey / 2, yTop = y0 + storey;
+  parts.push(...stairs(c.xa, c.zStart, 'z+', w, y0, yMid, mat).parts);
+  parts.push(...stairs(c.xb, c.zStart + c.run, 'z-', w, yMid, yTop, mat).parts);
+  const [x0, , x1, z1] = c.rect;
+  parts.push(...landing([x0, c.zStart + c.run, x1, z1], yMid, mat, false));
+  // Dělicí zeď mezi rameny (po délku ramen).
+  parts.push({ shape: 'box', pos: [(c.xa + c.xb) / 2, y0 + storey / 2, c.zStart + c.run / 2], size: [Math.abs(c.xb - c.xa) - w, storey, c.run], material: wallMat, collide: true });
+  return parts;
+}
+
+/**
+ * Střešní nástavba nad schodištěm: obvodové stěny kolem jádra + vstupní předsíň hloubky `vest`
+ * před hranou nástupu, dveře v čele (ke střeše), stropní deska. Pata v y (úroveň střechy).
+ */
+export function stairHouse(c: Core, y: number, mat: string, trim: string, vest = 1.4, h = 2.7): Part[] {
+  const [x0, z0, x1, z1] = c.rect;
+  const t = 0.2;
+  const X0 = x0 - t, X1 = x1 + t, Z0 = z0 - vest, Z1 = z1 + t;
+  const parts: Part[] = [];
+  const cx = (X0 + X1) / 2;
+  parts.push(...wall([X0, Z0 + t / 2], [X1, Z0 + t / 2], y, h, t, [door(cx - X0, { leaf: false })], mat, { out: [0, -1], trim }));
+  parts.push(...wall([X0, Z1 - t / 2], [X1, Z1 - t / 2], y, h, t, [], mat, { plain: true }));
+  for (const [xx, out] of [[X0 + t / 2, -1], [X1 - t / 2, 1]] as const) parts.push(...wall([xx, Z0 + t], [xx, Z1 - t], y, h, t, [win(1.0, { w: 0.6, b: 1.4, t: 2.0 })], mat, { out: [out, 0], trim }));
+  parts.push(...slab([X0 - 0.05, Z0 - 0.05, X1 + 0.05, Z1 + 0.05], y + h + 0.2, 0.2, [], 'concreteLight'));
+  parts.push({ shape: 'box', pos: [cx, y + h + 0.33, (Z0 + Z1) / 2], size: [X1 - X0 + 0.1, 0.06, Z1 - Z0 + 0.1], material: trim });
+  return parts;
 }

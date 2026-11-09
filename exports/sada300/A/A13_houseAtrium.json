@@ -1,0 +1,1812 @@
+{
+ "schema_version": "1.1",
+ "id": "A13_houseAtrium",
+ "asset_id": "setA.houseAtrium",
+ "label_cs": "A13 Dům s centrálním dvorem",
+ "category": "sada300_A",
+ "asset_kind": "building",
+ "footprint_m": [
+  14.54,
+  12.61
+ ],
+ "height_m": 4.26,
+ "target_m": [
+  14,
+  12,
+  3.2
+ ],
+ "bounds_m": {
+  "min": [
+   -7.43,
+   0,
+   -6.11
+  ],
+  "max": [
+   7.11,
+   4.26,
+   6.5
+  ]
+ },
+ "triangles": {
+  "LOD0": 2640
+ },
+ "triangle_limits": {
+  "LOD0": 12000
+ },
+ "materials": [
+  "acUnit",
+  "awningSand",
+  "concreteDark",
+  "concreteLight",
+  "fabricSand",
+  "metal",
+  "paving",
+  "plasterWarm",
+  "roof",
+  "sandstone",
+  "stoneWall",
+  "wood",
+  "woodDark"
+ ],
+ "collision": [
+  {
+   "center": [
+    0,
+    0.04,
+    0
+   ],
+   "size": [
+    13.98,
+    0.08,
+    11.98
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -6.4,
+    1.5,
+    -5.85
+   ],
+   "size": [
+    1.2,
+    3,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -5.2,
+    0.5,
+    -5.85
+   ],
+   "size": [
+    1.2,
+    1,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -5.2,
+    2.6,
+    -5.85
+   ],
+   "size": [
+    1.2,
+    0.8,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.9,
+    1.5,
+    -5.85
+   ],
+   "size": [
+    3.4,
+    3,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    2.9,
+    -5.85
+   ],
+   "size": [
+    2.4,
+    0.2,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.9,
+    1.5,
+    -5.85
+   ],
+   "size": [
+    3.4,
+    3,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    5.2,
+    0.5,
+    -5.85
+   ],
+   "size": [
+    1.2,
+    1,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    5.2,
+    2.6,
+    -5.85
+   ],
+   "size": [
+    1.2,
+    0.8,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    6.4,
+    1.5,
+    -5.85
+   ],
+   "size": [
+    1.2,
+    3,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -6.4,
+    1.5,
+    5.85
+   ],
+   "size": [
+    1.2,
+    3,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -5.2,
+    0.5,
+    5.85
+   ],
+   "size": [
+    1.2,
+    1,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -5.2,
+    2.6,
+    5.85
+   ],
+   "size": [
+    1.2,
+    0.8,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.6,
+    1.5,
+    5.85
+   ],
+   "size": [
+    4,
+    3,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    2.625,
+    5.85
+   ],
+   "size": [
+    1.2,
+    0.75,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.6,
+    1.5,
+    5.85
+   ],
+   "size": [
+    4,
+    3,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    5.2,
+    0.5,
+    5.85
+   ],
+   "size": [
+    1.2,
+    1,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    5.2,
+    2.6,
+    5.85
+   ],
+   "size": [
+    1.2,
+    0.8,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    6.4,
+    1.5,
+    5.85
+   ],
+   "size": [
+    1.2,
+    3,
+    0.3
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    6.85,
+    1.5,
+    -3.975
+   ],
+   "size": [
+    0.3,
+    3,
+    3.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    6.85,
+    0.5,
+    -1.75
+   ],
+   "size": [
+    0.3,
+    1,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    6.85,
+    2.6,
+    -1.75
+   ],
+   "size": [
+    0.3,
+    0.8,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    6.85,
+    1.5,
+    0
+   ],
+   "size": [
+    0.3,
+    3,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    6.85,
+    0.5,
+    1.75
+   ],
+   "size": [
+    0.3,
+    1,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    6.85,
+    2.6,
+    1.75
+   ],
+   "size": [
+    0.3,
+    0.8,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    6.85,
+    1.5,
+    3.975
+   ],
+   "size": [
+    0.3,
+    3,
+    3.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -6.85,
+    1.5,
+    -3.975
+   ],
+   "size": [
+    0.3,
+    3,
+    3.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -6.85,
+    0.5,
+    -1.75
+   ],
+   "size": [
+    0.3,
+    1,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -6.85,
+    2.6,
+    -1.75
+   ],
+   "size": [
+    0.3,
+    0.8,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -6.85,
+    1.5,
+    0
+   ],
+   "size": [
+    0.3,
+    3,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -6.85,
+    0.5,
+    1.75
+   ],
+   "size": [
+    0.3,
+    1,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -6.85,
+    2.6,
+    1.75
+   ],
+   "size": [
+    0.3,
+    0.8,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -6.85,
+    1.5,
+    3.975
+   ],
+   "size": [
+    0.3,
+    3,
+    3.45
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -4,
+    1.5,
+    -2.875
+   ],
+   "size": [
+    0.15,
+    3,
+    1.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -4,
+    2.625,
+    -1.75
+   ],
+   "size": [
+    0.15,
+    0.75,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -4,
+    1.5,
+    0
+   ],
+   "size": [
+    0.15,
+    3,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -4,
+    2.625,
+    1.75
+   ],
+   "size": [
+    0.15,
+    0.75,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -4,
+    1.5,
+    2.875
+   ],
+   "size": [
+    0.15,
+    3,
+    1.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -5.3875,
+    1.5,
+    0
+   ],
+   "size": [
+    2.625,
+    3,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -4.975,
+    1.5,
+    -3.5
+   ],
+   "size": [
+    3.45,
+    3,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.75,
+    2.625,
+    -3.5
+   ],
+   "size": [
+    1,
+    0.75,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.875,
+    1.5,
+    -3.5
+   ],
+   "size": [
+    0.75,
+    3,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.5,
+    1.5,
+    -4.6
+   ],
+   "size": [
+    0.15,
+    3,
+    2.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -4.8,
+    1.5,
+    3.5
+   ],
+   "size": [
+    3.8,
+    3,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -2.4,
+    2.625,
+    3.5
+   ],
+   "size": [
+    1,
+    0.75,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.325,
+    1.5,
+    3.5
+   ],
+   "size": [
+    1.15,
+    3,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.75,
+    1.5,
+    4.6
+   ],
+   "size": [
+    0.15,
+    3,
+    2.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    4,
+    1.5,
+    -2.875
+   ],
+   "size": [
+    0.15,
+    3,
+    1.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    4,
+    2.625,
+    -1.75
+   ],
+   "size": [
+    0.15,
+    0.75,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    4,
+    1.5,
+    0
+   ],
+   "size": [
+    0.15,
+    3,
+    2.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    4,
+    2.625,
+    1.75
+   ],
+   "size": [
+    0.15,
+    0.75,
+    1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    4,
+    1.5,
+    2.875
+   ],
+   "size": [
+    0.15,
+    3,
+    1.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    5.3875,
+    1.5,
+    0
+   ],
+   "size": [
+    2.625,
+    3,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.875,
+    1.5,
+    -3.5
+   ],
+   "size": [
+    0.75,
+    3,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.75,
+    2.625,
+    -3.5
+   ],
+   "size": [
+    1,
+    0.75,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    4.975,
+    1.5,
+    -3.5
+   ],
+   "size": [
+    3.45,
+    3,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.5,
+    1.5,
+    -4.6
+   ],
+   "size": [
+    0.15,
+    3,
+    2.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.325,
+    1.5,
+    3.5
+   ],
+   "size": [
+    1.15,
+    3,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.4,
+    2.625,
+    3.5
+   ],
+   "size": [
+    1,
+    0.75,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    4.8,
+    1.5,
+    3.5
+   ],
+   "size": [
+    3.8,
+    3,
+    0.15
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0.75,
+    1.5,
+    4.6
+   ],
+   "size": [
+    0.15,
+    3,
+    2.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -3,
+    1.5,
+    -2.5
+   ],
+   "size": [
+    0.36,
+    3,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.5,
+    1.5,
+    -2.5
+   ],
+   "size": [
+    0.36,
+    3,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.5,
+    1.5,
+    -2.5
+   ],
+   "size": [
+    0.36,
+    3,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3,
+    1.5,
+    -2.5
+   ],
+   "size": [
+    0.36,
+    3,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -3,
+    1.5,
+    0
+   ],
+   "size": [
+    0.36,
+    3,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3,
+    1.5,
+    0
+   ],
+   "size": [
+    0.36,
+    3,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -3,
+    1.5,
+    2.5
+   ],
+   "size": [
+    0.36,
+    3,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.5,
+    1.5,
+    2.5
+   ],
+   "size": [
+    0.36,
+    3,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    1.5,
+    1.5,
+    2.5
+   ],
+   "size": [
+    0.36,
+    3,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3,
+    1.5,
+    2.5
+   ],
+   "size": [
+    0.36,
+    3,
+    0.36
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -5.025,
+    3.1,
+    0
+   ],
+   "size": [
+    4.05,
+    0.2,
+    12.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    3.1,
+    -4.275
+   ],
+   "size": [
+    6,
+    0.2,
+    3.55
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    3.1,
+    4.275
+   ],
+   "size": [
+    6,
+    0.2,
+    3.55
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    5.025,
+    3.1,
+    0
+   ],
+   "size": [
+    4.05,
+    0.2,
+    12.1
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    0,
+    3.7,
+    -5.875
+   ],
+   "size": [
+    14,
+    1,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    3.7,
+    5.875
+   ],
+   "size": [
+    14,
+    1,
+    0.25
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    6.875,
+    3.7,
+    0
+   ],
+   "size": [
+    0.25,
+    1,
+    11.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -6.875,
+    3.7,
+    0
+   ],
+   "size": [
+    0.25,
+    1,
+    11.5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    0,
+    3.65,
+    -2.6
+   ],
+   "size": [
+    6.4,
+    0.9,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -0.85,
+    3.65,
+    2.6
+   ],
+   "size": [
+    4.7,
+    0.9,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    2.85,
+    3.65,
+    2.6
+   ],
+   "size": [
+    0.7,
+    0.9,
+    0.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    3.1,
+    3.65,
+    0
+   ],
+   "size": [
+    0.2,
+    0.9,
+    5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -3.1,
+    3.65,
+    0
+   ],
+   "size": [
+    0.2,
+    0.9,
+    5
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "plaster"
+  },
+  {
+   "center": [
+    -1.2,
+    0.45,
+    0.4
+   ],
+   "size": [
+    1.2,
+    0.8,
+    1.2
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "cylinder",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    1.6,
+    0.27,
+    -1.4
+   ],
+   "size": [
+    1.6,
+    0.4,
+    0.42
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -7.22,
+    2.3,
+    -4
+   ],
+   "size": [
+    0.85,
+    0.6,
+    0.42
+   ],
+   "rotX": 0,
+   "rotY": -1.5708,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "concrete"
+  },
+  {
+   "center": [
+    -5.3,
+    0.81,
+    1.8
+   ],
+   "size": [
+    1.2,
+    0.05,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -3.5,
+    1.03,
+    -5.45
+   ],
+   "size": [
+    1,
+    1.9,
+    0.4
+   ],
+   "rotX": 3.1416,
+   "rotY": 0,
+   "rotZ": 3.1416,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    -3.4,
+    0.38,
+    5.2
+   ],
+   "size": [
+    0.6,
+    0.6,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    5.3,
+    0.81,
+    1.8
+   ],
+   "size": [
+    1.2,
+    0.05,
+    0.7
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    3.5,
+    1.03,
+    -5.45
+   ],
+   "size": [
+    1,
+    1.9,
+    0.4
+   ],
+   "rotX": 3.1416,
+   "rotY": 0,
+   "rotZ": 3.1416,
+   "kind": "box",
+   "surface": "wood"
+  },
+  {
+   "center": [
+    3.4,
+    0.38,
+    5.2
+   ],
+   "size": [
+    0.6,
+    0.6,
+    0.6
+   ],
+   "rotX": 0,
+   "rotY": 0,
+   "rotZ": 0,
+   "kind": "box",
+   "surface": "wood"
+  }
+ ],
+ "walkable_roof": true,
+ "ladders": [
+  {
+   "base": [
+    2,
+    0,
+    2.45
+   ],
+   "height": 3.2,
+   "facing_deg": 0
+  }
+ ],
+ "route": [
+  {
+   "p": [
+    0,
+    0,
+    -7.5
+   ],
+   "note": "ulice"
+  },
+  {
+   "p": [
+    0,
+    0.08,
+    -4.6
+   ],
+   "note": "předsíň"
+  },
+  {
+   "p": [
+    0,
+    0.1,
+    -1
+   ],
+   "note": "dvůr"
+  },
+  {
+   "p": [
+    3.5,
+    0.08,
+    -1
+   ],
+   "note": "krytá chodba"
+  },
+  {
+   "p": [
+    3.5,
+    0.08,
+    -1.75
+   ]
+  },
+  {
+   "p": [
+    5.4,
+    0.08,
+    -0.9
+   ],
+   "note": "boční pokoj"
+  },
+  {
+   "p": [
+    3.5,
+    0.08,
+    -1.75
+   ]
+  },
+  {
+   "p": [
+    3.5,
+    0.08,
+    3
+   ]
+  },
+  {
+   "p": [
+    2.4,
+    0.08,
+    3
+   ]
+  },
+  {
+   "p": [
+    2.4,
+    0.08,
+    4.6
+   ],
+   "note": "zadní pokoj"
+  },
+  {
+   "p": [
+    2.4,
+    0.08,
+    3
+   ]
+  },
+  {
+   "p": [
+    0,
+    0.08,
+    3
+   ]
+  },
+  {
+   "p": [
+    0,
+    0.08,
+    5
+   ],
+   "note": "zadní průchod"
+  },
+  {
+   "p": [
+    0,
+    0,
+    7.6
+   ],
+   "note": "ven zadem"
+  },
+  {
+   "p": [
+    2,
+    0.1,
+    1.2
+   ],
+   "teleport": true
+  },
+  {
+   "p": [
+    2,
+    3.2,
+    4.4
+   ],
+   "ladder": true,
+   "note": "střecha"
+  },
+  {
+   "p": [
+    2,
+    3.2,
+    4.7
+   ]
+  },
+  {
+   "p": [
+    -5,
+    3.2,
+    4.7
+   ]
+  },
+  {
+   "p": [
+    -5,
+    3.2,
+    -4
+   ],
+   "note": "střecha – přední křídlo"
+  }
+ ],
+ "doors_m": {
+  "width": 1.2,
+  "height": 2.25
+ },
+ "window_sill_m": 1,
+ "stairs": {
+  "riser_max_m": 0.185,
+  "tread_m": 0.3,
+  "collision": "ramp"
+ },
+ "units": "meters",
+ "up": "Y",
+ "front": "-Z",
+ "uv_units": "meters",
+ "collision_rotation_order": "Rz @ Ry @ Rx on column vectors; radians",
+ "notes": [
+  "Krytá chodba 1,0–1,0 m kolem dvora na 8 sloupech; dvě cesty skrz (brána – dvůr – zadní průchod)."
+ ],
+ "tested_in_game": false
+}

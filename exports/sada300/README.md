@@ -21,6 +21,14 @@ Pro každou dávku navíc vzniká podle zadání:
 Vygeneruje se příkazem `npx tsx scripts/export-set.ts A`. Rendery skriptem
 `node scripts/set/setshots.mjs exports/sada300/A/renders setA.` (Playwright, běžící `npm run dev`).
 
+## Dávky
+
+- **A01–A10:** přízemní a dvoupodlažní domy (A05/A06 = upravené piloty).
+- **A11–A20:** domy se dvory (protáhlý, L, centrální s krytou chodbou), činžáky se 3 a 5 podlažími
+  (dvouramenné schodiště s mezipodestou přes všechna podlaží až do střešní nástavby, balkony,
+  ustoupené patro s terasou, průjezdy 3,5 × 3,0 m, vystouplý schodišťový trakt), rohový dům
+  s krytým rohovým vstupem a výlohami do dvou ulic.
+
 ## Validace
 
 - **Průchod:** u každého modelu projde simulovaný hráč (stejné kolize a pohyb jako server)
@@ -36,6 +44,9 @@ Vygeneruje se příkazem `npx tsx scripts/export-set.ts A`. Rendery skriptem
   4 kvádry. Statické kvádry jsou pro fyziku levné (na mapě s 50 budovami ~4000 kvádrů).
   Pokud chceš limit 24 dodržet striktně, musely by okna mít „plnou“ kolizi a střílet by se
   jimi nedalo.
+- **Kolize u činžáků (A14–A19):** dvouramenné schodiště, příčky a okna ve 3–5 podlažích dávají
+  150–430 kolizních kvádrů na budovu. Pokud by to na velkých mapách zatěžovalo fyziku, další krok
+  je slučovat souvislé kusy zdí každého podlaží do méně kvádrů (vzhled ani průchod se nezmění).
 - **LOD:** procedurální budovy nemají LOD1/LOD2. Hra statické objekty slučuje podle materiálu,
   takže počet vykreslovaných částí je malý. LOD0 je vždy hluboko pod limitem 12 000.
 - **A05 a A06 (pilotní P):** GLB piloty prošly kontrolou průchodu (výklenek, schody na plnou

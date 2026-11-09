@@ -389,7 +389,9 @@ export class App {
       // Jiný předmět pod patou (paprsek jen kousek nad patou → nechytí střechu nad sebou).
       const from = Math.max(py, th ?? py) + 0.35;
       const hit = this.phys.castRay({ x, y: from, z }, { x: 0, y: -1, z: 0 }, 400, undefined, undefined, o.id);
-      if (hit && hit.objectId !== '__terrain' && (th === null || hit.point.y > th + 0.25) && hit.point.y > objTop) {
+      // Podpora = plocha jiného předmětu POD patou (střecha pod nádrží, bedna pod bednou). Věci, které
+      // jen stojí uvnitř / vedle (bedna v domě, plot u zdi), sahají nad patu → nepočítají se.
+      if (hit && hit.objectId !== '__terrain' && (th === null || hit.point.y > th + 0.25) && hit.point.y <= py + 0.05 && hit.point.y > objTop) {
         objTop = hit.point.y;
         by = hit.objectId;
       }
