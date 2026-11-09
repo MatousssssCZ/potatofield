@@ -51,7 +51,7 @@ for (const id of ids) {
     ['predni', [c[0] - R * 0.55, R * 0.42, info.mn[2] - R * 0.8], [c[0], c[1] * 0.8, c[2]]],
     ['zadni', [c[0] + R * 0.6, R * 0.5, info.mx[2] + R * 0.75], [c[0], c[1] * 0.8, c[2]]],
     ['shora', [c[0] - R * 0.35, R * 1.25, c[2] - R * 0.5], [c[0], 0, c[2]]],
-    ['interier', info.meta.view ? info.meta.view[0] : [r[2].p[0], r[2].p[1] + 1.6, r[2].p[2]], info.meta.view ? info.meta.view[1] : [r[0].p[0], r[0].p[1] + 1.4, r[0].p[2]], 72],
+    ['interier', info.meta.view ? info.meta.view[0] : [r[Math.min(2, r.length - 1)].p[0], r[Math.min(2, r.length - 1)].p[1] + 1.6, r[Math.min(2, r.length - 1)].p[2]], info.meta.view ? info.meta.view[1] : [r[0].p[0], r[0].p[1] + 1.4, r[0].p[2]], 72],
   ];
   const imgs = [];
   const hasInterior = await open({});
