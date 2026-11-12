@@ -11,6 +11,7 @@ import { buildEmptyMap } from '../world/maps/empty';
 import { buildRangeMap } from '../world/maps/range';
 import { buildStreetMap } from '../world/maps/street';
 import { buildShowcaseMap } from '../world/maps/showcase';
+import { buildOsadaSliceMap } from '../world/maps/osadaSlice';
 import { Editor, TEST_SPAWN_ID } from './editor/editor';
 import { EditorDoc, History, cmds, type Change } from './editor/editorDoc';
 import { AutoSaver, MapStore, exportMapFile, readMapFile } from './editor/persistence';
@@ -1348,6 +1349,7 @@ export class App {
       { id: 'range', label: 'Šablona: střelnice' },
       { id: 'street', label: 'Šablona: ulice' },
       { id: 'showcase', label: 'Přehled sady 300' },
+      { id: 'osadaSlice', label: 'Skladová osada · řez' },
       { id: 'import', label: 'Importovat…' },
       { id: 'export', label: 'Exportovat', primary: true },
     ]);
@@ -1376,6 +1378,10 @@ export class App {
     else if (choice === 'showcase') {
       this.openDoc(buildShowcaseMap());
       toast('Přehled sady 300: všech 300 modelů po sekcích A–K, u každého cedule s číslem.');
+    }
+    else if (choice === 'osadaSlice') {
+      this.openDoc(buildOsadaSliceMap());
+      toast('Skladová osada – vertikální řez: dům, hala, cesty, plot, zeď, balvany, bod A a spawny.');
     }
     else if (choice === 'import') $<HTMLInputElement>('#file-import').click();
     else if (choice === 'export') exportMapFile(this.ed.doc);

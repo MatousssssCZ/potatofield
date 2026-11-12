@@ -50,7 +50,7 @@ export interface TerrainCut {
 export interface AssetDef {
   assetId: string;
   label: string;
-  category: 'primitives' | 'cover' | 'range' | 'markers' | 'structures' | 'buildings' | 'street' | 'nature' | 'glb' | 'setA' | 'setB' | 'setC' | 'setD' | 'setE' | 'setF' | 'setG' | 'setH' | 'setI' | 'setJ' | 'setK';
+  category: 'primitives' | 'cover' | 'range' | 'markers' | 'structures' | 'buildings' | 'street' | 'nature' | 'glb' | 'setA' | 'setB' | 'setC' | 'setD' | 'setE' | 'setF' | 'setG' | 'setH' | 'setI' | 'setJ' | 'setK' | 'osada';
   generatorVersion: number;
   params: ParamSpec[];
   materials: string[];
@@ -73,6 +73,11 @@ export interface AssetDef {
   ladders?(p: Params): LadderLocal[];
   /** Popis výsledného rozměru pro UI (např. „5 polí, 6 sloupků“). */
   describe?(p: Params): string;
+  /**
+   * Konflikty a varování parametrů (zamčené dveře mimo stěnu, zkrácené přechody …). Editor je ukáže
+   * u vlastností a Kontrola mapy je vypíše; generátor přesto vrací platnou geometrii.
+   */
+  validate?(p: Params): string[];
 }
 
 const registry = new Map<string, AssetDef>();

@@ -10,6 +10,7 @@ const CATEGORY_LABELS: Record<AssetDef['category'], string> = {
   buildings: 'Budovy',
   nature: 'Příroda',
   glb: 'Modely GLB (ChatGPT)',
+  osada: 'Skladová osada',
   setA: 'Sada 300 · A Obytné budovy',
   setB: 'Sada 300 · B Stavební moduly',
   setC: 'Sada 300 · C Vstupy a průchody',
@@ -31,6 +32,7 @@ const CATEGORY_LABELS: Record<AssetDef['category'], string> = {
 
 const MATERIAL_LABELS: Record<string, string> = {
   concrete: 'Beton',
+  gravel: 'Štěrk',
   concreteLight: 'Beton světlý',
   plaster: 'Omítka',
   plasterWarm: 'Omítka okrová',
@@ -164,6 +166,24 @@ export function buildCatalog(onPick: (assetId: string) => void, deps: { thumbs: 
     }
   })();
   let usedKey = '';
+  // Oblíbené položky katalogu (jen v tomto prohlížeči – pohodlí, ne data mapy).
+  const favs = new Set<string>((() => {
+    try {
+      return JSON.parse(localStorage.getItem('pf.catalog.fav') || '[]') as string[];
+    } catch {
+      return [];
+    }
+  })());
+  const toggleFav = (id: string) => {
+    if (favs.has(id)) favs.delete(id);
+    else favs.add(id);
+    try {
+      localStorage.setItem('pf.catalog.fav', JSON.stringify([...favs]));
+    } catch {
+      /* ignorovat */
+    }
+    render();
+  };
   const markerIcons = new Map<string, string>();
 
   const tile = (id: string, label: string, tag: string, title: string, img: (cb: (url: string) => void) => void) => {
@@ -176,6 +196,12 @@ export function buildCatalog(onPick: (assetId: string) => void, deps: { thumbs: 
     });
     b.append(pic, el('span', { class: 'lbl' }, label));
     if (tag) b.append(el('small', { class: 'tag' }, tag));
+    const star = el('span', { class: `fav${favs.has(id) ? ' on' : ''}`, title: favs.has(id) ? 'Odebrat z oblíbených' : 'Přidat do oblíbených' }, favs.has(id) ? '★' : '☆');
+    star.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFav(id);
+    });
+    b.append(star);
     b.addEventListener('click', () => onPick(id));
     return b;
   };
@@ -200,6 +226,7 @@ export function buildCatalog(onPick: (assetId: string) => void, deps: { thumbs: 
     for (const a of allAssets()) counts.set(a.category, (counts.get(a.category) ?? 0) + 1);
     const opts: Array<[string, string]> = [
       ['all', 'Vše'],
+      ['fav', `★ Oblíbené (${favs.size})`],
       ['used', `Použito na mapě (${used.size})`],
       ['markers', 'Herní markery'],
       ...[...counts].map(([c, n]) => [c, `${CATEGORY_LABELS[c as AssetDef['category']] ?? c} (${n})`] as [string, string]),
@@ -217,6 +244,15 @@ export function buildCatalog(onPick: (assetId: string) => void, deps: { thumbs: 
     renderSelect(used);
     list.replaceChildren();
     const assets = allAssets().filter((a) => match(a.label, a.assetId));
+    if (cat === 'all' || cat === 'fav') {
+      const tiles = [...favs]
+        .map((id) => MARKER_ITEMS.find((m) => m.id === id) ?? getAsset(id))
+        .filter((a): a is NonNullable<typeof a> => !!a)
+        .map((a) => ('assetId' in a ? (match(a.label, a.assetId) ? assetTile(a) : null) : match(a.label, a.id) ? markerTile(a) : null))
+        .filter((t): t is HTMLButtonElement => !!t);
+      if (tiles.length) list.appendChild(section('★ Oblíbené', tiles));
+      else if (cat === 'fav') list.appendChild(el('div', { class: 'note' }, 'Žádné oblíbené – klikni na ☆ u položky.'));
+    }
     if (cat === 'all' || cat === 'used') {
       const tiles = [...used]
         .sort((x, y) => y[1] - x[1])
@@ -230,7 +266,7 @@ export function buildCatalog(onPick: (assetId: string) => void, deps: { thumbs: 
       const mk = MARKER_ITEMS.filter((m) => match(m.label, m.id));
       if (mk.length) list.appendChild(section('Herní markery', mk.map(markerTile)));
     }
-    if (cat !== 'used' && cat !== 'markers') {
+    if (cat !== 'used' && cat !== 'markers' && cat !== 'fav') {
       const groups = new Map<string, AssetDef[]>();
       for (const a of assets) {
         if (cat !== 'all' && a.category !== cat) continue;
@@ -487,6 +523,7 @@ export function renderInspector(
     root.appendChild(el('div', { class: 'sec' }, 'Parametry'));
     const p = resolveParams(def, o.params);
     if (def.describe) root.appendChild(el('div', { class: 'note' }, def.describe(p)));
+    for (const w of def.validate?.(p) ?? []) root.appendChild(el('div', { class: 'note warn' }, `⚠ ${w}`));
     for (const spec of def.params) {
       const sub = spec.type === 'number' || spec.type === 'int' ? `${spec.min ?? ''}–${spec.max ?? ''} ${spec.unit ?? ''}`.trim() : undefined;
       root.appendChild(prop(spec.label, sub, paramControl(spec, p[spec.key], (v) => upd(spec.label, (x) => (x.params[spec.key] = v)))));

@@ -36,6 +36,7 @@ export const MATERIALS: Record<string, MatDef> = {
   asphalt: { tex: 'asphalt', tile: 5, dust: 0.0, macro: 0.6 },
   sand: { tex: 'sand', tile: 6, macro: 0.5 },
   dirt: { tex: 'dirt', tile: 6, macro: 0.5 },
+  gravel: { tex: 'sand', tile: 3, tint: '#b8b3a6', roughness: 1, macro: 0.6 },
   wood: { tex: 'wood', tile: 1.0, dust: 0.4, macro: 0.3 },
   woodDark: { tex: 'woodDark', tile: 1.0, dust: 0.4, macro: 0.3 },
   metal: { tex: 'metal', tile: 1.5, dust: 0.3, macro: 0.2 },

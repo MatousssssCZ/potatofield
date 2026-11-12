@@ -22,7 +22,9 @@ import './assets/set/vehicles';
 import './assets/set/furniture';
 import './assets/set/props300';
 import './assets/set/nature300';
+import './assets/osada';
 
 export * from './registry';
 export * from './parts';
 export { SET_META } from './assets/set/residential';
+export { OSADA_META } from './assets/osada';

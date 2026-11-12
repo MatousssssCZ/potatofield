@@ -466,6 +466,23 @@ kbd {
   color: var(--dim);
   border-radius: 2px;
 }
+.cat-tile .fav {
+  position: absolute;
+  top: 5px;
+  left: 7px;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--dim);
+  text-shadow: 0 0 3px #000;
+  opacity: 0;
+}
+.cat-tile:hover .fav,
+.cat-tile .fav.on {
+  opacity: 1;
+}
+.cat-tile .fav.on {
+  color: var(--accent);
+}
 .cat-group {
   margin-bottom: 10px;
 }
