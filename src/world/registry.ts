@@ -14,6 +14,8 @@ export interface ParamSpec {
   unit?: string;
   default: number | string | boolean;
   options?: Array<{ value: string; label: string }>;
+  /** Neukazovat v panelu vlastností (spravuje ho editor jinak – ID uzlů, úseky povrchu). */
+  hidden?: boolean;
 }
 
 export type Params = Record<string, number | string | boolean>;
@@ -73,6 +75,11 @@ export interface AssetDef {
   ladders?(p: Params): LadderLocal[];
   /** Popis výsledného rozměru pro UI (např. „5 polí, 6 sloupků“). */
   describe?(p: Params): string;
+  /**
+   * Úprava bodů trasy v editoru (vložení, smazání, posun, nakreslení): vrátí doplňkové parametry,
+   * které se uloží ve stejném kroku historie (stabilní ID uzlů, přemapované úseky povrchu).
+   */
+  editPoints?(p: Params, before: string, after: string, op: import('./assets/osada/roadGraph').PointOp): Params;
   /**
    * Konflikty a varování parametrů (zamčené dveře mimo stěnu, zkrácené přechody …). Editor je ukáže
    * u vlastností a Kontrola mapy je vypíše; generátor přesto vrací platnou geometrii.

@@ -1,9 +1,12 @@
 import { DEFAULT_ENVIRONMENT, type EnvironmentProfile, type MapObject } from '../../shared/map/schema';
-import { allAssets, getAsset, resolveParams, type AssetDef, type ParamSpec } from '../../world/registry';
+import { allAssets, getAsset, resolveParams, terrainContext, type AssetDef, type ParamSpec } from '../../world/registry';
 import { cmds, type EditorDoc, type History } from './editorDoc';
 import { TEST_SPAWN_ID, type Editor } from './editor';
 import { markerId } from './markers';
 import { markerIcon, type Thumbnails } from './thumbnails';
+import { roadModel, SURFACES } from '../../world/assets/osada/road';
+import { formatRanges, parseRanges, refToS, sToRef, type SurfaceRange } from '../../world/assets/osada/roadGraph';
+import { branchFrom, joinRoads, splitRoad } from '../../world/assets/osada/roadOps';
 import { renderMarkerInspector, renderScenarios, type GameUiState } from './uiGame';
 
 const CATEGORY_LABELS: Record<AssetDef['category'], string> = {
@@ -525,10 +528,12 @@ export function renderInspector(
     if (def.describe) root.appendChild(el('div', { class: 'note' }, def.describe(p)));
     for (const w of def.validate?.(p) ?? []) root.appendChild(el('div', { class: 'note warn' }, `⚠ ${w}`));
     for (const spec of def.params) {
+      if (spec.hidden) continue;
       const sub = spec.type === 'number' || spec.type === 'int' ? `${spec.min ?? ''}–${spec.max ?? ''} ${spec.unit ?? ''}`.trim() : undefined;
       root.appendChild(prop(spec.label, sub, paramControl(spec, p[spec.key], (v) => upd(spec.label, (x) => (x.params[spec.key] = v)))));
     }
   }
+  if (def && o.assetId === 'osada.road') roadPanel(root, o, ed, history, editor);
   if (def && def.materials.length > 1) {
     const s = el('select') as HTMLSelectElement;
     for (const m of def.materials) s.appendChild(el('option', { value: m }, MATERIAL_LABELS[m] ?? m));
@@ -656,4 +661,96 @@ function renderMapProps(root: HTMLElement, ed: EditorDoc, history: History, extr
   r.appendChild(reset);
   root.appendChild(r);
   root.appendChild(el('div', { class: 'note' }, 'Vyberte objekt v pohledu (LMB) nebo v záložce Scéna. Nový objekt vložíte kliknutím v Katalogu.'));
+}
+
+// ---------------- Cesta: úseky povrchu a graf ----------------
+
+/**
+ * Panel cesty Skladové osady: úseky povrchu (povrch, od–do v metrech po trase, přechod), přidání
+ * úseku, a operace grafu – rozdělit / větvit v uzlu, spojit s navazující cestou, zrušit spoje.
+ * Každá akce = jeden krok historie (i když mění víc objektů).
+ */
+function roadPanel(root: HTMLElement, o: MapObject, ed: EditorDoc, history: History, editor: Editor) {
+  const def = getAsset(o.assetId)!;
+  const p = resolveParams(def, o.params);
+  const m = roadModel(p, terrainContext(o, ed.doc.terrain, ed.doc.objects));
+  const keep = p.rangeLength === 'meters';
+  const ranges = parseRanges(String(p.ranges));
+  const setRanges = (label: string, rs: SurfaceRange[]) => history.execute(cmds.update(ed, o.id, (x) => (x.params.ranges = formatRanges(rs)), label));
+  root.appendChild(el('div', { class: 'sec' }, 'Úseky povrchu'));
+  root.appendChild(el('div', { class: 'note' }, `Trasa ${m.curve.total.toFixed(1)} m, základní povrch: ${SURFACES.find((x) => x.value === p.surface)?.label}. Úsek mění povrch jen v rozsahu od–do; hranice táhni růžovou (začátek) a fialovou (konec) značkou po trase. Přechod vzniká na obou koncích.`));
+  ranges.forEach((r, i) => {
+    const a = refToS(m.curve, m.ids, r.from, keep), b = refToS(m.curve, m.ids, r.to, keep);
+    const box = el('div', { class: 'road-range' });
+    const sel = el('select') as HTMLSelectElement;
+    for (const s of SURFACES) sel.appendChild(el('option', { value: s.value }, s.label));
+    sel.value = r.surface;
+    sel.addEventListener('change', () => setRanges('Povrch úseku', ranges.map((x, k) => (k === i ? { ...x, surface: sel.value } : x))));
+    box.appendChild(prop(`Úsek ${i + 1}`, a !== null && b !== null ? `délka ${Math.abs(b - a).toFixed(1)} m` : 'neplatný odkaz', sel));
+    const at = (end: 'from' | 'to', v: number | null) =>
+      numInput(v ?? 0, { min: 0, max: Math.round(m.curve.total * 100) / 100, step: 0.5, unit: 'm' }, (nv) => setRanges(end === 'from' ? 'Začátek úseku' : 'Konec úseku', ranges.map((x, k) => (k === i ? { ...x, [end]: sToRef(m.curve, m.ids, nv) } : x))));
+    const vec = el('div', { class: 'vec' });
+    vec.append(at('from', a), at('to', b));
+    box.appendChild(prop('Od – do', 'm po trase', vec));
+    box.appendChild(prop('Přechod', '0–8 m (zkrátí se u krátkého úseku)', numInput(r.transition, { min: 0, max: 8, step: 0.5, unit: 'm' }, (nv) => setRanges('Délka přechodu', ranges.map((x, k) => (k === i ? { ...x, transition: nv } : x))))));
+    const del = el('button', {}, 'Smazat úsek');
+    del.addEventListener('click', () => setRanges('Smazat úsek povrchu', ranges.filter((_, k) => k !== i)));
+    box.appendChild(del);
+    root.appendChild(box);
+  });
+  const add = el('button', { title: 'Nový úsek uprostřed trasy (pak posuň značky)' }, '+ Přidat úsek povrchu');
+  add.addEventListener('click', () => {
+    const L = m.curve.total;
+    const other = p.surface === 'dirt' ? 'asphalt' : 'dirt';
+    const id = `r${Math.max(0, ...ranges.map((r) => Number(r.id.replace(/\D/g, '')) || 0)) + 1}`;
+    setRanges('Přidat úsek povrchu', [...ranges, { id, from: sToRef(m.curve, m.ids, L * 0.4), to: sToRef(m.curve, m.ids, L * 0.6), surface: other, transition: 2 }]);
+  });
+  root.appendChild(add);
+
+  root.appendChild(el('div', { class: 'sec' }, 'Uzly a spoje'));
+  const nodeSel = el('select') as HTMLSelectElement;
+  m.ids.forEach((nid, i) => nodeSel.appendChild(el('option', { value: String(i) }, `uzel ${i + 1} (${nid})${m.joins.some((j) => j.index === i) ? ' · spoj' : ''}`)));
+  root.appendChild(prop('Uzel', `${m.ids.length} uzlů`, nodeSel));
+  const row = el('div', { class: 'btnrow' });
+  const apply = (label: string, changes: import('./editorDoc').Command['changes'], select?: string[]) => {
+    history.execute({ label, changes });
+    if (select) editor.select(select);
+  };
+  const objChange = (after: MapObject | null, id: string) => ({ kind: 'object' as const, id, before: ed.getObject(id) ? JSON.parse(JSON.stringify(ed.getObject(id))) : null, after });
+  const split = el('button', { title: 'Rozdělí trasu ve vybraném vnitřním uzlu na dvě cesty' }, 'Rozdělit v uzlu');
+  split.addEventListener('click', () => {
+    const r = splitRoad(o, Number(nodeSel.value), ed.newId(), ed.doc.objects);
+    if ('error' in r) return void alertNote(root, r.error);
+    apply('Rozdělit cestu', [objChange(r.a, o.id), objChange(r.b, r.b.id), ...r.others.map((x) => objChange(x, x.id))], [o.id, r.b.id]);
+  });
+  const branch = el('button', { title: 'Nová odbočka z vybraného uzlu (spojená s ním)' }, 'Větvit z uzlu');
+  branch.addEventListener('click', () => {
+    const b = branchFrom(o, Number(nodeSel.value), ed.newId());
+    apply('Větvit cestu', [objChange(b, b.id)], [b.id]);
+  });
+  const join = el('button', { title: 'Spojí s cestou, jejíž konec leží u konce této cesty (≤ 1,5 m)' }, 'Spojit s navazující');
+  join.addEventListener('click', () => {
+    let msg = 'žádná cesta nekončí u konce této cesty';
+    for (const other of ed.doc.objects) {
+      if (other.id === o.id || other.assetId !== 'osada.road') continue;
+      const r = joinRoads(o, other, ed.doc.objects);
+      if ('error' in r) continue;
+      apply('Spojit cesty', [objChange(r.a, o.id), objChange(null, r.removed), ...r.others.map((x) => objChange(x, x.id))], [o.id]);
+      return;
+    }
+    alertNote(root, msg);
+    msg = '';
+  });
+  row.append(split, branch, join);
+  if (m.joins.length) {
+    const unj = el('button', { title: 'Odpojí uzly od jiných cest (křižovatky se zruší)' }, 'Zrušit spoje');
+    unj.addEventListener('click', () => history.execute(cmds.update(ed, o.id, (x) => (x.params.joins = '[]'), 'Zrušit spoje cesty')));
+    row.append(unj);
+  }
+  root.appendChild(row);
+}
+
+function alertNote(root: HTMLElement, text: string) {
+  root.querySelector('.road-alert')?.remove();
+  root.appendChild(el('div', { class: 'note warn road-alert' }, `⚠ ${text}`));
 }

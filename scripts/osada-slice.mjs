@@ -25,6 +25,9 @@ const snap = async (name) => { if (dir) { await p.waitForTimeout(900); await p.s
 await cam(-38, 22, 26, -0.75, -0.45); await snap('osada-01-prehled');
 await cam(-20, 4, 4, 0, -0.12); await snap('osada-02-domy');
 await cam(20, 9, -6, 0.15, -0.3); await snap('osada-03-hala');
+await cam(-26, 7, 9, -1.2, -0.5); await snap('osada-06-prechod-asfalt-hlina');
+await cam(6, 7, 9, -0.7, -0.55); await snap('osada-07-krizovatka-T');
+await cam(28, 6, 7, -0.9, -0.5); await snap('osada-08-beton-dlazba');
 await cam(-31, 6, 42, 0, -0.25); await snap('osada-04-svah-zed');
 await cam(6, 5, 52, 0, -0.2); await snap('osada-04b-balvany-hlina');
 // Vložit B01 z katalogu, undo/redo.

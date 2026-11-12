@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { TexOutput } from './texgen';
+import { transitionRule } from '../../world/assets/osada/roadGraph';
 
 /**
  * Knihovna materiálů. Textury jsou procedurální (texgen) a sdílené; měřítko
@@ -344,6 +345,11 @@ export class MaterialLibrary {
     const key = q ? `${id}|b${q}` : id;
     let m = this.cache.get(key);
     if (m) return m;
+    if (id.includes('>')) {
+      m = this.blendMaterial(id);
+      this.cache.set(key, m);
+      return m;
+    }
     const def = MATERIALS[id] ?? MATERIALS.debugMissing;
     const tex = def.tex ? this.textures.get(def.tex) : undefined;
     const sm = new THREE.MeshStandardMaterial({
@@ -366,6 +372,91 @@ export class MaterialLibrary {
     patchWeathering(sm, def.dust ?? 0, def.macro ?? 0, tex ? q : 0);
     sm.name = id;
     this.cache.set(key, sm);
+    return sm;
+  }
+
+  /**
+   * Přechod dvou povrchů v jedné vrstvě („a>b“): barva, drsnost, AO i normály se míchají podle
+   * váhy `aBlend` (0 = a, 1 = b) s nepravidelnou maskou ze světových souřadnic (stabilní při posunu
+   * uzlu). UV obou materiálů ve světových metrech. Pravidlo dvojice viz `transitionRule`.
+   */
+  private blendMaterial(id: string): THREE.Material {
+    const [a, b] = id.split('>');
+    const da = MATERIALS[a] ?? MATERIALS.debugMissing, db = MATERIALS[b] ?? MATERIALS.debugMissing;
+    const ta = da.tex ? this.textures.get(da.tex) : undefined, tb = db.tex ? this.textures.get(db.tex) : undefined;
+    const mode = { smooth: 0, ragged: 1, seam: 2 }[transitionRule(a, b)];
+    const sm = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 1, metalness: ta ? 1 : 0 });
+    if (ta && tb) {
+      sm.map = ta.map;
+      sm.normalMap = ta.normalMap;
+      sm.roughnessMap = ta.orm;
+      sm.metalnessMap = ta.orm;
+      sm.aoMap = ta.orm;
+    }
+    patchWeathering(sm, Math.max(da.dust ?? 0, db.dust ?? 0), Math.max(da.macro ?? 0, db.macro ?? 0), 0);
+    const weather = sm.onBeforeCompile;
+    sm.onBeforeCompile = (sh, r) => {
+      weather.call(sm, sh, r);
+      if (!ta || !tb) return;
+      sh.uniforms.uMapB = { value: tb.map };
+      sh.uniforms.uNormB = { value: tb.normalMap };
+      sh.uniforms.uOrmB = { value: tb.orm };
+      sh.uniforms.uTileA = { value: da.tile };
+      sh.uniforms.uTileB = { value: db.tile };
+      sh.uniforms.uTintA = { value: new THREE.Color(da.tint ?? '#ffffff') };
+      sh.uniforms.uTintB = { value: new THREE.Color(db.tint ?? '#ffffff') };
+      sh.uniforms.uMode = { value: mode };
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', '#include <common>\nattribute float aBlend;\nvarying float vBlend;')
+        .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvBlend = aBlend;');
+      const mixed = (chunk: string, map: string, uv: string, other: string) => chunk.split(`texture2D( ${map}, ${uv} )`).join(`mix( texture2D( ${map}, uvA ), texture2D( ${other}, uvB ), bw )`);
+      sh.fragmentShader = sh.fragmentShader
+        .replace(
+          '#include <common>',
+          '#include <common>\nuniform sampler2D uMapB;\nuniform sampler2D uNormB;\nuniform sampler2D uOrmB;\nuniform float uTileA;\nuniform float uTileB;\nuniform vec3 uTintA;\nuniform vec3 uTintB;\nuniform int uMode;\nvarying float vBlend;',
+        )
+        .replace(
+          '#include <map_fragment>',
+          `vec2 uvA = vWPos.xz / uTileA;
+          vec2 uvB = vWPos.xz / uTileB;
+          float bw;
+          float edgeF = 0.0;
+          {
+            float w = clamp(vBlend, 0.0, 1.0);
+            float env = 4.0 * w * (1.0 - w);
+            float n1 = texture2D(uMacro, vWPos.xz * 0.31).b;
+            float n2 = texture2D(uMacro, vWPos.xz * 1.9).g;
+            if (uMode == 2) {
+              bw = step(0.5, w);
+            } else if (uMode == 1) {
+              float th = w + ((n1 - 0.5) * 0.9 + (n2 - 0.5) * 0.45) * env;
+              bw = smoothstep(0.46, 0.54, th);
+              edgeF = (1.0 - smoothstep(0.0, 0.16, abs(th - 0.5))) * env;
+            } else {
+              bw = clamp(w + (n1 - 0.5) * 0.6 * env, 0.0, 1.0);
+            }
+          }
+          {
+            vec4 ca = texture2D(map, uvA) * vec4(uTintA, 1.0);
+            vec4 cb = texture2D(uMapB, uvB) * vec4(uTintB, 1.0);
+            diffuseColor *= mix(ca, cb, bw);
+            // Rozpadlá hrana: prach a drobné kamenivo; spára: tmavý lem.
+            diffuseColor.rgb = mix(diffuseColor.rgb, uDustColor * (0.8 + 0.4 * texture2D(uMacro, vWPos.xz * 4.3).r), edgeF * 0.55);
+            if (uMode == 2) {
+              float fw = fwidth(vBlend) * 1.5 + 0.004;
+              diffuseColor.rgb *= mix(0.45, 1.0, smoothstep(0.0, fw, abs(vBlend - 0.5)));
+            }
+          }`,
+        )
+        .replace('#include <roughnessmap_fragment>', mixed(THREE.ShaderChunk.roughnessmap_fragment, 'roughnessMap', 'vRoughnessMapUv', 'uOrmB'))
+        .replace('#include <metalnessmap_fragment>', mixed(THREE.ShaderChunk.metalnessmap_fragment, 'metalnessMap', 'vMetalnessMapUv', 'uOrmB'))
+        .replace('#include <normal_fragment_begin>', THREE.ShaderChunk.normal_fragment_begin.replace(/vNormalMapUv/g, 'uvA'))
+        .replace('#include <normal_fragment_maps>', mixed(THREE.ShaderChunk.normal_fragment_maps, 'normalMap', 'vNormalMapUv', 'uNormB'))
+        .replace('#include <aomap_fragment>', mixed(THREE.ShaderChunk.aomap_fragment, 'aoMap', 'vAoMapUv', 'uOrmB'));
+    };
+    const key = sm.customProgramCacheKey();
+    sm.customProgramCacheKey = () => `${key}-blend${mode}`;
+    sm.name = id;
     return sm;
   }
 

@@ -1,7 +1,7 @@
 # Skladová osada: audit, návrh integrace a stav
 
 Zadání: `Potatofield_Skladova_osada_Claude.md` (verze 1.0, 12. 11. 2026), 84 typů objektů, parametrický editor a mapa.
-Tento dokument je deník rozhodnutí a stavu podle etap zadání (§11). **Hotová je etapa 1 a 2. Etapy 3–8 hotové nejsou.**
+Tento dokument je deník rozhodnutí a stavu podle etap zadání (§11). **Hotové jsou etapy 1, 2 a hlavní část etapy 3 (zbytek etapy 3 je vypsaný v §4). Etapy 4–8 hotové nejsou.**
 
 ## 1. Audit existujícího projektu (etapa 1)
 
@@ -37,6 +37,11 @@ Chybí a bude se zakládat modulárně (etapy 3–6): graf silnic s ID uzlů/hra
 10. **Cesta.** Povrch je parametr (asfalt, štěrk, hlína, beton, dlažba); krajnice s deterministicky zvlněným okrajem ze seedu. Výchozí sledování terénu bez jeho změny. Ostrá zatáčka (poloměr < polovina šířky) je hlášena jako konflikt. Segmentové povrchy, přechody, T/X uzly a terénní vrstva jsou etapa 3.
 11. **Nový materiál `gravel`** (štěrk) – procedurální, ze stávající textury písku s jiným odstínem a měřítkem. Žádné externí assety, žádné licence k evidenci.
 12. **Nasazení.** Push na `main` spouští GitHub Pages (veřejné nasazení). Zadání říká „Nenasazuj aplikaci veřejně bez samostatného pokynu“, proto **práce na osadě jde na větev `skladova-osada`**, která nasazení nespouští. Sloučení do `main` (= nasazení) až na pokyn.
+13. **Graf cesty uvnitř objektu.** Každá cesta (`osada.road`) je řetěz uzlů se stabilními ID (`nodeIds`); úsek = hrana mezi sousedními uzly, identifikovaný ID počátečního uzlu. Křižovatky jsou spoje mezi objekty (`joins`: uzel vedlejší cesty leží v uzlu hlavní). Hlavní cesta prochází vcelku, vedlejší končí přesně na jejím okraji (rohy `endCut`) – společná plocha bez překryvů a děr. Globální RoadGraph jako samostatná struktura mapy by vyžadoval změnu schématu; tento tvar je zpětně kompatibilní a ID jsou stabilní.
+14. **Úseky povrchu** se odkazují na {úsek, t} (+ metry `d`). Posun uzlu je nese poměrně (nebo drží metry, režim „Zachovat metry od uzlu“); vložení / smazání uzlu je přemapuje průmětem stejného místa na nové úseky téže větve. Normalizace: obrácený interval se otočí, prázdný a neplatný se vynechá, překryv se zkrátí – vždy s informací v panelu a v Kontrole.
+15. **Přechody** jsou centrované na hranici, výchozí 2 m (0–8 m). Kus mezi dvěma přechody je dělí rovným dílem (přechod ≤ délka kusu), krajní kus dává až celou délku. Přechod je jeden pás s váhou 0 → 1 po délce, míchaný v jednom shaderu (barva, drsnost, AO i normály, UV ve světových metrech, maska ze světových souřadnic → při posunu uzlu textura neskáče). Pravidla dvojic (`transitionRule`): asfalt/beton ↔ hlína/štěrk/písek = rozpad hrany s prachem, beton ↔ dlažba a asfalt ↔ dlažba = spára s tmavým lemem, hlína ↔ štěrk ↔ písek = plynulá směs.
+16. **Křížení.** Konec kreslené / tažené cesty u jiné cesty se napojí automaticky (vznikne uzel v hlavní cestě = T). Křížení uprostřed se samo nespojuje: Kontrola ho hlásí jako varování s opravou „Vytvořit křižovatku“ (X, ruční potvrzení). Cesty s rozdílem výšky pivotu > 1,5 m se jako křížení nehlásí ani nespojují.
+17. **Formát:** `ranges`/`joins` (JSON) a `nodeIds` mají vlastní mez 20 000 znaků a validaci (MAP_FORMAT.md); ostatní texty zůstávají na 200 znacích.
 
 ## 3. Vertikální řez (etapa 2) – hotovo
 
@@ -64,15 +69,33 @@ Známé limity řezu:
 - Náhledy v katalogu v headless prohlížeči (SwiftShader) zůstávají prázdné; v běžném prohlížeči se generují.
 - Výkon zatím neměřen na cílovém notebooku (i5-1335U) – žádné tvrzení o FPS.
 
+## 3b. Silnice (etapa 3) – hotovo
+
+| Funkce | Kde | Ověření |
+|---|---|---|
+| uzly se stabilními ID, režim hladký / lomený (oblouky s poloměrem) / přímý | `osada/roadGraph.ts` `buildCurve`, `ensureIds` | testy, kontrola samopřekryvu |
+| úseky povrchu {úsek, t}: panel (povrch, od–do v m, přechod, smazat, přidat), dvě značky v pohledu tažené po ose (0,5 m přichycení, Alt volně, popis délky u kurzoru), jedno tažení = jeden krok historie | `ui.ts` `roadPanel`, `editor.ts` (rangeMark) | `scripts/osada-roads.mjs` |
+| přechody: automaticky na obou koncích, zkrácení u krátkého úseku s informací, žádné NaN / obrácené intervaly | `resolveSurfaces` | testy §12 |
+| míchání povrchů v jednom shaderu (3 pravidla) | `render/materials.ts` `blendMaterial`, `geometry.ts` (`aBlend`) | snímky, bez chyb shaderu |
+| vložení / smazání / posun uzlu přemapuje úseky a ID | `roadEditPoints` (hook `editPoints` v editoru) | testy |
+| rozdělit v uzlu, spojit konce (i obráceně kreslené), větvit z uzlu, zrušit spoje | `osada/roadOps.ts`, panel „Uzly a spoje“ | testy + e2e |
+| T: konec cesty u jiné cesty → uzel v hlavní cestě + spoj; posun uzlu hlavní cesty posune napojený konec | `snapEndToRoad`, `roadModel` | testy + e2e |
+| X: Kontrola hlásí křížení bez křižovatky, oprava ji vytvoří; různé výšky se nespojují | `findCrossings`, `makeCrossing`, `app.ts` Kontrola | testy + e2e |
+| varování generátorů (zamčené dveře, zkrácené přechody, neplatné úseky, ostré zatáčky, ztracené spoje) v Kontrole | `app.ts` | e2e |
+
+Testy: `tests/osadaRoads.test.ts` (22 testů: souvislý povrch po posunu uzlu a změně šířky, prostřední asfalt → hlína, krátký úsek, normalizace intervalů, pravidla přechodů, přemapování po vložení/smazání uzlu, rozdělení + spojení, T s rohy na okraji hlavní cesty, posun uzlu hlavní cesty, X, výšky, větvení, validace formátu, uložení/načtení, 100× editace). E2E: `node scripts/osada-roads.mjs <url> [složka]` v reálném editoru – vše OK, bez chyb stránky a shaderu. Celkem 1081 testů projektu prošlo.
+
+Známé limity etapy 3: cesta zatím jen sleduje terén (terénní vrstva chybí); šířka jen globální; plocha křižovatky se řeší po dvojicích (hlavní + vedlejší), uzel se 3+ cestami funguje, ale každá vedlejší se ořízne jen o hlavní; odtažení napojeného uzlu vedlejší cesty spoj zruší (záměrně, ať uzel neskáče zpět); krajnice hlavní cesty vede pod ústím vedlejší (o 12 mm níž, není vidět).
+
 ## 4. Plán dalších etap
 
 | Etapa | Obsah | Stav |
 |---|---|---|
-| 3 Silnice | RoadGraph se stabilními ID uzlů/hran v parametrech; úseky povrchu dvěma značkami (segmentId + t), přechody 0–8 m (výchozí 2 m) jako maska ve shaderu, krácení krátkých úseků, rozdělení/spojení/větvení, T/X křižovatky s ručním potvrzením, nedestruktivní terénní vrstva | neprovedeno |
+| 3 Silnice | viz §3b – hotové jádro; zbývá: nedestruktivní terénní vrstva cesty, lokální šířka úseku, náhled délkového přepočtu, plocha křižovatky 3+ cest v jednom uzlu | z větší části hotovo |
 | 4 Ploty | navazování z koncového sloupku, T větve a spojení uzlů (FenceGraph), lokální změna typu/výšky s přechodovým sloupkem, branka/brána vložená klikem na segment s odmítnutím, když se nevejde; F02, F03, F05–F12 | neprovedeno |
 | 5 Budovy | půdorysy L/U (B03, B04, B09), úžlabí střech, ručně přidaná okna jako `overrides` (migrace schématu), terasy, schody, B02 patro, interiér s místnostmi | neprovedeno |
 | 6 Katalog 84 | zbylé typy, galerie všech 84, terénní tahy T02/T03, scatter s vylučovacími zónami G08, referenční obrázek G07 | neprovedeno |
 | 7 Mapa | blockout Skladové osady 230 × 190 m dle reference, přístupy, spawny, výhledy | neprovedeno |
 | 8 Předání | měření výkonu, runtime export, návod ovládání | neprovedeno |
 
-**Přesný další krok:** etapa 3 – v `osada.road` zavést parametr `graph` (uzly a hrany s ID) a `ranges` (úseky povrchu s `{segmentId, t}`), validaci intervalů a generování povrchu s přechodovou maskou; testy akceptačních scénářů silnic ze zadání §12.
+**Přesný další krok:** dokončit etapu 3 – terénní vrstva cesty (nedestruktivní: efektivní terén = základ + vrstvy cest, použít v klientu, fyzice i na serveru; smazání cesty obnoví podklad), lokální šířka na úseku (`widthRanges` stejným mechanismem jako povrchy); poté etapa 4 (ploty: FenceGraph, navazování, T větve, brány).

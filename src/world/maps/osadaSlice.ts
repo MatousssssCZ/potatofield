@@ -36,12 +36,19 @@ export function buildOsadaSliceMap(): MapDocument {
     });
   };
   // Cesty: hlavní asfaltka západ–východ, hliněná odbočka na jih (budoucí obchvat).
-  add('osada.road', [-58, 0, 0], 0, { points: '0,0;30,2;62,-1;116,0', width: 6, surface: 'asphalt' }, 'R01 Hlavní cesta');
-  add('osada.road', [12, 0, 3], 0, { points: '0,0;4,18;-6,40;-20,56', width: 4.5, surface: 'dirt', shoulder: 0.5 }, 'R03 Hliněná cesta na jih');
+  // Úseky povrchu hlavní cesty: hlína uprostřed (přechody asfalt → hlína), beton a dlažba u haly (spára).
+  const ranges = JSON.stringify([
+    { id: 'r1', from: { seg: 'a2', t: 0.3 }, to: { seg: 'a3', t: 0.55 }, surface: 'dirt', transition: 3 },
+    { id: 'r2', from: { seg: 'a4', t: 0.3 }, to: { seg: 'a4', t: 0.6 }, surface: 'concrete', transition: 2 },
+    { id: 'r3', from: { seg: 'a4', t: 0.6 }, to: { seg: 'a4', t: 0.8 }, surface: 'paving', transition: 1 },
+  ]);
+  add('osada.road', [-58, 0, 0], 0, { points: '0,0;30,2;62,-1;70,-0.8;116,0', nodeIds: 'a1;a2;a3;a4;a5', width: 6, surface: 'asphalt', ranges }, 'R01 Hlavní cesta');
+  // Hliněná odbočka: první uzel leží v uzlu a4 hlavní cesty (T křižovatka).
+  add('osada.road', [12, 0, -0.8], 0, { points: '0,0;4,18;-6,40;-20,56', nodeIds: 'd1;d2;d3;d4', width: 4.5, surface: 'dirt', shoulder: 0.5, joins: JSON.stringify([{ node: 'd1', road: 'os_001', at: 'a4' }]) }, 'R03 Hliněná cesta na jih');
   // Domy u návsi: uzavřený (dveře k cestě) a průchozí.
   add('osada.house', [-24, 0, -13], 0, { length: 8, depth: 7, doorWall: 'back', doorAt: 4 }, 'B01 Dům uzavřený');
   add('osada.house', [-12, 0, -14], 0, { length: 10, depth: 7, doorWall: 'back', doorAt: 5, interior: 'walk', windowFill: 'bars' }, 'B01 Dům průchozí', 'plasterOchre');
-  add('osada.house', [-30, 0, 6], 0, { length: 14, depth: 7, doorWall: 'front', doorAt: 3.5, doorLock: true }, 'B01 Dlouhý dům (zamčené dveře)', 'plaster');
+  add('osada.house', [-48, 0, -15], 0, { length: 14, depth: 7, doorWall: 'front', doorAt: 3.5, doorLock: true }, 'B01 Dlouhý dům (zamčené dveře)', 'plaster');
   // Hala s průjezdem (vrata k cestě i dozadu) a pletivo kolem dvora.
   add('osada.hall', [8, 0, -34], 0, { length: 24, width: 14, gateWall: 'back', gateAt: 15, through: true }, 'B08 Skladová hala');
   add('osada.fence', [4, 0, -38], 0, { points: '0,0;32,0;32,22;28,22', kind: 'chainlink', height: 2 }, 'F01 Pletivo kolem dvora');
@@ -50,7 +57,12 @@ export function buildOsadaSliceMap(): MapDocument {
   add('osada.fence', [-22, 0, 16], 0, { points: '0,0;0,14;-6,20', kind: 'chainlink', height: 1.6, slope: 'copy' }, 'F01 Pletivo ve svahu (sklon)');
   // Balvany na svahu (kryt u hliněné cesty).
   for (const [i, [x, z, s]] of ([[2, 22, 1.4], [5, 30, 2.2], [-8, 34, 1.1], [14, 40, 2.8]] as const).entries())
-    add('osada.boulder', [x, 0, z], i * 1.3, { size: s }, `T05 Balvan ${i + 1}`);
+  {
+    // Ve svahu: pata na nejnižším terénu pod balvanem (jinak by spodní strana visela).
+    let lo = Infinity;
+    for (let a = 0; a < 8; a++) lo = Math.min(lo, sliceHeight(x + Math.cos(a) * s * 0.5, z + Math.sin(a) * s * 0.5));
+    add('osada.boulder', [x, Math.round((lo - sliceHeight(x, z)) * 1000) / 1000, z], i * 1.3, { size: s, sink: 0.25 }, `T05 Balvan ${i + 1}`);
+  }
   const h = (x: number, z: number) => sliceHeight(x, z) + 0.1;
   return {
     schemaVersion: MAP_SCHEMA_VERSION,

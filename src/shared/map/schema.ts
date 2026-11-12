@@ -162,6 +162,8 @@ export const MAP_LIMITS = {
   maxStringLength: 200,
   /** Parametr typu body (ulice): „x,z;x,z;…“ – až ~280 bodů. */
   maxPointsLength: 4000,
+  /** Strukturované parametry tras (JSON úseků povrchu a spojů, ID uzlů): ranges, joins, nodeIds. */
+  maxStructuredLength: 20000,
   maxParams: 64,
 } as const;
 

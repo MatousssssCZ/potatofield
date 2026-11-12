@@ -241,6 +241,20 @@ export function validateMap(input: unknown, opts: { fileBytes?: number } = {}): 
             if (k === 'points') {
               if (v.length > MAP_LIMITS.maxPointsLength) c.err(`${p}.params.${k}`, 'příliš mnoho bodů');
               else if (!/^[-0-9.,;e]*$/.test(v)) c.err(`${p}.params.${k}`, 'neplatný seznam bodů');
+            } else if (k === 'ranges' || k === 'joins') {
+              if (v.length > MAP_LIMITS.maxStructuredLength) c.err(`${p}.params.${k}`, 'příliš dlouhý seznam');
+              else {
+                let ok = false;
+                try {
+                  ok = Array.isArray(JSON.parse(v || '[]'));
+                } catch {
+                  ok = false;
+                }
+                if (!ok) c.err(`${p}.params.${k}`, 'očekáván JSON seznam');
+              }
+            } else if (k === 'nodeIds') {
+              if (v.length > MAP_LIMITS.maxStructuredLength) c.err(`${p}.params.${k}`, 'příliš mnoho uzlů');
+              else if (!/^[A-Za-z0-9_;-]*$/.test(v)) c.err(`${p}.params.${k}`, 'neplatná ID uzlů');
             } else c.str(v, `${p}.params.${k}`, true);
           }
           else if (typeof v !== 'boolean') c.err(`${p}.params.${k}`, 'nepodporovaný typ parametru');

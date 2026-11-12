@@ -6,12 +6,14 @@ import { spreadOf } from '../shared/sim/weapon';
 import type { MapDocument } from '../shared/map/schema';
 import { validateMap } from '../shared/map/validate';
 import { PhysicsWorld, initRapier } from '../shared/physics/world';
-import { generateObject, partsToColliders, collidersForMap, generateMap, getAsset, resolveParams, type LadderDef } from '../world';
+import { generateObject, partsToColliders, collidersForMap, generateMap, getAsset, resolveParams, terrainContext, type LadderDef } from '../world';
 import { buildEmptyMap } from '../world/maps/empty';
 import { buildRangeMap } from '../world/maps/range';
 import { buildStreetMap } from '../world/maps/street';
 import { buildShowcaseMap } from '../world/maps/showcase';
 import { buildOsadaSliceMap } from '../world/maps/osadaSlice';
+import { roadModel } from '../world/assets/osada/road';
+import { findCrossings, makeCrossing } from '../world/assets/osada/roadOps';
 import { Editor, TEST_SPAWN_ID } from './editor/editor';
 import { EditorDoc, History, cmds, type Change } from './editor/editorDoc';
 import { AutoSaver, MapStore, exportMapFile, readMapFile } from './editor/persistence';
@@ -1155,6 +1157,34 @@ export class App {
       if (apron < need - 1e-3)
         issues.push({ severity: 'warning', path: nameOf(o), message: `dlážděné okolí ${apron.toFixed(1)} m nezakryje přechod terénu (mřížka ${doc.terrain.spacing} m) – nastav aspoň ${Math.ceil(need * 10) / 10} m`, show: [o.id] });
     }
+    // Varování generátorů (zamčené otvory mimo stěnu, zkrácené přechody, neplatné úseky, spoje).
+    for (const o of doc.objects) {
+      const def = getAsset(o.assetId);
+      if (!def?.validate) continue;
+      const q = resolveParams(def, o.params);
+      const ws = o.assetId === 'osada.road' ? roadModel(q, terrainContext(o, doc.terrain, doc.objects)).warnings : def.validate(q);
+      for (const w of ws) issues.push({ severity: 'warning', path: nameOf(o), message: w, show: [o.id] });
+    }
+    // Křížení cest ve stejné výšce bez potvrzené křižovatky (různé výšky se nespojují).
+    for (const x of findCrossings(doc.objects)) {
+      const a = doc.objects.find((o) => o.id === x.a)!, b = doc.objects.find((o) => o.id === x.b)!;
+      issues.push({
+        severity: 'warning',
+        path: `${nameOf(a)} × ${nameOf(b)}`,
+        message: `cesty se kříží v [${x.at[0].toFixed(1)}, ${x.at[1].toFixed(1)}] bez křižovatky – povrchy se překrývají`,
+        show: [a.id, b.id],
+        fix: {
+          label: 'Vytvořit křižovatku',
+          order: 3,
+          changes: () => {
+            const A = this.ed.getObject(x.a), B = this.ed.getObject(x.b);
+            if (!A || !B) return [];
+            const r = makeCrossing(A, B, x.at);
+            return [r.main, r.side].map((after) => ({ kind: 'object' as const, id: after.id, before: structuredClone(this.ed.getObject(after.id)!), after }));
+          },
+        },
+      });
+    }
     // Překrývající se předměty.
     for (const ov of ovl) {
       issues.push({
@@ -1248,7 +1278,7 @@ export class App {
       // Po skupinách: nejdřív odsunout překryvy, pak položit na zem, nakonec spawny (každá
       // skupina se počítá až po předchozí, aby opravy na sebe navazovaly).
       let done = 0;
-      for (const order of [0, 1, 2]) {
+      for (const order of [0, 1, 2, 3]) {
         const group = list.filter((i) => i.fix!.order === order);
         if (!group.length) continue;
         const changes: Change[] = [];

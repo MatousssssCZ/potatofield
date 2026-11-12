@@ -2,104 +2,15 @@ import { rng } from '../../../shared/math';
 import type { Part } from '../../parts';
 import { registerAsset, type Params } from '../../registry';
 import { slopeBox } from '../kit';
-import { offsetCurve, parsePoints, sampleCurve, type Pt } from '../roads';
+import { parsePoints, type Pt } from '../roads';
 import { bool, num, osadaMeta, str } from './common';
+export { SURFACES, minRadius } from './road';
 
 /**
  * Trasové objekty Skladové osady – vertikální řez:
- *  R01/R03 cesta (asfalt / hlína, společný generátor s povrchem jako parametrem),
  *  F01/F04 plot a zeď (společný trasový generátor: pletivo / omítaná zeď).
  * Uzly trasy jsou body „x,z;…“ v lokálních souřadnicích (pivot = první uzel), editují se úchopy.
  */
-
-export const SURFACES = [
-  { value: 'asphalt', label: 'R01 Asfalt' },
-  { value: 'gravel', label: 'R02 Štěrk' },
-  { value: 'dirt', label: 'R03 Hlína' },
-  { value: 'concrete', label: 'R04 Beton' },
-  { value: 'paving', label: 'R05 Dlažba' },
-];
-const SURFACE_MAT: Record<string, string> = { asphalt: 'asphalt', gravel: 'gravel', dirt: 'dirt', concrete: 'concrete', paving: 'paving' };
-/** Krajnice podle povrchu (rozpad okraje do okolního terénu). */
-const SHOULDER_MAT: Record<string, string> = { asphalt: 'gravel', gravel: 'dirt', dirt: 'sand', concrete: 'gravel', paving: 'sand' };
-
-function lengthOf(c: Pt[]) {
-  let s = 0;
-  for (let i = 1; i < c.length; i++) s += Math.hypot(c[i][0] - c[i - 1][0], c[i][1] - c[i - 1][1]);
-  return s;
-}
-
-/** Nejmenší poloměr zatáčky vzorkované trasy (pro kontrolu samopřekryvu u široké cesty). */
-export function minRadius(c: Pt[]): number {
-  let r = Infinity;
-  for (let i = 1; i + 1 < c.length; i++) {
-    const a = c[i - 1], b = c[i], d = c[i + 1];
-    const ab = Math.hypot(b[0] - a[0], b[1] - a[1]), bd = Math.hypot(d[0] - b[0], d[1] - b[1]), ad = Math.hypot(d[0] - a[0], d[1] - a[1]);
-    const cross = Math.abs((b[0] - a[0]) * (d[1] - a[1]) - (b[1] - a[1]) * (d[0] - a[0]));
-    if (cross < 1e-9) continue;
-    r = Math.min(r, (ab * bd * ad) / (2 * cross));
-  }
-  return r;
-}
-
-registerAsset({
-  assetId: 'osada.road',
-  label: osadaMeta('osada.road', 'R01', 'Cesta (asfalt / štěrk / hlína)', 'B'),
-  category: 'osada',
-  generatorVersion: 1,
-  params: [
-    { key: 'points', label: 'Uzly trasy', type: 'points', default: '0,0;30,0' },
-    { key: 'width', label: 'Šířka', type: 'number', min: 2.5, max: 12, step: 0.25, unit: 'm', default: 6 },
-    { key: 'surface', label: 'Povrch', type: 'enum', default: 'asphalt', options: SURFACES },
-    { key: 'shoulder', label: 'Šířka krajnice', type: 'number', min: 0, max: 2, step: 0.1, unit: 'm', default: 0.7 },
-    { key: 'ragged', label: 'Nepravidelnost okraje', type: 'number', min: 0, max: 0.5, step: 0.05, unit: 'm', default: 0.2 },
-    { key: 'follow', label: 'Kopírovat terén', type: 'bool', default: true },
-  ],
-  usesTerrain: (p) => bool(p, 'follow'),
-  materials: ['asphalt'],
-  defaultMaterial: 'asphalt',
-  describe(p) {
-    const pts = parsePoints(str(p, 'points'));
-    return `${pts.length} uzlů, délka ${lengthOf(sampleCurve(pts, 1)).toFixed(1)} m · ${SURFACES.find((s) => s.value === p.surface)?.label} · táhni uzly, „+“ přidá uzel, Shift+klik smaže`;
-  },
-  validate(p) {
-    const out: string[] = [];
-    const c = sampleCurve(parsePoints(str(p, 'points')), 1);
-    const r = minRadius(c);
-    if (r < num(p, 'width') / 2 + num(p, 'shoulder')) out.push(`nejostřejší zatáčka má poloměr ${r.toFixed(1)} m, menší než polovina šířky – okraje se překryjí; uzly roztáhni`);
-    return out;
-  },
-  generate(p, seed, _material, ctx) {
-    const pts = parsePoints(str(p, 'points'));
-    if (pts.length < 2) return [];
-    const W = num(p, 'width'), sh = num(p, 'shoulder'), rag = num(p, 'ragged');
-    const surf = str(p, 'surface');
-    const c = sampleCurve(pts, 1.5);
-    const follow = bool(p, 'follow');
-    // Různé cesty o milimetry jinak vysoko → křížení neblikají.
-    const lift = 0.035 + (seed % 7) * 0.003;
-    const y = (q: Pt) => (follow ? ctx.ground(q[0], q[1]) : 0);
-    const path = (curve: Pt[], dy: number): [number, number, number][] => curve.map((q) => [q[0], y(q) + dy, q[1]]);
-    const parts: Part[] = [{ shape: 'strip', pos: [0, 0, 0], size: [W, 0.2, 0], path: path(c, lift), material: SURFACE_MAT[surf] ?? 'asphalt', castShadow: false }];
-    if (sh > 0) {
-      // Krajnice: dva pásy s deterministicky zvlněným vnějším okrajem (seed) – okraj není pravítko.
-      const r = rng(seed ^ 0x5eed);
-      for (const s of [-1, 1]) {
-        const wob = c.map(() => (r() - 0.5) * 2 * rag);
-        // Vyhlazení šumu, ať okraj nevypadá zubatě.
-        const sm = wob.map((_, i) => (wob[Math.max(0, i - 1)] + wob[i] * 2 + wob[Math.min(wob.length - 1, i + 1)]) / 4);
-        const base = offsetCurve(c, s * (W / 2 + sh / 2 - 0.05));
-        const edge = base.map((q, i) => {
-          const a = c[Math.max(0, i - 1)], b = c[Math.min(c.length - 1, i + 1)];
-          const tx = b[0] - a[0], tz = b[1] - a[1], l = Math.hypot(tx, tz) || 1;
-          return [q[0] - (tz / l) * s * sm[i], q[1] + (tx / l) * s * sm[i]] as Pt;
-        });
-        parts.push({ shape: 'strip', pos: [0, 0, 0], size: [sh, 0.2, 0], path: path(edge, lift - 0.012), material: SHOULDER_MAT[surf] ?? 'gravel', castShadow: false });
-      }
-    }
-    return parts;
-  },
-});
 
 // ---------------------------------------------------------------- F01 / F04 trasový plot a zeď
 

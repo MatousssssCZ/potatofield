@@ -47,6 +47,13 @@ export interface Part {
    */
   path?: [number, number, number][];
   /**
+   * Pás: plynulý přechod do jiného materiálu – váha `to` v každém bodě `path` (0 = materiál dílu,
+   * 1 = `to`). Míchá se v jedné vrstvě (barva, drsnost, normály) podle pravidla dvojice povrchů.
+   */
+  blend?: { to: string; w: number[] };
+  /** Pás: přesné rohy začátku / konce (lokálně x, z) – napojení na okraj jiné cesty bez děr. */
+  endCut?: { start?: { left: [number, number]; right: [number, number] }; end?: { left: [number, number]; right: [number, number] } };
+  /**
    * Model: ID sítě GLB (public/models/props/<id>.glb), vykreslí jen klient; `pos`/`size` = obálka
    * modelu v lokálních souřadnicích (sám model se nijak neposouvá). Bez kolize – ta jsou zvláštní díly.
    */

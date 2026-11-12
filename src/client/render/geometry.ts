@@ -14,6 +14,9 @@ class Builder {
   nrm: number[] = [];
   uv: number[] = [];
   baseH: number[] = [];
+  /** Váha druhého materiálu (přechod povrchů na pásu); 0 jinde. */
+  blend: number[] = [];
+  curBlend = 0;
   idx: number[] = [];
   vcount = 0;
 
@@ -32,6 +35,7 @@ class Builder {
     this.nrm.push(n.x, n.y, n.z);
     this.uv.push(uv[0], uv[1]);
     this.baseH.push(p.y);
+    this.blend.push(this.curBlend);
     this.vcount++;
   }
   /** Hotová síť (model GLB): UV v metrech → děleno dlaždicí materiálu. */
@@ -42,6 +46,7 @@ class Builder {
       this.nrm.push(nrm[i * 3], nrm[i * 3 + 1], nrm[i * 3 + 2]);
       this.uv.push(uv[i * 2] / tile, uv[i * 2 + 1] / tile);
       this.baseH.push(pos[i * 3 + 1] * scale);
+      this.blend.push(0);
       this.vcount++;
     }
     for (const k of index) this.idx.push(b + k);
@@ -52,6 +57,7 @@ class Builder {
     g.setAttribute('normal', new THREE.Float32BufferAttribute(this.nrm, 3));
     g.setAttribute('uv', new THREE.Float32BufferAttribute(this.uv, 2));
     g.setAttribute('aBaseH', new THREE.Float32BufferAttribute(this.baseH, 1));
+    if (this.blend.some((v) => v !== 0)) g.setAttribute('aBlend', new THREE.Float32BufferAttribute(this.blend, 1));
     g.setIndex(this.idx);
     g.computeBoundingSphere();
     g.computeBoundingBox();
@@ -321,13 +327,37 @@ function addStrip(b: Builder, part: Part, scale: number) {
   for (let i = 1; i < P.length; i++) vs.push((acc += Math.hypot(P[i].x - P[i - 1].x, P[i].z - P[i - 1].z)));
   const L = P.map((p, i) => p.clone().addScaledVector(side[i], w));
   const R = P.map((p, i) => p.clone().addScaledVector(side[i], -w));
+  // Přesné rohy napojení na okraj jiné cesty (výška z osy).
+  const ec = part.endCut;
+  if (ec?.start) {
+    L[0].set(ec.start.left[0], P[0].y, ec.start.left[1]);
+    R[0].set(ec.start.right[0], P[0].y, ec.start.right[1]);
+  }
+  if (ec?.end) {
+    const k = P.length - 1;
+    L[k].set(ec.end.left[0], P[k].y, ec.end.left[1]);
+    R[k].set(ec.end.right[0], P[k].y, ec.end.right[1]);
+  }
+  const bw = part.blend?.w;
+  const setW = (i: number) => (b.curBlend = bw ? bw[Math.min(bw.length - 1, i)] ?? 0 : 0);
   const down = new THREE.Vector3(0, -t, 0);
   const up = new THREE.Vector3(0, 1, 0);
   const W = (v: THREE.Vector3) => v.clone().applyMatrix4(m);
   const N = (v: THREE.Vector3) => v.clone().applyMatrix3(nm).normalize();
   for (let i = 0; i + 1 < P.length; i++) {
     const v0 = vs[i] / tile, v1 = vs[i + 1] / tile;
-    b.quad([W(R[i]), W(L[i]), W(L[i + 1]), W(R[i + 1])], N(up), [[0, v0], [(2 * w) / tile, v0], [(2 * w) / tile, v1], [0, v1]]);
+    if (bw) {
+      // Přechod: váha po vrcholech (horní plocha), boky a čela dostanou váhu svého konce.
+      const base = b.vcount;
+      const uvs: [number, number][] = [[0, v0], [(2 * w) / tile, v0], [(2 * w) / tile, v1], [0, v1]];
+      const ps = [R[i], L[i], L[i + 1], R[i + 1]];
+      [i, i, i + 1, i + 1].forEach((k, j) => {
+        setW(k);
+        b.vert(W(ps[j]), N(up), uvs[j]);
+      });
+      b.idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+      setW(i);
+    } else b.quad([W(R[i]), W(L[i]), W(L[i + 1]), W(R[i + 1])], N(up), [[0, v0], [(2 * w) / tile, v0], [(2 * w) / tile, v1], [0, v1]]);
     if (t > 0.001) {
       const sl = side[i].clone(), sr = side[i].clone().negate();
       b.quad([W(L[i].clone().add(down)), W(L[i + 1].clone().add(down)), W(L[i + 1]), W(L[i])], N(sl), [[v0, 0], [v1, 0], [v1, t / tile], [v0, t / tile]]);
@@ -339,9 +369,11 @@ function addStrip(b: Builder, part: Part, scale: number) {
       const a = P[Math.min(P.length - 1, i + (dir > 0 ? 0 : 1))], c = P[Math.max(0, i - (dir > 0 ? 1 : 0))];
       const n = new THREE.Vector3(a.x - c.x, 0, a.z - c.z).normalize().multiplyScalar(dir > 0 ? 1 : -1);
       const quad = dir > 0 ? [L[i].clone().add(down), R[i].clone().add(down), R[i], L[i]] : [R[i].clone().add(down), L[i].clone().add(down), L[i], R[i]];
+      setW(i);
       b.quad(quad.map(W), N(n), [[0, 0], [(2 * w) / tile, 0], [(2 * w) / tile, t / tile], [0, t / tile]]);
     }
   }
+  b.curBlend = 0;
 }
 
 export interface ObjectGeometry {
@@ -373,7 +405,7 @@ export function buildObjectGeometry(parts: Part[], scale = 1): ObjectGeometry {
       // Model se nenačetl: obálka v materiálu „chybí“.
       p = { ...p, shape: 'box', material: 'debugMissing' };
     }
-    const key = `${p.material}|${cast ? 1 : 0}`;
+    const key = `${p.shape === 'strip' && p.blend ? `${p.material}>${p.blend.to}` : p.material}|${cast ? 1 : 0}`;
     let e = builders.get(key);
     if (!e) builders.set(key, (e = { b: new Builder(), cast }));
     if (p.shape === 'box') addBox(e.b, p, scale);

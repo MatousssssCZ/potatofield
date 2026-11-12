@@ -32,6 +32,11 @@ Vazby se odkazují přes ID, nikdy přes jména.
   jako označený placeholder a jeho data zůstanou při uložení nedotčena.
 - Neznámý `assetId` → placeholder, data zachována.
 - Chybějící parametry doplní výchozí hodnoty generátoru, číselné se ořežou do mezí schématu.
+- Trasové parametry: `points` = „x,z;x,z;…“ (lokálně, m). Cesta Skladové osady (`osada.road`) navíc
+  ukládá `nodeIds` (stabilní ID uzlů „n1;n2;…“, souběžně s body), `ranges` (JSON seznam úseků povrchu
+  `{id, from:{seg,t,d?}, to:{seg,t,d?}, surface, transition}`, `seg` = ID počátečního uzlu úseku,
+  `t` = poměr 0–1, `d` = metry od uzlu) a `joins` (JSON `{node, road, at}`: uzel leží v uzlu `at`
+  cesty `road` – T/X křižovatka). Starší soubory bez těchto parametrů fungují beze změny (výchozí hodnoty).
 
 ## `TerrainData`
 
@@ -51,5 +56,7 @@ Render i kolize používají stejnou triangulaci.
 | výška terénu | ±1000 m | |
 | bodů / spawnů / zón / scénářů | 32 / 512 / 256 / 16 | |
 | délka textu | 200 znaků | názvy se vykreslují jako text, ne HTML |
+| `points` | 4000 znaků | ~280 bodů trasy |
+| `ranges`, `joins`, `nodeIds` | 20 000 znaků | strukturovaná data tras; `ranges`/`joins` musí být JSON seznam |
 
 Meze jsou pracovní; upraví se podle měření (krok 3). Import nespouští kód ani nefetchuje URL.

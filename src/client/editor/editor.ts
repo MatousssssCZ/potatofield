@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import type { MapObject, Transform } from '../../shared/map/schema';
-import { generateObject, getAsset, resolveParams, type AssetDef } from '../../world/registry';
+import { generateObject, getAsset, resolveParams, terrainContext, type AssetDef } from '../../world/registry';
+import { roadModel } from '../../world/assets/osada/road';
+import { snapEndToRoad } from '../../world/assets/osada/roadOps';
+import { formatRanges, parseRanges, pointAt, project, refToS, sToRef, type RangeRef } from '../../world/assets/osada/roadGraph';
 import { formatPoints, parsePoints, type Pt } from '../../world/assets/roads';
 import { buildObjectGeometry } from '../render/geometry';
 import type { WorldView } from '../render/worldView';
@@ -35,7 +38,9 @@ type V3 = [number, number, number];
 
 /** Úchop gizma ve viewportu. */
 interface HandleInfo {
-  kind: 'rotate' | 'size' | 'uniform' | 'point' | 'addPoint';
+  kind: 'rotate' | 'size' | 'uniform' | 'point' | 'addPoint' | 'rangeMark';
+  /** Značka úseku povrchu: začátek / konec. */
+  end?: 'from' | 'to';
   axis?: 'x' | 'y' | 'z';
   sign?: 1 | -1;
   /** Jednotné měřítko: roh obálky u země (znaménka x, z). */
@@ -47,7 +52,8 @@ type Drag =
   | { kind: 'move'; gp0: THREE.Vector3; starts: Map<string, { pos: V3; rotY: number }>; mount: boolean }
   | { kind: 'rotate'; center: THREE.Vector3; a0: number; starts: Map<string, { pos: V3; rotY: number }>; delta: number }
   | { kind: 'size'; id: string; axis: 'x' | 'y' | 'z'; sign: 1 | -1; origin: THREE.Vector3; dir: THREE.Vector3; ext: number; opp: number; f: number; uniform: boolean }
-  | { kind: 'point'; id: string; index: number; pts: Pt[] }
+  | { kind: 'point'; id: string; index: number; pts: Pt[]; inserted: boolean; before: string }
+  | { kind: 'range'; id: string; index: number; end: 'from' | 'to'; ref: RangeRef }
   | { kind: 'scale'; center: THREE.Vector3; d0: number; starts: Map<string, { pos: V3; rotY: number; scale: number }>; f: number };
 
 const CLIPBOARD_KEY = 'pf.editorClipboard';
@@ -102,6 +108,8 @@ export class Editor {
   private hintEl: HTMLDivElement;
   private helpEl: HTMLDivElement;
   private hintAt = 0;
+  /** Živý popis během tažení značky úseku. */
+  private dragNote = '';
   showHints = readHints();
 
   // kamera
@@ -732,7 +740,15 @@ export class Editor {
     uniform: new THREE.MeshBasicMaterial({ color: '#ff7a3e', depthTest: false }),
     point: new THREE.MeshBasicMaterial({ color: '#7dff8a', depthTest: false }),
     addPoint: new THREE.MeshBasicMaterial({ color: '#d8ffe0', depthTest: false, transparent: true, opacity: 0.7 }),
+    rangeFrom: new THREE.MeshBasicMaterial({ color: '#ff5fb0', depthTest: false }),
+    rangeTo: new THREE.MeshBasicMaterial({ color: '#b05fff', depthTest: false }),
   };
+
+  /** Model cesty (osa, ID uzlů, úseky) pro značky úseků povrchu. */
+  private roadModelOf(o: MapObject) {
+    const def = getAsset(o.assetId)!;
+    return roadModel(resolveParams(def, o.params), terrainContext(o, this.ed.doc.terrain, this.ed.doc.objects));
+  }
 
   /** Lokální obálka objektu z jeho geometrie (bez měřítka skupiny). */
   private localBounds(id: string): THREE.Box3 | null {
@@ -790,6 +806,11 @@ export class Editor {
       pts.forEach((_, i) => add(new THREE.SphereGeometry(1, 14, 10), this.handleMat.point, { kind: 'point', index: i }));
       for (let i = 0; i <= pts.length; i++) add(new THREE.OctahedronGeometry(1), this.handleMat.addPoint, { kind: 'addPoint', index: i });
     }
+    // Úseky povrchu cesty: dvě značky na úsek, táhnou se po ose trasy.
+    if (o.assetId === 'osada.road')
+      parseRanges(String(resolveParams(def, o.params).ranges)).forEach((_, i) => {
+        for (const end of ['from', 'to'] as const) add(new THREE.ConeGeometry(0.6, 1.4, 4), end === 'from' ? this.handleMat.rangeFrom : this.handleMat.rangeTo, { kind: 'rangeMark', index: i, end });
+      });
     this.layoutHandles();
   }
 
@@ -834,6 +855,16 @@ export class Editor {
         else local[info.axis!] = info.sign! > 0 ? lb.max[info.axis!] : lb.min[info.axis!];
         if (info.axis === 'y' && info.kind === 'size') local.y = lb.max.y + 0.15;
         c.position.copy(local.applyMatrix4(g.matrixWorld));
+      } else if (info.kind === 'rangeMark' && o && def) {
+        const m = this.roadModelOf(o);
+        const r = parseRanges(String(resolveParams(def, o.params).ranges))[info.index!];
+        const sv = r && refToS(m.curve, m.ids, r[info.end!], resolveParams(def, o.params).rangeLength === 'meters');
+        if (sv === null || sv === undefined) c.visible = false;
+        else {
+          const w = this.localToWorld(o, pointAt(m.curve, sv).p);
+          c.position.set(w.x, this.groundY(w.x, w.z) + 0.9, w.z);
+          c.rotation.set(Math.PI, 0, 0);
+        }
       } else if ((info.kind === 'point' || info.kind === 'addPoint') && o && pts.length) {
         const i = info.index!;
         let lp: Pt;
@@ -864,6 +895,7 @@ export class Editor {
         }
         c.scale.setScalar(r);
       } else if (info.kind === 'point') c.scale.setScalar(k * 0.9);
+      else if (info.kind === 'rangeMark') c.scale.setScalar(Math.max(0.6, k * 0.8));
       else if (info.kind === 'addPoint') c.scale.setScalar(k * 0.6);
       else c.scale.setScalar(k * 1.6);
     }
@@ -928,13 +960,22 @@ export class Editor {
     const o = this.ed.getObject(id);
     if (!o) return;
     const def = getAsset(o.assetId)!;
+    if (info.kind === 'rangeMark') {
+      const r = parseRanges(String(resolveParams(def, o.params).ranges))[info.index!];
+      if (!r) return;
+      this.drag = { kind: 'range', id, index: info.index!, end: info.end!, ref: r[info.end!] };
+      return;
+    }
     if (info.kind === 'point' || info.kind === 'addPoint') {
       const ps = def.params.find((q) => q.type === 'points')!;
       const pts = parsePoints(String(resolveParams(def, o.params)[ps.key]));
       if (info.kind === 'point' && shift) {
         if (pts.length <= 2) return this.onToast('Ulice musí mít aspoň 2 body.', 'warn');
+        const before = String(resolveParams(def, o.params)[ps.key]);
         pts.splice(info.index!, 1);
-        this.history.execute(cmds.update(this.ed, id, (x) => (x.params[ps.key] = formatPoints(pts)), 'Smazat bod ulice'));
+        const after = formatPoints(pts);
+        const extra = def.editPoints?.(resolveParams(def, o.params), before, after, { kind: 'delete', index: info.index! }) ?? {};
+        this.history.execute(cmds.update(this.ed, id, (x) => Object.assign(x.params, { [ps.key]: after }, extra), 'Smazat uzel trasy'));
         return;
       }
       let index = info.index!;
@@ -942,7 +983,7 @@ export class Editor {
         const lp = this.worldToLocal(o, point);
         pts.splice(index, 0, lp);
       }
-      this.drag = { kind: 'point', id, index, pts };
+      this.drag = { kind: 'point', id, index, pts, inserted: info.kind === 'addPoint', before: String(resolveParams(def, o.params)[ps.key]) };
       this.handles.visible = info.kind === 'point';
       void index;
       return;
@@ -1165,6 +1206,31 @@ export class Editor {
       }
       return;
     }
+    if (d.kind === 'range') {
+      const o = this.ed.getObject(d.id);
+      const gp = this.groundAtPointer();
+      if (!o || !gp) return;
+      const m = this.roadModelOf(o);
+      const pr = project(m.curve, this.worldToLocal(o, gp));
+      // Přichytávání po 0,5 m obloukové délky (Alt = volně).
+      const sv = this.altHeld ? pr.s : Math.round(pr.s * 2) / 2;
+      d.ref = sToRef(m.curve, m.ids, sv);
+      const def = getAsset(o.assetId)!;
+      const ranges = parseRanges(String(resolveParams(def, o.params).ranges));
+      if (!ranges[d.index]) return;
+      ranges[d.index][d.end] = d.ref;
+      const tmp: MapObject = { ...o, params: { ...o.params, ranges: formatRanges(ranges) } };
+      this.world.addObject(generateObject(tmp, this.ed.doc.terrain, this.ed.doc.objects));
+      const h = this.handles.children.find((c) => (c.userData.handle as HandleInfo).kind === 'rangeMark' && (c.userData.handle as HandleInfo).index === d.index && (c.userData.handle as HandleInfo).end === d.end);
+      const w = this.localToWorld(o, pointAt(m.curve, sv).p);
+      if (h) h.position.set(w.x, this.groundY(w.x, w.z) + 0.9, w.z);
+      const lenNote = (() => {
+        const a = refToS(m.curve, m.ids, ranges[d.index].from), b = refToS(m.curve, m.ids, ranges[d.index].to);
+        return a !== null && b !== null ? ` · úsek ${Math.min(a, b).toFixed(1)}–${Math.max(a, b).toFixed(1)} m, délka ${Math.abs(b - a).toFixed(1)} m` : '';
+      })();
+      this.dragNote = `${d.end === 'from' ? 'Začátek' : 'Konec'} úseku: ${sv.toFixed(1)} m${lenNote} · Alt = bez přichycení`;
+      return;
+    }
     if (d.kind === 'point') {
       const o = this.ed.getObject(d.id);
       const gp = this.groundAtPointer();
@@ -1231,12 +1297,29 @@ export class Editor {
         changes.push(...c.changes);
         label = c.label;
       }
+    } else if (d.kind === 'range') {
+      const o = this.ed.getObject(d.id)!;
+      const def = getAsset(o.assetId)!;
+      const ranges = parseRanges(String(resolveParams(def, o.params).ranges));
+      if (ranges[d.index]) {
+        ranges[d.index][d.end] = d.ref;
+        label = 'Posun hranice úseku povrchu';
+        changes.push(...cmds.update(this.ed, d.id, (x) => (x.params.ranges = formatRanges(ranges)), label).changes);
+      }
     } else if (d.kind === 'point') {
       const o = this.ed.getObject(d.id)!;
       const def = getAsset(o.assetId)!;
       const key = def.params.find((q) => q.type === 'points')!.key;
-      changes.push(...cmds.update(this.ed, d.id, (x) => (x.params[key] = formatPoints(d.pts)), 'Bod ulice').changes);
-      label = 'Bod ulice';
+      const after = formatPoints(d.pts);
+      const extra = def.editPoints?.(resolveParams(def, o.params), d.before, after, d.inserted ? { kind: 'insert', index: d.index } : { kind: 'move', index: d.index }) ?? {};
+      label = d.inserted ? 'Přidat uzel trasy' : 'Posun uzlu trasy';
+      const isEnd = !d.inserted && (d.index === 0 || d.index === d.pts.length - 1);
+      const sn = o.assetId === 'osada.road' && isEnd ? snapEndToRoad({ ...o, params: { ...o.params, [key]: after, ...extra } }, this.ed.doc.objects) : null;
+      if (sn) {
+        label = 'Napojit konec cesty (T křižovatka)';
+        changes.push(...cmds.update(this.ed, d.id, (x) => (x.params = sn.road.params), label).changes);
+        changes.push(...cmds.update(this.ed, sn.other.id, (x) => (x.params = sn.other.params), label).changes);
+      } else changes.push(...cmds.update(this.ed, d.id, (x) => Object.assign(x.params, { [key]: after }, extra), label).changes);
     }
     if (changes.length) this.history.execute({ label, changes });
     else this.cancelDrag();
@@ -1375,11 +1458,18 @@ export class Editor {
       assetId,
       generatorVersion: def.generatorVersion,
       transform: { position: [r4(o0.x), r4(o0.y), r4(o0.z)], rotation: [0, 0, 0] },
-      params: { ...resolveParams(def, {}), [key]: formatPoints(local) },
+      params: { ...resolveParams(def, {}), [key]: formatPoints(local), ...(def.editPoints?.(resolveParams(def, {}), '', formatPoints(local), { kind: 'create' }) ?? {}) },
       seed: (Math.random() * 0xffffffff) >>> 0,
       material: def.defaultMaterial,
     };
-    this.history.execute(cmds.insert(this.ed, [obj], `Nakreslit: ${def.label}`));
+    // Konec nakreslené cesty u jiné cesty → skutečný uzel grafu a T křižovatka (jeden krok historie).
+    const sn = assetId === 'osada.road' ? snapEndToRoad(obj, this.ed.doc.objects) : null;
+    if (sn) {
+      const c = cmds.insert(this.ed, [sn.road], `Nakreslit: ${def.label} + křižovatka`);
+      c.changes.push(...cmds.update(this.ed, sn.other.id, (x) => (x.params = sn.other.params)).changes);
+      this.history.execute(c);
+      this.onToast('Konec cesty napojen na sousední cestu (T křižovatka).');
+    } else this.history.execute(cmds.insert(this.ed, [obj], `Nakreslit: ${def.label}`));
     this.select([obj.id], false);
   }
 
@@ -1627,6 +1717,7 @@ export class Editor {
 
   /** Text u kurzoru podle toho, co je pod ním a co právě probíhá. */
   private hintFor(): string | null {
+    if (this.drag?.kind === 'range' && this.dragNote) return this.dragNote;
     if (this.spawnPick) return 'Klikni, kde se objevíš (směr = pohled kamery)\nEnter = uložený spawn · Esc / pravé tl. = zrušit';
     const d = this.drag;
     if (d) {
