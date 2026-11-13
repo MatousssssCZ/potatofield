@@ -1,4 +1,4 @@
-import { NET, PROTOCOL_VERSION, decodeRemote, type ClientMsg, type ServerMsg } from './protocol';
+import { NET, PROTOCOL_VERSION, decodeRemote, type ClientMsg, type ServerMsg, SLOW_SNAP_FIELDS } from './protocol';
 import type { InputFrame } from '../sim/input';
 
 /** Minimální rozhraní WebSocketu (prohlížeč i knihovna ws). */
@@ -77,6 +77,8 @@ export class NetClient {
     else setTimeout(fn, d);
   }
 
+  private slow: Record<string, unknown> = {};
+
   private receive(m: ServerMsg) {
     if (m.t === 'welcome') {
       this.welcome = m;
@@ -88,6 +90,16 @@ export class NetClient {
       }
       // Zprávy mimo pořadí (jitter) – starší snapshot zahodit.
       if (this.lastSnap && m.tick <= this.lastSnap.tick) return;
+      // Pole posílaná jen při změně: chybějící se převezmou z posledního snapshotu.
+      const prev = this.slow as Record<string, unknown>, cur = m as unknown as Record<string, unknown>;
+      for (const k of SLOW_SNAP_FIELDS) {
+        if (cur[k] === undefined) cur[k] = prev[k] ?? (k === 'order' || k === 'cps' ? null : k === 'command' ? { commander: null, uavReadyAt: 0, scanReadyAt: 0, uav: null } : []);
+        else prev[k] = cur[k];
+      }
+      // Inventář (sloty a počty) stejně: chybí-li, platí poslední.
+      const me = m.me as unknown as Record<string, unknown>;
+      if (me.inv === undefined) me.inv = prev['me.inv'] ?? null;
+      else prev['me.inv'] = me.inv;
       this.lastSnap = m;
       this.onSnapshot(m);
     } else if (m.t === 'pong') this.rtt = Date.now() - m.c;

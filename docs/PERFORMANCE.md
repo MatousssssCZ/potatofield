@@ -19,6 +19,18 @@ Na drátě (po kompresi permessage-deflate, měřeno z TCP soketu klienta): **~1
 v každém snapshotu a dopady střel posílané všem – další optimalizace (delta, zájmová oblast) před
 větším počtem hráčů. **Test 64 hráčů neproběhl.**
 
+### Stav po úpravách 13. 11. 2026 (16 botů, 20 s, stejný stroj)
+
+| Měření | Hodnota |
+|---|---|
+| Tick průměr / p95 / max | 2,25 / 4,7 / 9,2 ms – včetně viditelnosti nepřátel (10× za s) a kompenzace pingu |
+| Data na klienta | 117 KiB/s před kompresí, 18,3 KiB/s na drátě (v rámci rozptylu měření beze změny) |
+
+Snímek stavu se zmenšil z ~2,8 na ~2,1 kB (čety, rozkaz, velitel, spawny, figuríny, body a inventář chodí jen při
+změně a každé 2 s celé), ale v tomto testu převažují události střelby 16 botů, takže celkový přenos neklesl.
+Další krok pro 32+ hráčů: události dopadů jen hráčům v okolí a binární formát. Stahovaný kód hry: největší
+soubor (5,1 MB, 1,9 MB po kompresi) je fyzikální engine Rapier s vloženým WASM, ne model vojáka.
+
 ## Klient – neověřeno na cílovém zařízení
 
 Ve vývojovém prostředí běží jen softwarový renderer (SwiftShader) – jeho FPS nic nevypovídá.

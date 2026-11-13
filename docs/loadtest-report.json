@@ -1,39 +1,40 @@
 {
-  "datum": "2026-11-04T22:59:22.330Z",
+  "datum": "2026-11-13T19:57:39.696Z",
   "stroj": {
-    "cpu": "Intel(R) Xeon(R) Processor @ 2.80GHz",
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
     "jader": 4,
     "node": "v22.23.4",
-    "platforma": "linux 6.18.44-fc-v233"
+    "platforma": "linux 6.18.44-fc-v445"
   },
   "mapa": "Referenční ulice",
   "boti": 16,
-  "delka_s": 60,
+  "delka_s": 20,
   "server": {
     "tick_hz": 60,
     "snapshot_hz": 30,
-    "tick_ms_prumer": 2.284,
-    "tick_ms_p95": 3.759,
-    "tick_ms_max": 11.522,
+    "tick_ms_prumer": 2.246,
+    "tick_ms_p95": 4.69,
+    "tick_ms_max": 9.154,
     "rozpocet_ms": 16.667,
-    "vystup_kib_s": 1802.7,
-    "vstup_zprav_s": 1002,
-    "fronta_vstupu_max": 3,
-    "tiku_celkem": 3648
+    "vystup_kib_s": 1902.5,
+    "vstup_zprav_s": 992,
+    "fronta_vstupu_max": 2,
+    "tiku_celkem": 1248
   },
-  "klient_prijato_kib_s_na_bota": 113.5,
+  "klient_prijato_kib_s_na_bota": 117.3,
+  "klient_na_drate_kib_s_na_bota": 18.3,
   "hra": {
-    "vystrelu": 1314,
-    "zasahu": 16,
-    "umrti": 1,
+    "vystrelu": 469,
+    "zasahu": 1,
+    "umrti": 0,
     "tickety": {
       "teamA": 100,
-      "teamB": 96
+      "teamB": 100
     },
     "body": [
       "Základna A:teamA",
       "Tržiště:teamA",
-      "Křižovatka:teamA",
+      "Křižovatka:neutral",
       "Hotel:teamB",
       "Základna B:teamB"
     ]

@@ -4,7 +4,7 @@ import type { MapDocument, Team } from '../src/shared/map/schema';
 import { validateMap } from '../src/shared/map/validate';
 import { PhysicsWorld } from '../src/shared/physics/world';
 import { invView } from '../src/shared/sim/inventory';
-import { NET, PROTOCOL_VERSION, RADIO_TEXT, encodeRemote, mapHash, parseClientMsg, type ClientMsg, type RemoteState, type RemoteTuple, type ServerMsg } from '../src/shared/net/protocol';
+import { NET, PROTOCOL_VERSION, SLOW_SNAP_FIELDS, RADIO_TEXT, encodeRemote, mapHash, parseClientMsg, type ClientMsg, type RemoteState, type RemoteTuple, type ServerMsg } from '../src/shared/net/protocol';
 import { TeamLayer } from '../src/shared/net/team';
 import { PILOT, type Faction } from '../src/shared/config/arsenal';
 import { MatchSim, type SimEvent, type SimPlayer } from '../src/shared/sim/match';
@@ -67,6 +67,9 @@ interface Client {
   lastReportAt: number;
   lastVoteAt: number;
   spectator: boolean;
+  /** Naposledy odeslané hodnoty polí posílaných jen při změně (JSON) a kdy naposledy vše. */
+  slowSent: Record<string, string>;
+  slowAt: number;
   /** Nepřátelé, které tento klient smí vidět: id → čas, do kdy (grace po ztrátě výhledu). */
   visible: Map<string, number>;
 }
@@ -254,7 +257,7 @@ export class GameServer {
       return;
     }
     const id = `p${++this.seq}`;
-    const c: Client = { id, ws, name: id, player: null, inputs: [], lastSeq: 0, lastInputAt: performance.now(), lastHeld: 0, msgTimes: [], rejected: 0, ping: 0, bytesOut: 0, pingSentAt: 0, visible: new Map(), ip, admin: false, adminTries: 0, lastReportAt: -1e9, lastVoteAt: -1e9, spectator: false };
+    const c: Client = { id, ws, name: id, player: null, inputs: [], lastSeq: 0, lastInputAt: performance.now(), lastHeld: 0, msgTimes: [], rejected: 0, ping: 0, bytesOut: 0, pingSentAt: 0, visible: new Map(), ip, admin: false, adminTries: 0, lastReportAt: -1e9, lastVoteAt: -1e9, spectator: false, slowSent: {}, slowAt: -1e9 };
     // Odezva měřená serverem (klient ji nemůže zfalšovat ve svůj prospěch nad rámec limitu kompenzace).
     ws.on('pong', () => {
       if (c.pingSentAt) c.ping = Math.round(performance.now() - c.pingSentAt);
@@ -666,7 +669,7 @@ export class GameServer {
     const spawns = cq ? this.sim.spawnOptions(p.team).map((s) => s.id) : [];
     const sq = mem?.squad ? this.team.squads.get(mem.squad) : undefined;
     const canSquad = !!sq && sq.leader !== c.id && !mem!.joinedWhileDead && !!this.sim.players.get(sq.leader)?.alive && (!cq || cq.cps.some((x) => x.owner === p.team));
-    this.send(c, {
+    const snap: Extract<ServerMsg, { t: 'snap' }> = {
       t: 'snap',
       tick: this.sim.tick,
       time: this.sim.time,
@@ -691,7 +694,21 @@ export class GameServer {
       // Skóre stačí 1×/s (šetří přenos); ostatní data každý snapshot.
       nades: this.sim.grenades.map((n) => [n.id, n.kind === 'frag' ? 0 : 1, r3(n.pos.x), r3(n.pos.y), r3(n.pos.z), r3(n.smokeUntil)] as [string, 0 | 1, number, number, number, number]),
       scores: this.snapCount % NET.snapshotHz !== 1 ? [] : [...this.sim.players.values()].map((o) => ({ id: o.id, name: o.name, team: o.team, kills: o.kills, deaths: o.deaths, revives: o.revives, ping: this.clients.get(o.id)?.ping ?? 0, squad: o.team === p.team ? (this.team.members.get(o.id)?.squad ?? null) : null })),
-    });
+       };
+    // Čety, rozkaz, velitel, spawny a figuríny se mění zřídka: posílají se jen při změně (a každé 2 s celé).
+    const full = this.sim.time - c.slowAt >= 2;
+    if (full) c.slowAt = this.sim.time;
+    const wire = snap as unknown as Record<string, unknown>;
+    for (const k of SLOW_SNAP_FIELDS) {
+      const j = JSON.stringify(wire[k]);
+      if (!full && c.slowSent[k] === j) delete wire[k];
+      else c.slowSent[k] = j;
+    }
+    const meWire = snap.me as unknown as Record<string, unknown>;
+    const ij = JSON.stringify(meWire.inv);
+    if (!full && c.slowSent['me.inv'] === ij) delete meWire.inv;
+    else c.slowSent['me.inv'] = ij;
+    this.send(c, snap);
   }
 
   // ---------------- správa: správce, hlasování, nahlášení ----------------

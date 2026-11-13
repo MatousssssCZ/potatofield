@@ -12,7 +12,10 @@ import type { InvView } from '../sim/inventory';
  * server je autoritou pro pohyb, střelbu, poškození, spawny, body, tickety a týmové informace.
  */
 /** v3: vyřazení a oživení (stav života, vzdát pomoc), pravidla serveru ve welcome, /info. */
-export const PROTOCOL_VERSION = 3;
+/** v4: pomalu se měnící části snapshotu (čety, rozkaz, velitel, spawny, figuríny) chodí jen při změně. */
+export const PROTOCOL_VERSION = 4;
+/** Pole snapshotu posílaná jen při změně (a pro jistotu každé 2 s); klient si drží poslední hodnotu. */
+export const SLOW_SNAP_FIELDS = ['squads', 'order', 'command', 'spawns', 'dummies', 'cps'] as const;
 export const NET = {
   snapshotHz: 30,
   maxMessageBytes: 32 * 1024,
