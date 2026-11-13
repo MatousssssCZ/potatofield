@@ -110,6 +110,7 @@ export class Hud {
     this.els['h-br'].append(this.slots.root, this.silhouette, this.els['h-ammo']);
     mk('h-hit', 'h-hit');
     mk('h-hurt', 'h-hurt');
+    mk('h-killer', 'h-killer hidden');
     mk('h-dirs', 'h-dirs');
     mk('h-center', 'h-center');
     mk('h-zone', 'h-zone hidden');
@@ -169,6 +170,14 @@ export class Hud {
   }
   private dirs: Array<{ el: HTMLElement; until: number }> = [];
 
+  /** Po vyřazení: kdo a čím (kamera se mezitím otočí na přemožitele). */
+  killedBy(now: number, name: string, weapon: string) {
+    this.killerUntil = now + 6;
+    this.els['h-killer'].replaceChildren(h('small', {}, t('hud.killedBy')), h('b', {}, name), ...(weapon ? [h('span', {}, weapon)] : []));
+  }
+  private killerUntil = 0;
+  private deployAt = 0;
+
   /** Kill feed (krátký, staré řádky mizí). */
   feed(text: string, now: number) {
     const el = h('div', {}, text);
@@ -202,6 +211,12 @@ export class Hud {
     }
     const me = c.me;
     const alive = !!me?.alive;
+    if (this.deployAt && now >= this.deployAt) {
+      this.deployAt = 0;
+      if (me && !me.alive && me.life === 'dead' && !c.cq?.ended) this.deploy.open(true);
+    }
+    const kb = this.els['h-killer'];
+    kb.classList.toggle('hidden', alive || now >= this.killerUntil || !!c.cq?.ended);
     // Nasazení: automaticky před prvním nasazením a po definitivní smrti; Enter ho otevře kdykoli.
     // Oživení i nasazení obrazovku zavře; konec kola ji skryje (výsledky).
     if (me && c.map) {
@@ -210,7 +225,8 @@ export class Hud {
       if (c.cq && c.cq.time < this.lastCqTime - 1) this.round++;
       this.lastCqTime = c.cq?.time ?? 0;
       if (lifeKey !== this.lastLife) {
-        if (life === 'dead' && !c.cq?.ended) this.deploy.open(true);
+        // Po vyřazení nepřítelem chvíli běží kamera na přemožitele, nasazení se otevře až po ní.
+        if (life === 'dead' && !c.cq?.ended) this.deployAt = now + (now < this.killerUntil ? 3.5 : 0);
         else if (life === 'alive' && this.lastLife) this.deploy.close();
         this.lastLife = lifeKey;
       }
@@ -377,6 +393,10 @@ export class Hud {
       h('div', { class: 'pf-end-cols' }, col(c.team), col(c.team === 'teamA' ? 'teamB' : 'teamA')),
       h('div', { class: 'pf-row-inline' }, c.network ? button(t('end.leave'), () => this.onLeave(), 'pf-btn primary') : button(t('end.restart'), () => this.onRestart(), 'pf-btn primary'), c.network ? null : button(t('end.leave'), () => this.onLeave(), 'pf-btn')),
     );
+    if (c.me) {
+      const mates = all.filter((p) => p.team === c.team).sort((a, b) => b.kills - a.kills);
+      e.append(h('p', { class: 'pf-end-mine' }, `${t('end.yours')}: ${c.me.kills} ${t('col.kills')} · ${c.me.deaths} ${t('col.deaths')} · ${c.me.revives} ${t('col.revives')} · ${t('end.rank', { n: String(mates.indexOf(c.me) + 1), of: String(mates.length) })}`));
+    }
     if (c.network) e.append(h('p', { class: 'pf-dim pf-next-round' }, t('end.nextRoundSoon')));
     e.classList.remove('hidden');
   }
@@ -482,7 +502,7 @@ export class Hud {
     window.removeEventListener('keyup', this.onKeyUp, true);
     this.deploy.dispose();
     this.mapOverlay.remove();
-    for (const id of ['h-tl', 'h-tr', 'h-bl', 'h-br', 'h-hit', 'h-hurt', 'h-dirs', 'h-center', 'h-zone', 'h-downed', 'h-end']) document.getElementById(id)?.remove();
+    for (const id of ['h-tl', 'h-tr', 'h-bl', 'h-br', 'h-hit', 'h-hurt', 'h-killer', 'h-dirs', 'h-center', 'h-zone', 'h-downed', 'h-end']) document.getElementById(id)?.remove();
   }
 }
 

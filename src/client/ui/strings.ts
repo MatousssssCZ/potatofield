@@ -170,6 +170,8 @@ const cs = {
   'end.nextRound': 'Další kolo začne za {s} s.',
   'end.nextRoundSoon': 'Další kolo začne za chvíli.',
   'end.yours': 'Tvůj příspěvek',
+  'end.rank': '{n}. z {of} v týmu',
+  'hud.killedBy': 'Vyřadil tě',
 
   'score.title': 'Skóre',
   'score.ownTeam': 'Náš tým',
@@ -539,6 +541,8 @@ const en: Record<StringKey, string> = {
   'end.nextRound': 'Next round starts in {s} s.',
   'end.nextRoundSoon': 'Next round starts shortly.',
   'end.yours': 'Your contribution',
+  'end.rank': '#{n} of {of} in team',
+  'hud.killedBy': 'Taken out by',
 
   'score.title': 'Score',
   'score.ownTeam': 'Our team',

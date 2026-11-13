@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { CAMERA, adsVFov, vFovFromH16x9 } from '../../shared/config/camera';
 import { MOVEMENT, type MovementConfig } from '../../shared/config/movement';
 import { PF_MG, PF_PISTOL, PF_SNIPER } from '../../shared/config/weapon';
-import { PILOT, rulesOf, type Kit } from '../../shared/config/arsenal';
+import { PILOT, SIDEARMS, arsenalEntry, rulesOf, type Kit } from '../../shared/config/arsenal';
 import type { PhysicsWorld } from '../../shared/physics/world';
 import { TacticalMap, type Footprint } from '../ui/tactical';
 import { resolveView } from '../../shared/sim/inventory';
@@ -399,6 +399,51 @@ export class Game {
     }
   }
 
+  // ---------------- kamera po vyřazení ----------------
+
+  private killcam: { killer: string; at: number; target: THREE.Vector3 } | null = null;
+
+  private startKillcam(killer: string | null) {
+    if (!killer || killer === this.driver.localId) {
+      this.killcam = null;
+      return;
+    }
+    const r = this.driver.remotes().find((x) => x.id === killer);
+    const name = r?.name ?? this.net?.scores.find((x) => x.id === killer)?.name ?? '';
+    if (!name) return;
+    if (this.killcam?.killer === killer && this.now - this.killcam.at < 20) return; // vyřazení → smrt: kamera pokračuje
+    const item = r?.weapon.weaponId ?? r?.primary;
+    this.hud.killedBy(this.now, name, item ? (arsenalEntry(item)?.name ?? SIDEARMS[item]?.name ?? '') : '');
+    this.killcam = { killer, at: this.now, target: r ? new THREE.Vector3(r.state.pos.x, r.state.pos.y + 1.2, r.state.pos.z) : this.lastEye.clone().add(new THREE.Vector3(0, 0, -5)) };
+  }
+
+  /** Kamera se zvedne za místo vyřazení a otočí se na přemožitele (server ho na pár sekund odhalí). */
+  private updateKillcam(frameDt: number): boolean {
+    const k = this.killcam;
+    if (!k || this.now - k.at > 6) return false;
+    const r = this.driver.remotes().find((x) => x.id === k.killer);
+    if (r) k.target.lerp(new THREE.Vector3(r.state.pos.x, r.state.pos.y + 1.2, r.state.pos.z), 1 - Math.exp(-frameDt * 8));
+    const e = Math.min(1, (this.now - k.at) / 0.9);
+    const ease = e * e * (3 - 2 * e);
+    const away = this.lastEye.clone().sub(k.target).setY(0);
+    if (away.lengthSq() < 0.01) away.set(0, 0, 1);
+    away.normalize();
+    const off = away.multiplyScalar(2.4 * ease).add(new THREE.Vector3(0, 1.1 * ease, 0));
+    // Kamera nesmí projet zdí: zkrátit odstup podle kolize.
+    const len = off.length();
+    if (this.phys && len > 0.05) {
+      const d = off.clone().normalize();
+      const hit = this.phys.castRay({ x: this.lastEye.x, y: this.lastEye.y, z: this.lastEye.z }, { x: d.x, y: d.y, z: d.z }, len + 0.3);
+      if (hit) off.setLength(Math.max(0, hit.distance - 0.3));
+    }
+    this.camera.position.copy(this.lastEye).add(off);
+    const q = this.camera.quaternion.clone();
+    this.camera.lookAt(k.target);
+    const want = this.camera.quaternion.clone();
+    this.camera.quaternion.copy(q).slerp(want, 1 - Math.exp(-frameDt * 6));
+    return true;
+  }
+
   private processEvents() {
     const me = this.driver.local();
     const eye = this.camera.position;
@@ -464,7 +509,10 @@ export class Game {
         if (e.id === this.driver.localId) {
           this.input.clear();
           this.onDeath();
+          this.startKillcam(e.killer);
         }
+      } else if (e.type === 'downed') {
+        if (e.id === this.driver.localId) this.startKillcam(e.killer);
       } else if (e.type === 'dummyDown') {
         if (me) this.hud.feed('Figurína zasažena ✕', this.now);
       } else if ('kind' in e && e.kind === 'conquest') {
@@ -486,7 +534,7 @@ export class Game {
     const s = me.state, w = me.weapon;
     if (!me.alive) {
       // Po smrti: kamera zůstane na posledním místě, zbraň skrytá.
-      this.camera.position.copy(this.lastEye);
+      if (!this.updateKillcam(frameDt)) this.camera.position.copy(this.lastEye);
       this.fp.root.visible = false;
       this.hud.setCrosshair(0, false);
       this.scopeBlend = 0;
