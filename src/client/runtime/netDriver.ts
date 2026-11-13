@@ -161,7 +161,7 @@ export class NetDriver implements GameDriver {
       if (!this.state) return null;
     }
     const me = s!.me;
-    return { id: this.localId, name: 'Ty', team: me.team, state: this.state!, weapon: this.weapon!, hp: me.hp, alive: me.alive, respawnAt: me.respawnAt, zone: me.zone, kills: me.kills, deaths: me.deaths, life: me.alive ? 'alive' : me.downed ? 'downed' : 'dead', downedLeft: me.downedLeft, reviveProgress: me.reviveProgress, revives: me.revives, lifeId: me.lifeId, inv: me.inv, primary: me.inv?.items.find((i) => i.slot === 3)?.id };
+    return { id: this.localId, name: 'Ty', team: me.team, state: this.state!, weapon: this.weapon!, hp: me.hp, alive: me.alive, respawnAt: me.respawnAt, zone: me.zone, kills: me.kills, deaths: me.deaths, life: me.alive ? 'alive' : me.downed ? 'downed' : 'dead', downedLeft: me.downedLeft, reviveProgress: me.reviveProgress, revives: me.revives, lifeId: me.lifeId, inv: me.inv, spectator: !!me.spectator, primary: me.inv?.items.find((i) => i.slot === 3)?.id };
   }
 
   /** Interpolace vzdálených hráčů v čase (serverTime − 100 ms). */

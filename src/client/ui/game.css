@@ -1092,6 +1092,17 @@ body.mode-play .tui-log {
   -webkit-mask: radial-gradient(circle, transparent 7px, #000 8px);
   mask: radial-gradient(circle, transparent 7px, #000 8px);
 }
+.h-spec {
+  position: absolute;
+  left: 50%;
+  top: 14px;
+  transform: translateX(-50%);
+  padding: 6px 16px;
+  background: rgba(12, 12, 10, 0.72);
+  color: #f2ecdc;
+  font-weight: 600;
+  white-space: nowrap;
+}
 .h-killer {
   position: absolute;
   left: 50%;

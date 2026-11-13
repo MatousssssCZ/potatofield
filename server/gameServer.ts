@@ -66,6 +66,7 @@ interface Client {
   adminTries: number;
   lastReportAt: number;
   lastVoteAt: number;
+  spectator: boolean;
   /** Nepřátelé, které tento klient smí vidět: id → čas, do kdy (grace po ztrátě výhledu). */
   visible: Map<string, number>;
 }
@@ -253,7 +254,7 @@ export class GameServer {
       return;
     }
     const id = `p${++this.seq}`;
-    const c: Client = { id, ws, name: id, player: null, inputs: [], lastSeq: 0, lastInputAt: performance.now(), lastHeld: 0, msgTimes: [], rejected: 0, ping: 0, bytesOut: 0, pingSentAt: 0, visible: new Map(), ip, admin: false, adminTries: 0, lastReportAt: -1e9, lastVoteAt: -1e9 };
+    const c: Client = { id, ws, name: id, player: null, inputs: [], lastSeq: 0, lastInputAt: performance.now(), lastHeld: 0, msgTimes: [], rejected: 0, ping: 0, bytesOut: 0, pingSentAt: 0, visible: new Map(), ip, admin: false, adminTries: 0, lastReportAt: -1e9, lastVoteAt: -1e9, spectator: false };
     // Odezva měřená serverem (klient ji nemůže zfalšovat ve svůj prospěch nad rámec limitu kompenzace).
     ws.on('pong', () => {
       if (c.pingSentAt) c.ping = Math.round(performance.now() - c.pingSentAt);
@@ -389,7 +390,7 @@ export class GameServer {
         break;
       }
       case 'spawn': {
-        const err = this.sim.requestSpawn(c.id, m.id, m.weapon);
+        const err = c.spectator ? 'jsi pozorovatel – napiš /join pro návrat do hry' : this.sim.requestSpawn(c.id, m.id, m.weapon);
         if (err) this.reject(c, 'spawn', err);
         else {
           const mem = this.team.members.get(c.id);
@@ -412,6 +413,8 @@ export class GameServer {
       case 'chat': {
         // Příkazy správy a hlasování se píší do chatu (/help); ostatním hráčům se neposílají.
         if (m.text.trim().startsWith('/')) return this.command(c, m.text.trim().slice(1, 220));
+        // Pozorovatel vidí oba týmy – do týmového ani četového chatu psát nesmí.
+        if (c.spectator && m.ch !== 'all') return this.reject(c, 'chat', 'pozorovatel může psát jen všem');
         const r = this.team.chat(c.id, m.ch, m.text, now);
         if (typeof r === 'string') return this.reject(c, 'chat', r);
         const msg: ServerMsg = { t: 'chat', id: `ch${++this.seq}`, from: c.id, name: c.name, ch: m.ch, text: r.text, time: now };
@@ -652,7 +655,7 @@ export class GameServer {
     const cq = this.sim.conquest;
     const o: RemoteTuple[] = [];
     // Po konci kola už není co skrývat (výsledková tabulka potřebuje všechny).
-    const cull = this.opts.cullEnemies !== false && !cq?.ended;
+    const cull = this.opts.cullEnemies !== false && !cq?.ended && !c.spectator;
     for (const pl of this.sim.players.values()) {
       if (pl.id === c.id) continue;
       // Nepřítel bez výhledu se vůbec neposílá (klient ho nemůže vykreslit skrz zeď).
@@ -668,7 +671,7 @@ export class GameServer {
       tick: this.sim.tick,
       time: this.sim.time,
       ack: c.lastSeq,
-      me: { state: { ...p.state, blocked: [] }, weapon: p.weapon, hp: p.hp, alive: p.alive, respawnAt: p.respawnAt, zone: p.zone, kills: p.kills, deaths: p.deaths, team: p.team, squad: mem?.squad ?? null, canSquadSpawn: canSquad, downed: p.downed, downedLeft: p.downed ? r3(Math.max(0, p.downedUntil - this.sim.time)) : 0, reviveProgress: p.reviveTarget ? r3(p.reviveHeld / PILOT.reviveHold) : 0, revives: p.revives, lifeId: p.lifeId, inv: p.inv ? invView(p.inv) : null },
+      me: { state: { ...p.state, blocked: [] }, weapon: p.weapon, hp: p.hp, alive: p.alive, respawnAt: p.respawnAt, zone: p.zone, kills: p.kills, deaths: p.deaths, team: p.team, squad: mem?.squad ?? null, canSquadSpawn: canSquad, downed: p.downed, downedLeft: p.downed ? r3(Math.max(0, p.downedUntil - this.sim.time)) : 0, reviveProgress: p.reviveTarget ? r3(p.reviveHeld / PILOT.reviveHold) : 0, revives: p.revives, lifeId: p.lifeId, inv: p.inv ? invView(p.inv) : null, ...(c.spectator ? { spectator: true } : {}) },
       others: [],
       o,
       cps: cq ? cq.cps.map((x) => ({ id: x.id, owner: x.owner, p: r3(x.p), activity: x.activity })) : null,
@@ -741,7 +744,7 @@ export class GameServer {
     const now = this.sim.time;
     switch (cmd.toLowerCase()) {
       case 'help':
-        return this.tell(c, `Příkazy: /votekick <jméno> · /yes · /no · /report <jméno> <důvod>${c.admin ? ' · /kick <jméno> [důvod] · /ban <jméno> [minuty] [důvod] · /unban <jméno> · /restart · /bans' : ' · /admin <heslo>'}`);
+        return this.tell(c, `Příkazy: /votekick <jméno> · /yes · /no · /report <jméno> <důvod> · /spectate · /join${c.admin ? ' · /kick <jméno> [důvod] · /ban <jméno> [minuty] [důvod] · /unban <jméno> · /restart · /bans' : ' · /admin <heslo>'}`);
       case 'admin': {
         if (!this.opts.adminPassword) return this.tell(c, 'Správa není na tomto serveru zapnutá.');
         if (c.admin) return this.tell(c, 'Už jsi přihlášen jako správce.');
@@ -783,6 +786,21 @@ export class GameServer {
         this.sim.conquest.winner = 'draw';
         this.nextRoundAt = now + 5;
         return this.broadcastSystem(`Správce ${c.name} ukončil kolo. Nové začne za 5 s.`);
+      case 'spectate': {
+        const p = c.player;
+        if (!p) return;
+        if (p.alive || p.downed) return this.tell(c, 'Pozorovatelem se můžeš stát jen mimo boj (mrtvý / před nasazením).');
+        if ([...this.clients.values()].filter((x) => x.spectator).length >= 4) return this.tell(c, 'Na serveru už jsou 4 pozorovatelé.');
+        c.spectator = true;
+        this.team.leaveSquad(c.id);
+        this.broadcastSystem(`${c.name} je pozorovatel.`);
+        return this.tell(c, 'Pozorovatel: levé tlačítko = další hráč, pravé = předchozí. /join tě vrátí do hry.');
+      }
+      case 'join':
+        if (!c.spectator) return this.tell(c, 'Nejsi pozorovatel.');
+        c.spectator = false;
+        c.visible.clear();
+        return this.broadcastSystem(`${c.name} se vrátil do hry.`);
       case 'votekick': {
         if (this.vote) return this.tell(c, `Už běží hlasování o hráči ${this.vote.name} (/yes nebo /no).`);
         if (now - c.lastVoteAt < 120) return this.tell(c, 'Další hlasování můžeš vyvolat až za chvíli.');

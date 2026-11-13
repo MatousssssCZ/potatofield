@@ -205,8 +205,25 @@ export class SoldierAnimator {
       // Pistole v natažených pažích před obličejem / předmět v pravé ruce před hrudníkem.
       const pistol = wf.hold === 'pistol';
       const reach = (pistol ? 0.4 + inp.ads * 0.08 : 0.28) * (1 - sprint * 0.4) - this.kick * 0.03;
-      const off = new THREE.Vector3(pistol ? -0.1 : 0.0, pistol ? -0.05 : -0.2, -reach).applyQuaternion(wq);
-      weapon.position.copy(shoulder).add(off);
+      const off = new THREE.Vector3(pistol ? -0.1 : 0.0, pistol ? -0.05 : -0.2, -reach);
+      // Akce s předmětem (časy ze simulace): hod = nápřah vzad a švih vpřed, nůž = bodnutí,
+      // lékárna / munice / defibrilátor = sehnutí ruky dolů před tělo s drobnou prací.
+      if (!pistol && inp.life === 'alive' && inp.actionEnd > inp.actionStart && (inp.action === 'throw' || inp.action === 'attack' || inp.action === 'use')) {
+        const k = clamp((simTime - inp.actionStart) / (inp.actionEnd - inp.actionStart), 0, 1);
+        if (inp.action === 'throw') {
+          const wind = ss(k, 0, 0.35) * (1 - ss(k, 0.4, 0.55));
+          const swing = ss(k, 0.4, 0.6) * (1 - ss(k, 0.75, 1));
+          off.add(new THREE.Vector3(0.12 * wind, 0.42 * wind + 0.25 * swing, 0.3 * wind - 0.38 * swing));
+        } else if (inp.action === 'attack') {
+          const jab = Math.sin(ss(k, 0, 0.6) * Math.PI);
+          off.add(new THREE.Vector3(-0.08 * jab, 0.1 * jab, -0.34 * jab));
+        } else {
+          const work = Math.sin(k * Math.PI);
+          off.add(new THREE.Vector3(-0.06 * work, -0.22 * work + Math.sin(k * 22) * 0.015 * work, -0.12 * work));
+        }
+        this.layers.upper = inp.action === 'throw' ? 'hod' : inp.action === 'attack' ? 'nůž' : 'použití předmětu';
+      }
+      weapon.position.copy(shoulder).add(off.applyQuaternion(wq));
     }
     weapon.updateMatrixWorld(true);
     weapon.visible = this.lie < 0.3;

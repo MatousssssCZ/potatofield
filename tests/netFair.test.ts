@@ -257,3 +257,36 @@ describe('server: správa, hlasování, nahlášení, chyby klienta', () => {
     expect(server.clientErrors).toBeLessThanOrEqual(5);
   });
 });
+
+describe('server: pozorovatel', () => {
+  it('/spectate jen mimo boj; pozorovatel nenasadí, dostává všechny hráče a nepíše do týmového chatu; /join vrací do hry', async () => {
+    server = await GameServer.create(buildStreetMap(), { conquest: true, scenarioId: 'sc_bases', manualTick: true });
+    const port = await server.listen(0);
+    const a = await connect(port, 'Alfa');
+    const b = await connect(port, 'Bravo');
+    b.send({ t: 'spawn', id: b.welcome!.team === 'teamA' ? 'sa0' : 'sb0' });
+    await run(30);
+    b.send({ t: 'chat', ch: 'all', text: '/spectate' }); // živý hráč nesmí
+    a.send({ t: 'chat', ch: 'all', text: '/spectate' });
+    await run(6);
+    expect(a.lastSnap!.me.spectator).toBe(true);
+    expect(b.lastSnap!.me.spectator).toBeUndefined();
+    // Nepřítel daleko za budovami: běžný hráč by ho nedostal, pozorovatel ano.
+    const pb = server.sim.players.get(b.id)!;
+    pb.ctrl.place(pb.state, { x: 0, y: 0.1, z: -60 }, 0);
+    await run(90);
+    expect((a.lastSnap!.o ?? []).map((t) => t[0]).concat(a.lastSnap!.others.map((o) => o.id))).toContain(b.id);
+    a.send({ t: 'spawn', id: a.welcome!.team === 'teamA' ? 'sa0' : 'sb0' });
+    a.send({ t: 'chat', ch: 'team', text: 'nepřítel je u hotelu' });
+    await run(6);
+    const rej = a.inbox.filter((m) => m.t === 'reject').map((m) => (m as { reason: string }).reason);
+    expect(rej.some((r) => /pozorovatel/.test(r))).toBe(true);
+    expect(rej.some((r) => /jen všem/.test(r))).toBe(true);
+    expect(server.sim.players.get(a.id)!.alive).toBe(false);
+    a.send({ t: 'chat', ch: 'all', text: '/join' });
+    await run(6);
+    a.send({ t: 'spawn', id: a.welcome!.team === 'teamA' ? 'sa0' : 'sb0' });
+    await run(30);
+    expect(server.sim.players.get(a.id)!.alive).toBe(true);
+  });
+});

@@ -260,6 +260,10 @@ export class Game {
       this.prev = me ? clonePlayerState(me.state) : null;
       const raw = this.input.consumeTick(me?.state.tick ?? 0);
       // V menu / mrtvý: žádné bojové akce, jen pohled zůstává.
+      if (me?.spectator && this.active) {
+        if (raw.pressed & BTN.FIRE) this.specIndex++;
+        if (raw.pressed & BTN.ADS) this.specIndex--;
+      }
       const input = this.active && me?.alive ? raw : { ...raw, held: 0, pressed: 0, slot: 0, moveX: 0, moveZ: 0, lookDYaw: me?.alive ? raw.lookDYaw : 0, lookDPitch: me?.alive ? raw.lookDPitch : 0 };
       // Volba výbavy: overlay hned ukáže požadovanou položku, server přechod potvrdí.
       if (input.slot && me?.inv) this.hud.slots.request(resolveView(me.inv, input.slot), this.now);
@@ -302,6 +306,7 @@ export class Game {
         extraTabs: this.extraTabs,
         network: !!nd,
         nextRound: nd?.nextRound ?? 0,
+        spectating: this.specName,
       });
     }
   }
@@ -399,28 +404,72 @@ export class Game {
     }
   }
 
+  // ---------------- pozorovatel ----------------
+
+  private specIndex = 0;
+  private specName = '';
+
+  /** Kamera za sledovaným hráčem (živí hráči obou týmů, pořadí podle jména). */
+  private updateSpectator(frameDt: number): boolean {
+    const list = this.driver.remotes().filter((r) => r.alive).sort((a, b) => a.name.localeCompare(b.name));
+    if (!list.length) {
+      this.specName = '';
+      return false;
+    }
+    const tg = list[((this.specIndex % list.length) + list.length) % list.length];
+    this.specName = tg.name;
+    const s = tg.state;
+    const head = new THREE.Vector3(s.pos.x, s.pos.y + s.height * 0.9, s.pos.z);
+    const back = new THREE.Vector3(Math.sin(s.yaw), 0, Math.cos(s.yaw));
+    const off = back.multiplyScalar(2.8).add(new THREE.Vector3(0, 0.7, 0));
+    const len = off.length();
+    if (this.phys) {
+      const d = off.clone().normalize();
+      const hit = this.phys.castRay({ x: head.x, y: head.y, z: head.z }, { x: d.x, y: d.y, z: d.z }, len + 0.3);
+      if (hit) off.setLength(Math.max(0.2, hit.distance - 0.3));
+    }
+    const want = head.clone().add(off);
+    this.camera.position.lerp(want, 1 - Math.exp(-frameDt * 10));
+    const q = this.camera.quaternion.clone();
+    this.camera.lookAt(head.x - Math.sin(s.yaw) * 6, head.y + Math.sin(s.pitch) * 6, head.z - Math.cos(s.yaw) * 6);
+    const tq = this.camera.quaternion.clone();
+    this.camera.quaternion.copy(q).slerp(tq, 1 - Math.exp(-frameDt * 10));
+    return true;
+  }
+
   // ---------------- kamera po vyřazení ----------------
 
-  private killcam: { killer: string; at: number; target: THREE.Vector3 } | null = null;
+  private killcam: { killer: string; at: number; target: THREE.Vector3; named: boolean } | null = null;
 
   private startKillcam(killer: string | null) {
     if (!killer || killer === this.driver.localId) {
       this.killcam = null;
       return;
     }
-    const r = this.driver.remotes().find((x) => x.id === killer);
-    const name = r?.name ?? this.net?.scores.find((x) => x.id === killer)?.name ?? '';
-    if (!name) return;
     if (this.killcam?.killer === killer && this.now - this.killcam.at < 20) return; // vyřazení → smrt: kamera pokračuje
+    const r = this.driver.remotes().find((x) => x.id === killer);
+    this.killcam = { killer, at: this.now, named: false, target: r ? new THREE.Vector3(r.state.pos.x, r.state.pos.y + 1.2, r.state.pos.z) : this.lastEye.clone().add(new THREE.Vector3(0, 0, -5)) };
+    this.nameKiller();
+  }
+
+  /** Jméno a zbraň přemožitele – server ho oběti odhalí až s dalším snímkem, proto se zkouší opakovaně. */
+  private nameKiller() {
+    const k = this.killcam;
+    if (!k || k.named) return;
+    const r = this.driver.remotes().find((x) => x.id === k.killer);
+    const name = r?.name ?? this.net?.scores.find((x) => x.id === k.killer)?.name ?? '';
+    if (!name) return;
+    if (!r && this.now - k.at < 0.5) return; // chvíli počkat na zbraň
     const item = r?.weapon.weaponId ?? r?.primary;
     this.hud.killedBy(this.now, name, item ? (arsenalEntry(item)?.name ?? SIDEARMS[item]?.name ?? '') : '');
-    this.killcam = { killer, at: this.now, target: r ? new THREE.Vector3(r.state.pos.x, r.state.pos.y + 1.2, r.state.pos.z) : this.lastEye.clone().add(new THREE.Vector3(0, 0, -5)) };
+    k.named = true;
   }
 
   /** Kamera se zvedne za místo vyřazení a otočí se na přemožitele (server ho na pár sekund odhalí). */
   private updateKillcam(frameDt: number): boolean {
     const k = this.killcam;
     if (!k || this.now - k.at > 6) return false;
+    this.nameKiller();
     const r = this.driver.remotes().find((x) => x.id === k.killer);
     if (r) k.target.lerp(new THREE.Vector3(r.state.pos.x, r.state.pos.y + 1.2, r.state.pos.z), 1 - Math.exp(-frameDt * 8));
     const e = Math.min(1, (this.now - k.at) / 0.9);
@@ -534,7 +583,7 @@ export class Game {
     const s = me.state, w = me.weapon;
     if (!me.alive) {
       // Po smrti: kamera zůstane na posledním místě, zbraň skrytá.
-      if (!this.updateKillcam(frameDt)) this.camera.position.copy(this.lastEye);
+      if (me.spectator ? !this.updateSpectator(frameDt) : !this.updateKillcam(frameDt)) this.camera.position.copy(this.lastEye);
       this.fp.root.visible = false;
       this.hud.setCrosshair(0, false);
       this.scopeBlend = 0;

@@ -172,6 +172,8 @@ const cs = {
   'end.yours': 'Tvůj příspěvek',
   'end.rank': '{n}. z {of} v týmu',
   'hud.killedBy': 'Vyřadil tě',
+  'hud.spectator': 'Pozorovatel',
+  'hud.spectatorHelp': 'levé tl. další hráč · pravé předchozí · /join návrat do hry',
 
   'score.title': 'Skóre',
   'score.ownTeam': 'Náš tým',
@@ -543,6 +545,8 @@ const en: Record<StringKey, string> = {
   'end.yours': 'Your contribution',
   'end.rank': '#{n} of {of} in team',
   'hud.killedBy': 'Taken out by',
+  'hud.spectator': 'Spectator',
+  'hud.spectatorHelp': 'left click next player · right click previous · /join to play',
 
   'score.title': 'Score',
   'score.ownTeam': 'Our team',

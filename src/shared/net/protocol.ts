@@ -136,6 +136,8 @@ export interface SelfState {
   lifeId: number;
   /** Inventář (sloty a skutečné počty) – pro overlay výbavy. */
   inv: InvView | null;
+  /** Pozorovatel: nehraje, sleduje ostatní (příkaz /spectate, návrat /join). */
+  spectator?: boolean;
 }
 
 /** Pravidla serveru pro UI (čte je klient, nevymýšlí je). */

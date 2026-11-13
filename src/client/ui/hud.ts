@@ -41,6 +41,8 @@ export interface HudContext {
   network: boolean;
   /** Sekundy do dalšího kola na serveru (0 = neznámo / kolo běží). */
   nextRound?: number;
+  /** Jméno hráče, kterého pozorovatel sleduje. */
+  spectating?: string;
 }
 
 export class Hud {
@@ -110,6 +112,7 @@ export class Hud {
     this.els['h-br'].append(this.slots.root, this.silhouette, this.els['h-ammo']);
     mk('h-hit', 'h-hit');
     mk('h-hurt', 'h-hurt');
+    mk('h-spec', 'h-spec hidden');
     mk('h-killer', 'h-killer hidden');
     mk('h-dirs', 'h-dirs');
     mk('h-center', 'h-center');
@@ -176,6 +179,7 @@ export class Hud {
     this.els['h-killer'].replaceChildren(h('small', {}, t('hud.killedBy')), h('b', {}, name), ...(weapon ? [h('span', {}, weapon)] : []));
   }
   private killerUntil = 0;
+  private wasSpectator = false;
   private deployAt = 0;
 
   /** Kill feed (krátký, staré řádky mizí). */
@@ -213,8 +217,16 @@ export class Hud {
     const alive = !!me?.alive;
     if (this.deployAt && now >= this.deployAt) {
       this.deployAt = 0;
-      if (me && !me.alive && me.life === 'dead' && !c.cq?.ended) this.deploy.open(true);
+      if (me && !me.alive && me.life === 'dead' && !c.cq?.ended && !me.spectator) this.deploy.open(true);
     }
+    // Pozorovatel: nasazení zavřené, nahoře jméno sledovaného hráče.
+    if (me?.spectator !== this.wasSpectator) {
+      this.wasSpectator = !!me?.spectator;
+      if (me?.spectator) this.deploy.close();
+      else if (me && !me.alive && !c.cq?.ended) this.deploy.open(true);
+    }
+    this.els['h-spec'].classList.toggle('hidden', !me?.spectator);
+    if (me?.spectator) this.els['h-spec'].textContent = `${t('hud.spectator')}${c.spectating ? ` · ${c.spectating}` : ''} — ${t('hud.spectatorHelp')}`;
     const kb = this.els['h-killer'];
     kb.classList.toggle('hidden', alive || now >= this.killerUntil || !!c.cq?.ended);
     // Nasazení: automaticky před prvním nasazením a po definitivní smrti; Enter ho otevře kdykoli.
@@ -226,7 +238,7 @@ export class Hud {
       this.lastCqTime = c.cq?.time ?? 0;
       if (lifeKey !== this.lastLife) {
         // Po vyřazení nepřítelem chvíli běží kamera na přemožitele, nasazení se otevře až po ní.
-        if (life === 'dead' && !c.cq?.ended) this.deployAt = now + (now < this.killerUntil ? 3.5 : 0);
+        if (life === 'dead' && !c.cq?.ended && !me.spectator) this.deployAt = now + (now < this.killerUntil ? 3.5 : 0);
         else if (life === 'alive' && this.lastLife) this.deploy.close();
         this.lastLife = lifeKey;
       }
@@ -502,7 +514,7 @@ export class Hud {
     window.removeEventListener('keyup', this.onKeyUp, true);
     this.deploy.dispose();
     this.mapOverlay.remove();
-    for (const id of ['h-tl', 'h-tr', 'h-bl', 'h-br', 'h-hit', 'h-hurt', 'h-killer', 'h-dirs', 'h-center', 'h-zone', 'h-downed', 'h-end']) document.getElementById(id)?.remove();
+    for (const id of ['h-tl', 'h-tr', 'h-bl', 'h-br', 'h-hit', 'h-hurt', 'h-spec', 'h-killer', 'h-dirs', 'h-center', 'h-zone', 'h-downed', 'h-end']) document.getElementById(id)?.remove();
   }
 }
 

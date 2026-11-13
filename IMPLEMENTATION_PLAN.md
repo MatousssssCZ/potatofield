@@ -66,7 +66,9 @@ Viz git historie; 20 testů pohybu, editor s gizmy, historie, IndexedDB, export/
 - [x] Rozkazy čety T (útok/obrana/přesun, dokončení), minimapa, skóre
 - [x] Medic: vyřazení 15 s a oživení na 50 HP (server, testy `tests/pilot.test.ts`); [ ] léčení, munice Support
 - [x] Commander (role, rezignace), rozkazy četám s ověřením serverem, UAV a sken s obnovou (`tests/command.test.ts`)
-- [ ] Supply drop (chybí systém munice), infrastruktura, hlas, hlasování, artillery, perzistentní statistiky
+- [x] Správa serveru: správce (kick / ban / restart), hlasování o vyhození, nahlášení hráče, pozorovatel, hlášení chyb klienta (`docs/DEPLOY.md`, `tests/netFair.test.ts`)
+- [x] Zvuk: CC0 nahrávky kroků, dopadů a mechaniky, prostorový zvuk s tlumením přes zdi; potvrzení zásahu hlava / vyřazení, směr poškození, kamera na přemožitele
+- [ ] Supply drop (chybí systém munice), infrastruktura, hlas, artillery, perzistentní statistiky a účty (odloženo do placeného serveru)
 
 ## Krok 9 – zátěž a prostředí
 - [x] 16 aktivních botů 60 s: tick 2,3 ms průměr / 3,8 ms p95 (rozpočet 16,7 ms) – `docs/PERFORMANCE.md`
@@ -89,5 +91,5 @@ Viz git historie; 20 testů pohybu, editor s gizmy, historie, IndexedDB, export/
 - [x] Ladění po testu: měkké textury (BF2), poškození pádem, fyzické vlajky s výškou podle postupu a návratem do klidu, katalog editoru s náhledy a sekcí Použito na mapě
 - [x] Nasazení ve stylu BF2 (zadání Nasazeni_Vybava_UI): taktická obrazovka, mapa se zoomem a značkami, potvrzené čekání, zneplatnění s důvodem, Enter / M, testy přechodů (`tests/deployIntent.test.ts`)
 - [x] Výbava v boji: sloty z dat kitu, číslice + kolečko, overlay; pistole M9 / PM, nůž, tříštivý granát, dýmovnice, lékárna, defibrilátor, zásobování – vše serverové (`tests/inventory.test.ts`, `tests/grenades.test.ts`, `tests/pilot.test.ts`)
-- [ ] Animace hodu / sekání / léčení u vzdálených vojáků (3. osoba drží předmět, ale akci nepřehrává)
+- [x] Animace hodu / bodnutí nožem / použití předmětu u vzdálených vojáků (z časů akce ze simulace)
 - [ ] Lidský test nasazení a výbavy; hodnoty granátů a nástrojů (N) po playtestu

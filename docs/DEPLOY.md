@@ -33,7 +33,8 @@ Nastavení serveru (Render → služba → Environment): `PF_NAME` (název v sez
   Ve hře do chatu: `/admin <heslo>`, pak `/kick <jméno> [důvod]`, `/ban <jméno> [minuty] [důvod]` (bez minut trvale),
   `/unban <jméno>`, `/bans`, `/restart` (ukončí kolo). Pět špatných hesel = odpojení se zákazem na 10 min.
 - **Hráči:** `/votekick <jméno>`, `/yes`, `/no` (většina hráčů, nejméně 3 hlasy, 30 s; vyhozený má zákaz 10 min),
-  `/report <jméno> <důvod>` (záznam pro správce), `/help`. Příkazy se ostatním hráčům nezobrazují.
+  `/report <jméno> <důvod>` (záznam pro správce), `/spectate` (pozorovatel – jen mimo boj, nejvýš 4; sleduje hráče
+  obou týmů, nesmí do týmového chatu), `/join` (návrat do hry), `/help`. Příkazy se ostatním hráčům nezobrazují.
 - **Zákazy** platí podle síťové adresy a jen do restartu serveru (bez trvalého úložiště).
 - **Záznamy** (nahlášení, zákazy, chyby klientů) jdou do logu serveru; `PF_RECORDS=cesta` je navíc zapisuje do souboru
   (řádek = JSON). Chyby klientů chodí na `POST /client-error` – jen text chyby a zásobník volání, žádné osobní údaje.

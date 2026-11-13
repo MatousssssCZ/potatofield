@@ -42,6 +42,8 @@ export interface PlayerView {
   primary?: string;
   /** Inventář (sloty, skutečné počty) – jen u vlastního hráče. */
   inv?: InvView | null;
+  /** Pozorovatel (jen vlastní hráč v síťové hře). */
+  spectator?: boolean;
 }
 
 /**
