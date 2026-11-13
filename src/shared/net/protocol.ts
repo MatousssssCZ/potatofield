@@ -178,6 +178,10 @@ export type ServerMsg =
       cqTime: number;
       ended: boolean;
       winner: Team | 'draw' | null;
+      /** Aktuální scénář (po střídání kol se liší od welcome). */
+      scenario?: string;
+      /** Sekundy do začátku dalšího kola (0 = kolo běží). */
+      nextRound?: number;
       dummies: Array<{ id: string; down: boolean }>;
       squads: SquadInfo[];
       order: OrderInfo | null;

@@ -34,6 +34,15 @@ export class TeamLayer {
     teamB: { commander: null, uavReadyAt: 0, scanReadyAt: 0, uav: null },
   };
 
+  /** Nové kolo: rozkazy, kontakty a schopnosti velitele se vynulují (čety a velitelé zůstávají). */
+  resetRound() {
+    this.orders.clear();
+    for (const t of ['teamA', 'teamB'] as const) {
+      this.contacts[t].length = 0;
+      Object.assign(this.command[t], { uavReadyAt: 0, scanReadyAt: 0, uav: null });
+    }
+  }
+
   // ---------------- commander ----------------
 
   applyCommander(id: string): string | null {

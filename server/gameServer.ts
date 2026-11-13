@@ -34,6 +34,12 @@ export interface ServerOptions {
   port?: number;
   /** Bez vlastního časovače (testy krokují ručně). */
   manualTick?: boolean;
+  /** Pauza mezi koly v sekundách (výchozí 20). */
+  roundBreak?: number;
+  /** Střídat scénáře mapy po každém kole (výchozí ano). */
+  rotate?: boolean;
+  /** Skrývat nepřátele bez přímé viditelnosti (obrana proti wallhacku; výchozí ano). */
+  cullEnemies?: boolean;
   log?: (s: string) => void;
 }
 
@@ -50,6 +56,9 @@ interface Client {
   rejected: number;
   ping: number;
   bytesOut: number;
+  pingSentAt: number;
+  /** Nepřátelé, které tento klient smí vidět: id → čas, do kdy (grace po ztrátě výhledu). */
+  visible: Map<string, number>;
 }
 
 export interface ServerStats {
@@ -93,6 +102,11 @@ export class GameServer {
     this.hash = mapHash(doc);
     this.generators = Object.fromEntries(allAssets().map((a) => [a.assetId, a.generatorVersion]));
     this.sim.squadSpawn = (p, leaderId) => this.squadSpawn(p, leaderId);
+    // Kompenzace pingu: střelec vidí ostatní o interpolaci + odezvu zpět (omezeno v simulaci).
+    this.sim.lagOf = (id) => {
+      const c = this.clients.get(id);
+      return c ? (NET.interpolationDelayMs + c.ping) / 1000 : 0;
+    };
   }
 
   static async create(doc: MapDocument, opts: ServerOptions) {
@@ -191,7 +205,12 @@ export class GameServer {
 
   private onConnection(ws: WebSocket) {
     const id = `p${++this.seq}`;
-    const c: Client = { id, ws, name: id, player: null, inputs: [], lastSeq: 0, lastInputAt: performance.now(), lastHeld: 0, msgTimes: [], rejected: 0, ping: 0, bytesOut: 0 };
+    const c: Client = { id, ws, name: id, player: null, inputs: [], lastSeq: 0, lastInputAt: performance.now(), lastHeld: 0, msgTimes: [], rejected: 0, ping: 0, bytesOut: 0, pingSentAt: 0, visible: new Map() };
+    // Odezva měřená serverem (klient ji nemůže zfalšovat ve svůj prospěch nad rámec limitu kompenzace).
+    ws.on('pong', () => {
+      if (c.pingSentAt) c.ping = Math.round(performance.now() - c.pingSentAt);
+      c.pingSentAt = 0;
+    });
     this.clients.set(id, c);
     ws.on('message', (data, isBinary) => {
       if (isBinary) return this.reject(c, 'zpráva', 'binární zprávy nejsou podporovány');
@@ -505,6 +524,7 @@ export class GameServer {
       // Timeout: žádný vstup → neutrální (server zruší střelbu i sprint).
     }
     this.sim.step(inputs);
+    this.roundTick();
     const events = this.sim.events;
     this.sim.events = [];
     if (events.length) this.distributeEvents(events);
@@ -522,6 +542,8 @@ export class GameServer {
       this.snapAcc -= 1 / NET.snapshotHz;
       this.snapCount++;
       // Vzdálení hráči se kódují jednou pro všechny příjemce.
+      if (this.snapCount % 3 === 0) this.updateVisibility();
+      if (this.snapCount % 60 === 0) this.pingClients();
       this.remoteCache = new Map([...this.sim.players.values()].map((p) => [p.id, encodeRemote(this.remote(p))]));
       for (const c of this.clients.values()) if (c.player) this.sendSnapshot(c);
       this.remoteCache = null;
@@ -532,6 +554,7 @@ export class GameServer {
 
   /** Události: výstřely a dopady všem; zásahy jen střelci a oběti (hitmarker nesmí prozradit cizí). */
   private distributeEvents(events: SimEvent[]) {
+    for (const e of events) if (e.type === 'death' || e.type === 'downed') this.revealKiller(e.id, e.killer);
     for (const c of this.clients.values()) {
       const list = events.filter((e) => {
         if (e.type === 'hit') return e.owner === c.id || e.target === c.id;
@@ -577,7 +600,14 @@ export class GameServer {
     const mem = this.team.members.get(c.id);
     const cq = this.sim.conquest;
     const o: RemoteTuple[] = [];
-    for (const pl of this.sim.players.values()) if (pl.id !== c.id) o.push(this.remoteCache?.get(pl.id) ?? encodeRemote(this.remote(pl)));
+    // Po konci kola už není co skrývat (výsledková tabulka potřebuje všechny).
+    const cull = this.opts.cullEnemies !== false && !cq?.ended;
+    for (const pl of this.sim.players.values()) {
+      if (pl.id === c.id) continue;
+      // Nepřítel bez výhledu se vůbec neposílá (klient ho nemůže vykreslit skrz zeď).
+      if (cull && pl.team !== p.team && !c.visible.has(pl.id)) continue;
+      o.push(this.remoteCache?.get(pl.id) ?? encodeRemote(this.remote(pl)));
+    }
     // Dostupná místa i zaživa (plánování příštího nasazení); o nasazení stejně rozhoduje server.
     const spawns = cq ? this.sim.spawnOptions(p.team).map((s) => s.id) : [];
     const sq = mem?.squad ? this.team.squads.get(mem.squad) : undefined;
@@ -595,6 +625,8 @@ export class GameServer {
       cqTime: cq?.time ?? 0,
       ended: !!cq?.ended,
       winner: cq?.winner ?? null,
+      scenario: cq?.scenarioId ?? '',
+      nextRound: this.nextRoundAt > 0 ? r3(Math.max(0, this.nextRoundAt - this.sim.time)) : 0,
       dummies: this.sim.dummies.map((d) => ({ id: d.id, down: d.downUntil > 0 })),
       // Jen informace vlastního týmu/čety (nepřítel je nedostane vůbec).
       squads: this.team.squadsFor(p.team),
@@ -606,6 +638,106 @@ export class GameServer {
       nades: this.sim.grenades.map((n) => [n.id, n.kind === 'frag' ? 0 : 1, r3(n.pos.x), r3(n.pos.y), r3(n.pos.z), r3(n.smokeUntil)] as [string, 0 | 1, number, number, number, number]),
       scores: this.snapCount % NET.snapshotHz !== 1 ? [] : [...this.sim.players.values()].map((o) => ({ id: o.id, name: o.name, team: o.team, kills: o.kills, deaths: o.deaths, revives: o.revives, ping: this.clients.get(o.id)?.ping ?? 0, squad: o.team === p.team ? (this.team.members.get(o.id)?.squad ?? null) : null })),
     });
+  }
+
+  // ---------------- kola ----------------
+
+  private nextRoundAt = 0;
+  round = 1;
+
+  /** Po konci kola pauza a nové kolo (další scénář mapy, pokud jich je víc). */
+  private roundTick() {
+    const cq = this.sim.conquest;
+    if (!cq) return;
+    if (cq.ended && !this.nextRoundAt) {
+      const wait = this.opts.roundBreak ?? 20;
+      this.nextRoundAt = this.sim.time + wait;
+      this.broadcastSystem(`Kolo skončilo. Nové kolo za ${Math.round(wait)} s.`);
+    } else if (this.nextRoundAt && this.sim.time >= this.nextRoundAt) {
+      this.nextRoundAt = 0;
+      const list = this.doc.scenarios;
+      let next = cq.scenarioId;
+      if (this.opts.rotate !== false && list.length > 1) next = list[(Math.max(0, list.findIndex((s) => s.id === cq.scenarioId)) + 1) % list.length].id;
+      this.sim.restart(next);
+      this.team.resetRound();
+      for (const c of this.clients.values()) c.visible.clear();
+      this.round++;
+      const name = list.find((s) => s.id === next)?.name;
+      this.broadcastSystem(`Kolo ${this.round} začíná${name ? ` – ${name}` : ''}.`);
+      this.opts.log?.(`kolo ${this.round}: scénář ${next}`);
+    }
+  }
+
+  // ---------------- odezva a viditelnost ----------------
+
+  private pingClients() {
+    const now = performance.now();
+    for (const c of this.clients.values()) {
+      if (c.ws.readyState !== 1 || (c.pingSentAt && now - c.pingSentAt < 5000)) continue;
+      c.pingSentAt = now;
+      try {
+        c.ws.ping();
+      } catch {
+        /* spojení se zavírá */
+      }
+    }
+  }
+
+  /**
+   * Které nepřátele smí klient dostat (10× za sekundu): do 12 m vždy (kroky, těsné rohy), jinak jen
+   * při volné přímce z očí (i z polohy předpovězené o 0,25 s – vykouknutí zpoza rohu) k hlavě, hrudi,
+   * nohám nebo bokům cíle. Po ztrátě výhledu zůstává cíl ještě 1 s (žádné problikávání).
+   * Mrtvý hráč vidí ze svého místa a k tomu svého přemožitele (kamera po smrti).
+   */
+  private updateVisibility() {
+    if (this.opts.cullEnemies === false) return;
+    const now = this.sim.time;
+    const NEAR = 12, GRACE = 1, AHEAD = 0.25;
+    const clear = (a: { x: number; y: number; z: number }, b: { x: number; y: number; z: number }) => {
+      const v = { x: b.x - a.x, y: b.y - a.y, z: b.z - a.z };
+      const d = Math.hypot(v.x, v.y, v.z);
+      if (d < 0.5) return true;
+      return !this.phys.castRay(a, { x: v.x / d, y: v.y / d, z: v.z / d }, d - 0.25);
+    };
+    for (const c of this.clients.values()) {
+      const p = c.player;
+      if (!p) continue;
+      for (const [id, until] of c.visible) if (until < now || !this.sim.players.has(id)) c.visible.delete(id);
+      if (p.state.pos.y < -500) continue; // ještě nenasazen
+      const eye = eyePosition(this.sim.cfg, p.state);
+      const eyes = [eye, { x: eye.x + p.state.vel.x * AHEAD, y: eye.y, z: eye.z + p.state.vel.z * AHEAD }];
+      for (const o of this.sim.players.values()) {
+        if (o.id === c.id || o.team === p.team || o.state.pos.y < -500) continue;
+        const s = o.state;
+        const dx = s.pos.x - eye.x, dz = s.pos.z - eye.z;
+        const dist = Math.hypot(dx, dz, s.pos.y - eye.y);
+        let see = dist < NEAR;
+        if (!see) {
+          const h = s.height;
+          const nx = -dz / (Math.hypot(dx, dz) || 1), nz = dx / (Math.hypot(dx, dz) || 1);
+          const ax = s.vel.x * AHEAD, az = s.vel.z * AHEAD;
+          const pts = [
+            { x: s.pos.x, y: s.pos.y + h * 0.92, z: s.pos.z },
+            { x: s.pos.x, y: s.pos.y + h * 0.6, z: s.pos.z },
+            { x: s.pos.x, y: s.pos.y + 0.15, z: s.pos.z },
+            { x: s.pos.x + nx * 0.45, y: s.pos.y + h * 0.6, z: s.pos.z + nz * 0.45 },
+            { x: s.pos.x - nx * 0.45, y: s.pos.y + h * 0.6, z: s.pos.z - nz * 0.45 },
+            { x: s.pos.x + ax, y: s.pos.y + h * 0.75, z: s.pos.z + az },
+          ];
+          outer: for (const e of eyes) for (const q of pts) if (clear(e, q)) {
+            see = true;
+            break outer;
+          }
+        }
+        if (see) c.visible.set(o.id, now + GRACE);
+      }
+    }
+  }
+
+  /** Kamera po smrti: oběť smí několik sekund vidět svého přemožitele. */
+  private revealKiller(victim: string, killer: string | null) {
+    const c = this.clients.get(victim);
+    if (c && killer && killer !== victim) c.visible.set(killer, this.sim.time + 8);
   }
 
   stats(): ServerStats {

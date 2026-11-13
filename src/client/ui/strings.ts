@@ -167,7 +167,8 @@ const cs = {
   'end.reasonTime': 'Vypršel čas – rozhodl vyšší počet ticketů.',
   'end.restart': 'Hrát znovu',
   'end.leave': 'Do menu',
-  'end.noNextMap': 'Server zatím nemá rotaci map – další kolo spustí správce serveru.',
+  'end.nextRound': 'Další kolo začne za {s} s.',
+  'end.nextRoundSoon': 'Další kolo začne za chvíli.',
   'end.yours': 'Tvůj příspěvek',
 
   'score.title': 'Skóre',
@@ -535,7 +536,8 @@ const en: Record<StringKey, string> = {
   'end.reasonTime': 'Time ran out – more tickets won.',
   'end.restart': 'Play again',
   'end.leave': 'To menu',
-  'end.noNextMap': 'The server has no map rotation yet – the admin starts the next round.',
+  'end.nextRound': 'Next round starts in {s} s.',
+  'end.nextRoundSoon': 'Next round starts shortly.',
   'end.yours': 'Your contribution',
 
   'score.title': 'Score',

@@ -120,6 +120,9 @@ export function dummiesFromMap(doc: MapDocument): DummyDef[] {
     }));
 }
 
+/** Nejvyšší kompenzované zpoždění střelce (s). Nad tím už musí hráč předsazovat sám. */
+export const LAG_COMP_MAX = 0.25;
+
 export class MatchSim {
   readonly cfg: MovementConfig = MOVEMENT;
   /** Výchozí pravidla (projektily bez vlastních pravidel). Hráč má pravidla podle své zbraně. */
@@ -128,6 +131,13 @@ export class MatchSim {
   readonly players = new Map<string, SimPlayer>();
   readonly dummies: Dummy[];
   readonly projectiles: Projectile[] = [];
+  /**
+   * Kompenzace pingu (jen server): o kolik sekund zpět viděl střelec ostatní hráče
+   * (interpolace + odezva, omezeno LAG_COMP_MAX). Zásah se vyhodnotí proti polohám z té doby.
+   * Známá cena: hráč s vysokým pingem může zasáhnout cíl, který už z jeho pohledu zaběhl za roh.
+   */
+  lagOf: ((ownerId: string) => number) | null = null;
+  private hbHistory: Array<{ t: number; hbs: Hitbox[] }> = [];
   conquest: ConquestState | null;
   events: SimEvent[] = [];
   private seed: number;
@@ -433,7 +443,27 @@ export class MatchSim {
       const x = d.base.x + Math.cos(d.yaw) * off, z = d.base.z - Math.sin(d.yaw) * off;
       hbs.push({ id: `dummy:${d.id}`, a: { x, y: d.base.y + 0.55, z }, b: { x, y: d.base.y + 1.62, z }, r: 0.22, kind: 'vertical', feetY: d.base.y + 0.3, height: 1.45 });
     }
-    const impacts = stepProjectiles(this.projectiles, dt, this.weaponCfg, this.phys, hbs, this.opts.friendlyFire ?? false);
+    let rewound: ((p: Projectile) => Hitbox[]) | undefined;
+    if (this.lagOf) {
+      this.hbHistory.push({ t, hbs });
+      while (this.hbHistory.length > 1 && t - this.hbHistory[0].t > LAG_COMP_MAX + 0.1) this.hbHistory.shift();
+      const cache = new Map<string, Hitbox[]>();
+      const alive = new Set(hbs.map((h) => h.id));
+      rewound = (pr) => {
+        let list = cache.get(pr.owner);
+        if (!list) {
+          const lag = Math.max(0, Math.min(LAG_COMP_MAX, this.lagOf!(pr.owner)));
+          const want = t - lag;
+          let best = this.hbHistory[this.hbHistory.length - 1];
+          for (const h of this.hbHistory) if (Math.abs(h.t - want) < Math.abs(best.t - want)) best = h;
+          // Jen cíle, které jsou naživu i teď (mrtvého nelze zasáhnout „v minulosti“).
+          list = lag > 0 ? best.hbs.filter((h) => alive.has(h.id)) : hbs;
+          cache.set(pr.owner, list);
+        }
+        return list;
+      };
+    }
+    const impacts = stepProjectiles(this.projectiles, dt, this.weaponCfg, this.phys, hbs, this.opts.friendlyFire ?? false, rewound);
     for (const im of impacts) {
       this.events.push({ type: 'impact', ...im });
       if (!im.target || !im.damage || ended) continue;
@@ -479,7 +509,9 @@ export class MatchSim {
   }
 
   /** Restart: obnoví scénář, HP, munici, tickety a body (autorská data se nemění). */
-  restart() {
+  restart(scenarioId?: string) {
+    if (scenarioId !== undefined) this.opts.scenarioId = scenarioId;
+    this.hbHistory = [];
     this.conquest = this.opts.conquest ? createConquest(this.doc, this.opts.scenarioId) : null;
     this.projectiles.length = 0;
     this.grenades = [];

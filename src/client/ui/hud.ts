@@ -39,6 +39,8 @@ export interface HudContext {
   identified: string | null;
   extraTabs: Array<{ id: string; label: string; view: () => HTMLElement; full?: boolean }>;
   network: boolean;
+  /** Sekundy do dalšího kola na serveru (0 = neznámo / kolo běží). */
+  nextRound?: number;
 }
 
 export class Hud {
@@ -334,7 +336,11 @@ export class Hud {
       this.endShown = false;
       return;
     }
-    if (this.endShown) return;
+    if (this.endShown) {
+      const n = e.querySelector('.pf-next-round');
+      if (n) n.textContent = c.nextRound ? t('end.nextRound', { s: String(Math.ceil(c.nextRound)) }) : t('end.nextRoundSoon');
+      return;
+    }
     this.endShown = true;
     this.deploy.show(false);
     const cq = c.cq;
@@ -353,7 +359,7 @@ export class Hud {
       h('div', { class: 'pf-end-cols' }, col(c.team), col(c.team === 'teamA' ? 'teamB' : 'teamA')),
       h('div', { class: 'pf-row-inline' }, c.network ? button(t('end.leave'), () => this.onLeave(), 'pf-btn primary') : button(t('end.restart'), () => this.onRestart(), 'pf-btn primary'), c.network ? null : button(t('end.leave'), () => this.onLeave(), 'pf-btn')),
     );
-    if (c.network) e.append(h('p', { class: 'pf-dim' }, t('end.noNextMap')));
+    if (c.network) e.append(h('p', { class: 'pf-dim pf-next-round' }, t('end.nextRoundSoon')));
     e.classList.remove('hidden');
   }
 

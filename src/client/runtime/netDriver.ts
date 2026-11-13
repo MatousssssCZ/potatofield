@@ -64,6 +64,8 @@ export class NetDriver implements GameDriver {
     this.phys = phys;
   }
   private phys: PhysicsWorld | null = null;
+  /** Sekundy do dalšího kola (0 = kolo běží). */
+  nextRound = 0;
 
   private onMsg(m: ServerMsg) {
     if (m.t === 'welcome') {
@@ -96,6 +98,9 @@ export class NetDriver implements GameDriver {
     this.serverTimeAt = performance.now();
     this.buffer.push({ time: s.time, recv: performance.now(), others: s.others });
     if (this.buffer.length > 40) this.buffer.shift();
+    // Nové kolo s jiným scénářem: stav bodů se založí znovu podle scénáře.
+    if (this.cq && this.doc && s.scenario && s.scenario !== this.cq.scenarioId) this.cq = createConquest(this.doc, s.scenario);
+    this.nextRound = s.nextRound ?? 0;
     if (this.cq && s.cps && s.tickets) {
       for (const c of s.cps) {
         const x = this.cq.cps.find((q) => q.id === c.id);

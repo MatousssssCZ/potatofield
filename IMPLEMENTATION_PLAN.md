@@ -55,7 +55,9 @@ Viz git historie; 20 testů pohybu, editor s gizmy, historie, IndexedDB, export/
 - [x] Predikce + korekce s přehráním vstupů, interpolace 100 ms, deduplikace efektů, simulace RTT/jitteru/ztrát
 - [x] Server odmítá cizí spawn, neznámé zprávy (klientský damage/capture), neplatné vstupy; smrt = 1 ticket; join uprostřed; odpojení
 - [x] End-to-end se 2 prohlížeči
-- [ ] Bounded lag compensation (zdokumentovaná nevýhoda vysokého pingu)
+- [x] Kompenzace pingu s limitem 250 ms (`LAG_COMP_MAX`; odezvu měří server ws ping/pong) – cena: hráč s vysokým pingem může zasáhnout cíl, který už u sebe zaběhl za roh (`tests/netFair.test.ts`)
+- [x] Automatické nové kolo po pauze (`roundBreak`, výchozí 20 s) se střídáním scénářů mapy
+- [x] Nepřátelé bez přímé viditelnosti se klientovi neposílají (do 12 m vždy, 1 s doběh, předstih 0,25 s při vykouknutí)
 
 ## Týmové mechaniky (P1 hotovo, P2/P3 zbývá)
 - [x] Chat all/team/squad s izolací na serveru, limit spamu, text nikdy jako HTML

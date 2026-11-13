@@ -153,6 +153,8 @@ export function stepProjectiles(
   phys: PhysicsWorld,
   hitboxes: Hitbox[],
   friendlyFire = false,
+  /** Kompenzace pingu: hitboxy, jak je viděl střelec projektilu (jinak aktuální). */
+  hitboxesFor?: (p: Projectile) => Hitbox[],
 ): ImpactEvent[] {
   const events: ImpactEvent[] = [];
   for (let i = list.length - 1; i >= 0; i--) {
@@ -167,7 +169,7 @@ export function stepProjectiles(
     const dir = { x: seg.x / len, y: seg.y / len, z: seg.z / len };
     const world: RayHit | null = len > 1e-6 ? phys.castRay(p0, dir, len) : null;
     let best: { t: number; hb?: Hitbox } | null = world ? { t: world.distance } : null;
-    for (const hb of hitboxes) {
+    for (const hb of hitboxesFor ? hitboxesFor(p) : hitboxes) {
       if (hb.id === p.owner) continue;
       if (!friendlyFire && p.team && hb.team === p.team) continue;
       const t = rayCapsule(p0, dir, len, hb.a, hb.b, hb.r);

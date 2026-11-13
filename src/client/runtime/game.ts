@@ -298,6 +298,7 @@ export class Game {
         identified: this.identify(hdt),
         extraTabs: this.extraTabs,
         network: !!nd,
+        nextRound: nd?.nextRound ?? 0,
       });
     }
   }
