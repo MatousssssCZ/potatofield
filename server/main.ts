@@ -3,7 +3,7 @@
  * Každý parametr lze zadat i proměnnou prostředí PF_<NÁZEV> (např. PF_NAME, PF_TEAM_SIZE,
  * PF_FF=1, PF_NO_PILOT=1); port bere i z PORT (hosting typu Render ho přiděluje sám).
  */
-import { readFileSync } from 'node:fs';
+import { appendFile, readFileSync } from 'node:fs';
 import { parseMapJson } from '../src/shared/map/validate';
 import { GameServer } from './gameServer';
 import { FACTION_LABEL, PILOT, type Faction } from '../src/shared/config/arsenal';
@@ -36,6 +36,7 @@ if (pilot && [fa, fb].some((f) => !PILOT.factions.includes(f))) {
   console.error('Pilot hraje jen frakce usmc × mec (Falcon Corps × Dune League); pro jiné použijte --no-pilot.');
   process.exit(1);
 }
+const recordsFile = process.env.PF_RECORDS || '';
 const server = await GameServer.create(r.doc, {
   conquest,
   scenarioId: arg('scenario', r.doc.scenarios[0]?.id ?? ''),
@@ -45,6 +46,11 @@ const server = await GameServer.create(r.doc, {
   teamSize: Number(arg('team-size', String(PILOT.teamSize))),
   friendlyFire: flag('ff'),
   log: (s) => console.log(s),
+  // Heslo správce jen z prostředí (PF_ADMIN_PASSWORD) – ne z příkazové řádky, kde je vidět ve výpisu procesů.
+  adminPassword: process.env.PF_ADMIN_PASSWORD || undefined,
+  roundBreak: Number(arg('round-break', '20')),
+  // Volitelný soubor záznamů (nahlášení, zákazy, chyby klientů): PF_RECORDS=cesta, řádek = JSON.
+  onRecord: recordsFile ? (kind, data) => appendFile(recordsFile, JSON.stringify({ kind, ...data }) + '\n', () => {}) : undefined,
 });
 await server.listen(Number(process.env.PORT ?? arg('port', '8787')));
 // Hosting při nasazení nové verze posílá SIGTERM: hráčům se vysvětlí, proč je server odpojil.

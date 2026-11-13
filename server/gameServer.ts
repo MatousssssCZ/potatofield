@@ -38,6 +38,10 @@ export interface ServerOptions {
   roundBreak?: number;
   /** Střídat scénáře mapy po každém kole (výchozí ano). */
   rotate?: boolean;
+  /** Heslo správce (příkaz /admin v chatu). Bez hesla je správa vypnutá. */
+  adminPassword?: string;
+  /** Kam zapisovat nahlášení hráčů a chyby klientů (řádek = JSON); bez něj jen do logu. */
+  onRecord?: (kind: 'report' | 'client-error' | 'ban', data: Record<string, unknown>) => void;
   /** Skrývat nepřátele bez přímé viditelnosti (obrana proti wallhacku; výchozí ano). */
   cullEnemies?: boolean;
   log?: (s: string) => void;
@@ -57,6 +61,11 @@ interface Client {
   ping: number;
   bytesOut: number;
   pingSentAt: number;
+  ip: string;
+  admin: boolean;
+  adminTries: number;
+  lastReportAt: number;
+  lastVoteAt: number;
   /** Nepřátelé, které tento klient smí vidět: id → čas, do kdy (grace po ztrátě výhledu). */
   visible: Map<string, number>;
 }
@@ -163,6 +172,34 @@ export class GameServer {
           // Kontrola stavu pro hosting (Render health check) – bez herních dat.
           res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8', 'access-control-allow-origin': '*', 'cache-control': 'no-store' });
           res.end(`Potatofield server OK · protokol ${PROTOCOL_VERSION} · hráči ${this.clients.size}\n`);
+        } else if (path === '/client-error' && req.method === 'POST') {
+          // Hlášení chyby klienta (bez osobních údajů): omezená velikost i četnost, jen do záznamu správce.
+          const ip = String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() || req.socket.remoteAddress || '?';
+          const nowMs = Date.now();
+          const seen = (this.errorTimes.get(ip) ?? []).filter((t) => nowMs - t < 60000);
+          let body = '';
+          req.on('data', (d) => {
+            if (body.length < 4096) body += String(d).slice(0, 4096 - body.length);
+          });
+          req.on('end', () => {
+            res.writeHead(seen.length >= 5 ? 429 : 204, { 'access-control-allow-origin': '*' });
+            res.end();
+            if (seen.length >= 5) return;
+            seen.push(nowMs);
+            this.errorTimes.set(ip, seen);
+            if (this.errorTimes.size > 2000) this.errorTimes.clear();
+            try {
+              const j = JSON.parse(body) as Record<string, unknown>;
+              const rec = { msg: String(j.msg ?? '').slice(0, 300), stack: String(j.stack ?? '').slice(0, 1500), build: String(j.build ?? '').slice(0, 40), where: String(j.where ?? '').slice(0, 40) };
+              this.clientErrors++;
+              this.record('client-error', rec);
+            } catch {
+              /* neplatné tělo se zahodí */
+            }
+          });
+        } else if (req.method === 'OPTIONS') {
+          res.writeHead(204, { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'POST, GET', 'access-control-allow-headers': 'content-type' });
+          res.end();
         } else {
           res.writeHead(404, { 'access-control-allow-origin': '*' });
           res.end();
@@ -170,7 +207,8 @@ export class GameServer {
       });
       this.wss = new WebSocketServer({ server: this.http, maxPayload: NET.maxMessageBytes, perMessageDeflate: { threshold: 2048 } });
       this.http.listen(port);
-      this.wss.on('connection', (ws) => this.onConnection(ws));
+      // Za proxy hostingu (Render) je skutečná adresa v x-forwarded-for; slouží jen pro zákazy vstupu.
+      this.wss.on('connection', (ws, req) => this.onConnection(ws, String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() || req.socket.remoteAddress || '?'));
       this.http.on('listening', () => {
         this.port = (this.http!.address() as { port: number }).port;
         this.log(`server naslouchá na ${this.port}, mapa ${this.doc.name} (${this.hash})`);
@@ -203,9 +241,19 @@ export class GameServer {
 
   // ---------------- spojení ----------------
 
-  private onConnection(ws: WebSocket) {
+  private onConnection(ws: WebSocket, ip: string) {
+    const ban = this.bans.get(ip);
+    if (ban && (ban.until === 0 || ban.until > Date.now())) {
+      try {
+        ws.send(JSON.stringify({ t: 'bye', reason: `máte zákaz vstupu${ban.until ? ` do ${new Date(ban.until).toISOString().slice(11, 16)} UTC` : ''}: ${ban.reason}` } satisfies ServerMsg));
+      } catch {
+        /* spojení už je zavřené */
+      }
+      ws.close(1008, 'ban');
+      return;
+    }
     const id = `p${++this.seq}`;
-    const c: Client = { id, ws, name: id, player: null, inputs: [], lastSeq: 0, lastInputAt: performance.now(), lastHeld: 0, msgTimes: [], rejected: 0, ping: 0, bytesOut: 0, pingSentAt: 0, visible: new Map() };
+    const c: Client = { id, ws, name: id, player: null, inputs: [], lastSeq: 0, lastInputAt: performance.now(), lastHeld: 0, msgTimes: [], rejected: 0, ping: 0, bytesOut: 0, pingSentAt: 0, visible: new Map(), ip, admin: false, adminTries: 0, lastReportAt: -1e9, lastVoteAt: -1e9 };
     // Odezva měřená serverem (klient ji nemůže zfalšovat ve svůj prospěch nad rámec limitu kompenzace).
     ws.on('pong', () => {
       if (c.pingSentAt) c.ping = Math.round(performance.now() - c.pingSentAt);
@@ -362,6 +410,8 @@ export class GameServer {
         break;
       }
       case 'chat': {
+        // Příkazy správy a hlasování se píší do chatu (/help); ostatním hráčům se neposílají.
+        if (m.text.trim().startsWith('/')) return this.command(c, m.text.trim().slice(1, 220));
         const r = this.team.chat(c.id, m.ch, m.text, now);
         if (typeof r === 'string') return this.reject(c, 'chat', r);
         const msg: ServerMsg = { t: 'chat', id: `ch${++this.seq}`, from: c.id, name: c.name, ch: m.ch, text: r.text, time: now };
@@ -525,6 +575,7 @@ export class GameServer {
     }
     this.sim.step(inputs);
     this.roundTick();
+    if (this.vote && this.sim.tick % 30 === 0) this.voteTick();
     const events = this.sim.events;
     this.sim.events = [];
     if (events.length) this.distributeEvents(events);
@@ -638,6 +689,164 @@ export class GameServer {
       nades: this.sim.grenades.map((n) => [n.id, n.kind === 'frag' ? 0 : 1, r3(n.pos.x), r3(n.pos.y), r3(n.pos.z), r3(n.smokeUntil)] as [string, 0 | 1, number, number, number, number]),
       scores: this.snapCount % NET.snapshotHz !== 1 ? [] : [...this.sim.players.values()].map((o) => ({ id: o.id, name: o.name, team: o.team, kills: o.kills, deaths: o.deaths, revives: o.revives, ping: this.clients.get(o.id)?.ping ?? 0, squad: o.team === p.team ? (this.team.members.get(o.id)?.squad ?? null) : null })),
     });
+  }
+
+  // ---------------- správa: správce, hlasování, nahlášení ----------------
+
+  readonly bans = new Map<string, { until: number; reason: string; name: string }>();
+  private errorTimes = new Map<string, number[]>();
+  clientErrors = 0;
+  readonly reports: Array<Record<string, unknown>> = [];
+  vote: { target: string; name: string; by: string; yes: Set<string>; no: Set<string>; until: number } | null = null;
+
+  private record(kind: 'report' | 'client-error' | 'ban', data: Record<string, unknown>) {
+    const rec = { at: new Date().toISOString(), ...data };
+    if (kind === 'report') {
+      this.reports.push(rec);
+      if (this.reports.length > 500) this.reports.shift();
+    }
+    this.opts.onRecord?.(kind, rec);
+    this.log(`${kind}: ${JSON.stringify(rec)}`);
+  }
+
+  private tell(c: Client, text: string) {
+    this.send(c, { t: 'chat', id: `sys${++this.seq}`, from: 'system', name: 'Server', ch: 'system', text, time: this.sim.time });
+  }
+
+  /** Hráč podle jména (přesně, pak začátkem; bez rozlišení velikosti) nebo ID. */
+  private findClient(q: string): Client | string {
+    const k = q.toLowerCase();
+    const all = [...this.clients.values()].filter((x) => x.player);
+    const exact = all.filter((x) => x.name.toLowerCase() === k || x.id === q);
+    if (exact.length === 1) return exact[0];
+    const pre = all.filter((x) => x.name.toLowerCase().startsWith(k));
+    if (pre.length === 1) return pre[0];
+    return pre.length > 1 ? `jménu „${q}“ odpovídá víc hráčů – napiš ho celé` : `hráč „${q}“ tu není`;
+  }
+
+  /** Vyhození (s volitelným zákazem vstupu na `minutes`; 0 = trvale). */
+  kick(target: Client, reason: string, banMinutes: number | null = null, by = 'správce') {
+    if (banMinutes !== null) {
+      this.bans.set(target.ip, { until: banMinutes === 0 ? 0 : Date.now() + banMinutes * 60000, reason, name: target.name });
+      this.record('ban', { name: target.name, minutes: banMinutes, reason, by });
+    }
+    this.send(target, { t: 'bye', reason: `${banMinutes !== null ? 'zákaz vstupu' : 'vyhozen ze serveru'} (${by}): ${reason || 'bez udání důvodu'}` });
+    this.broadcastSystem(`${target.name} byl ${banMinutes !== null ? 'vykázán' : 'vyhozen'} (${by})${reason ? `: ${reason}` : ''}.`);
+    setTimeout(() => target.ws.close(1008, 'kick'), 100);
+  }
+
+  private command(c: Client, line: string) {
+    const [cmd, ...rest] = line.split(/\s+/);
+    const arg = rest.join(' ').trim();
+    const now = this.sim.time;
+    switch (cmd.toLowerCase()) {
+      case 'help':
+        return this.tell(c, `Příkazy: /votekick <jméno> · /yes · /no · /report <jméno> <důvod>${c.admin ? ' · /kick <jméno> [důvod] · /ban <jméno> [minuty] [důvod] · /unban <jméno> · /restart · /bans' : ' · /admin <heslo>'}`);
+      case 'admin': {
+        if (!this.opts.adminPassword) return this.tell(c, 'Správa není na tomto serveru zapnutá.');
+        if (c.admin) return this.tell(c, 'Už jsi přihlášen jako správce.');
+        if (arg && arg === this.opts.adminPassword) {
+          c.admin = true;
+          this.log(`správce přihlášen: ${c.name}`);
+          return this.tell(c, 'Přihlášen jako správce. /help vypíše příkazy.');
+        }
+        // Hádání hesla: po pěti pokusech odpojit.
+        if (++c.adminTries >= 5) return this.kick(c, 'opakované špatné heslo správce', 10, 'server');
+        return this.tell(c, 'Špatné heslo.');
+      }
+      case 'kick':
+      case 'ban': {
+        if (!c.admin) return this.tell(c, 'Jen pro správce (/admin <heslo>).');
+        const [who, ...more] = rest;
+        const t = who ? this.findClient(who) : 'chybí jméno';
+        if (typeof t === 'string') return this.tell(c, t);
+        if (cmd === 'kick') return this.kick(t, more.join(' '), null, `správce ${c.name}`);
+        const mins = /^\d+$/.test(more[0] ?? '') ? Math.min(525600, Number(more.shift())) : 0;
+        return this.kick(t, more.join(' '), mins, `správce ${c.name}`);
+      }
+      case 'unban': {
+        if (!c.admin) return this.tell(c, 'Jen pro správce.');
+        let n = 0;
+        for (const [ip, b] of this.bans) if (b.name.toLowerCase() === arg.toLowerCase()) {
+          this.bans.delete(ip);
+          n++;
+        }
+        return this.tell(c, n ? `Zákaz zrušen (${n}).` : 'Takový zákaz neexistuje.');
+      }
+      case 'bans':
+        if (!c.admin) return this.tell(c, 'Jen pro správce.');
+        return this.tell(c, this.bans.size ? [...this.bans.values()].map((b) => `${b.name}${b.until ? ` do ${new Date(b.until).toISOString().slice(11, 16)}` : ' trvale'}`).join(', ') : 'Žádné zákazy.');
+      case 'restart':
+        if (!c.admin) return this.tell(c, 'Jen pro správce.');
+        if (!this.sim.conquest) return this.tell(c, 'Volný režim nemá kola.');
+        this.sim.conquest.ended = true;
+        this.sim.conquest.winner = 'draw';
+        this.nextRoundAt = now + 5;
+        return this.broadcastSystem(`Správce ${c.name} ukončil kolo. Nové začne za 5 s.`);
+      case 'votekick': {
+        if (this.vote) return this.tell(c, `Už běží hlasování o hráči ${this.vote.name} (/yes nebo /no).`);
+        if (now - c.lastVoteAt < 120) return this.tell(c, 'Další hlasování můžeš vyvolat až za chvíli.');
+        const t = arg ? this.findClient(arg) : 'chybí jméno';
+        if (typeof t === 'string') return this.tell(c, t);
+        if (t === c) return this.tell(c, 'O sobě hlasovat nelze.');
+        if (t.admin) return this.tell(c, 'O správci hlasovat nelze.');
+        if (this.voters(t.id) < 3) return this.tell(c, 'Hlasování potřebuje aspoň 3 další hráče na serveru.');
+        c.lastVoteAt = now;
+        this.vote = { target: t.id, name: t.name, by: c.name, yes: new Set([c.id]), no: new Set(), until: now + 30 };
+        return this.broadcastSystem(`${c.name} navrhuje vyhodit hráče ${t.name}. Hlasuj v chatu: /yes nebo /no (30 s, je třeba ${this.votesNeeded(t.id)} hlasů).`);
+      }
+      case 'yes':
+      case 'no': {
+        const v = this.vote;
+        if (!v) return this.tell(c, 'Žádné hlasování neběží.');
+        if (c.id === v.target) return this.tell(c, 'O sobě nehlasuješ.');
+        v.yes.delete(c.id);
+        v.no.delete(c.id);
+        (cmd === 'yes' ? v.yes : v.no).add(c.id);
+        this.tell(c, `Hlas zaznamenán (${v.yes.size} pro, ${v.no.size} proti).`);
+        return this.voteTick();
+      }
+      case 'report': {
+        const [who, ...more] = rest;
+        const t = who ? this.findClient(who) : 'použití: /report <jméno> <důvod>';
+        if (typeof t === 'string') return this.tell(c, t);
+        if (now - c.lastReportAt < 30) return this.tell(c, 'Nahlášení lze poslat jednou za 30 s.');
+        c.lastReportAt = now;
+        const tp = t.player!;
+        this.record('report', { by: c.name, target: t.name, reason: more.join(' ').slice(0, 160), round: this.round, kills: tp.kills, deaths: tp.deaths, ping: t.ping, tick: this.sim.tick });
+        return this.tell(c, `Nahlášení hráče ${t.name} bylo zaznamenáno pro správce.`);
+      }
+      default:
+        return this.tell(c, 'Neznámý příkaz. /help vypíše příkazy.');
+    }
+  }
+
+  private voters(targetId: string) {
+    return [...this.clients.values()].filter((x) => x.player && x.id !== targetId).length;
+  }
+  /** Většina oprávněných hráčů, nejméně 3 hlasy. */
+  private votesNeeded(targetId: string) {
+    return Math.max(3, Math.floor(this.voters(targetId) / 2) + 1);
+  }
+
+  private voteTick() {
+    const v = this.vote;
+    if (!v) return;
+    const t = this.clients.get(v.target);
+    if (!t) {
+      this.vote = null;
+      return this.broadcastSystem(`Hlasování skončilo – ${v.name} se odpojil.`);
+    }
+    for (const set of [v.yes, v.no]) for (const id of set) if (!this.clients.has(id)) set.delete(id);
+    const need = this.votesNeeded(v.target);
+    if (v.yes.size >= need) {
+      this.vote = null;
+      return this.kick(t, `hlasování hráčů (${v.yes.size} pro)`, 10, 'hlasování');
+    }
+    if (this.sim.time >= v.until || v.no.size > this.voters(v.target) - need) {
+      this.vote = null;
+      this.broadcastSystem(`Hlasování o hráči ${v.name} neprošlo (${v.yes.size} pro, ${v.no.size} proti, třeba ${need}).`);
+    }
   }
 
   // ---------------- kola ----------------

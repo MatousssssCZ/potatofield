@@ -156,3 +156,104 @@ describe('server: kola a viditelnost nepřátel', () => {
     expect(ids(a)).toContain(b.id);
   });
 });
+
+describe('server: správa, hlasování, nahlášení, chyby klienta', () => {
+  const sys = (c: NetClient) => c.inbox.filter((m) => m.t === 'chat' && m.ch === 'system').map((m) => (m as { text: string }).text);
+  const say = (c: NetClient, text: string) => c.send({ t: 'chat', ch: 'all', text });
+
+  it('správce: špatné heslo nic nedá, správné umožní kick a ban; zakázaný se znovu nepřipojí; příkazy se neposílají ostatním', async () => {
+    const records: string[] = [];
+    server = await GameServer.create(buildStreetMap(), { conquest: true, scenarioId: 'sc_bases', manualTick: true, adminPassword: 'tajne-heslo', onRecord: (k) => records.push(k) });
+    const port = await server.listen(0);
+    const a = await connect(port, 'Alfa');
+    const b = await connect(port, 'Bravo');
+    say(b, '/kick Alfa');
+    say(a, '/admin spatne');
+    await run(6);
+    expect(sys(b).some((t) => /Jen pro správce/.test(t))).toBe(true);
+    expect(sys(a).some((t) => /Špatné heslo/.test(t))).toBe(true);
+    expect(server.clients.size).toBe(2);
+    say(a, '/admin tajne-heslo');
+    await run(6);
+    say(a, '/ban Bra 5 podvádění');
+    await run(6);
+    await wait(250);
+    expect(server.clients.size).toBe(1);
+    expect(b.inbox.some((m) => m.t === 'bye' && /zákaz vstupu/.test(m.reason))).toBe(true);
+    expect(records).toContain('ban');
+    // Heslo ani příkazy se nedostaly do chatu ostatních.
+    expect(b.inbox.some((m) => m.t === 'chat' && /tajne-heslo/.test((m as { text: string }).text))).toBe(false);
+    // Opětovné připojení ze stejné adresy server odmítne.
+    const again = new NetClient(new WebSocket(`ws://127.0.0.1:${port}`) as unknown as WsLike, 'Bravo2');
+    clients.push(again);
+    await wait(200);
+    expect(again.welcome).toBeNull();
+    expect(server.clients.size).toBe(1);
+  });
+
+  it('bez nastaveného hesla je správa vypnutá; opakované hádání hesla odpojí', async () => {
+    server = await GameServer.create(buildStreetMap(), { conquest: true, scenarioId: 'sc_bases', manualTick: true });
+    let port = await server.listen(0);
+    const a = await connect(port, 'Alfa');
+    say(a, '/admin cokoli');
+    await run(6);
+    expect(sys(a).some((t) => /není na tomto serveru zapnutá/.test(t))).toBe(true);
+    a.close();
+    await server.close();
+    server = await GameServer.create(buildStreetMap(), { conquest: true, scenarioId: 'sc_bases', manualTick: true, adminPassword: 'x1' });
+    port = await server.listen(0);
+    const g = await connect(port, 'Hadac');
+    for (let i = 0; i < 5; i++) say(g, `/admin pokus${i}`);
+    await run(8);
+    await wait(250);
+    expect(server.clients.size).toBe(0);
+  });
+
+  it('hlasování o vyhození: většina (min. 3 hlasy) vyhodí s dočasným zákazem; bez většiny neprojde', async () => {
+    server = await GameServer.create(buildStreetMap(), { conquest: true, scenarioId: 'sc_bases', manualTick: true });
+    const port = await server.listen(0);
+    const cs = [] as NetClient[];
+    for (const n of ['Alfa', 'Bravo', 'Cyril', 'Dana', 'Emil']) cs.push(await connect(port, n));
+    say(cs[0], '/votekick Emil');
+    await run(6);
+    expect(server.vote?.name).toBe('Emil');
+    say(cs[4], '/yes'); // cíl nehlasuje
+    say(cs[1], '/no');
+    await run(6);
+    expect(server.clients.size).toBe(5);
+    say(cs[1], '/yes'); // změna hlasu
+    say(cs[2], '/yes');
+    await run(6);
+    await wait(250);
+    expect(server.vote).toBeNull();
+    expect(server.clients.size).toBe(4);
+    expect([...server.bans.values()][0].until).toBeGreaterThan(Date.now());
+    // Druhé hlasování téhož hráče hned po prvním server odmítne (cooldown).
+    say(cs[0], '/votekick Dana');
+    await run(6);
+    expect(server.vote).toBeNull();
+  });
+
+  it('nahlášení hráče se zaznamená (s limitem četnosti); chyba klienta přes HTTP také a je omezená', async () => {
+    const recs: Array<[string, Record<string, unknown>]> = [];
+    server = await GameServer.create(buildStreetMap(), { conquest: true, scenarioId: 'sc_bases', manualTick: true, onRecord: (k, d) => recs.push([k, d]) });
+    const port = await server.listen(0);
+    const a = await connect(port, 'Alfa');
+    await connect(port, 'Bravo');
+    say(a, '/report Bravo střílí skrz zdi');
+    say(a, '/report Bravo znovu');
+    await run(6);
+    expect(server.reports.length).toBe(1);
+    expect(server.reports[0]).toMatchObject({ by: 'Alfa', target: 'Bravo', reason: 'střílí skrz zdi' });
+    const post = (body: string) => fetch(`http://127.0.0.1:${port}/client-error`, { method: 'POST', body }).then((r) => r.status);
+    expect(await post(JSON.stringify({ msg: 'TypeError: x is undefined', stack: 'at a (b.js:1)', secret: 'nesmí projít' }))).toBe(204);
+    await wait(20);
+    const err = recs.find(([k]) => k === 'client-error')![1];
+    expect(err.msg).toBe('TypeError: x is undefined');
+    expect('secret' in err).toBe(false);
+    const codes = [];
+    for (let i = 0; i < 6; i++) codes.push(await post('{"msg":"spam"}'));
+    expect(codes).toContain(429);
+    expect(server.clientErrors).toBeLessThanOrEqual(5);
+  });
+});

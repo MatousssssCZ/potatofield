@@ -27,6 +27,18 @@ Bez serveru na webu funguje trénink (offline Conquest), editor map i ukládán�
 Nastavení serveru (Render → služba → Environment): `PF_NAME` (název v seznamu), `PF_TEAM_SIZE`
 (výchozí 8), `PF_FF=1` (friendly fire), `PF_MAP`, `PF_SCENARIO`, `PF_NO_PILOT=1`.
 
+### Správa serveru
+
+- **Heslo správce:** proměnná `PF_ADMIN_PASSWORD` (Render → Environment; nikdy ne do repozitáře). Bez ní je správa vypnutá.
+  Ve hře do chatu: `/admin <heslo>`, pak `/kick <jméno> [důvod]`, `/ban <jméno> [minuty] [důvod]` (bez minut trvale),
+  `/unban <jméno>`, `/bans`, `/restart` (ukončí kolo). Pět špatných hesel = odpojení se zákazem na 10 min.
+- **Hráči:** `/votekick <jméno>`, `/yes`, `/no` (většina hráčů, nejméně 3 hlasy, 30 s; vyhozený má zákaz 10 min),
+  `/report <jméno> <důvod>` (záznam pro správce), `/help`. Příkazy se ostatním hráčům nezobrazují.
+- **Zákazy** platí podle síťové adresy a jen do restartu serveru (bez trvalého úložiště).
+- **Záznamy** (nahlášení, zákazy, chyby klientů) jdou do logu serveru; `PF_RECORDS=cesta` je navíc zapisuje do souboru
+  (řádek = JSON). Chyby klientů chodí na `POST /client-error` – jen text chyby a zásobník volání, žádné osobní údaje.
+- **Kola:** po konci kola pauza `PF_ROUND_BREAK` s (výchozí 20) a nové kolo s dalším scénářem mapy.
+
 ### Omezení bezplatného plánu
 - Po ~15 min bez provozu server usne; první dotaz ho probudí (až ~1 min). Hra mezitím ukazuje
   „Server je nedostupný“ – stačí *Zkusit znovu*; připojení samo čeká až 75 s.
