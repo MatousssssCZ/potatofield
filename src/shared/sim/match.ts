@@ -71,7 +71,7 @@ export interface Dummy extends DummyDef {
 export type SimEvent =
   | { type: 'shot'; key: string; owner: string; origin: V3; dir: V3; pellet?: number }
   | ({ type: 'impact' } & ImpactEvent)
-  | { type: 'hit'; owner: string; target: string; damage: number; zone: string; hp: number }
+  | { type: 'hit'; owner: string; target: string; damage: number; zone: string; hp: number; /** Odkud zásah přišel (ukazatel směru u oběti). */ from?: [number, number, number] }
   | { type: 'death'; id: string; killer: string | null; cause: 'weapon' | 'zone' | 'fall' | 'giveup'; lifeId: number }
   | { type: 'downed'; id: string; killer: string | null; lifeId: number }
   | { type: 'fall'; id: string; damage: number; hp: number }
@@ -481,7 +481,8 @@ export class MatchSim {
       const v = this.players.get(im.target);
       if (!v || !v.alive) continue;
       v.hp = Math.max(0, v.hp - im.damage);
-      this.events.push({ type: 'hit', owner: im.owner, target: v.id, damage: im.damage, zone: im.zone!, hp: v.hp });
+      const sh = this.players.get(im.owner)?.state.pos;
+      this.events.push({ type: 'hit', owner: im.owner, target: v.id, damage: im.damage, zone: im.zone!, hp: v.hp, ...(sh ? { from: [r2(sh.x), r2(sh.y), r2(sh.z)] as [number, number, number] } : {}) });
       if (v.hp <= 0) this.down(v, im.owner);
     }
     // Zakázané zóny: odpočet jen během pobytu, po návratu reset.
@@ -552,3 +553,5 @@ function hash(s: string) {
   for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
   return h >>> 0;
 }
+
+const r2 = (v: number) => Math.round(v * 100) / 100;

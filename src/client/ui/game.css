@@ -1077,6 +1077,42 @@ body.mode-play .tui-log {
   -webkit-mask: radial-gradient(circle, transparent 5px, #000 6px);
   mask: radial-gradient(circle, transparent 5px, #000 6px);
 }
+.h-hit.head {
+  background:
+    linear-gradient(45deg, transparent 45%, #ff4a3a 45% 55%, transparent 55%),
+    linear-gradient(-45deg, transparent 45%, #ff4a3a 45% 55%, transparent 55%);
+}
+.h-hit.kill {
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  background:
+    linear-gradient(45deg, transparent 44%, #ff4a3a 44% 56%, transparent 56%),
+    linear-gradient(-45deg, transparent 44%, #ff4a3a 44% 56%, transparent 56%);
+  -webkit-mask: radial-gradient(circle, transparent 7px, #000 8px);
+  mask: radial-gradient(circle, transparent 7px, #000 8px);
+}
+.h-dirs {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.h-dir {
+  position: absolute;
+  left: -130px;
+  top: -130px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  border: 10px solid transparent;
+  border-top-color: rgba(220, 40, 26, 0.85);
+  box-sizing: border-box;
+  -webkit-mask: conic-gradient(from -24deg, #000 0 48deg, transparent 48deg);
+  mask: conic-gradient(from -24deg, #000 0 48deg, transparent 48deg);
+}
 .h-center {
   position: absolute;
   left: 50%;

@@ -112,7 +112,7 @@ function melee(sim: MatchSim, p: SimPlayer, ws: WeaponState) {
   if (!best) return;
   const v = best.v;
   v.hp = Math.max(0, v.hp - R.damage);
-  sim.events.push({ type: 'hit', owner: p.id, target: v.id, damage: R.damage, zone: 'torso', hp: v.hp });
+  sim.events.push({ type: 'hit', owner: p.id, target: v.id, damage: R.damage, zone: 'torso', hp: v.hp, from: [p.state.pos.x, p.state.pos.y, p.state.pos.z] });
   if (v.hp <= 0) sim.down(v, p.id);
 }
 
@@ -234,7 +234,7 @@ function explode(sim: MatchSim, n: Grenade) {
     const dmg = Math.round(F.damage * Math.pow(1 - d / F.radius, F.falloff));
     if (dmg <= 0) continue;
     v.hp = Math.max(0, v.hp - dmg);
-    sim.events.push({ type: 'hit', owner: n.owner, target: v.id, damage: dmg, zone: 'torso', hp: v.hp });
+    sim.events.push({ type: 'hit', owner: n.owner, target: v.id, damage: dmg, zone: 'torso', hp: v.hp, from: [n.pos.x, n.pos.y, n.pos.z] });
     if (v.hp <= 0) sim.down(v, n.owner);
   }
 }

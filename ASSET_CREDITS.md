@@ -9,7 +9,7 @@
 | Geometrie objektů střelnice (kvádry, rampy, bedny, sudy, bariéry, pytle, cedule, terče) | generátory v `src/world/assets/` | vlastní, deterministické |
 | Rig úchopů rukou v první osobě (záložní ruce), kolimátor, puškohled, záblesk, nábojnice; zbraně bez modelu z balíčku (M249, PKM, PLA) a záložní modely všech zbraní | `src/client/render/weapons/*` | vlastní programové modely; reference jen jako předloha proporcí |
 | Kamufláže rukávů | `makeCamoTexture()` | vlastní vzory (ne kopie BF2) |
-| Zvuky (výstřel, dopady, hitmarker) | `src/client/runtime/audio.ts` | syntetizované za běhu (WebAudio), žádné nahrávky |
+| Zvuky výstřelů, potvrzení zásahu, syčení dýmovnice | `src/client/runtime/audio.ts` | syntetizované za běhu (WebAudio) podle druhu zbraně |
 | Vojáci USMC / MEC (tělo, výstroj rolí, kostra, atlas uniforem, animace) | `src/client/render/soldier/*` | vlastní programový model a procedurální animace; obrazové reference sloužily jen jako popis siluety (nevloženy do textur) |
 | Gradient okolního světla, obloha | gradient vlastní; obloha = `Sky` z příkladů Three.js (MIT) | |
 
@@ -27,7 +27,16 @@ výstroj vojáků (helma, vesta, sumky) je vlastní procedurální model nasazen
 Nepoužito (zatím): Animated FPS Guns (Quaternius, CC0 – nahrazeno Flat Guns), PSX First Person
 Arms (drillimpact, itch.io – licence neověřena, do repozitáře nevloženo).
 
-Zvuky a textury třetích stran zatím **nejsou** použity.
+## Zvuky třetích stran
+
+| Asset | Autor / zdroj | Licence | Použití |
+|---|---|---|---|
+| Impact Sounds 1.0 (kroky beton / tráva / dřevo / sníh, dopady kov / dřevo / měkké / obecné / úder, plech) – 34 souborů | Kenney – [kenney.nl/assets/impact-sounds](https://kenney.nl/assets/impact-sounds) | CC0 1.0 (License.txt v balíčku) | `public/audio/footstep_*`, `impact*` – kroky podle povrchu, dopady střel, zásah do těla |
+| RPG Audio (metalClick, metalLatch, beltHandle, cloth, drawKnife, knifeSlice, handleSmallLeather) – 11 souborů | Kenney – [kenney.nl/assets/rpg-audio](https://kenney.nl/assets/rpg-audio) | CC0 1.0 | `public/audio/` – přebíjení, závěr, přehození výbavy, nůž, brašna |
+| Sci-fi Sounds (explosionCrunch 000–002, lowFrequency_explosion_000) – 4 soubory | Kenney – [kenney.nl/assets/sci-fi-sounds](https://kenney.nl/assets/sci-fi-sounds) | CC0 1.0 | `public/audio/` – výbuch granátu |
+
+Soubory jsou beze změny (OGG), staženo 13. 11. 2026. Přiřazení ke zvukům hry je v tabulce `BANK` v `src/client/runtime/audio.ts`
+(„sníh“ slouží jako písek). Textury třetích stran **nejsou** použity.
 
 ## Knihovny (runtime)
 

@@ -110,6 +110,7 @@ export class Hud {
     this.els['h-br'].append(this.slots.root, this.silhouette, this.els['h-ammo']);
     mk('h-hit', 'h-hit');
     mk('h-hurt', 'h-hurt');
+    mk('h-dirs', 'h-dirs');
     mk('h-center', 'h-center');
     mk('h-zone', 'h-zone hidden');
     mk('h-downed', 'h-downed hidden');
@@ -152,9 +153,21 @@ export class Hud {
   private hurtUntil = 0;
   private hurtAmount = 0;
 
-  hitmarker(now: number) {
-    this.hitUntil = now + 0.15;
+  /** Potvrzení zásahu: tělo bílé, hlava červené, vyřazení větší a delší. */
+  hitmarker(now: number, kind: 'body' | 'head' | 'kill' = 'body') {
+    this.hitUntil = now + (kind === 'kill' ? 0.4 : 0.15);
+    this.els['h-hit'].className = `h-hit${kind === 'body' ? '' : ` ${kind}`}`;
   }
+
+  /** Ukazatel směru poškození: oblouk kolem středu, úhel vůči pohledu (rad, + = vpravo). */
+  damageFrom(now: number, angle: number) {
+    const el = h('div', { class: 'h-dir' });
+    el.style.transform = `rotate(${angle}rad)`;
+    this.els['h-dirs'].append(el);
+    this.dirs.push({ el, until: now + 1.6 });
+    while (this.dirs.length > 6) this.dirs.shift()!.el.remove();
+  }
+  private dirs: Array<{ el: HTMLElement; until: number }> = [];
 
   /** Kill feed (krátký, staré řádky mizí). */
   feed(text: string, now: number) {
@@ -178,6 +191,11 @@ export class Hud {
     e['h-hit'].style.opacity = now < this.hitUntil ? '1' : '0';
     this.slots.update(c.me?.alive ? c.me.inv : null, now);
     e['h-hurt'].style.opacity = now < this.hurtUntil ? String(this.hurtAmount * Math.min(1, (this.hurtUntil - now) / 0.35)) : '0';
+    this.dirs = this.dirs.filter((d) => {
+      if (now > d.until) d.el.remove();
+      else d.el.style.opacity = String(Math.min(1, (d.until - now) / 0.6));
+      return now <= d.until;
+    });
     for (const list of [this.killfeed, this.sysmsg]) {
       for (const k of list) if (now > k.until) k.el.remove();
       list.splice(0, list.length, ...list.filter((k) => now <= k.until));
@@ -464,7 +482,7 @@ export class Hud {
     window.removeEventListener('keyup', this.onKeyUp, true);
     this.deploy.dispose();
     this.mapOverlay.remove();
-    for (const id of ['h-tl', 'h-tr', 'h-bl', 'h-br', 'h-hit', 'h-hurt', 'h-center', 'h-zone', 'h-downed', 'h-end']) document.getElementById(id)?.remove();
+    for (const id of ['h-tl', 'h-tr', 'h-bl', 'h-br', 'h-hit', 'h-hurt', 'h-dirs', 'h-center', 'h-zone', 'h-downed', 'h-end']) document.getElementById(id)?.remove();
   }
 }
 

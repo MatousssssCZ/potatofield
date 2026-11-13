@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { CAMERA, adsVFov, vFovFromH16x9 } from '../../shared/config/camera';
 import { MOVEMENT, type MovementConfig } from '../../shared/config/movement';
-import { PF_MG } from '../../shared/config/weapon';
+import { PF_MG, PF_PISTOL, PF_SNIPER } from '../../shared/config/weapon';
 import { PILOT, rulesOf, type Kit } from '../../shared/config/arsenal';
 import type { PhysicsWorld } from '../../shared/physics/world';
 import { TacticalMap, type Footprint } from '../ui/tactical';
@@ -22,7 +22,7 @@ import { FPItem } from '../render/weapons/fpItem';
 import { isItemModel } from '../render/weapons/items';
 import type { WorldView } from '../render/worldView';
 import { Hud } from '../ui/hud';
-import type { GameAudio } from './audio';
+import type { GameAudio, ShotKind } from './audio';
 import type { GameDriver, PlayerView } from './driver';
 import type { InputSystem } from './input';
 import { SoldierPool } from '../render/soldier';
@@ -106,6 +106,8 @@ export class Game {
       return err;
     };
     this.hud.onRestart = () => this.driver.restart();
+    // Prostorový zvuk HRTF je náročnější – na nízké kvalitě levnější stereo.
+    this.audio.hrtf = this.quality.id !== 'low';
     this.hud.onGiveUp = () => this.driver.giveUp();
     this.hud.onLeave = () => this.onLeave();
     this.hud.onCallMedic = () => {
@@ -226,14 +228,14 @@ export class Game {
     // Nestřelné položky (nůž, granáty, nástroje) mají vlastní zobrazení s rukama.
     if (isItemModel(weaponId)) {
       const it = new FPItem(weaponId, hands ?? 'usmcAssault', this.quality.id);
-      it.onMech = (k) => this.audio.mech(k);
+      it.onMech = (k) => (weaponId === 'knife' ? this.audio.handle('knife') : this.audio.mech(k));
       this.camera.add(it.root);
       return it;
     }
     const fp = new FPWeapon(weaponId, hands, this.quality.id);
     fp.showCasings = this.quality.id !== 'low';
     fp.onMech = (k) => this.audio.mech(k);
-    fp.onShot = () => this.audio.shot(rulesOf(weaponId).pellets ? 'shotgun' : rulesOf(weaponId) === PF_MG ? 'mg' : 'rifle');
+    fp.onShot = () => this.audio.shot(shotKind(weaponId));
     this.camera.add(fp.root);
     return fp;
   }
@@ -270,6 +272,7 @@ export class Game {
     this.world.updateDummies(this.driver.dummies());
     this.soldiers.update(this.driver.remotes(), frameDt, this.simTime, this.camera.position, this.camera);
     this.updateCamera(frameDt, this.acc / dt);
+    this.updateSounds();
     this.effects.update(frameDt);
     this.nades.sync(this.driver.grenades(), this.simTime, frameDt);
     this.nades.update(frameDt);
@@ -306,6 +309,96 @@ export class Game {
   /** Doplňkové záložky nasazení (četa, velitel) – nastavuje aplikace. */
   extraTabs: Array<{ id: string; label: string; view: () => HTMLElement; full?: boolean }> = [];
 
+  // ---------------- zvuk ve světě ----------------
+
+  private fwd = new THREE.Vector3();
+  private steps = new Map<string, { x: number; z: number; acc: number; air: boolean }>();
+  private reloadCue = { key: '', done: 0 };
+  private lastItem = '';
+
+  /** Zdroj zvuku je za zdí (přímka od kamery ke zdroji narazí na svět). */
+  private occluded(p: { x: number; y: number; z: number }): boolean {
+    if (!this.phys) return false;
+    const e = this.camera.position;
+    const v = { x: p.x - e.x, y: p.y - e.y, z: p.z - e.z };
+    const d = Math.hypot(v.x, v.y, v.z);
+    if (d < 1.5) return false;
+    return !!this.phys.castRay({ x: e.x, y: e.y, z: e.z }, { x: v.x / d, y: v.y / d, z: v.z / d }, d - 0.8);
+  }
+
+  private posOf(id: string) {
+    const r = this.driver.remotes().find((x) => x.id === id);
+    return r ? { x: r.state.pos.x, y: r.state.pos.y + 1, z: r.state.pos.z } : null;
+  }
+
+  /** Povrch pod nohama (materiál kolize nebo terén). */
+  private surfaceUnder(p: { x: number; y: number; z: number }): string {
+    const hit = this.phys?.castRay({ x: p.x, y: p.y + 0.4, z: p.z }, { x: 0, y: -1, z: 0 }, 1.2);
+    return hit?.surface ?? 'sand';
+  }
+
+  /** Kroky podle ujeté dráhy a povrchu (vlastní i cizí do 40 m), posluchač a zvuky přebíjení. */
+  private updateSounds() {
+    this.camera.getWorldDirection(this.fwd);
+    this.audio.setListener(this.camera.position, this.fwd);
+    const me = this.driver.local();
+    const seen = new Set<string>();
+    const walk = (id: string, v: PlayerView, own: boolean) => {
+      seen.add(id);
+      const s = v.state;
+      let st = this.steps.get(id);
+      if (!st) this.steps.set(id, (st = { x: s.pos.x, z: s.pos.z, acc: 0, air: false }));
+      const d = Math.hypot(s.pos.x - st.x, s.pos.z - st.z);
+      st.x = s.pos.x;
+      st.z = s.pos.z;
+      if (!v.alive || d > 3) {
+        st.acc = 0;
+        return;
+      }
+      const pos = own ? null : { x: s.pos.x, y: s.pos.y + 0.1, z: s.pos.z };
+      if (!s.grounded && !s.ladder) {
+        st.air = true;
+        return;
+      }
+      if (st.air) {
+        st.air = false;
+        this.audio.land(this.surfaceUnder(s.pos), pos);
+        st.acc = 0;
+      }
+      st.acc += d;
+      const speed = Math.hypot(s.vel.x, s.vel.z);
+      const prone = s.stance === 'prone';
+      const stride = prone ? 0.9 : s.stance === 'crouch' ? 0.8 : speed > 5 ? 1.35 : 1.0;
+      if (st.acc < stride) return;
+      st.acc = 0;
+      const loud = s.stance === 'crouch' ? 0.3 : speed > 5 ? 1 : 0.6;
+      this.audio.footstep(s.ladder ? 'metal' : this.surfaceUnder(s.pos), pos, loud, prone);
+    };
+    if (me) walk(this.driver.localId, me, true);
+    for (const r of this.driver.remotes()) walk(r.id, r, false);
+    for (const id of this.steps.keys()) if (!seen.has(id)) this.steps.delete(id);
+    if (!me?.alive) return;
+    // Přehození výbavy.
+    const item = me.weapon.weaponId ?? '';
+    if (item !== this.lastItem) {
+      if (this.lastItem) this.audio.handle(item === 'knife' ? 'knifeDraw' : item === 'medkit' || item === 'ammo' ? 'pouch' : 'switch');
+      this.lastItem = item;
+    }
+    // Přebíjení ze zásobníku / pásu: vyjmutí, zasunutí, natažení závěru (ostatní styly hlásí model sám).
+    const w = me.weapon;
+    if (w.action === 'reload' && !isItemModel(item)) {
+      const rr = rulesOf(item);
+      const style = rr.pellets || item === 'm24' ? 'own' : rr === PF_MG ? 'belt' : 'magazine';
+      if (style === 'magazine' || style === 'belt') {
+        const key = `${item}:${w.actionStart}`;
+        if (this.reloadCue.key !== key) this.reloadCue = { key, done: 0 };
+        const k = (this.simTime - w.actionStart) / Math.max(0.01, w.actionEnd - w.actionStart);
+        const cues: Array<[number, 'magOut' | 'magIn' | 'rack' | 'cover']> = style === 'belt' ? [[0.12, 'cover'], [0.55, 'magIn'], [0.82, 'cover'], [0.93, 'rack']] : [[0.2, 'magOut'], [0.62, 'magIn'], ...(w.reloadEmpty ? ([[0.86, 'rack']] as Array<[number, 'rack']>) : [])];
+        while (this.reloadCue.done < cues.length && k >= cues[this.reloadCue.done][0]) this.audio.mech(cues[this.reloadCue.done++][1]);
+      }
+    }
+  }
+
   private processEvents() {
     const me = this.driver.local();
     const eye = this.camera.position;
@@ -317,45 +410,54 @@ export class Game {
           /* další broky téhož výstřelu: jen občas stopovka, zvuk a záblesk jednou */
           if (Math.random() < 0.15) this.effects.tracer(new THREE.Vector3(e.origin.x, e.origin.y, e.origin.z), new THREE.Vector3(e.origin.x + e.dir.x * 25, e.origin.y + e.dir.y * 25, e.origin.z + e.dir.z * 25));
         } else {
-          const d = Math.hypot(e.origin.x - eye.x, e.origin.y - eye.y, e.origin.z - eye.z);
-          const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
-          const dir = new THREE.Vector3(e.origin.x - eye.x, 0, e.origin.z - eye.z).normalize();
-          this.audio.distantShot(d, clamp(dir.dot(right), -1, 1));
+          const shooter = this.driver.remotes().find((r) => r.id === e.owner);
+          this.audio.shotAt(shotKind(shooter?.weapon.weaponId ?? shooter?.primary), e.origin, this.occluded(e.origin));
           this.soldiers.flash(e.owner);
           if (Math.random() < 0.35) this.effects.tracer(new THREE.Vector3(e.origin.x, e.origin.y, e.origin.z), new THREE.Vector3(e.origin.x + e.dir.x * 60, e.origin.y + e.dir.y * 60, e.origin.z + e.dir.z * 60));
         }
       } else if (e.type === 'impact') {
         const p = new THREE.Vector3(e.point.x, e.point.y, e.point.z);
         this.effects.impact(p, new THREE.Vector3(e.normal.x, e.normal.y, e.normal.z), e.surface);
-        this.audio.impact(e.surface, p.distanceTo(eye));
+        this.audio.impactAt(e.surface, p);
       } else if (e.type === 'explosion') {
         const p = new THREE.Vector3(e.pos.x, e.pos.y, e.pos.z);
         this.nades.explode(p);
         const d = p.distanceTo(eye);
-        const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
-        this.audio.explosion(d, clamp(p.clone().sub(eye).normalize().dot(right), -1, 1));
+        this.audio.explosionAt(p, this.occluded(p));
         this.shake = Math.max(this.shake, clamp(1 - d / 22, 0, 1));
       } else if (e.type === 'smoke') {
-        this.audio.hiss(new THREE.Vector3(e.pos.x, e.pos.y, e.pos.z).distanceTo(eye));
+        this.audio.hissAt(e.pos);
       } else if (e.type === 'defib') {
         if (e.id === this.driver.localId || e.target === this.driver.localId) this.audio.mech(e.target ? 'bolt' : 'shell');
+        else this.audio.mech('bolt', this.posOf(e.id));
         if (e.target && e.id === this.driver.localId) this.hud.system(t('sys.revived', { name: this.driver.remotes().find((r) => r.id === e.target)?.name ?? '' }), this.now);
       } else if (e.type === 'throw') {
-        if (e.id === this.driver.localId) this.audio.mech('cover');
+        this.audio.mech('cover', e.id === this.driver.localId ? null : this.posOf(e.id));
       } else if (e.type === 'fall') {
         // Tvrdý dopad: tupý zvuk a krátké zčervenání okraje obrazu (poškození pádem).
         if (e.id === this.driver.localId) {
-          this.audio.impact('dirt', 0);
+          this.audio.land(this.surfaceUnder(me?.state.pos ?? eye), null, true);
+          this.audio.hurt(e.damage);
           this.hud.damage(this.now, e.damage);
         }
       } else if (e.type === 'hit') {
-        if (e.target === this.driver.localId) this.hud.damage(this.now, e.damage);
-        if (e.owner === this.driver.localId) {
-          this.hud.hitmarker(this.now);
-          this.audio.hitmarker();
+        if (e.target === this.driver.localId) {
+          this.hud.damage(this.now, e.damage);
+          this.audio.hurt(e.damage);
+          if (e.from && e.owner !== this.driver.localId) {
+            this.camera.getWorldDirection(this.fwd);
+            const vx = e.from[0] - eye.x, vz = e.from[2] - eye.z;
+            this.hud.damageFrom(this.now, Math.atan2(vx * -this.fwd.z + vz * this.fwd.x, vx * this.fwd.x + vz * this.fwd.z));
+          }
+        }
+        if (e.owner === this.driver.localId && e.target !== this.driver.localId) {
+          const kind = e.hp <= 0 ? 'kill' : e.zone === 'head' ? 'head' : 'body';
+          this.hud.hitmarker(this.now, kind);
+          this.audio.hitmarker(kind);
         }
       } else if (e.type === 'death') {
-        const nm = (id: string) => (id === this.driver.localId ? t('common.you') : (this.driver.remotes().find((r) => r.id === id)?.name ?? id));
+        // Jména i hráčů, které zrovna nevidím (server je neposílá) – ze skóre.
+        const nm = (id: string) => (id === this.driver.localId ? t('common.you') : (this.driver.remotes().find((r) => r.id === id)?.name ?? this.net?.scores.find((r) => r.id === id)?.name ?? id));
         const victim = nm(e.id);
         const killer = e.killer ? nm(e.killer) : e.cause === 'zone' ? '⚠' : '↓';
         this.hud.feed(`${killer} ✕ ${victim}`, this.now);
@@ -487,4 +589,14 @@ function segmentHitsSphere(a: THREE.Vector3, dir: THREE.Vector3, len: number, c:
   const d = dir.clone().normalize();
   const t = THREE.MathUtils.clamp(c.clone().sub(a).dot(d), 0, len);
   return a.clone().addScaledVector(d, t).distanceToSquared(c) < r * r;
+}
+
+/** Druh výstřelu pro zvuk podle zbraně. */
+function shotKind(weaponId: string | undefined | null): ShotKind {
+  const r = rulesOf(weaponId);
+  if (r.pellets) return 'shotgun';
+  if (r === PF_MG) return 'mg';
+  if (r === PF_SNIPER) return 'sniper';
+  if (r === PF_PISTOL) return 'pistol';
+  return 'rifle';
 }
