@@ -24,20 +24,20 @@ export interface ArsenalEntry {
 const RD = { kind: 'reddot' } as const, IRON = { kind: 'iron' } as const;
 
 export const ARSENAL: ArsenalEntry[] = [
-  { id: 'm4a1', name: 'M4A1', faction: 'usmc', kit: 'assault', rules: PF_RIFLE, sight: RD },
-  { id: 'm16a2', name: 'M16A2', faction: 'usmc', kit: 'medic', rules: PF_RIFLE, sight: IRON },
-  { id: 'm249', name: 'M249', faction: 'usmc', kit: 'support', rules: PF_MG, sight: IRON },
-  { id: 'r870', name: 'Remington 870', faction: 'usmc', kit: 'engineer', rules: PF_PUMP, sight: IRON },
-  { id: 'ak101', name: 'AK-101', faction: 'mec', kit: 'assault', rules: PF_RIFLE, sight: RD },
-  { id: 'akm', name: 'AKM', faction: 'mec', kit: 'medic', rules: PF_RIFLE, sight: IRON },
-  { id: 'pkm', name: 'PKM', faction: 'mec', kit: 'support', rules: PF_MG, sight: IRON },
-  { id: 'saiga', name: 'Saiga-12', faction: 'mec', kit: 'engineer', rules: PF_SEMISHOT, sight: IRON },
-  { id: 'qbz95', name: 'QBZ-95', faction: 'pla', kit: 'assault', rules: PF_RIFLE, sight: RD },
-  { id: 't81', name: 'Type 81', faction: 'pla', kit: 'medic', rules: PF_RIFLE, sight: IRON },
-  { id: 'qbb95', name: 'QBB-95', faction: 'pla', kit: 'support', rules: PF_MG, sight: IRON },
-  { id: 'hawk97', name: 'Hawk Type 97 (návrh)', faction: 'pla', kit: 'engineer', rules: PF_PUMP, sight: IRON },
-  { id: 'm24', name: 'M24', faction: 'usmc', kit: 'sniper', rules: PF_SNIPER, sight: { kind: 'scope', zoom: 10 } },
-  { id: 'svd', name: 'SVD', faction: 'mec', kit: 'sniper', rules: PF_SNIPER, sight: { kind: 'scope', zoom: 4 } },
+  { id: 'm4a1', name: 'FC-4 Carbine', faction: 'usmc', kit: 'assault', rules: PF_RIFLE, sight: RD },
+  { id: 'm16a2', name: 'FC-16 Rifle', faction: 'usmc', kit: 'medic', rules: PF_RIFLE, sight: IRON },
+  { id: 'm249', name: 'FC-49 LMG', faction: 'usmc', kit: 'support', rules: PF_MG, sight: IRON },
+  { id: 'r870', name: 'FC-87 Pump', faction: 'usmc', kit: 'engineer', rules: PF_PUMP, sight: IRON },
+  { id: 'ak101', name: 'DL-101 Rifle', faction: 'mec', kit: 'assault', rules: PF_RIFLE, sight: RD },
+  { id: 'akm', name: 'DL-62 Rifle', faction: 'mec', kit: 'medic', rules: PF_RIFLE, sight: IRON },
+  { id: 'pkm', name: 'DL-61 LMG', faction: 'mec', kit: 'support', rules: PF_MG, sight: IRON },
+  { id: 'saiga', name: 'DL-12 Auto', faction: 'mec', kit: 'engineer', rules: PF_SEMISHOT, sight: IRON },
+  { id: 'qbz95', name: 'JP-95 Bullpup', faction: 'pla', kit: 'assault', rules: PF_RIFLE, sight: RD },
+  { id: 't81', name: 'JP-81 Rifle', faction: 'pla', kit: 'medic', rules: PF_RIFLE, sight: IRON },
+  { id: 'qbb95', name: 'JP-95 LMG', faction: 'pla', kit: 'support', rules: PF_MG, sight: IRON },
+  { id: 'hawk97', name: 'JP-97 Pump', faction: 'pla', kit: 'engineer', rules: PF_PUMP, sight: IRON },
+  { id: 'm24', name: 'FC-24 Sniper', faction: 'usmc', kit: 'sniper', rules: PF_SNIPER, sight: { kind: 'scope', zoom: 10 } },
+  { id: 'svd', name: 'DL-63 Marksman', faction: 'mec', kit: 'sniper', rules: PF_SNIPER, sight: { kind: 'scope', zoom: 4 } },
 ];
 
 /**
@@ -74,7 +74,11 @@ export function fallDamage(landSpeed: number, gravity: number): number {
 }
 
 export const KITS: Kit[] = ['assault', 'medic', 'support', 'engineer', 'sniper'];
-export const FACTION_LABEL: Record<Faction, string> = { usmc: 'USMC', mec: 'MEC', pla: 'PLA' };
+/**
+ * Zobrazované názvy frakcí a zbraní jsou fiktivní (žádné cizí značky ani frakce jiných her).
+ * Interní ID (usmc / mec / pla, m4a1 …) zůstávají kvůli uloženým datům a protokolu – hráč je nevidí.
+ */
+export const FACTION_LABEL: Record<Faction, string> = { usmc: 'Falcon Corps', mec: 'Dune League', pla: 'Jade Pact' };
 export const KIT_LABEL: Record<Kit, string> = { assault: 'Assault', medic: 'Medic', support: 'Support', engineer: 'Engineer', sniper: 'Sniper' };
 
 /** Výchozí frakce týmů (mapa frakce zatím neurčuje; server je může změnit volbou). */
@@ -86,9 +90,9 @@ export function arsenalEntry(id: string | undefined | null): ArsenalEntry | unde
 
 /** Pistole frakcí (slot 2). */
 export const SIDEARMS: Record<string, { name: string; rules: WeaponConfig }> = {
-  m9: { name: 'M9', rules: PF_PISTOL },
-  pm: { name: 'PM', rules: PF_PISTOL },
-  qsz92: { name: 'QSZ-92', rules: PF_PISTOL },
+  m9: { name: 'FC-9 Pistol', rules: PF_PISTOL },
+  pm: { name: 'DL-8 Pistol', rules: PF_PISTOL },
+  qsz92: { name: 'JP-92 Pistol', rules: PF_PISTOL },
 };
 
 /** Tasení nestřelných položek (s). Návrh (N). */

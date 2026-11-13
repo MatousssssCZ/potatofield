@@ -85,7 +85,7 @@ const cs = {
   'err.insecure': 'Stránka běží na HTTPS – server musí mít adresu wss:// (šifrované spojení).',
 
   'about.p1': 'Potatofield je pěchotní FPS v prohlížeči s vlastním editorem map. Všechny modely, textury a zvuky jsou vlastní nebo s otevřenou licencí.',
-  'about.p2': 'Pilotní verze: USMC proti MEC, 8 proti 8, třídy Assault, Medic, Support a Sniper. Server je autoritativní – výsledek zásahu rozhoduje server.',
+  'about.p2': 'Pilotní verze: Falcon Corps proti Dune League, 8 proti 8, třídy Assault, Medic, Support a Sniper. Server je autoritativní – výsledek zásahu rozhoduje server.',
   'about.p3': 'Hodnoty zbraní a pohybu jsou návrhy pro testování, nejsou to konstanty jiné hry.',
 
   'preview.badge': 'NÁHLED – smyšlená data',
@@ -119,7 +119,7 @@ const cs = {
   'kit.support.role': 'Kulomet, krycí palba',
   'kit.support.note': 'Kulomet s velkým zásobníkem; zásobování (držet LMB) doplní munici a granáty spolubojovníkům.',
   'kit.sniper.role': 'Přesná palba na velkou vzdálenost',
-  'kit.sniper.note': 'Puškohled: M24 10× s mil-dot osnovou (opakovačka, závěr po každé ráně), SVD 4× PSO-1 (samonabíjecí).',
+  'kit.sniper.note': 'Puškohled: FC-24 10× s mil-dot osnovou (opakovačka, závěr po každé ráně), DL-63 4× s dálkoměrnou osnovou (samonabíjecí).',
   'kit.engineer.role': 'Technik',
   'kit.engineer.note': 'V pilotní verzi není dostupný.',
 
@@ -456,7 +456,7 @@ const en: Record<StringKey, string> = {
   'err.insecure': 'This page runs on HTTPS – the server address must be wss:// (encrypted).',
 
   'about.p1': 'Potatofield is a browser infantry FPS with its own map editor. All models, textures and sounds are original or openly licensed.',
-  'about.p2': 'Pilot version: USMC vs MEC, 8 vs 8, Assault, Medic, Support and Sniper classes. The server is authoritative – it decides every hit.',
+  'about.p2': 'Pilot version: Falcon Corps vs Dune League, 8 vs 8, Assault, Medic, Support and Sniper classes. The server is authoritative – it decides every hit.',
   'about.p3': 'Weapon and movement values are proposals for testing, not constants of another game.',
 
   'preview.badge': 'PREVIEW – mock data',
@@ -490,7 +490,7 @@ const en: Record<StringKey, string> = {
   'kit.support.role': 'Machine gun, suppressing fire',
   'kit.support.note': 'Machine gun with a large magazine; ammo supply (hold LMB) refills teammates\' ammo and grenades.',
   'kit.sniper.role': 'Precise long-range fire',
-  'kit.sniper.note': 'Scope: M24 10× mil-dot (bolt action, cycle after every shot), SVD 4× PSO-1 (semi-automatic).',
+  'kit.sniper.note': 'Scope: FC-24 10× mil-dot (bolt action, cycle after every shot), DL-63 4× rangefinder reticle (semi-automatic).',
   'kit.engineer.role': 'Engineer',
   'kit.engineer.note': 'Not available in the pilot.',
 

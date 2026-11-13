@@ -59,8 +59,8 @@ export const WEAPON_DEFS: WeaponDef[] = ARSENAL.map((a) => ({
  * rozpočet v první osobě 1 500–2 000 trojúhelníků.
  */
 export const SIDEARM_DEFS: WeaponDef[] = [
-  { id: 'm9', name: 'M9', faction: 'usmc', kit: 'assault', hands: 'usmcAssault', build: buildM9, verified: true },
-  { id: 'pm', name: 'PM', faction: 'mec', kit: 'assault', hands: 'mecAssault', build: buildPM, verified: true },
+  { id: 'm9', name: 'FC-9 Pistol', faction: 'usmc', kit: 'assault', hands: 'usmcAssault', build: buildM9, verified: true },
+  { id: 'pm', name: 'DL-8 Pistol', faction: 'mec', kit: 'assault', hands: 'mecAssault', build: buildPM, verified: true },
 ];
 
 export function weaponDef(id: string): WeaponDef {

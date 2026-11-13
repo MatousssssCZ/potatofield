@@ -18,9 +18,9 @@ export interface KitItem {
 }
 
 export const PISTOLS: Record<Faction, { id: string; name: string }> = {
-  usmc: { id: 'm9', name: 'M9' },
-  mec: { id: 'pm', name: 'PM' },
-  pla: { id: 'qsz92', name: 'QSZ-92' },
+  usmc: { id: 'm9', name: 'FC-9 Pistol' },
+  mec: { id: 'pm', name: 'DL-8 Pistol' },
+  pla: { id: 'qsz92', name: 'JP-92 Pistol' },
 };
 
 const ITEM_NAMES: Record<Exclude<ItemKind, 'primary' | 'pistol'>, string> = {

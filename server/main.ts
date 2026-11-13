@@ -33,7 +33,7 @@ if (![fa, fb].every((f) => f in FACTION_LABEL)) {
 // Pilot (výchozí): USMC × MEC, 8 proti 8, classy Assault/Medic/Support/Sniper. --no-pilot zpřístupní celý arzenál.
 const pilot = !flag('no-pilot');
 if (pilot && [fa, fb].some((f) => !PILOT.factions.includes(f))) {
-  console.error('Pilot hraje jen USMC × MEC (pro jiné frakce použijte --no-pilot).');
+  console.error('Pilot hraje jen frakce usmc × mec (Falcon Corps × Dune League); pro jiné použijte --no-pilot.');
   process.exit(1);
 }
 const server = await GameServer.create(r.doc, {
