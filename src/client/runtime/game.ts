@@ -264,6 +264,11 @@ export class Game {
         if (raw.pressed & BTN.FIRE) this.specIndex++;
         if (raw.pressed & BTN.ADS) this.specIndex--;
       }
+      // Stisk spouště naprázdno: cvaknutí a drobné škubnutí zbraně (munice se sama nedoplní).
+      if (this.active && me?.alive && raw.pressed & BTN.FIRE && me.weapon.mag <= 0 && me.weapon.action === 'idle' && this.fp instanceof FPWeapon) {
+        this.fp.dryFire();
+        this.audio.click();
+      }
       const input = this.active && me?.alive ? raw : { ...raw, held: 0, pressed: 0, slot: 0, moveX: 0, moveZ: 0, lookDYaw: me?.alive ? raw.lookDYaw : 0, lookDPitch: me?.alive ? raw.lookDPitch : 0 };
       // Volba výbavy: overlay hned ukáže požadovanou položku, server přechod potvrdí.
       if (input.slot && me?.inv) this.hud.slots.request(resolveView(me.inv, input.slot), this.now);
@@ -276,6 +281,7 @@ export class Game {
     this.world.updateDummies(this.driver.dummies());
     this.soldiers.update(this.driver.remotes(), frameDt, this.simTime, this.camera.position, this.camera);
     this.updateCamera(frameDt, this.acc / dt);
+    this.soldiers.fullRate = this.scopeBlend > 0.5;
     this.updateSounds();
     this.effects.update(frameDt);
     this.nades.sync(this.driver.grenades(), this.simTime, frameDt);
@@ -317,6 +323,8 @@ export class Game {
   // ---------------- zvuk ve světě ----------------
 
   private fwd = new THREE.Vector3();
+  private punchPitch = 0;
+  private punchRoll = 0;
   private steps = new Map<string, { x: number; z: number; acc: number; air: boolean }>();
   private reloadCue = { key: '', done: 0 };
   private lastItem = '';
@@ -367,7 +375,9 @@ export class Game {
       }
       if (st.air) {
         st.air = false;
-        this.audio.land(this.surfaceUnder(s.pos), pos);
+        const surf = this.surfaceUnder(s.pos);
+        this.audio.land(surf, pos);
+        this.effects.dust(s.pos, surf, 3);
         st.acc = 0;
       }
       st.acc += d;
@@ -377,7 +387,10 @@ export class Game {
       if (st.acc < stride) return;
       st.acc = 0;
       const loud = s.stance === 'crouch' ? 0.3 : speed > 5 ? 1 : 0.6;
-      this.audio.footstep(s.ladder ? 'metal' : this.surfaceUnder(s.pos), pos, loud, prone);
+      const surface = s.ladder ? 'metal' : this.surfaceUnder(s.pos);
+      this.audio.footstep(surface, pos, loud, prone);
+      // Prach od nohou při sprintu (u cizích vojáků; vlastní by jen clonil výhled).
+      if (!own && speed > 5 && !s.ladder) this.effects.dust(s.pos, surface, 1);
     };
     if (me) walk(this.driver.localId, me, true);
     for (const r of this.driver.remotes()) walk(r.id, r, false);
@@ -507,6 +520,11 @@ export class Game {
           const shooter = this.driver.remotes().find((r) => r.id === e.owner);
           this.audio.shotAt(shotKind(shooter?.weapon.weaponId ?? shooter?.primary), e.origin, this.occluded(e.origin));
           this.soldiers.flash(e.owner);
+          // Kouř z hlavně a vyhozená nábojnice do ~45 m (dál nejsou vidět).
+          if (Math.hypot(e.origin.x - eye.x, e.origin.z - eye.z) < 45) {
+            this.effects.muzzleSmoke(e.origin, e.dir);
+            if (shotKind(shooter?.weapon.weaponId ?? shooter?.primary) !== 'shotgun' && this.quality.id !== 'low') this.effects.casing(e.origin, e.dir);
+          }
           if (Math.random() < 0.35) this.effects.tracer(new THREE.Vector3(e.origin.x, e.origin.y, e.origin.z), new THREE.Vector3(e.origin.x + e.dir.x * 60, e.origin.y + e.dir.y * 60, e.origin.z + e.dir.z * 60));
         }
       } else if (e.type === 'impact') {
@@ -538,12 +556,21 @@ export class Game {
         if (e.target === this.driver.localId) {
           this.hud.damage(this.now, e.damage);
           this.audio.hurt(e.damage);
+          let side = 0;
           if (e.from && e.owner !== this.driver.localId) {
             this.camera.getWorldDirection(this.fwd);
             const vx = e.from[0] - eye.x, vz = e.from[2] - eye.z;
-            this.hud.damageFrom(this.now, Math.atan2(vx * -this.fwd.z + vz * this.fwd.x, vx * this.fwd.x + vz * this.fwd.z));
+            const ang = Math.atan2(vx * -this.fwd.z + vz * this.fwd.x, vx * this.fwd.x + vz * this.fwd.z);
+            this.hud.damageFrom(this.now, ang);
+            side = Math.sin(ang);
           }
+          // Škubnutí pohledu po zásahu: krátké, malé (do ~1°), jen kosmetické – míření v simulaci nemění.
+          const k = Math.min(1, e.damage / 40);
+          this.punchPitch += THREE.MathUtils.degToRad(0.9) * k;
+          this.punchRoll += THREE.MathUtils.degToRad(1.1) * k * (side || (Math.random() < 0.5 ? -0.6 : 0.6));
         }
+        // Vzdálený voják sebou po zásahu škubne směrem od střelce.
+        if (e.target !== this.driver.localId) this.soldiers.hit(e.target, e.from ? { x: e.from[0], z: e.from[2] } : null, Math.min(1, e.damage / 50));
         if (e.owner === this.driver.localId && e.target !== this.driver.localId) {
           const kind = e.hp <= 0 ? 'kill' : e.zone === 'head' ? 'head' : 'body';
           this.hud.hitmarker(this.now, kind);
@@ -626,7 +653,10 @@ export class Game {
     const lim = (CAMERA.pitchLimitDeg * Math.PI) / 180;
     const pitch = clamp(aim.pitch + this.input.pendingPitch, -lim, lim);
     const cam = this.camera;
-    cam.rotation.set(pitch, yaw, 0, 'YXZ');
+    // Doznění škubnutí po zásahu (pružné, ~0,25 s).
+    this.punchPitch *= Math.exp(-frameDt * 11);
+    this.punchRoll *= Math.exp(-frameDt * 11);
+    cam.rotation.set(pitch + this.punchPitch, yaw, this.punchRoll, 'YXZ');
     const right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
     cam.position.copy(eye).addScaledVector(right, bobX);
     cam.position.y += bobY - kick;

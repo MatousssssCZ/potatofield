@@ -23,6 +23,8 @@ export interface MatDef {
   transparent?: boolean;
   opacity?: number;
   envMapIntensity?: number;
+  /** Kývání ve větru: výchylka v metrech u vrcholu (jen vzhled, kolize se nemění). */
+  wind?: number;
 }
 
 export const MATERIALS: Record<string, MatDef> = {
@@ -76,14 +78,14 @@ export const MATERIALS: Record<string, MatDef> = {
   lamp: { tile: 1, tint: '#efe6c8', emissive: '#4a4030', roughness: 0.4 },
   gunMetal: { tex: 'metal', tile: 0.35, tint: '#9a9ca0', metalness: 0.55, roughness: 0.9 },
   gunPolymer: { tex: 'paintedMetal', tile: 0.4, tint: '#8f927a' },
-  leafOlive: { tex: 'leafOlive', tile: 1, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 },
-  leafGreen: { tex: 'leafGreen', tile: 1, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 },
-  leafDry: { tex: 'leafDry', tile: 1, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 },
-  crownOlive: { tex: 'crownOlive', tile: 1.4, macro: 0.4 },
-  crownGreen: { tex: 'crownGreen', tile: 1.4, macro: 0.4 },
-  palmFrond: { tex: 'palmFrond', tile: 1, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.85 },
-  palmFrondDate: { tex: 'palmFrondDate', tile: 1, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.85 },
-  palmFrondDry: { tex: 'palmFrondDry', tile: 1, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 },
+  leafOlive: { tex: 'leafOlive', tile: 1, wind: 0.035, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 },
+  leafGreen: { tex: 'leafGreen', tile: 1, wind: 0.035, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 },
+  leafDry: { tex: 'leafDry', tile: 1, wind: 0.035, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 },
+  crownOlive: { tex: 'crownOlive', tile: 1.4, macro: 0.4, wind: 0.03 },
+  crownGreen: { tex: 'crownGreen', tile: 1.4, macro: 0.4, wind: 0.03 },
+  palmFrond: { tex: 'palmFrond', tile: 1, wind: 0.05, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.85 },
+  palmFrondDate: { tex: 'palmFrondDate', tile: 1, wind: 0.05, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.85 },
+  palmFrondDry: { tex: 'palmFrondDry', tile: 1, wind: 0.05, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 },
   bark: { tex: 'bark', tile: 1.2, dust: 0.4, macro: 0.3 },
   palmBark: { tex: 'palmBark', tile: 1.0, dust: 0.4, macro: 0.2 },
   palmBarkDate: { tex: 'palmBarkDate', tile: 1.2, dust: 0.4, macro: 0.2 },
@@ -276,13 +278,15 @@ export function makeMacroNoise(): THREE.DataTexture {
 export const sharedUniforms = {
   uMacro: { value: null as THREE.Texture | null },
   uDustColor: { value: new THREE.Color('#b59b77') },
+  /** Čas pro vítr ve vegetaci (s); nastavuje hlavní smyčka. */
+  uTime: { value: 0 },
 };
 
 /**
  * Úprava standardního shaderu: velkoplošná variace barvy (proti viditelnému opakování)
  * a prach u paty objektu podle atributu `aBaseH` (výška nad podstavou objektu).
  */
-export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, macro: number, blur = 0) {
+export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, macro: number, blur = 0, wind = 0) {
   mat.onBeforeCompile = (sh) => {
     // Rozpití textury: posun výběru mip úrovně (bias) u barvy, normály a ORM.
     if (blur > 0) {
@@ -299,8 +303,16 @@ export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, m
     sh.uniforms.uDustColor = sharedUniforms.uDustColor;
     sh.uniforms.uDust = { value: dust };
     sh.uniforms.uMacroAmt = { value: macro };
+    sh.uniforms.uTime = sharedUniforms.uTime;
+    sh.uniforms.uWind = { value: wind };
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nattribute float aBaseH;\nvarying float vBaseH;\nvarying vec3 vWPos;')
+      .replace('#include <common>', '#include <common>\nattribute float aBaseH;\nvarying float vBaseH;\nvarying vec3 vWPos;\nuniform float uTime;\nuniform float uWind;')
+      .replace(
+        '#include <begin_vertex>',
+        wind > 0
+          ? '#include <begin_vertex>\n{ vec3 w0 = (modelMatrix * vec4(position, 1.0)).xyz; float wk = smoothstep(0.15, 2.5, aBaseH) * uWind;\n transformed.x += (sin(uTime * 1.3 + w0.x * 0.35 + w0.z * 0.27) + 0.3 * sin(uTime * 3.1 + w0.z * 1.7)) * wk;\n transformed.z += cos(uTime * 1.1 + w0.x * 0.31 - w0.z * 0.4) * wk * 0.7; }'
+          : '#include <begin_vertex>',
+      )
       .replace(
         '#include <worldpos_vertex>',
         '#include <worldpos_vertex>\nvBaseH = aBaseH;\nvWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;',
@@ -325,7 +337,7 @@ export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, m
         }`,
       );
   };
-  mat.customProgramCacheKey = () => `weather-${dust.toFixed(2)}-${macro.toFixed(2)}-b${blur.toFixed(2)}`;
+  mat.customProgramCacheKey = () => `weather-${dust.toFixed(2)}-${macro.toFixed(2)}-b${blur.toFixed(2)}-w${wind > 0 ? 1 : 0}`;
 }
 
 const LABEL_STYLES: Record<string, { bg: string; fg: string; font: string; border: boolean; glow?: number }> = {
@@ -369,7 +381,7 @@ export class MaterialLibrary {
       sm.aoMapIntensity = 1;
     }
     if (def.emissive) sm.emissive = new THREE.Color(def.emissive);
-    patchWeathering(sm, def.dust ?? 0, def.macro ?? 0, tex ? q : 0);
+    patchWeathering(sm, def.dust ?? 0, def.macro ?? 0, tex ? q : 0, def.wind ?? 0);
     sm.name = id;
     this.cache.set(key, sm);
     return sm;

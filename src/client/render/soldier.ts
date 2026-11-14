@@ -78,6 +78,10 @@ interface Soldier {
   diedAt: number;
   life: PlayerView['life'];
   seen: boolean;
+  /** Varianta pádu zvolená v okamžiku smrti. */
+  death: 'clip' | 'clipFast' | 'front' | 'back';
+  lastSpeed: number;
+  lastFwd: number;
   /** Tělo z modelu (Mannequin), pokud je načtené; procedurální tělo pak kreslí jen výstroj. */
   body: MannequinBody | null;
 }
@@ -131,9 +135,18 @@ export class SoldierPool {
     this.root.add(group, weapon);
     const body = hasMannequin() ? new MannequinBody(byName) : null;
     if (body) group.add(body.root);
-    const s: Soldier = { id, group, mesh, bones: byName, anim: new SoldierAnimator(byName), weapon, weaponId: '', look: '', lod: -1, wlod: -1, acc: 1, flash, flashUntil: 0, lastAlive: new THREE.Vector3(), diedAt: -1, life: 'alive', seen: true, body };
+    const s: Soldier = { id, group, mesh, bones: byName, anim: new SoldierAnimator(byName), weapon, weaponId: '', look: '', lod: -1, wlod: -1, acc: 1, flash, flashUntil: 0, lastAlive: new THREE.Vector3(), diedAt: -1, life: 'alive', seen: true, body, death: 'clip', lastSpeed: 0, lastFwd: 1 };
     this.soldiers.set(id, s);
     return s;
+  }
+
+  /** Vlastní hráč míří puškohledem: vzdálení vojáci se animují v plné frekvenci (jinak je pohyb v optice trhaný). */
+  fullRate = false;
+
+  /** Zásah vojáka: škubnutí trupu od střelce. */
+  hit(id: string, from: { x: number; z: number } | null, power = 1) {
+    const s = this.soldiers.get(id);
+    if (s && s.life === 'alive') s.anim.hit(from, s.lastAlive, power);
   }
 
   flash(id: string) {
@@ -160,7 +173,12 @@ export class SoldierPool {
       s.seen = true;
       // Životní stav a tělo padlého (server přesune mrtvého pod mapu – tělo zůstane na místě smrti).
       if (p.life === 'alive' || p.life === 'downed') s.lastAlive.set(p.state.pos.x, p.state.pos.y, p.state.pos.z);
-      if (p.life === 'dead' && s.life !== 'dead') s.diedAt = this.time;
+      if (p.life === 'dead' && s.life !== 'dead') {
+        s.diedAt = this.time;
+        // Varianta pádu: v běhu vpřed přepadne dopředu, při couvání dozadu, jinak podle ID a pořadí smrti.
+        const r = (hashId(p.id) + Math.floor(this.time * 7)) % 4;
+        s.death = s.lastSpeed > 3 && s.lastFwd > 0.5 ? 'front' : s.lastSpeed > 1.5 && s.lastFwd < -0.5 ? 'back' : (['clip', 'clipFast', 'front', 'back'] as const)[r];
+      }
       if (p.life !== 'dead') s.diedAt = -1;
       s.life = p.life;
       const corpse = p.life === 'dead' && s.diedAt >= 0 && this.time - s.diedAt < CORPSE_TIME && s.lastAlive.lengthSq() > 0;
@@ -211,7 +229,7 @@ export class SoldierPool {
       this.lodCounts[lod]++;
       // Vzdálené LOD: kostra 20 / 10 Hz (stav akcí se dál odvozuje z hodin simulace).
       s.acc += dt;
-      const hz = LOD_HZ[lod];
+      const hz = this.fullRate ? 0 : LOD_HZ[lod];
       if (hz && s.acc < 1 / hz) continue;
       const step = s.acc;
       s.acc = 0;
@@ -233,14 +251,22 @@ export class SoldierPool {
         shotSeq: p.weapon.shotSeq,
         life: p.life,
         lastLandAt: ps.lastLandAt,
+        ladder: !!ps.ladder,
+        deathKind: s.death === 'front' ? 'front' : s.death === 'back' ? 'back' : undefined,
         seed: hashId(p.id),
       };
       s.anim.update(inp, simTime, step, s.group, s.weapon, ww);
       if (s.body && s.lod < 2) {
         const sp = Math.hypot(ps.vel.x, ps.vel.z);
-        const fwd = sp > 0.01 ? (-Math.sin(ps.yaw) * ps.vel.x - Math.cos(ps.yaw) * ps.vel.z) / sp : 1;
+        // Pohyb vůči pánvi (animátor ji natáčí do směru pohybu; couvání = −1).
+        const py = s.anim.pelvisYaw;
+        const fwd = sp > 0.01 ? (-Math.sin(py) * ps.vel.x - Math.cos(py) * ps.vel.z) / sp : 1;
+        if (p.life === 'alive') {
+          s.lastSpeed = sp;
+          s.lastFwd = sp > 0.01 ? (-Math.sin(ps.yaw) * ps.vel.x - Math.cos(ps.yaw) * ps.vel.z) / sp : 1;
+        }
         s.group.updateMatrixWorld(true);
-        s.body.update(step, { group: s.group, speed: sp, forward: fwd, crouch: ps.height < 1.45 && ps.height > 0.8 ? 1 : 0, sprinting: ps.sprinting, grounded: ps.grounded, life: p.life, prone: ps.height <= 0.8 });
+        s.body.update(step, { group: s.group, speed: sp, forward: fwd, crouch: ps.height < 1.45 && ps.height > 0.8 ? 1 : 0, sprinting: ps.sprinting, grounded: ps.grounded, life: p.life, prone: ps.height <= 0.8, ladder: !!ps.ladder, deathClip: s.death === 'clip' ? 'normal' : s.death === 'clipFast' ? 'fast' : null });
       }
       s.flash.visible = this.time < s.flashUntil;
     }

@@ -138,6 +138,21 @@ export class FPWeapon {
   private sprint = 0;
   private lower = 0;
   private equipT = 1;
+  // Prezentační setrvačnost (jen vzhled): rychlost v prostoru pohledu, zrychlení, dopad, žebřík, cvaknutí naprázdno.
+  private velX = 0;
+  private velF = 0;
+  private accF = 0;
+  private landDip = 0;
+  private landV = 0;
+  private lastLand = -1;
+  private airT = 0;
+  private ladderT = 0;
+  private dry = 0;
+
+  /** Stisk spouště s prázdnou zbraní: krátké škubnutí (zvuk řeší hra). */
+  dryFire() {
+    this.dry = 1;
+  }
   private time = 0;
   private reloadVisual = 0; // 0 = zásobník v šachtě
   private handlePull = 0;
@@ -403,6 +418,24 @@ export class FPWeapon {
     if (ws && ws.action === 'equip') this.equipT = THREE.MathUtils.clamp((simTime - ws.actionStart) / (ws.actionEnd - ws.actionStart), 0, 1);
     else this.equipT = Math.min(1, this.equipT + dt * 3);
 
+    // Setrvačnost: úkrok naklání zbraň, rozběh a zastavení ji posune proti pohybu; dopad ji propadne.
+    const cyw = Math.cos(ps.yaw), syw = Math.sin(ps.yaw);
+    const vx = ps.vel.x * cyw - ps.vel.z * syw, vf = -(ps.vel.x * syw + ps.vel.z * cyw);
+    const kv = 1 - Math.exp(-dt * 8);
+    const prevF = this.velF;
+    this.velX = THREE.MathUtils.lerp(this.velX, vx, kv);
+    this.velF = THREE.MathUtils.lerp(this.velF, vf, kv);
+    this.accF = THREE.MathUtils.lerp(this.accF, dt > 0 ? (this.velF - prevF) / dt : 0, 1 - Math.exp(-dt * 10));
+    if (ps.lastLandAt !== this.lastLand) {
+      if (this.lastLand >= 0) this.landV -= Math.min(2.2, 0.6 + ps.lastLandSpeed * 0.22);
+      this.lastLand = ps.lastLandAt;
+    }
+    this.landV += (-this.landDip * 180 - this.landV * 18) * dt;
+    this.landDip += this.landV * dt;
+    this.airT = THREE.MathUtils.lerp(this.airT, ps.grounded || ps.ladder ? 0 : 1, 1 - Math.exp(-dt * 6));
+    this.ladderT = THREE.MathUtils.lerp(this.ladderT, ps.ladder ? 1 : 0, 1 - Math.exp(-dt * 9));
+    this.dry = Math.max(0, this.dry - dt / 0.12);
+
     // Kopnutí při výstřelu: pružina (impulsy se skládají, nerestartují animaci).
     if (ws && ws.shotSeq !== this.lastSeq) {
       if (this.lastSeq >= 0 && ws.shotSeq > this.maxSeq) {
@@ -492,18 +525,28 @@ export class FPWeapon {
     // Sprint jako v BF2: zbraň se otočí kolem úchopu (ne kolem kamery) hlavní dolů a šikmo
     // doleva a zůstane stabilně v pravé dolní části obrazu – nevykukuje od okraje při kývání.
     const sp = sprintPose;
+    // Dýchání v klidu (v míření tlumené), náklon při úkroku, zpoždění při rozběhu, propad po dopadu.
+    const calm = (1 - sp) * (1 - 0.6 * e);
+    const brY = Math.sin(this.time * 1.5) * 0.0016 * calm, brX = Math.sin(this.time * 0.75 + 1.3) * 0.0011 * calm;
+    const inert = 1 - 0.75 * e;
+    const rollV = THREE.MathUtils.clamp(this.velX / 4, -1, 1) * THREE.MathUtils.degToRad(2.6) * inert;
+    const lagX = THREE.MathUtils.clamp(this.velX / 4, -1, 1) * 0.006 * inert;
+    const lagZ = THREE.MathUtils.clamp(this.accF / 30, -1, 1) * 0.012 * inert;
+    const dip = THREE.MathUtils.clamp(this.landDip, -1, 1) * inert;
+    const lad = this.ladderT;
+    const dryK = Math.sin(this.dry * Math.PI) * 0.4;
     const sRot = new THREE.Euler(-sp * THREE.MathUtils.degToRad(17), sp * THREE.MathUtils.degToRad(24), sp * THREE.MathUtils.degToRad(15), 'XYZ');
     const pivot = REF_GRIP_VIEW;
     const pivotShift = pivot.clone().sub(pivot.clone().applyEuler(sRot));
     pr.position.set(
-      this.swayX * 0.1 + Math.cos(bobPhase) * bobH + pivotShift.x - sp * 0.025 + tilt * 0.02 - bt * 0.015 - sgl * 0.06,
-      this.swayY * 0.1 + Math.sin(bobPhase * 2) * bobV + pivotShift.y - sp * 0.03 - this.lower * 0.07 - (1 - this.equipT) * 0.35 - tilt * 0.03 - bt * 0.035 + sgl * 0.07,
-      kickBack + pivotShift.z + sp * 0.01 + this.lower * 0.12 + bt * 0.03 + sgl * 0.04,
+      this.swayX * 0.1 + Math.cos(bobPhase) * bobH + pivotShift.x - sp * 0.025 + tilt * 0.02 - bt * 0.015 - sgl * 0.06 + brX - lagX,
+      this.swayY * 0.1 + Math.sin(bobPhase * 2) * bobV + pivotShift.y - sp * 0.03 - this.lower * 0.07 - (1 - this.equipT) * 0.35 - tilt * 0.03 - bt * 0.035 + sgl * 0.07 + brY + dip * 0.03 + this.airT * 0.008 * inert - lad * 0.34,
+      kickBack + pivotShift.z + sp * 0.01 + this.lower * 0.12 + bt * 0.03 + sgl * 0.04 + lagZ + dryK * 0.004,
     );
     pr.rotation.set(
-      sRot.x + this.swayY * 0.6 + kickPitch - this.lower * 0.55 + (1 - this.equipT) * 0.6 + tilt * 0.18 - bt * 0.12 + sgl * 0.15,
+      sRot.x + this.swayY * 0.6 + kickPitch - this.lower * 0.55 + (1 - this.equipT) * 0.6 + tilt * 0.18 - bt * 0.12 + sgl * 0.15 + dip * 0.07 + brY * 2 + lad * 0.7 - dryK * 0.012,
       sRot.y + this.swayX * 0.6 + tilt * 0.12,
-      sRot.z - tilt * 0.42 + bt * 0.22 - sgl * 0.75,
+      sRot.z - tilt * 0.42 + bt * 0.22 - sgl * 0.75 - rollV,
     );
     this.placeForearms();
 

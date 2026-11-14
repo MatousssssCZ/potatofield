@@ -92,4 +92,11 @@ Viz git historie; 20 testů pohybu, editor s gizmy, historie, IndexedDB, export/
 - [x] Nasazení ve stylu BF2 (zadání Nasazeni_Vybava_UI): taktická obrazovka, mapa se zoomem a značkami, potvrzené čekání, zneplatnění s důvodem, Enter / M, testy přechodů (`tests/deployIntent.test.ts`)
 - [x] Výbava v boji: sloty z dat kitu, číslice + kolečko, overlay; pistole M9 / PM, nůž, tříštivý granát, dýmovnice, lékárna, defibrilátor, zásobování – vše serverové (`tests/inventory.test.ts`, `tests/grenades.test.ts`, `tests/pilot.test.ts`)
 - [x] Animace hodu / bodnutí nožem / použití předmětu u vzdálených vojáků (z časů akce ze simulace)
+- [x] Vzdálení vojáci: úkroky a couvání (pánev do směru pohybu, chůze pozpátku – knihovna úkrokové klipy nemá), klipy skoku a
+  doskoku, škubnutí po zásahu, 4 varianty pádu podle pohybu, pohyb vyřazeného, lezení po žebříku, přebití podle typu zbraně,
+  zvednutí zbraně při výměně, plná frekvence animace při pohledu puškohledem (`scripts/anim-shots.mjs`)
+- [x] Vlastní pohled: dýchání zbraně, náklon při úkroku a zpoždění při rozběhu, propad po dopadu, škubnutí pohledu po zásahu,
+  cvaknutí naprázdno, sklopení zbraně na žebříku
+- [x] Svět: vítr ve vegetaci (shader, kolize beze změny), prach od nohou při sprintu a dopadu, kouř z hlavně a nábojnice u ostatních
+- [ ] Ruce na příčkách žebříku ve vlastním pohledu; zadržení dechu v puškohledu (herní mechanika); lidské posouzení pohybu
 - [ ] Lidský test nasazení a výbavy; hodnoty granátů a nástrojů (N) po playtestu

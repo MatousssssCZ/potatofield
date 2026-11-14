@@ -30,6 +30,10 @@ export interface AnimInput {
   shotSeq: number;
   life: 'alive' | 'downed' | 'dead';
   lastLandAt?: number;
+  /** Na žebříku (lezení: ruce a nohy střídavě po příčkách, zbraň na zádech). */
+  ladder?: boolean;
+  /** Varianta pádu při smrti (volí pool podle pohybu a ID); bez ní podle seedu. */
+  deathKind?: 'front' | 'back';
   /** Variace pádu (hash ID a života). */
   seed: number;
 }
@@ -78,6 +82,29 @@ export class SoldierAnimator {
   private land = 0;
   private lastLand = -1;
   private inited = false;
+  /** Škubnutí po zásahu (1 → 0) a jeho směr: +1 zásah zepředu (trup dozadu), −1 zezadu; bok = stranový náklon. */
+  private flinch = 0;
+  private flinchDir = 1;
+  private flinchSide = 0;
+  private ladderW = 0;
+  private time = 0;
+  /** Pohyb vůči pánvi: +1 vpřed, −1 vzad (couvání = chůze pozpátku). Čte tělo z modelu. */
+  legForward = 1;
+
+  /** Zásah: `from` = světová poloha střelce (směr škubnutí), síla 0–1. */
+  hit(from: { x: number; z: number } | null, pos: { x: number; z: number }, power = 1) {
+    this.flinch = Math.min(1, Math.max(this.flinch, 0.5 + 0.5 * power));
+    if (from) {
+      const dx = from.x - pos.x, dz = from.z - pos.z;
+      const l = Math.hypot(dx, dz) || 1;
+      const fx = -Math.sin(this.pelvisYaw), fz = -Math.cos(this.pelvisYaw);
+      this.flinchDir = (dx * fx + dz * fz) / l >= 0 ? 1 : -1;
+      this.flinchSide = (dx * Math.cos(this.pelvisYaw) - dz * Math.sin(this.pelvisYaw)) / l;
+    } else {
+      this.flinchDir = 1;
+      this.flinchSide = 0;
+    }
+  }
   /** Diagnostika pro náhledovou scénu. */
   readonly layers = { locomotion: '', upper: '', life: '' };
   /** Čerstvý výstřel (záblesk ve světě řeší pool). */
@@ -88,6 +115,9 @@ export class SoldierAnimator {
   update(inp: AnimInput, simTime: number, dt: number, root: THREE.Object3D, weapon: THREE.Object3D, wf: WeaponFrame) {
     const B = this.bones;
     dt = Math.min(dt, 0.1);
+    this.time += dt;
+    this.flinch = Math.max(0, this.flinch - dt / 0.28);
+    this.ladderW += ((inp.ladder && inp.life === 'alive' ? 1 : 0) - this.ladderW) * Math.min(1, dt * 10);
     if (!this.inited) {
       this.pelvisYaw = inp.yaw;
       this.lastShot = inp.shotSeq;
@@ -98,7 +128,7 @@ export class SoldierAnimator {
     // --- Životní stav: přechody s pevnou délkou (ne podle délky klipu) ---
     if (inp.life !== this.lastLife) {
       if (inp.life === 'downed') this.lieKind = 'downed';
-      else if (inp.life === 'dead' && this.lastLife === 'alive') this.lieKind = inp.seed % 2 ? 'deadFront' : 'deadBack';
+      else if (inp.life === 'dead' && this.lastLife === 'alive') this.lieKind = inp.deathKind ? (inp.deathKind === 'front' ? 'deadFront' : 'deadBack') : inp.seed % 2 ? 'deadFront' : 'deadBack';
       this.lastLife = inp.life;
     }
     const lieTarget = inp.life === 'alive' ? 0 : 1;
@@ -114,9 +144,23 @@ export class SoldierAnimator {
     const aimYaw = prone > 0.5 ? inp.bodyYaw : inp.yaw;
     const diff = angleDiff(aimYaw, this.pelvisYaw);
     let turnStep = 0;
+    this.legForward = 1;
     if (speed > 0.3 || prone > 0.5) {
+      // Úkroky a couvání: spodní část těla se natočí do směru pohybu (nejvýš 65°), trup dál míří.
+      // Pohyb převážně vzad = pánev čelem proti pohybu a chůze pozpátku. (Knihovna úkrokové klipy nemá.)
+      let off = 0;
+      if (prone <= 0.5 && inp.grounded && !inp.ladder) {
+        const ax = inp.vel.x * Math.cos(aimYaw) - inp.vel.z * Math.sin(aimYaw);
+        const af = -(inp.vel.x * Math.sin(aimYaw) + inp.vel.z * Math.cos(aimYaw));
+        let ang = Math.atan2(ax, af);
+        if (Math.abs(ang) > THREE.MathUtils.degToRad(100)) {
+          ang -= Math.sign(ang) * Math.PI;
+          this.legForward = -1;
+        }
+        off = -clamp(ang, -1.13, 1.13) * Math.min(1, speed / 1.5);
+      }
       const k = Math.min(1, dt * 8);
-      this.pelvisYaw += diff * k;
+      this.pelvisYaw += angleDiff(aimYaw + off, this.pelvisYaw) * k;
       this.turning = false;
     } else {
       if (Math.abs(diff) > THREE.MathUtils.degToRad(ANIM.turnStartDeg)) this.turning = true;
@@ -166,10 +210,13 @@ export class SoldierAnimator {
     const heavyLean = style === 'heavy' ? (1 - prone) * (0.6 + 0.4 * (1 - inp.ads)) : 0;
     this.readyT = Math.max(0, this.readyT - dt * 0.6);
     const lowReady = style === 'sniper' ? (1 - inp.ads) * (1 - sprint0) * (1 - prone) * (1 - Math.min(1, this.readyT * 1.5)) : 0;
-    B.spine1.rotation.set(pitch * 0.12 + crouch * 0.12 + prone * 0.06 - heavyLean * 0.1, twist * 0.3, 0);
-    B.spine2.rotation.set(pitch * 0.18 + prone * 0.05 - heavyLean * 0.06, twist * 0.4 + heavyHip * 0.12, 0);
-    B.neck.rotation.set(pitch * 0.25 + prone * 0.42, twist * 0.3, 0);
-    B.head.rotation.set(pitch * 0.35 + prone * 0.3, 0, 0);
+    // Škubnutí po zásahu: rychlý náraz a doznění (trup od střelce, hlava se zpožděním).
+    const fl = this.flinch > 0 ? Math.sin(Math.min(1, (1 - this.flinch) * 2.2 + 0.25) * Math.PI) * this.flinch : 0;
+    const flX = -fl * 0.3 * this.flinchDir * (1 - prone), flZ = fl * 0.22 * this.flinchSide * (1 - prone);
+    B.spine1.rotation.set(pitch * 0.12 + crouch * 0.12 + prone * 0.06 - heavyLean * 0.1 + flX * 0.5, twist * 0.3, flZ * 0.5);
+    B.spine2.rotation.set(pitch * 0.18 + prone * 0.05 - heavyLean * 0.06 + flX, twist * 0.4 + heavyHip * 0.12, flZ);
+    B.neck.rotation.set(pitch * 0.25 + prone * 0.42 - flX * 0.6, twist * 0.3, 0);
+    B.head.rotation.set(pitch * 0.35 + prone * 0.3 - flX * 0.5, 0, -flZ);
     for (const b of ['clavL', 'clavR'] as const) B[b].rotation.set(0, 0, 0);
     root.updateMatrixWorld(true);
 
@@ -187,6 +234,8 @@ export class SoldierAnimator {
     this.kick += this.kickV * dt;
     let reloadT = 0;
     if (inp.action === 'reload' && inp.actionEnd > inp.actionStart) reloadT = clamp((simTime - inp.actionStart) / (inp.actionEnd - inp.actionStart), 0, 1);
+    // Výměna zbraně: nová zbraň se zvedá zdola (čas tasení ze simulace).
+    const equip = inp.action === 'equip' && inp.actionEnd > inp.actionStart && inp.life === 'alive' ? 1 - ss(clamp((simTime - inp.actionStart) / (inp.actionEnd - inp.actionStart), 0, 1), 0, 1) : 0;
     const rl = Math.sin(Math.min(1, reloadT * 1.1) * Math.PI);
     this.layers.upper = inp.life !== 'alive' ? '–' : reloadT > 0 ? `přebití ${(reloadT * 100).toFixed(0)} %` : sprint ? 'sprint – puška dole' : inp.ads > 0.5 ? 'ADS' : 'míření';
     const shoulderPt = new THREE.Vector3(0.13 - inp.ads * 0.07, 0.13 + inp.ads * 0.03, -0.07).applyMatrix4(B.spine2.matrixWorld);
@@ -195,11 +244,11 @@ export class SoldierAnimator {
     const shoulder = shoulderPt.lerp(hipPt, heavyHip);
     if (lowReady > 0) shoulder.add(new THREE.Vector3(-0.03, -0.04, -0.02).applyQuaternion(B.spine2.getWorldQuaternion(new THREE.Quaternion())).multiplyScalar(lowReady));
     const aimPitch = clamp(inp.pitch, -1.25, 1.25) * (1 - heavyHip * 0.5) + heavyHip * 0.1 - lowReady * 0.5;
-    const wq = new THREE.Quaternion().setFromEuler(new THREE.Euler(aimPitch * (1 - sprint) - sprint * (style === 'heavy' ? 0.45 : 0.75) - rl * 0.35 + this.kick * 0.06, inp.yaw + sprint * 0.55 + rl * 0.15 + heavyHip * 0.06 + lowReady * 0.18, -rl * 0.5 - heavyHip * 0.05, 'YXZ'));
+    const wq = new THREE.Quaternion().setFromEuler(new THREE.Euler(aimPitch * (1 - sprint) - sprint * (style === 'heavy' ? 0.45 : 0.75) - rl * (style === 'shotgun' ? 0.15 : style === 'heavy' ? 0.2 : 0.35) + this.kick * 0.06 - equip * 0.9 - fl * 0.12, inp.yaw + sprint * 0.55 + rl * 0.15 + heavyHip * 0.06 + lowReady * 0.18, -rl * 0.5 - heavyHip * 0.05, 'YXZ'));
     weapon.quaternion.copy(wq);
     if (!wf.hold || wf.hold === 'rifle') {
       const back = new THREE.Vector3(0, 0, wf.stockZ - 0.03 + this.kick * 0.04 + sprint * 0.12).applyQuaternion(wq);
-      const low = new THREE.Vector3(-0.02 * sprint, -0.03 * (1 - inp.ads) - 0.06 * sprint - rl * 0.04, 0).applyQuaternion(wq);
+      const low = new THREE.Vector3(-0.02 * sprint, -0.03 * (1 - inp.ads) - 0.06 * sprint - rl * 0.04 - equip * 0.16, 0).applyQuaternion(wq);
       weapon.position.copy(shoulder).sub(back).add(low);
     } else {
       // Pistole v natažených pažích před obličejem / předmět v pravé ruce před hrudníkem.
@@ -226,7 +275,8 @@ export class SoldierAnimator {
       weapon.position.copy(shoulder).add(off.applyQuaternion(wq));
     }
     weapon.updateMatrixWorld(true);
-    weapon.visible = this.lie < 0.3;
+    // Na žebříku je zbraň na zádech (ruce drží příčky).
+    weapon.visible = this.lie < 0.3 && this.ladderW < 0.5;
 
     // --- Paže: IK na úchopy ---
     const up = new THREE.Vector3(0, 1, 0).applyQuaternion(wq);
@@ -235,14 +285,48 @@ export class SoldierAnimator {
     const gR = wf.gripRight.clone().applyMatrix4(weapon.matrixWorld);
     const wristR = gR.clone().addScaledVector(up, 0.06).addScaledVector(fwd, -0.01);
     let gL = wf.gripLeft.clone().applyMatrix4(weapon.matrixWorld);
+    let wristRAdj: THREE.Vector3 | null = null;
     if (reloadT > 0) {
-      // Levá ruka opustí předpažbí, k šachtě a pod ni, chvíli pracuje, vrátí se.
-      const mag = wf.magazineSocket.clone().applyMatrix4(weapon.matrixWorld).addScaledVector(up, -0.08);
+      const sock = wf.magazineSocket.clone().applyMatrix4(weapon.matrixWorld);
       const k = ss(reloadT, 0.1, 0.28) * (1 - ss(reloadT, 0.78, 0.95));
-      const work = Math.sin(reloadT * 18) * 0.03 * k;
-      gL = gL.lerp(mag, k).addScaledVector(up, -0.12 * ss(reloadT, 0.3, 0.45) * (1 - ss(reloadT, 0.5, 0.65)) + work);
+      if (style === 'heavy') {
+        // Pás: levá ruka nahoru k víku, otevřít, dolů pro schránku, založit pás, zavřít víko.
+        const cover = sock.clone().addScaledVector(up, 0.16);
+        const box = sock.clone().addScaledVector(up, -0.16).addScaledVector(right, -0.05);
+        const toBox = ss(reloadT, 0.3, 0.45) * (1 - ss(reloadT, 0.62, 0.75));
+        gL = gL.lerp(cover.lerp(box, toBox), k).addScaledVector(up, Math.sin(reloadT * 14) * 0.025 * k);
+      } else if (style === 'shotgun') {
+        // Brokovnice: levá ruka opakovaně nosí náboje od pasu k nabíjecímu okénku.
+        const port = sock.clone().addScaledVector(up, -0.05);
+        const belt = port.clone().addScaledVector(up, -0.24).addScaledVector(right, -0.1);
+        const cyc = 0.5 - 0.5 * Math.cos(reloadT * Math.PI * 2 * 4);
+        gL = gL.lerp(port.lerp(belt, cyc), k);
+      } else if (style === 'sniper') {
+        // Opakovačka: pravá ruka z pažbičky na kliku závěru (nahoru a dozadu), levá drží předpažbí.
+        const cyc = Math.sin(reloadT * Math.PI * 2 * 3);
+        wristRAdj = up.clone().multiplyScalar(0.07 * k).addScaledVector(fwd, (-0.05 + cyc * 0.05) * k).addScaledVector(right, 0.04 * k);
+      } else {
+        // Zásobník: levá ruka opustí předpažbí, k šachtě a pod ni, chvíli pracuje, vrátí se.
+        const mag = sock.addScaledVector(up, -0.08);
+        const work = Math.sin(reloadT * 18) * 0.03 * k;
+        gL = gL.lerp(mag, k).addScaledVector(up, -0.12 * ss(reloadT, 0.3, 0.45) * (1 - ss(reloadT, 0.5, 0.65)) + work);
+      }
+    }
+    if (wristRAdj) {
+      wristR.add(wristRAdj);
+      gR.add(wristRAdj);
     }
     const wristL = gL.clone().addScaledVector(up, 0.05);
+    // Žebřík: ruce střídavě na příčkách před tělem (fáze podle výšky – 0,3 m na příčku).
+    if (this.ladderW > 0.01) {
+      const ph = (inp.pos.y / 0.3) * Math.PI;
+      const fw = new THREE.Vector3(-sy, 0, -cy), rt = new THREE.Vector3(cy, 0, -sy);
+      const hand = (side: number, o: number) => root.position.clone().addScaledVector(fw, 0.36).addScaledVector(rt, side * 0.2).add(new THREE.Vector3(0, 1.42 + 0.16 * Math.sin(ph + o), 0));
+      wristR.lerp(hand(1, 0), this.ladderW);
+      gR.lerp(hand(1, 0).add(new THREE.Vector3(0, 0.07, 0)), this.ladderW);
+      wristL.lerp(hand(-1, Math.PI), this.ladderW);
+      gL.lerp(hand(-1, Math.PI).add(new THREE.Vector3(0, 0.07, 0)), this.ladderW);
+    }
     const pelvisRight = new THREE.Vector3(cy, 0, -sy);
     const down = new THREE.Vector3(0, -1, 0);
     solveTwoBone(B.upperArmR, B.lowerArmR, wristR, pelvisRight.clone().multiplyScalar(0.8).add(down), UPPER_ARM, LOWER_ARM);
@@ -258,6 +342,8 @@ export class SoldierAnimator {
         const swing = Math.cos(p) * this.stride * 0.5;
         const lift = Math.max(0, -Math.sin(p)) * ANIM.stepHeight * Math.min(1, this.stride * 3) + (inp.grounded ? 0 : 0.18);
         const local = new THREE.Vector3(sx * (0.11 + crouch * 0.04) + this.moveDir.x * swing, 0.08 + lift, -(this.moveDir.y * swing) - crouch * 0.12);
+        // Žebřík: chodidla střídavě na příčkách před tělem.
+        if (this.ladderW > 0.01) local.lerp(new THREE.Vector3(sx * 0.13, 0.22 + 0.15 * Math.sin((inp.pos.y / 0.3) * Math.PI + (sx > 0 ? Math.PI : 0)), -0.26), this.ladderW);
         const target = local.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.pelvisYaw).add(root.position);
         const thigh = side === 'L' ? B.thighL : B.thighR;
         const shin = side === 'L' ? B.shinL : B.shinR;
@@ -316,6 +402,14 @@ export class SoldierAnimator {
       B[n].quaternion.slerp(q, f);
     }
     B.pelvis.position.lerp(new THREE.Vector3(0, 0.12, 0.35), f);
+    // Vyřazený žije: pomalý dech a občasný pohyb ruky a hlavy (mrtvý leží nehybně).
+    if (this.lieKind === 'downed' && f > 0.9) {
+      const br = Math.sin(this.time * 1.7);
+      B.spine2.rotateX(br * 0.035);
+      B.head.rotateY(Math.sin(this.time * 0.6) * 0.18);
+      B.upperArmR.rotateZ(Math.max(0, Math.sin(this.time * 0.45)) * 0.25);
+      B.lowerArmR.rotateX(-Math.max(0, Math.sin(this.time * 0.45)) * 0.35);
+    }
     void this.lyingQuat;
   }
 }

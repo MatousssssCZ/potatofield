@@ -52,9 +52,9 @@ const AIM: Array<[string, string, THREE.Vector3]> = [
   ['calf_r', 'foot_r', new THREE.Vector3(0, -1, 0)],
 ];
 /** Klip podle stavu nohou. */
-type LegClip = 'Idle_Loop' | 'Walk_Loop' | 'Jog_Fwd_Loop' | 'Sprint_Loop' | 'Crouch_Idle_Loop' | 'Crouch_Fwd_Loop';
+type LegClip = 'Idle_Loop' | 'Walk_Loop' | 'Jog_Fwd_Loop' | 'Sprint_Loop' | 'Crouch_Idle_Loop' | 'Crouch_Fwd_Loop' | 'Jump_Loop' | 'Jump_Land';
 /** Rychlost (m/s), při které klip běží rychlostí 1. */
-const CLIP_SPEED: Record<LegClip, number> = { Idle_Loop: 1, Walk_Loop: 1.4, Jog_Fwd_Loop: 3.4, Sprint_Loop: 5.6, Crouch_Idle_Loop: 1, Crouch_Fwd_Loop: 1.3 };
+const CLIP_SPEED: Record<LegClip, number> = { Idle_Loop: 1, Walk_Loop: 1.4, Jog_Fwd_Loop: 3.4, Sprint_Loop: 5.6, Crouch_Idle_Loop: 1, Crouch_Fwd_Loop: 1.3, Jump_Loop: 1, Jump_Land: 1 };
 
 let source: { scene: THREE.Object3D; clips: THREE.AnimationClip[] } | null = null;
 
@@ -109,6 +109,8 @@ export class MannequinBody {
   /** Váha klipu na nohou 0–1 (plynulý přechod klip ↔ procedurální nohy). */
   private legW = 0;
   private dead = false;
+  private airborne = false;
+  private landT = 0;
   private meshes: THREE.SkinnedMesh[] = [];
   private faction: SoldierFaction | null = null;
 
@@ -181,9 +183,10 @@ export class MannequinBody {
    * Snímek: `group` = skupina vojáka (naše kostra už nastavená animátorem).
    * `moveSpeed` vodorovná rychlost, `forward` = podíl pohybu vpřed (−1…1), `crouch` 0–1.
    */
-  update(dt: number, s: { group: THREE.Object3D; speed: number; forward: number; crouch: number; sprinting: boolean; grounded: boolean; life: 'alive' | 'downed' | 'dead'; prone: boolean }) {
-    // --- Smrt: klip Death01 (jednou, poslední snímek drží). ---
-    if (s.life === 'dead') {
+  update(dt: number, s: { group: THREE.Object3D; speed: number; forward: number; crouch: number; sprinting: boolean; grounded: boolean; life: 'alive' | 'downed' | 'dead'; prone: boolean; ladder?: boolean; deathClip?: 'normal' | 'fast' | null }) {
+    // --- Smrt: klip Death01 (jednou, poslední snímek drží); varianta „fast“ padá rychleji.
+    //     Bez klipu (deathClip null) pád řídí procedurální póza animátoru (pád vpřed / vzad). ---
+    if (s.life === 'dead' && s.deathClip !== null) {
       if (!this.dead) {
         this.dead = true;
         this.mixer.stopAllAction();
@@ -192,6 +195,7 @@ export class MannequinBody {
           a.reset();
           a.setLoop(THREE.LoopOnce, 1);
           a.clampWhenFinished = true;
+          a.timeScale = s.deathClip === 'fast' ? 1.5 : 1;
           a.play();
         }
       }
@@ -205,9 +209,17 @@ export class MannequinBody {
     }
 
     // --- Nohy: klip, když jde (nebo stojí) vpřed po zemi; jinak procedurální (úkroky, leh, žebřík). ---
-    const useClip = s.life === 'alive' && s.grounded && !s.prone && (s.speed < 0.3 || s.forward > 0.75);
+    // Skok: ve vzduchu klip letu, po dopadu krátce klip doskoku.
+    const air = s.life === 'alive' && !s.grounded && !s.ladder && !s.prone;
+    if (this.airborne && !air && s.grounded) this.landT = 0.28;
+    this.airborne = air;
+    this.landT = Math.max(0, this.landT - dt);
+    // Vpřed i vzad (chůze pozpátku); úkroky řeší natočení pánve v animátoru, takže pohyb je vůči pánvi skoro vždy podélný.
+    const useClip = s.life === 'alive' && !s.prone && !s.ladder && (air || (s.grounded && (s.speed < 0.3 || Math.abs(s.forward) > 0.7)));
     let want: LegClip;
-    if (s.crouch > 0.5) want = s.speed < 0.3 ? 'Crouch_Idle_Loop' : 'Crouch_Fwd_Loop';
+    if (air) want = 'Jump_Loop';
+    else if (this.landT > 0 && s.speed < 4) want = 'Jump_Land';
+    else if (s.crouch > 0.5) want = s.speed < 0.3 ? 'Crouch_Idle_Loop' : 'Crouch_Fwd_Loop';
     else if (s.speed < 0.3) want = 'Idle_Loop';
     else if (s.sprinting) want = 'Sprint_Loop';
     else want = s.speed > 2.4 ? 'Jog_Fwd_Loop' : 'Walk_Loop';
@@ -216,12 +228,12 @@ export class MannequinBody {
       const prev = this.legClip ? this.actions.get(this.legClip) : undefined;
       if (next) {
         next.reset().setEffectiveWeight(1).play();
-        if (prev) prev.crossFadeTo(next, 0.2, false);
+        if (prev) prev.crossFadeTo(next, want === 'Jump_Loop' || want === 'Jump_Land' ? 0.1 : 0.2, false);
       }
       this.legClip = want;
     }
     const act = this.actions.get(want);
-    if (act) act.timeScale = s.speed < 0.3 ? 1 : THREE.MathUtils.clamp(s.speed / CLIP_SPEED[want], 0.5, 1.8);
+    if (act) act.timeScale = want === 'Jump_Loop' || want === 'Jump_Land' || s.speed < 0.3 ? 1 : THREE.MathUtils.clamp(s.speed / CLIP_SPEED[want], 0.5, 1.8) * (s.forward < 0 ? -1 : 1);
     this.legW = THREE.MathUtils.damp(this.legW, useClip ? 1 : 0, 10, dt);
 
     // Klip nastaví celou kostru; nohy si z něj vezmeme (s vahou), zbytek přepíše přenos.

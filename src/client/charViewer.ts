@@ -62,6 +62,7 @@ let actors: Actor[] = [];
 let simTime = 0;
 let burst = 0;
 let jumpUntil = -1;
+let ladderUntil = -1;
 let playlistT = -1;
 let bench = 0;
 
@@ -106,7 +107,11 @@ function applyControls(a: Actor, i: number) {
   s.bodyYaw = yaw;
   s.pitch = THREE.MathUtils.degToRad(Number($<HTMLInputElement>('#pitch').value));
   s.sprinting = mv === 's' && s.stance === 'stand';
-  s.grounded = simTime >= jumpUntil;
+  s.grounded = simTime >= jumpUntil && simTime >= ladderUntil;
+  // Žebřík: postava stoupá (fáze rukou a nohou jde podle výšky).
+  s.ladder = simTime < ladderUntil ? 'viewer' : null;
+  s.pos.y = simTime < ladderUntil ? a.base.y + (2.4 - (ladderUntil - simTime)) * 0.9 : simTime < jumpUntil ? a.base.y + Math.sin(((0.9 - (jumpUntil - simTime)) / 0.9) * Math.PI) * 0.6 : a.base.y;
+  if (w.action === 'equip' && simTime >= w.actionEnd) w.action = 'idle';
   w.adsProgress += (($<HTMLInputElement>('#ads').checked && !s.sprinting ? 1 : 0) - w.adsProgress) * 0.15;
   if (w.action === 'reload' && simTime >= w.actionEnd) w.action = 'idle';
 }
@@ -173,6 +178,12 @@ const PLAYLIST: Array<[string, () => void]> = [
   ['vyřazení', () => (set({ pitch: 0 }), setLife('downed'))],
   ['oživení', () => setLife('alive')],
   ['smrt', () => setLife('dead')],
+  ['naživu', () => setLife('alive')],
+  ['úkrok vpravo', () => set({ move: 'r', stance: '1.8' })],
+  ['skok', () => (set({ move: 'f' }), (jumpUntil = simTime + 0.9))],
+  ['žebřík', () => (set({ move: '0' }), (ladderUntil = simTime + 2.4))],
+  ['zásah zepředu', () => (set({ move: '0' }), actors.forEach((a) => pool.hit(a.view.id, { x: a.base.x, z: a.base.z - 5 }, 1)))],
+  ['výměna zbraně', () => actors.forEach((a) => Object.assign(a.view.weapon, { action: 'equip', actionStart: simTime, actionEnd: simTime + 0.6 }))],
 ];
 function set(o: { move?: string; stance?: string; ads?: boolean; yaw?: number; pitch?: number }) {
   if (o.move !== undefined) $<HTMLSelectElement>('#move').value = o.move;
@@ -264,4 +275,4 @@ function loop(now: number) {
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
-(window as unknown as Record<string, unknown>).__chars = { pool, actors: () => actors, set, setLife, reload, get simTime() { return simTime; }, rebuild, camera };
+(window as unknown as Record<string, unknown>).__chars = { pool, actors: () => actors, set, setLife, reload, get simTime() { return simTime; }, rebuild, camera, jump: (t = 0.9) => (jumpUntil = simTime + t), ladder: (t = 2.4) => (ladderUntil = simTime + t), now: () => simTime };

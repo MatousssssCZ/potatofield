@@ -1495,6 +1495,7 @@ export class App {
       return;
     }
     this.renderer.info.reset();
+    sharedUniforms.uTime.value = performance.now() / 1000;
     if (this.session) {
       this.session.update(dt);
       if (this.teamUi) this.teamUi.update(this.session.game.driver.local(), this.session.game.driver.remotes());

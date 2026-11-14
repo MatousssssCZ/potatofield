@@ -61,26 +61,81 @@ export class Effects {
     this.root.name = 'effects';
   }
 
+  /** Volný obláček z poolu (nejvýš 120; při zaplnění se přepíše nejstarší). */
+  private puff(): Puff {
+    let p = this.puffs.find((x) => x.life <= 0);
+    if (!p) {
+      if (this.puffs.length >= 120) p = this.puffs[this.puffNext++ % this.puffs.length];
+      else {
+        const sprite = new THREE.Sprite(this.puffMat.clone());
+        this.root.add(sprite);
+        p = { sprite, vel: new THREE.Vector3(), life: 0, max: 1 };
+        this.puffs.push(p);
+      }
+    }
+    p.sprite.visible = true;
+    p.sprite.scale.setScalar(0.08);
+    return p;
+  }
+  private puffNext = 0;
+
+  /** Prach od nohou (sprint, dopad): nízké obláčky barvy povrchu; `amount` 1 = krok, 3 = dopad. */
+  dust(pos: { x: number; y: number; z: number }, surface: string, amount = 1) {
+    if (surface === 'metal' || surface === 'wood' || surface === 'flesh') return;
+    const col = new THREE.Color(DUST[surface] ?? DUST.sand);
+    for (let i = 0; i < amount; i++) {
+      const p = this.puff();
+      (p.sprite.material as THREE.SpriteMaterial).color.copy(col);
+      p.sprite.position.set(pos.x + (Math.random() - 0.5) * 0.3, pos.y + 0.06, pos.z + (Math.random() - 0.5) * 0.3);
+      p.vel.set((Math.random() - 0.5) * 0.5, 0.25 + Math.random() * 0.25, (Math.random() - 0.5) * 0.5);
+      p.max = p.life = 0.6 + Math.random() * 0.5;
+    }
+  }
+
+  /** Kouř z hlavně po výstřelu (cizí vojáci): dva šedé obláčky ve směru hlavně. */
+  muzzleSmoke(pos: { x: number; y: number; z: number }, dir: { x: number; y: number; z: number }) {
+    for (let i = 0; i < 2; i++) {
+      const p = this.puff();
+      (p.sprite.material as THREE.SpriteMaterial).color.set('#b9b6ae');
+      p.sprite.position.set(pos.x + dir.x * (0.5 + i * 0.25), pos.y + dir.y * (0.5 + i * 0.25), pos.z + dir.z * (0.5 + i * 0.25));
+      p.vel.set(dir.x * (0.8 + i * 0.5), dir.y * 0.8 + 0.2, dir.z * (0.8 + i * 0.5));
+      p.max = p.life = 0.35 + Math.random() * 0.25;
+    }
+  }
+
+  private casings: Array<{ mesh: THREE.Mesh; vel: THREE.Vector3; spin: number; life: number }> = [];
+  private casingGeo = new THREE.BoxGeometry(0.012, 0.012, 0.045);
+  private casingMat = new THREE.MeshStandardMaterial({ color: '#c9a04a', metalness: 0.9, roughness: 0.35 });
+
+  /** Vyhozená nábojnice (cizí vojáci): letí vpravo od zbraně, padá a po chvíli zmizí. Nejvýš 24 najednou. */
+  casing(pos: { x: number; y: number; z: number }, dir: { x: number; y: number; z: number }) {
+    let c = this.casings.find((x) => x.life <= 0);
+    if (!c) {
+      if (this.casings.length >= 24) return;
+      const mesh = new THREE.Mesh(this.casingGeo, this.casingMat);
+      this.root.add(mesh);
+      c = { mesh, vel: new THREE.Vector3(), spin: 0, life: 0 };
+      this.casings.push(c);
+    }
+    // Vpravo od směru střelby (vodorovně) a mírně nahoru.
+    const l = Math.hypot(dir.x, dir.z) || 1;
+    const rx = -dir.z / l, rz = dir.x / l;
+    c.mesh.position.set(pos.x + dir.x * 0.25 + rx * 0.08, pos.y + 0.02, pos.z + dir.z * 0.25 + rz * 0.08);
+    c.vel.set(rx * (1.6 + Math.random()), 1.2 + Math.random() * 0.8, rz * (1.6 + Math.random()));
+    c.spin = 12 + Math.random() * 18;
+    c.life = 0.9;
+    c.mesh.visible = true;
+  }
+
   impact(point: THREE.Vector3, normal: THREE.Vector3, surface: string) {
     const col = new THREE.Color(DUST[surface] ?? DUST.concrete);
     const n = surface === 'flesh' ? 3 : 5;
     for (let i = 0; i < n; i++) {
-      let p = this.puffs.find((x) => x.life <= 0);
-      if (!p) {
-        if (this.puffs.length >= 120) p = this.puffs[0];
-        else {
-          const sprite = new THREE.Sprite(this.puffMat.clone());
-          this.root.add(sprite);
-          p = { sprite, vel: new THREE.Vector3(), life: 0, max: 1 };
-          this.puffs.push(p);
-        }
-      }
+      const p = this.puff();
       (p.sprite.material as THREE.SpriteMaterial).color.copy(col);
       p.sprite.position.copy(point).addScaledVector(normal, 0.03);
       p.vel.copy(normal).multiplyScalar(0.6 + Math.random() * 1.2).add(new THREE.Vector3((Math.random() - 0.5) * 0.8, Math.random() * 0.6, (Math.random() - 0.5) * 0.8));
       p.max = p.life = 0.5 + Math.random() * 0.6;
-      p.sprite.visible = true;
-      p.sprite.scale.setScalar(0.08);
     }
     if (surface !== 'flesh' && surface !== 'fabric' && this.maxDecals > 0) this.decal(point, normal);
   }
@@ -122,6 +177,15 @@ export class Effects {
       (p.sprite.material as THREE.SpriteMaterial).opacity = (1 - k) * 0.55;
       if (p.life <= 0) p.sprite.visible = false;
     }
+    for (const c of this.casings) {
+      if (c.life <= 0) continue;
+      c.life -= dt;
+      c.vel.y -= 9.8 * dt;
+      c.mesh.position.addScaledVector(c.vel, dt);
+      c.mesh.rotation.x += c.spin * dt;
+      c.mesh.rotation.z += c.spin * 0.6 * dt;
+      if (c.life <= 0) c.mesh.visible = false;
+    }
     for (let i = this.tracers.length - 1; i >= 0; i--) {
       const t = this.tracers[i];
       t.life -= dt;
@@ -140,6 +204,10 @@ export class Effects {
       p.life = 0;
       p.sprite.visible = false;
     }
+    for (const c of this.casings) {
+      c.life = 0;
+      c.mesh.visible = false;
+    }
   }
 
   dispose() {
@@ -147,6 +215,8 @@ export class Effects {
       if (o instanceof THREE.Sprite) (o.material as THREE.Material).dispose();
     });
     for (const t of this.tracers) t.line.geometry.dispose();
+    this.casingGeo.dispose();
+    this.casingMat.dispose();
     this.decalGeo.dispose();
     this.decalMat.map?.dispose();
     this.decalMat.dispose();
