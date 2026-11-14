@@ -46,6 +46,17 @@ const KIT_ICON: Record<Kit, string> = {
   engineer: '<svg viewBox="0 0 24 24"><path d="M4 20l9-9M14 4a5 5 0 006 6l-3 3-6-6z" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
 };
 
+/** Ikony výbavy (vlastní jednoduché tvary, 24×24). */
+const ITEM_ICON: Record<string, string> = {
+  knife: '<svg viewBox="0 0 24 24"><path d="M4 20L16 5l4 3-9 13z" fill="currentColor"/><path d="M3 21l3-1" stroke="currentColor" stroke-width="2"/></svg>',
+  pistol: '<svg viewBox="0 0 24 24"><path d="M3 8h16v4h-8l-1 4H6l1-4H3z" fill="currentColor"/></svg>',
+  frag: '<svg viewBox="0 0 24 24"><circle cx="12" cy="14" r="6.5" fill="currentColor"/><rect x="10" y="3" width="4" height="4" fill="currentColor"/><path d="M14 5h5" stroke="currentColor" stroke-width="2"/></svg>',
+  smoke: '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="8" height="13" rx="1" fill="currentColor"/><rect x="9.5" y="3" width="5" height="4" fill="currentColor"/></svg>',
+  medkit: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2" fill="currentColor"/><path d="M12 9v8M8 13h8" stroke="#1a1d1e" stroke-width="2.4"/></svg>',
+  defib: '<svg viewBox="0 0 24 24"><path d="M13 2L5 14h6l-1 8 9-13h-6z" fill="currentColor"/></svg>',
+  ammo: '<svg viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="11" fill="currentColor"/><path d="M8 9V5M12 9V5M16 9V5" stroke="currentColor" stroke-width="2.4"/></svg>',
+};
+
 function icon(svg: string) {
   const s = h('span', { class: 'pf-kit-ico', 'aria-hidden': 'true' });
   s.innerHTML = svg; // vlastní statické SVG (žádný uživatelský obsah)
@@ -315,6 +326,7 @@ export class DeployScreen {
     const enemy: Team = c.team === 'teamA' ? 'teamB' : 'teamA';
     const top = h('header', { class: 'pf-deploy-top' },
       h('div', { class: 'pf-deploy-title' }, h('b', {}, c.doc.name), h('span', { class: 'pf-dim' }, cq ? 'Conquest' : t('mode.free')), h('span', {}, `${t('deploy.team')}: `, h('b', { class: 'own' }, FACTION_LABEL[fac]))),
+      h('div', { class: 'pf-deploy-banner' }, t('deploy.selectSpawn')),
       cq ? h('div', { class: 'pf-tickets tnum' }, h('span', { class: rel(c.team) }, `${cq.tickets[c.team]}`), h('span', { class: 'pf-dim' }, fmtTime(cq.timeLimit - cq.time)), h('span', { class: rel(enemy) }, `${cq.tickets[enemy]}`)) : h('div'),
       tabs([{ id: 'deploy', label: t('deploy.tabDeploy') }, ...c.extraTabs.map((x) => ({ id: x.id, label: x.label }))], this.tab, (id) => {
         this.tab = id;
@@ -374,14 +386,31 @@ export class DeployScreen {
     }
     left.append(h('div', { class: 'pf-label' }, t('deploy.class')));
     const rows = h('div', { class: 'pf-classes', role: 'radiogroup', 'aria-label': t('deploy.class') });
+    const sils: Array<[HTMLCanvasElement, string]> = [];
     for (const [i, k] of c.kits.entries()) {
       const w = weaponFor(fac, k);
       const unavailable = w.available === false;
-      const row = h('button', { class: `pf-class${this.kit === k ? ' on' : ''}`, type: 'button', role: 'radio', 'aria-checked': this.kit === k ? 'true' : 'false', title: `${KIT_LABEL[k]} – ${w.name}` },
-        icon(KIT_ICON[k]), h('b', {}, KIT_LABEL[k]), h('span', { class: 'pf-dim' }, unavailable ? t('deploy.unavailableKit') : t(`kit.${k}.role` as StringKey)), h('span', { class: 'pf-class-key' }, String(i + 1)));
+      const sil = h('canvas', { class: 'pf-card-sil' }) as HTMLCanvasElement;
+      sils.push([sil, w.id]);
+      // Ikony výbavy kitu (nůž, pistole, granáty, nástroje) v řadě pod zbraní.
+      const gear = h('div', { class: 'pf-card-gear' }, ...kitItems(fac, k).filter((it) => it.kind !== 'primary').map((it) => {
+        const g = icon(ITEM_ICON[it.kind] ?? ITEM_ICON.ammo);
+        g.classList.add('pf-gear');
+        g.title = it.kind === 'pistol' ? it.name : t(`item.${it.kind}` as StringKey);
+        return g;
+      }));
+      const row = h('button', { class: `pf-class pf-kitcard${this.kit === k ? ' on' : ''}${unavailable ? ' off' : ''}`, type: 'button', role: 'radio', 'aria-checked': this.kit === k ? 'true' : 'false', title: `${KIT_LABEL[k]} – ${w.name}` },
+        h('div', { class: 'pf-card-head' }, icon(KIT_ICON[k]), h('b', {}, KIT_LABEL[k]), h('span', { class: 'pf-dim' }, unavailable ? t('deploy.unavailableKit') : t(`kit.${k}.role` as StringKey)), h('span', { class: 'pf-class-key' }, String(i + 1))),
+        h('div', { class: 'pf-card-body' }, sil, gear));
       row.addEventListener('click', () => this.selectKit(k));
       rows.append(row);
     }
+    requestAnimationFrame(() => {
+      for (const [cv, id] of sils) {
+        const r = cv.getBoundingClientRect();
+        if (r.width > 0) drawSilhouette(cv, id, r.width, r.height, 'rgba(236,238,228,0.92)');
+      }
+    });
     left.append(rows);
     const w = this.weapon(c);
     const e = arsenalEntry(w.id)!;
@@ -389,7 +418,6 @@ export class DeployScreen {
     const items = kitItems(fac, this.kit);
     const kitBox = h('div', { class: 'pf-equip' },
       h('div', { class: 'pf-kit-title' }, t('deploy.kitTitle', { faction: FACTION_LABEL[fac], kit: KIT_LABEL[this.kit] })),
-      h('div', { class: 'pf-sil-wrap' }, this.silCanvas),
       h('div', { class: 'pf-kit-weapon' }, h('b', {}, w.name), h('span', { class: 'pf-dim' }, ` · ${t('deploy.sights')}: ${sight}`)),
       this.weaponStats(w.id),
       h('ul', { class: 'pf-kit-items' }, ...items.map((it) => {

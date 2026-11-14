@@ -249,6 +249,7 @@ export class Hud {
       this.drawMapOverlay();
     }
     this.root.classList.toggle('pf-dead', !alive);
+    this.root.classList.toggle('pf-deploying', this.deploy.visible);
 
     // Vlevo dole: zdraví (bez samovolné regenerace), výdrž, postoj; nad tím četa.
     if (me && alive) {

@@ -244,6 +244,29 @@ export class MapView {
     g.fillStyle = '#151b1b';
     g.fillRect(0, 0, W, H);
     this.map.draw(g, this.cx, this.cz, W / 2, H / 2, this.scale);
+    // Mimo hrací plochu červené šrafování (BF2): vše za hranicí bodů a základen.
+    if (this.win && this.win !== this.map.bounds) {
+      const tl = this.toScreen({ x: this.win.x0, z: this.win.z0 } as MapMarker), br = this.toScreen({ x: this.win.x1, z: this.win.z1 } as MapMarker);
+      g.save();
+      g.beginPath();
+      g.rect(0, 0, W, H);
+      g.rect(tl[0], tl[1], br[0] - tl[0], br[1] - tl[1]);
+      g.clip('evenodd');
+      g.fillStyle = 'rgba(120,30,20,0.38)';
+      g.fillRect(0, 0, W, H);
+      g.strokeStyle = 'rgba(190,60,40,0.55)';
+      g.lineWidth = 3;
+      g.beginPath();
+      for (let k = -H; k < W + H; k += 12) {
+        g.moveTo(k, 0);
+        g.lineTo(k + H, H);
+      }
+      g.stroke();
+      g.restore();
+      g.strokeStyle = 'rgba(40,30,15,0.7)';
+      g.lineWidth = 2;
+      g.strokeRect(tl[0], tl[1], br[0] - tl[0], br[1] - tl[1]);
+    }
     const css = getComputedStyle(document.documentElement);
     const col = (n: string) => (this.colors[n] ??= css.getPropertyValue(n).trim());
     this.colors = {};

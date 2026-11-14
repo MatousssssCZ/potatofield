@@ -91,10 +91,11 @@ const cs = {
 
   'preview.badge': 'NÁHLED – smyšlená data',
 
-  'deploy.tabDeploy': 'Nasazení',
+  'deploy.tabDeploy': 'KIT',
   'deploy.team': 'Tým',
   'deploy.faction': 'Frakce',
   'deploy.class': 'Třída',
+  'deploy.selectSpawn': 'Vyber místo nasazení',
   'stat.damage': 'Poškození',
   'stat.rate': 'Kadence',
   'stat.rpm': 'ran/min',
@@ -473,10 +474,11 @@ const en: Record<StringKey, string> = {
 
   'preview.badge': 'PREVIEW – mock data',
 
-  'deploy.tabDeploy': 'Deploy',
+  'deploy.tabDeploy': 'KIT',
   'deploy.team': 'Team',
   'deploy.faction': 'Faction',
   'deploy.class': 'Class',
+  'deploy.selectSpawn': 'Select spawn point',
   'stat.damage': 'Damage',
   'stat.rate': 'Rate of fire',
   'stat.rpm': 'rpm',

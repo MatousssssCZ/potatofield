@@ -59,13 +59,14 @@ export class TacticalMap {
         const sh = (hAt(x - t.spacing, z - t.spacing) - hAt(x + t.spacing, z + t.spacing)) * 0.6;
         const k = (hh - hMin) / span;
         const i = (py * c.width + px) * 4;
-        img.data[i] = 70 + k * 30 + sh * 18;
-        img.data[i + 1] = 76 + k * 26 + sh * 18;
-        img.data[i + 2] = 62 + k * 16 + sh * 14;
+        // Letecký snímek pouště (BF2): teplý písek, hnědé svahy, světlé hřbety.
+        img.data[i] = 176 + k * 40 + sh * 26;
+        img.data[i + 1] = 148 + k * 34 + sh * 24;
+        img.data[i + 2] = 102 + k * 22 + sh * 18;
         img.data[i + 3] = 255;
       }
     g.putImageData(img, 0, 0);
-    g.strokeStyle = 'rgba(229,231,216,0.08)';
+    g.strokeStyle = 'rgba(60,45,25,0.12)';
     g.lineWidth = 1;
     for (let x = Math.ceil(this.bounds.x0 / 50) * 50; x < this.bounds.x1; x += 50) {
       g.beginPath();
@@ -82,9 +83,9 @@ export class TacticalMap {
     // Půdorysy objektů (vyšší = světlejší, aby budovy vystoupily).
     for (const f of footprints) {
       const a = Math.min(1, f.h / 12);
-      g.fillStyle = `rgba(${150 + a * 50},${152 + a * 46},${138 + a * 40},0.9)`;
+      g.fillStyle = `rgba(${112 - a * 28},${104 - a * 26},${92 - a * 22},0.92)`;
       g.fillRect((f.x0 - this.bounds.x0) * this.ppm, (f.z0 - this.bounds.z0) * this.ppm, Math.max(1, (f.x1 - f.x0) * this.ppm), Math.max(1, (f.z1 - f.z0) * this.ppm));
-      g.strokeStyle = 'rgba(21,27,27,0.6)';
+      g.strokeStyle = 'rgba(30,24,16,0.75)';
       g.strokeRect((f.x0 - this.bounds.x0) * this.ppm, (f.z0 - this.bounds.z0) * this.ppm, Math.max(1, (f.x1 - f.x0) * this.ppm), Math.max(1, (f.z1 - f.z0) * this.ppm));
     }
   }

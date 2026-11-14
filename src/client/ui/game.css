@@ -562,9 +562,9 @@ body.mode-menu #app {
 }
 .pf-deploy-top {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr auto auto auto;
   align-items: center;
-  gap: 16px;
+  gap: 24px;
   border-bottom: 1px solid var(--pf-line);
 }
 .pf-deploy-top .pf-tabs {
@@ -1817,4 +1817,125 @@ body.mode-play .tui-log div {
 }
 .h-ammo small {
   order: 2;
+}
+
+/* ===== Obrazovka nasazení ve stylu BF2 ===== */
+.pf-deploy {
+  background: radial-gradient(ellipse at 30% 20%, rgba(52, 58, 50, 0.97), rgba(20, 23, 21, 0.98) 70%);
+}
+.pf-deploy-banner {
+  padding: 5px 40px;
+  background: var(--bf-metal);
+  border: 1px solid #0b0c0d;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 12px 100%);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.9em;
+}
+.pf-deploy-top .pf-tabs button {
+  background: var(--bf-metal);
+  border: 1px solid #0b0c0d;
+  margin-left: 4px;
+  padding: 6px 22px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+.pf-deploy-top .pf-tabs button[aria-selected='true'],
+.pf-deploy-top .pf-tabs button.on {
+  background: linear-gradient(180deg, #e5e7d8, #a9ac9c);
+  color: #15181a;
+}
+/* Classy jako karty: hlavička, silueta zbraně, řada ikon výbavy. */
+.pf-classes {
+  gap: 6px;
+}
+.pf-kitcard {
+  display: block;
+  padding: 0;
+  background: var(--bf-metal);
+  border: 1px solid #0b0c0d;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  grid-template-columns: none;
+}
+.pf-kitcard:hover {
+  background: linear-gradient(180deg, #6a7073, #34383a 40%, #232628 62%, #494f52);
+}
+.pf-kitcard.on {
+  border-color: #f0f2e6;
+  box-shadow: 0 0 0 1px #f0f2e6, inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+.pf-kitcard.off {
+  opacity: 0.5;
+}
+.pf-card-head {
+  display: grid;
+  grid-template-columns: 22px auto 1fr 22px;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 8px 2px;
+}
+.pf-card-head b {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.95em;
+}
+.pf-card-head .pf-dim {
+  font-size: 0.82em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pf-card-body {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px 6px;
+}
+.pf-card-sil {
+  width: 100%;
+  height: 52px;
+  display: block;
+}
+.pf-card-gear {
+  display: grid;
+  grid-template-columns: repeat(3, 24px);
+  gap: 3px;
+}
+.pf-gear {
+  width: 24px;
+  height: 24px;
+  padding: 3px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #dfe2d4;
+  box-sizing: border-box;
+}
+.pf-kitcard.on .pf-gear {
+  background: rgba(240, 242, 230, 0.15);
+}
+/* Seznam míst a tlačítko nasazení v kovovém stylu. */
+.pf-deploy-bottom {
+  border-top: 1px solid var(--pf-line);
+}
+.pf-deploy-go {
+  background: linear-gradient(180deg, #f1dc7a, #b79b32) !important;
+  color: #1a1608 !important;
+  border: 1px solid #0b0c0d !important;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 800 !important;
+}
+.pf-deploy .pf-map {
+  border: 2px solid #0b0c0d;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2), 0 6px 18px rgba(0, 0, 0, 0.55);
+}
+
+#hud.pf-deploying .h-score,
+#hud.pf-deploying .h-nametag {
+  visibility: hidden;
 }
