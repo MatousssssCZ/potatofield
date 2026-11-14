@@ -33,6 +33,8 @@ export interface Settings {
   showFps: boolean;
   /** Měkké textury ve stylu BF2 (nižší rozlišení, rozmazání); změna znovu načte stránku. */
   softTextures: boolean;
+  /** Vzhled prostředí blíž BF2 (sytější obloha, slabší opar). */
+  bf2Look: boolean;
   /** Vlastní klávesy (jen změněné akce). */
   bindings: Partial<Record<Action, string[]>>;
   /** Vzhled zbraně ve volném testu editoru (výbavu jinak určuje nasazení). */
@@ -61,6 +63,7 @@ export const DEFAULT_SETTINGS: Settings = {
   netDiag: false,
   showFps: false,
   softTextures: true,
+  bf2Look: true,
   bindings: {},
   weapon: 'm4a1',
 };
@@ -234,6 +237,7 @@ export class SettingsView {
         settingRow(t('set.landingKick'), check('landingKick')),
         settingRow(t('set.fullscreen'), check('fullscreen')),
         settingRow(t('set.softTextures'), check('softTextures'), t('set.softTexturesHint')),
+        settingRow(t('set.bf2Look'), check('bf2Look'), t('set.bf2LookHint')),
         settingRow(t('set.fps'), check('showFps')),
       );
     } else if (this.cat === 'audio') {

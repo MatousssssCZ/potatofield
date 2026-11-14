@@ -108,6 +108,7 @@ export class App {
     this.settings = s;
     saveSettings(s);
     applyUiSettings(s);
+    this.env.apply(this.ed.doc.environment, this.quality, s.bf2Look !== false);
     this.audio.setVolume(s.volume);
     const g = this.session?.game;
     if (g) g.settings = { hFov: s.hFov, bob: s.bob, landingKick: s.landingKick, weapon: s.weapon, adsSens: s.adsSens };
@@ -268,7 +269,7 @@ export class App {
     this.flags.rebuild(doc.controlPoints);
     this.world.setMode('editor');
     this.env.shadowRate = 0;
-    this.env.apply(doc.environment, this.quality);
+    this.env.apply(doc.environment, this.quality, this.settings.bf2Look !== false);
     const prevSettings = this.editor?.settings;
     this.editor = new Editor(this.camera, $<HTMLCanvasElement>('#view'), this.world, this.ed, this.history);
     if (prevSettings) this.editor.settings = prevSettings;
@@ -337,7 +338,7 @@ export class App {
         this.editor.markers.rebuild(this.ed.doc);
         this.flags.rebuild(this.ed.doc.controlPoints);
       } else if (c.kind === 'testSpawn') this.editor.updateSpawnMarker();
-      else if (c.kind === 'environment') this.env.apply(this.ed.doc.environment, this.quality);
+      else if (c.kind === 'environment') this.env.apply(this.ed.doc.environment, this.quality, this.settings.bf2Look !== false);
       else if (c.kind === 'name') $('#tb-mapname').textContent = this.ed.doc.name;
     }
     this.phys.sync();

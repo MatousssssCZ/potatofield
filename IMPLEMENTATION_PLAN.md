@@ -100,3 +100,12 @@ Viz git historie; 20 testů pohybu, editor s gizmy, historie, IndexedDB, export/
 - [x] Svět: vítr ve vegetaci (shader, kolize beze změny), prach od nohou při sprintu a dopadu, kouř z hlavně a nábojnice u ostatních
 - [ ] Ruce na příčkách žebříku ve vlastním pohledu; zadržení dechu v puškohledu (herní mechanika); lidské posouzení pohybu
 - [ ] Lidský test nasazení a výbavy; hodnoty granátů a nástrojů (N) po playtestu
+
+## Vzhled ve stylu BF2 (14. 11. 2026)
+- [x] HUD: kruhová minimapa s kovovým prstencem a kompasem, pruh vlastnictví bodů, tickety jako modrá/červená plocha nahoře,
+  segmentované pruhy zdraví/výdrže/zásobníku v kovových rámečcích, kill feed a chat bez pozadí se jmény podle týmu, jména
+  spoluhráčů ve světě, malý zelenomodrý zaměřovač (vlastní tvary a barvy, žádné převzaté prvky)
+- [x] Nasazení: classy jako karty se siluetou zbraně a ikonami výbavy, texturovaná mapa jako letecký snímek, červené šrafování
+  mimo hrací plochu, banner „Vyber místo nasazení“
+- [x] Grafika: sytá modrá obloha s mraky (opar přes oblohu vypnut), teplejší světlo, slabší mlha; Nastavení → „Vzhled oblohy jako BF2“
+- [ ] Lidské posouzení věrnosti; drobné detaily BF2 (stopy v písku, vzdálené palmy, kouř v dálce) a otáčení minimapy s pohledem

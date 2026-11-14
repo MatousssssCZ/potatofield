@@ -24,9 +24,31 @@ interface SkyLook {
   envHorizon: string;
   envSunGlow: string;
   exposure: number;
+  /** Jas oblohy (shader oblohy je HDR a po tone mappingu by vybělel; <1 ztmaví a zsytí modř). */
+  skyGain?: number;
 }
 
-const LOOKS: Record<EnvironmentProfile['preset'], SkyLook> = {
+/** Interní předvolba vzhledu (mapa ji neukládá): sytá modrá obloha a teplé světlo jako v BF2. */
+type LookKey = EnvironmentProfile['preset'] | 'bf2Desert';
+
+const LOOKS: Record<LookKey, SkyLook> = {
+  bf2Desert: {
+    turbidity: 2,
+    rayleigh: 1.0,
+    mie: 0.004,
+    mieG: 0.8,
+    clouds: 0.22,
+    cloudDensity: 0.4,
+    hemiSky: '#9cc2ee',
+    hemiGround: '#bda070',
+    hemiIntensity: 0.62,
+    envIntensity: 0.7,
+    envZenith: '#3a74c2',
+    envHorizon: '#a8c4e4',
+    envSunGlow: '#5a4a2a',
+    exposure: 0.96,
+    skyGain: 0.56,
+  },
   dustyNoon: {
     turbidity: 9,
     rayleigh: 1.4,
@@ -124,6 +146,11 @@ export class EnvironmentRig {
     private renderer: THREE.WebGLRenderer,
     private scene: THREE.Scene,
   ) {
+    // Násobič jasu oblohy (uniform uSkyGain) – bez něj by sytá modrá po tone mappingu vybledla do bílé.
+    const skyMat = this.sky.material as THREE.ShaderMaterial;
+    skyMat.uniforms.uSkyGain = { value: 1 };
+    skyMat.fragmentShader = skyMat.fragmentShader.replace('uniform float cloudCoverage;', 'uniform float cloudCoverage;\nuniform float uSkyGain;').replace('gl_FragColor = vec4( texColor, 1.0 );', 'gl_FragColor = vec4( texColor * uSkyGain, 1.0 );');
+    skyMat.needsUpdate = true;
     this.sky.scale.setScalar(4000);
     this.sky.frustumCulled = false;
     this.sky.renderOrder = -2;
@@ -145,8 +172,15 @@ export class EnvironmentRig {
     this.sun.castShadow = true;
   }
 
-  apply(env: EnvironmentProfile, q: QualityProfile) {
-    const look = LOOKS[env.preset];
+  /**
+   * Vzhled „BF2“ (nastavení): u výchozí předvolby prašného poledne se obloha zmodří, opar a mlha zeslábnou
+   * a světlo se oteplí. Opar přes oblohu se vypne (jinak by nebe bylo plně barvy mlhy). Mapa se nemění (herní mlha i viditelnost zůstávají podle autora, jen jemněji
+   * kreslené – poloviční vzdálenost mlhy se prodlouží o třetinu).
+   */
+  apply(env: EnvironmentProfile, q: QualityProfile, bf2 = false) {
+    const useBf2 = bf2 && env.preset === 'dustyNoon';
+    const look = LOOKS[useBf2 ? 'bf2Desert' : env.preset];
+    if (useBf2) env = { ...env, fogColor: '#c9d0cf', fogHalfDistance: env.fogHalfDistance * 1.35, skyHaze: 0, sunColor: '#fff3da', sunIntensity: env.sunIntensity * 1.12 };
     this.sunDir = sunDirection(env.sunAzimuthDeg, env.sunElevationDeg);
     const u = this.sky.material.uniforms;
     u.turbidity.value = look.turbidity;
@@ -156,6 +190,7 @@ export class EnvironmentRig {
     u.cloudCoverage.value = look.clouds;
     u.cloudDensity.value = look.cloudDensity;
     u.sunPosition.value.copy(this.sunDir).multiplyScalar(1000);
+    u.uSkyGain.value = look.skyGain ?? 1;
 
     this.sun.color.set(env.sunColor);
     this.sun.intensity = env.sunIntensity * (env.preset === 'overcastRain' ? 0.35 : 1);
