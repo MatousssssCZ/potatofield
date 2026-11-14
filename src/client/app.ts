@@ -781,6 +781,7 @@ export class App {
       network: !!net,
       mapName: this.ed.doc.name,
     });
+    this.session!.wantsCursor = () => this.cursorUi();
     inp.onDevKey = () => this.toggleDev();
     inp.onMenuKey = () => inp.releaseLock();
     inp.onLockChange = (locked) => {
@@ -809,7 +810,7 @@ export class App {
         /* celá obrazovka odmítnuta – hraje se v okně */
       }
     }
-    this.session?.input.requestLock();
+    if (!this.cursorUi()) this.session?.input.requestLock();
   }
 
   forceFreeTest = false;
@@ -909,9 +910,22 @@ export class App {
 
   /** Výzva k návratu do hry, když myš není zamčená a nic jiného obraz nezakrývá. */
   private lockPrompt: HTMLElement | null = null;
+  /** Nějaká obrazovka potřebuje kurzor (pauza, nastavení, nasazení, mapa, skóre, dialog, výsledky). */
+  private cursorUi(): boolean {
+    const g = this.session?.game;
+    if (!g) return false;
+    return !!this.pause?.visible || g.hud.deploy.visible || g.hud.mapVisible || !!this.menu?.visible || !!document.querySelector('.pf-dialog') || !$('#modal').classList.contains('hidden') || !!g.driver.conquest()?.ended;
+  }
+
   private updateLockPrompt() {
     const s = this.session;
     const g = s?.game;
+    // Pojistka: myš se nesmí zamknout (a tím skrýt), dokud je otevřená obrazovka s kurzorem –
+    // např. potvrzení nasazení ze serveru dorazí až po otevření pauzy nebo nastavení.
+    if (s?.input.locked && this.cursorUi()) {
+      s.input.releaseLock();
+      s.input.clear();
+    }
     const show = !!s && !s.input.locked && !this.pause?.visible && !g!.hud.deploy.visible && !g!.hud.mapVisible && !this.sbEl && !this.menu?.visible && !document.querySelector('.pf-dialog') && !g!.driver.conquest()?.ended && g!.driver.local()?.life !== 'downed';
     if (!show) {
       this.lockPrompt?.classList.add('hidden');

@@ -26,6 +26,8 @@ export interface SessionOptions {
  * zbraň, efekty i entity (opakované přepínání nic nehromadí).
  */
 export class PlaySession {
+  /** Nastaví aplikace: právě je otevřená obrazovka, která potřebuje kurzor. */
+  wantsCursor: () => boolean = () => false;
   readonly input: InputSystem;
   readonly game: Game;
   readonly runtimeDoc: MapDocument;
@@ -57,7 +59,10 @@ export class PlaySession {
     this.game = new Game(camera, this.input, driver, world, scene, this.runtimeDoc, audio, quality, gameSettings.weapon);
     this.game.settings = { ...gameSettings };
     this.game.onDeath = () => this.input.releaseLock();
-    this.game.onSpawned = () => this.input.requestLock();
+    // Zamknout myš po nasazení jen když hráč zrovna není v nabídce (jinak by mu zmizel kurzor).
+    this.game.onSpawned = () => {
+      if (!this.wantsCursor()) this.input.requestLock();
+    };
     this.game.phys = phys;
   }
 
