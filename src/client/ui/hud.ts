@@ -99,8 +99,9 @@ export class Hud {
     mk('h-tr', 'h-tr');
     this.minimap = mk('h-minimap', 'h-minimap', 'canvas') as HTMLCanvasElement;
     this.els['h-tr'].append(this.minimap);
+    mk('h-cpbar', 'h-cpbar');
+    this.els['h-tr'].append(this.els['h-cpbar']);
     mk('h-score', 'h-score tnum');
-    this.els['h-tr'].append(this.els['h-score']);
     this.els['h-tl'].append(this.els['h-feed'], this.els['h-sys']);
     mk('h-bl', 'h-bl');
     mk('h-squad', 'h-squad');
@@ -183,7 +184,7 @@ export class Hud {
   private deployAt = 0;
 
   /** Kill feed (krátký, staré řádky mizí). */
-  feed(text: string, now: number) {
+  feed(text: string | Node, now: number) {
     const el = h('div', {}, text);
     this.els['h-feed'].prepend(el);
     this.killfeed.push({ el, until: now + 6 });
@@ -269,7 +270,8 @@ export class Hud {
       if (isGun(w.weaponId)) {
         // Režim jen podle skutečných možností zbraně.
         const modes = rulesOf(w.weaponId).modes;
-        e['h-ammo'].replaceChildren(h('b', {}, String(w.mag)), h('span', {}, `/ ${w.reserve}`), h('small', {}, `${modes.length > 1 || w.mode === 'auto' ? (w.mode === 'auto' ? 'AUTO' : 'SEMI') : 'SEMI'}${act ? ` · ${act}` : ''}`));
+        const magMax = Math.max(1, rulesOf(w.weaponId).magazine);
+        e['h-ammo'].replaceChildren(h('b', {}, String(w.mag)), h('span', {}, `/ ${w.reserve}`), h('div', { class: 'h-bar thin h-magbar' }, h('i', { style: { width: `${Math.min(100, (w.mag / magMax) * 100)}%` } })), h('small', {}, `${modes.length > 1 || w.mode === 'auto' ? (w.mode === 'auto' ? 'AUTO' : 'SEMI') : 'SEMI'}${act ? ` · ${act}` : ''}`));
       } else {
         const name = it ? t(`item.${it.kind}` as StringKey) : w.weaponId;
         e['h-ammo'].replaceChildren(it?.max !== undefined ? h('b', {}, String(w.mag)) : h('span'), h('small', {}, `${name}${act ? ` · ${act}` : ''}`));
@@ -281,10 +283,15 @@ export class Hud {
     this.drawMinimap(c);
     if (c.cq) {
       const cq = c.cq;
-      const total = Math.max(1, ...Object.values(cq.tickets), 100);
-      const row = (team: Team) => h('div', { class: `h-tk ${team === c.team ? 'own' : 'enemy'}` }, h('b', {}, String(cq.tickets[team])), h('div', { class: 'h-bar thin' }, h('i', { style: { width: `${(cq.tickets[team] / total) * 100}%` } })));
-      e['h-score'].replaceChildren(row(c.team), row(c.team === 'teamA' ? 'teamB' : 'teamA'), h('div', { class: 'h-time' }, fmtTime(cq.timeLimit - cq.time)));
-    } else e['h-score'].replaceChildren();
+      // BF2: dvě barevné plochy nahoře uprostřed (naši vlevo, nepřítel vpravo), čas mezi nimi.
+      const row = (team: Team) => h('div', { class: `h-tk ${team === c.team ? 'own' : 'enemy'}${cq.tickets[team] <= 20 ? ' low' : ''}` }, h('b', {}, String(cq.tickets[team])));
+      e['h-score'].replaceChildren(row(c.team), h('div', { class: 'h-time' }, fmtTime(cq.timeLimit - cq.time)), row(c.team === 'teamA' ? 'teamB' : 'teamA'));
+      // Pruh vlastnictví bodů pod minimapou (jeden segment na obsaditelný bod).
+      e['h-cpbar'].replaceChildren(...cq.cps.filter((p) => p.capturable).map((p) => h('i', { class: p.owner === 'neutral' ? 'neutral' : p.owner === c.team ? 'own' : 'enemy', title: p.name })));
+    } else {
+      e['h-score'].replaceChildren();
+      e['h-cpbar'].replaceChildren();
+    }
 
     // Střed: obsazování, interakce, identifikace.
     const center: Node[] = [];
@@ -426,11 +433,14 @@ export class Hud {
       return;
     }
     cv.style.visibility = '';
-    const scale = W / 120; // 120 m přes průměr
+    // Kovový prstenec s kompasem (BF2): mapa je uvnitř, na prstenci N / E / S / W.
+    const ringW = Math.round(W * 0.075);
+    const inner = W / 2 - ringW;
+    const scale = (inner * 2) / 120; // 120 m přes průměr mapy
     const cx = me.state.pos.x, cz = me.state.pos.z;
     g.save();
     g.beginPath();
-    g.arc(W / 2, W / 2, W / 2 - 1, 0, Math.PI * 2);
+    g.arc(W / 2, W / 2, inner, 0, Math.PI * 2);
     g.clip();
     g.fillStyle = '#151b1b';
     g.fillRect(0, 0, W, W);
@@ -490,9 +500,56 @@ export class Hud {
     g.closePath();
     g.fill();
     g.restore();
-    g.fillStyle = '#e5e7d8';
-    g.font = '700 11px "Barlow Semi Condensed", sans-serif';
-    g.fillText('N', W / 2 - 3, 12);
+    this.drawRing(g, W, ringW, inner);
+  }
+
+  /** Prstenec minimapy: kartáčovaný kov, rysky po 15°, světové strany. */
+  private drawRing(g: CanvasRenderingContext2D, W: number, ringW: number, inner: number) {
+    const R = W / 2;
+    const gr = g.createLinearGradient(0, 0, W, W);
+    gr.addColorStop(0, '#9a9fa1');
+    gr.addColorStop(0.22, '#3a3e40');
+    gr.addColorStop(0.45, '#b4b9ba');
+    gr.addColorStop(0.7, '#2c3032');
+    gr.addColorStop(1, '#80868a');
+    g.beginPath();
+    g.arc(R, R, R - 1, 0, Math.PI * 2);
+    g.arc(R, R, inner, 0, Math.PI * 2, true);
+    g.fillStyle = gr;
+    g.fill();
+    g.lineWidth = 1.5;
+    g.strokeStyle = 'rgba(0,0,0,0.75)';
+    g.beginPath();
+    g.arc(R, R, R - 1, 0, Math.PI * 2);
+    g.stroke();
+    g.beginPath();
+    g.arc(R, R, inner, 0, Math.PI * 2);
+    g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,0.22)';
+    g.beginPath();
+    g.arc(R, R, R - 2.5, 0, Math.PI * 2);
+    g.stroke();
+    for (let a = 0; a < 360; a += 15) {
+      const rad = (a * Math.PI) / 180, major = a % 90 === 0;
+      if (major) continue;
+      const r0 = inner + ringW * 0.62, r1 = inner + ringW * 0.9;
+      g.strokeStyle = 'rgba(15,17,18,0.8)';
+      g.lineWidth = a % 45 === 0 ? 2 : 1;
+      g.beginPath();
+      g.moveTo(R + Math.sin(rad) * r0, R - Math.cos(rad) * r0);
+      g.lineTo(R + Math.sin(rad) * r1, R - Math.cos(rad) * r1);
+      g.stroke();
+    }
+    g.font = `800 ${Math.round(ringW * 0.9)}px "Barlow Semi Condensed", sans-serif`;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    for (const [ch, a] of [['N', 0], ['E', 90], ['S', 180], ['W', 270]] as const) {
+      const rad = (a * Math.PI) / 180, r = inner + ringW * 0.52;
+      g.fillStyle = ch === 'N' ? '#f4d35a' : '#14181a';
+      g.fillText(ch, R + Math.sin(rad) * r, R - Math.cos(rad) * r + 1);
+    }
+    g.textAlign = 'start';
+    g.textBaseline = 'alphabetic';
   }
 
   /** Silueta aktivní výbavy z geometrie skutečné zbraně (boční průmět, jednou na zbraň). */
@@ -514,7 +571,7 @@ export class Hud {
     window.removeEventListener('keyup', this.onKeyUp, true);
     this.deploy.dispose();
     this.mapOverlay.remove();
-    for (const id of ['h-tl', 'h-tr', 'h-bl', 'h-br', 'h-hit', 'h-hurt', 'h-spec', 'h-killer', 'h-dirs', 'h-center', 'h-zone', 'h-downed', 'h-end']) document.getElementById(id)?.remove();
+    for (const id of ['h-tl', 'h-tr', 'h-bl', 'h-br', 'h-score', 'h-hit', 'h-hurt', 'h-spec', 'h-killer', 'h-dirs', 'h-center', 'h-zone', 'h-downed', 'h-end']) document.getElementById(id)?.remove();
   }
 }
 

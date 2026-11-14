@@ -1596,3 +1596,225 @@ body.mode-play .tui-log {
   color: var(--pf-dim);
   font-size: 0.9em;
 }
+
+/* ===== Styl HUD inspirovaný Battlefieldem 2 (vlastní rámy a barvy, žádné převzaté prvky) ===== */
+:root {
+  --bf-metal: linear-gradient(180deg, #5d6366 0%, #2a2e30 38%, #1b1e1f 62%, #3b4043 100%);
+  --bf-plate: linear-gradient(180deg, rgba(40, 45, 47, 0.92), rgba(18, 21, 22, 0.92));
+  --bf-seg: repeating-linear-gradient(90deg, #000 0 6px, transparent 6px 8px);
+}
+/* Minimapa: kovový prstenec je nakreslený v canvasu, tady jen stín a velikost. */
+.h-minimap {
+  width: 240px;
+  height: 240px;
+  border: 0;
+  background: transparent;
+  border-radius: 50%;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.6));
+}
+/* Pruh vlastnictví bodů pod minimapou. */
+.h-cpbar {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+  padding: 3px 10px;
+  background: var(--bf-plate);
+  border: 1px solid #090a0a;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+.h-cpbar:empty {
+  display: none;
+}
+.h-cpbar i {
+  width: 14px;
+  height: 7px;
+  background: var(--pf-neutral, #cfd0c4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.h-cpbar i.own {
+  background: #3b8fe0;
+}
+.h-cpbar i.enemy {
+  background: #e0473b;
+}
+/* Tickety: dvě barevné plochy přilepené nahoře uprostřed, čas mezi nimi. */
+.h-score {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  width: auto;
+  padding: 0;
+  background: none;
+  opacity: var(--pf-hud-opacity);
+  z-index: 6;
+}
+.h-tk {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 118px;
+  padding: 3px 20px 5px;
+  font-size: 1.9em;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.7);
+  border-top: 0;
+}
+.h-tk.own {
+  background: linear-gradient(180deg, #4c9fe6 0%, #2368b0 45%, #174a82 100%);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+  padding-right: 28px;
+}
+.h-tk.enemy {
+  background: linear-gradient(180deg, #ee6459 0%, #c0302a 45%, #8c1f1b 100%);
+  clip-path: polygon(14px 0, 100% 0, 100% 100%, 0 100%);
+  padding-left: 28px;
+}
+.h-tk.low b {
+  animation: bf-blink 0.8s steps(2) infinite;
+}
+@keyframes bf-blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+.h-time {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  background: var(--bf-plate);
+  color: #ddd;
+  font-size: 1.1em;
+  font-weight: 700;
+  text-align: center;
+  border-bottom: 1px solid #000;
+}
+/* Zdraví a výdrž: kovový rámeček se segmentovanými pruhy. */
+.h-vitals {
+  width: 300px;
+  padding: 7px 10px 8px;
+  background: var(--bf-metal);
+  border: 1px solid #0b0c0d;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 3px 8px rgba(0, 0, 0, 0.5);
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+}
+.h-vitals:empty {
+  display: none;
+}
+.h-hp {
+  grid-template-columns: 26px 54px 1fr;
+}
+.h-hp b {
+  font-size: 1.9em;
+}
+.h-vitals .h-bar,
+.h-ammo .h-bar {
+  height: 13px;
+  background: rgba(0, 0, 0, 0.45) repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.16) 0 6px, transparent 6px 8px);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6);
+}
+.h-vitals .h-bar i,
+.h-ammo .h-bar i {
+  -webkit-mask-image: var(--bf-seg);
+  mask-image: var(--bf-seg);
+  background: #e9ede0;
+}
+.h-vitals .h-bar.thin {
+  height: 8px;
+}
+.h-hp.low .h-bar i {
+  background: #ee4c40;
+}
+.h-stam {
+  margin: 5px 0 0 80px;
+}
+.h-stam .h-bar i {
+  background: #aab0a0;
+}
+/* Munice: rámeček vpravo dole, velké číslo, segmentovaný zásobník. */
+.h-ammo {
+  padding: 7px 16px 8px;
+  margin-top: 6px;
+  background: var(--bf-metal);
+  border: 1px solid #0b0c0d;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 3px 8px rgba(0, 0, 0, 0.5);
+  clip-path: polygon(16px 0, 100% 0, 100% 100%, 0 100%, 0 16px);
+  min-width: 190px;
+  justify-content: flex-end;
+}
+.h-ammo:empty {
+  display: none;
+}
+.h-ammo b {
+  font-size: 2.4em;
+}
+/* Kill feed a chat: text bez pozadí, barva podle týmu. */
+.h-feed div,
+.h-sys div {
+  background: none;
+  padding: 0;
+  margin-bottom: 1px;
+  font-weight: 600;
+  text-shadow: 0 0 3px #000, 0 1px 2px #000, 1px 0 2px #000;
+}
+.h-feed .own {
+  color: #5eb3ff;
+}
+.h-feed .enemy {
+  color: #ff6f61;
+}
+body.mode-play .tui-log div {
+  background: none;
+  padding: 0 4px 0 0;
+  text-shadow: 0 0 3px #000, 0 1px 2px #000;
+}
+/* Jména spoluhráčů ve světě. */
+.h-nametag {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  font: 700 13px var(--pf-font);
+  color: #55adff;
+  text-shadow: 0 0 3px #000, 0 1px 2px #000, 1px 0 2px #000;
+  z-index: 2;
+}
+.h-nametag.squad {
+  color: #7dff8a;
+}
+/* Zaměřovač: malý, řídký, zelenomodrý. */
+#crosshair i {
+  background: rgba(120, 255, 220, 0.95);
+  box-shadow: 0 0 0 1px rgba(0, 20, 20, 0.55);
+}
+#crosshair .t,
+#crosshair .b {
+  width: 2px;
+  height: 7px;
+}
+#crosshair .l,
+#crosshair .r {
+  height: 2px;
+  width: 7px;
+}
+
+.h-ammo {
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+.h-ammo .h-magbar {
+  flex: 1 0 100%;
+  order: 3;
+  margin-top: 4px;
+}
+.h-ammo small {
+  order: 2;
+}

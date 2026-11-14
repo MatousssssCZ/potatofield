@@ -26,6 +26,7 @@ import type { GameAudio, ShotKind } from './audio';
 import type { GameDriver, PlayerView } from './driver';
 import type { InputSystem } from './input';
 import { SoldierPool } from '../render/soldier';
+import { NameTags } from '../ui/nameTags';
 import { GrenadeRenderer } from '../render/grenades';
 
 export interface GameSettings {
@@ -282,6 +283,16 @@ export class Game {
     this.soldiers.update(this.driver.remotes(), frameDt, this.simTime, this.camera.position, this.camera);
     this.updateCamera(frameDt, this.acc / dt);
     this.soldiers.fullRate = this.scopeBlend > 0.5;
+    {
+      const me = this.driver.local();
+      const sq = this.net?.squads.find((s) => me && s.members.includes(me.id));
+      this.tags.update(
+        this.driver.remotes().filter((r) => r.team === me?.team).map((r) => ({ id: r.id, name: r.name, alive: r.alive, x: r.state.pos.x, y: r.state.pos.y, z: r.state.pos.z, height: r.state.height, squad: !!sq?.members.includes(r.id) })),
+        this.camera,
+        this.now,
+        !!me?.alive && !me.spectator,
+      );
+    }
     this.updateSounds();
     this.effects.update(frameDt);
     this.nades.sync(this.driver.grenades(), this.simTime, frameDt);
@@ -323,6 +334,7 @@ export class Game {
   // ---------------- zvuk ve světě ----------------
 
   private fwd = new THREE.Vector3();
+  private tags = new NameTags(document.getElementById('hud') ?? document.body, () => this.phys);
   private punchPitch = 0;
   private punchRoll = 0;
   private steps = new Map<string, { x: number; z: number; acc: number; air: boolean }>();
@@ -581,7 +593,19 @@ export class Game {
         const nm = (id: string) => (id === this.driver.localId ? t('common.you') : (this.driver.remotes().find((r) => r.id === id)?.name ?? this.net?.scores.find((r) => r.id === id)?.name ?? id));
         const victim = nm(e.id);
         const killer = e.killer ? nm(e.killer) : e.cause === 'zone' ? '⚠' : '↓';
-        this.hud.feed(`${killer} ✕ ${victim}`, this.now);
+        // Jména zbarvená podle týmu (naši modře, nepřátelé červeně), jako kill feed v BF2.
+        const teamOf = (id: string | null) => (!id ? null : id === this.driver.localId ? this.driver.local()?.team : (this.driver.remotes().find((r) => r.id === id)?.team ?? this.net?.scores.find((r) => r.id === id)?.team));
+        const myTeam = this.driver.local()?.team;
+        const span = (text: string, id: string | null) => {
+          const s = document.createElement('span');
+          s.textContent = text;
+          const tm = teamOf(id);
+          if (tm && myTeam) s.className = tm === myTeam ? 'own' : 'enemy';
+          return s;
+        };
+        const line = document.createElement('span');
+        line.append(span(killer, e.killer), document.createTextNode(' ✕ '), span(victim, e.id));
+        this.hud.feed(line, this.now);
         if (e.id === this.driver.localId) {
           this.input.clear();
           this.onDeath();
@@ -700,6 +724,7 @@ export class Game {
 
   dispose() {
     this.fp.dispose();
+    this.tags.dispose();
     this.effects.dispose();
     this.soldiers.dispose();
     this.nades.dispose();
