@@ -877,6 +877,10 @@ export class App {
     const dep = g.hud.deploy;
     const tgt = e.target as HTMLElement | null;
     const typing = !!tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.isContentEditable);
+    if (dep.visible && !typing && /^Digit[1-5]$/.test(e.code) && !e.ctrlKey && !e.altKey) {
+      dep.selectKitIndex(Number(e.code.slice(5)) - 1);
+      return;
+    }
     if ((e.code === 'Enter' || e.code === 'NumpadEnter') && !e.repeat && !typing) {
       if (dep.visible) {
         // Enter v obrazovce = hlavní akce, jen když fokus není v jiném ovládacím prvku.

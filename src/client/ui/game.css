@@ -612,7 +612,7 @@ body.mode-menu #app {
 }
 .pf-class {
   display: grid;
-  grid-template-columns: 28px 92px 1fr;
+  grid-template-columns: 28px 92px 1fr 22px;
   align-items: center;
   gap: 8px;
   width: 100%;
@@ -654,6 +654,97 @@ body.mode-menu #app {
   width: 100%;
   height: 100%;
   display: block;
+}
+.pf-class-key {
+  font: 600 0.8em var(--pf-font);
+  color: var(--pf-dim);
+  border: 1px solid var(--pf-line);
+  text-align: center;
+  padding: 1px 0;
+}
+.pf-stats {
+  display: grid;
+  gap: 3px;
+  margin: 2px 0 8px;
+}
+.pf-stat {
+  display: grid;
+  grid-template-columns: 118px 1fr 96px;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92em;
+}
+.pf-stat > :last-child {
+  text-align: right;
+}
+.pf-stat-bar {
+  height: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--pf-line);
+}
+.pf-stat-bar i {
+  display: block;
+  height: 100%;
+  background: var(--pf-accent);
+}
+.pf-deploy-right {
+  position: relative;
+}
+.pf-spawn-list {
+  position: absolute;
+  left: 10px;
+  top: 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: min(240px, 42%);
+  max-height: calc(100% - 90px);
+  overflow: auto;
+  padding: 8px;
+  background: rgba(16, 18, 16, 0.82);
+  border: 1px solid var(--pf-line);
+}
+.pf-spawn {
+  display: grid;
+  grid-template-columns: 12px 1fr;
+  column-gap: 8px;
+  align-items: center;
+  text-align: left;
+  font: 500 1em var(--pf-font);
+  color: var(--pf-text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-left: 3px solid transparent;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.pf-spawn i {
+  grid-row: span 2;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #cfd0c4;
+}
+.pf-spawn.own i {
+  background: var(--pf-own, #5aa9e6);
+}
+.pf-spawn.enemy i {
+  background: var(--pf-enemy, #e0584a);
+}
+.pf-spawn small {
+  grid-column: 2;
+  color: var(--pf-dim);
+}
+.pf-spawn.off {
+  opacity: 0.55;
+}
+.pf-spawn:hover {
+  background: rgba(229, 231, 216, 0.06);
+}
+.pf-spawn.on {
+  border-left-color: var(--pf-accent);
+  background: rgba(216, 198, 106, 0.16);
+  border-color: rgba(216, 198, 106, 0.3);
 }
 .pf-equip {
   margin-top: 12px;

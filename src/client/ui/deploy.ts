@@ -1,6 +1,6 @@
 import type { MapDocument, SpawnPoint, Team } from '../../shared/map/schema';
 import { cpStable, type ConquestState } from '../../shared/sim/conquest';
-import { FACTION_LABEL, KIT_LABEL, PILOT, arsenalEntry, weaponFor, type Faction, type Kit } from '../../shared/config/arsenal';
+import { FACTION_LABEL, KIT_LABEL, PILOT, arsenalEntry, rulesOf, weaponFor, type Faction, type Kit } from '../../shared/config/arsenal';
 import { kitItems } from '../../shared/config/kits';
 import type { PlayerView } from '../runtime/driver';
 import { t, type StringKey } from './i18n';
@@ -80,10 +80,16 @@ export class DeployScreen {
       const v = JSON.parse(localStorage.getItem('pf.deploy') ?? '{}');
       if (v && typeof v.kits === 'object') this.kitByFaction = v.kits;
       if (typeof v.faction === 'string') this.faction = v.faction;
+      if (typeof v.lastTarget === 'string') this.lastTarget = v.lastTarget;
     } catch {
       /* výchozí */
     }
     this.mapView.onSelect = (id) => this.selectTarget(id);
+    // Dvojklik na dostupné místo v mapě = vybrat a rovnou nasadit.
+    this.mapView.root.addEventListener('dblclick', () => {
+      const tg = this.targets.find((x) => x.id === this.target);
+      if (tg?.available && this.intent.phase === 'idle') this.primaryAction();
+    });
     this.intent.onSend = (target) => {
       const w = this.weapon();
       return this.onDeploy(target.spawnId, w.id);
@@ -115,7 +121,7 @@ export class DeployScreen {
 
   private save() {
     try {
-      localStorage.setItem('pf.deploy', JSON.stringify({ kits: this.kitByFaction, faction: this.faction }));
+      localStorage.setItem('pf.deploy', JSON.stringify({ kits: this.kitByFaction, faction: this.faction, lastTarget: this.lastTarget }));
     } catch {
       /* ignorovat */
     }
@@ -128,6 +134,14 @@ export class DeployScreen {
   private weapon(c = this.ctx) {
     return weaponFor(this.fac(c), this.kit);
   }
+
+  /** Klávesy 1–5: třída podle pořadí v seznamu. */
+  selectKitIndex(i: number) {
+    const k = this.ctx?.kits[i];
+    if (k) this.selectKit(k);
+  }
+
+  private lastTarget = '';
 
   private selectKit(k: Kit) {
     if (k === this.kit) return;
@@ -150,6 +164,8 @@ export class DeployScreen {
     }
     if (id !== this.target) {
       this.target = id;
+      this.lastTarget = id;
+      this.save();
       this.intent.selectionChanged();
     }
     this.message = null;
@@ -205,7 +221,8 @@ export class DeployScreen {
     }
     this.targets = this.buildTargets(c);
     const avail = this.targets.filter((x) => x.available);
-    if (!this.target && avail.length === 1) this.target = avail[0].id;
+    // Výchozí místo: naposledy zvolené (je-li dostupné), jinak první dostupné – „Nasadit“ jde hned.
+    if (!this.target && avail.length) this.target = (avail.find((x) => x.id === this.lastTarget) ?? avail[0]).id;
     const sel = this.targets.find((x) => x.id === this.target) ?? null;
     const life: IntentInput['life'] = c.me.alive ? 'alive' : c.me.life === 'downed' ? 'downed' : 'dead';
     const wait = Math.max(0, c.me.respawnAt - c.simTime);
@@ -310,14 +327,10 @@ export class DeployScreen {
     if (extra?.full) body = h('div', { class: 'pf-deploy-extra' }, extra.view());
     else {
       const left = extra ? h('div', { class: 'pf-deploy-left' }, extra.view()) : this.kitPanel(c);
-      const right = h('div', { class: 'pf-deploy-right' }, this.mapView.root);
+      const right = h('div', { class: 'pf-deploy-right' }, this.mapView.root, extra ? null : this.spawnList(sel));
       body = h('div', { class: 'pf-deploy-body' }, left, right);
     }
     // Spodní pruh: classa, místo (rozbalovací seznam = stejný výběr jako mapa), stav, akce.
-    const place = h('select', { class: 'pf-select', 'aria-label': t('deploy.place') }, h('option', { value: '' }, t('deploy.placeNone')),
-      ...this.targets.filter((x) => x.rel === 'own' || x.kind === 'leader').map((x) => h('option', { value: x.id, disabled: !x.available }, x.available ? x.name : `${x.name} – ${t(x.reason ?? 'deploy.reasonBlocked')}`))) as HTMLSelectElement;
-    place.value = sel?.id ?? '';
-    place.addEventListener('change', () => this.selectTarget(place.value));
     const msg = this.intent.note ? t(this.intent.note.key, this.intent.note.vars) : this.message?.text;
     const msgKind = this.intent.note?.kind ?? this.message?.kind ?? st.kind;
     let main: HTMLElement;
@@ -336,7 +349,7 @@ export class DeployScreen {
     const secondary = life !== 'alive' ? button(t('common.close'), () => this.onClose(), 'pf-btn') : null;
     const bottom = h('footer', { class: 'pf-deploy-bottom' },
       h('div', { class: 'pf-deploy-sum' }, h('span', { class: 'pf-dim' }, `${t('deploy.class')}: `), h('b', {}, KIT_LABEL[this.kit])),
-      h('label', { class: 'pf-deploy-sum' }, h('span', { class: 'pf-dim' }, `${t('deploy.place')}: `), place),
+      h('div', { class: 'pf-deploy-sum' }, h('span', { class: 'pf-dim' }, `${t('deploy.place')}: `), h('b', {}, sel?.name ?? t('deploy.placeNone'))),
       h('div', { class: `pf-deploy-msg ${msg ? msgKind : ''}`, role: 'status', 'aria-live': 'polite' }, msg ? h('div', {}, msg) : null, st.text && st.text !== msg ? h('div', { class: msg ? 'pf-dim' : '' }, st.text) : null),
       h('div', { class: 'pf-row-inline' }, secondary, main),
     );
@@ -360,11 +373,11 @@ export class DeployScreen {
     }
     left.append(h('div', { class: 'pf-label' }, t('deploy.class')));
     const rows = h('div', { class: 'pf-classes', role: 'radiogroup', 'aria-label': t('deploy.class') });
-    for (const k of c.kits) {
+    for (const [i, k] of c.kits.entries()) {
       const w = weaponFor(fac, k);
       const unavailable = w.available === false;
-      const row = h('button', { class: `pf-class${this.kit === k ? ' on' : ''}`, type: 'button', role: 'radio', 'aria-checked': this.kit === k ? 'true' : 'false' },
-        icon(KIT_ICON[k]), h('b', {}, KIT_LABEL[k]), h('span', { class: 'pf-dim' }, unavailable ? t('deploy.unavailableKit') : t(`kit.${k}.role` as StringKey)));
+      const row = h('button', { class: `pf-class${this.kit === k ? ' on' : ''}`, type: 'button', role: 'radio', 'aria-checked': this.kit === k ? 'true' : 'false', title: `${KIT_LABEL[k]} – ${w.name}` },
+        icon(KIT_ICON[k]), h('b', {}, KIT_LABEL[k]), h('span', { class: 'pf-dim' }, unavailable ? t('deploy.unavailableKit') : t(`kit.${k}.role` as StringKey)), h('span', { class: 'pf-class-key' }, String(i + 1)));
       row.addEventListener('click', () => this.selectKit(k));
       rows.append(row);
     }
@@ -377,6 +390,7 @@ export class DeployScreen {
       h('div', { class: 'pf-kit-title' }, t('deploy.kitTitle', { faction: FACTION_LABEL[fac], kit: KIT_LABEL[this.kit] })),
       h('div', { class: 'pf-sil-wrap' }, this.silCanvas),
       h('div', { class: 'pf-kit-weapon' }, h('b', {}, w.name), h('span', { class: 'pf-dim' }, ` · ${t('deploy.sights')}: ${sight}`)),
+      this.weaponStats(w.id),
       h('ul', { class: 'pf-kit-items' }, ...items.map((it) => {
         const name = it.kind === 'primary' || it.kind === 'pistol' ? it.name : t(`item.${it.kind}` as StringKey);
         const li = h('li', { tabindex: '0', title: it.kind === 'primary' ? '' : t(`item.${it.kind}.desc` as StringKey) }, h('span', { class: 'pf-slot' }, String(it.slot)), h('span', {}, name), it.count ? h('span', { class: 'pf-dim tnum' }, `× ${it.count}`) : null);
@@ -386,6 +400,42 @@ export class DeployScreen {
     );
     left.append(kitBox);
     return left;
+  }
+
+  /** Skutečné hodnoty zbraně z pravidel hry (stejná data jako server), ne odhady. */
+  private weaponStats(id: string) {
+    const r = rulesOf(id);
+    const pel = r.pellets ?? 1;
+    const dmg = r.damage.near * pel;
+    const rpm = Math.round(60 / r.fireInterval);
+    const rows: Array<[string, number, string]> = [
+      [t('stat.damage'), Math.min(1, dmg / 100), pel > 1 ? `${pel} × ${r.damage.near}` : String(r.damage.near)],
+      [t('stat.rate'), Math.min(1, rpm / 900), `${rpm} ${t('stat.rpm')}`],
+      [t('stat.range'), Math.min(1, r.damage.farRange / 400), `${r.damage.nearRange}–${r.damage.farRange} m`],
+      [t('stat.mag'), Math.min(1, r.magazine / 100), `${r.magazine} / ${r.reserve}`],
+      [t('stat.reload'), Math.min(1, 1 - Math.min(1, (r.reloadKind === 'single' ? (r.shellInsert ?? 0.5) * r.magazine : r.reloadEmpty) / 8)), r.reloadKind === 'single' ? `${(r.shellInsert ?? 0.5).toFixed(1)} s ${t('stat.perShell')}` : `${r.reloadPartial.toFixed(1)} s`],
+    ];
+    return h('div', { class: 'pf-stats' }, ...rows.map(([label, f, val]) => h('div', { class: 'pf-stat' }, h('span', { class: 'pf-dim' }, label), (() => {
+      const bar = h('i', {});
+      bar.style.width = `${Math.round(f * 100)}%`;
+      return h('span', { class: 'pf-stat-bar' }, bar);
+    })(), h('span', { class: 'tnum' }, val))));
+  }
+
+  /** Seznam míst nasazení přes mapu: stejný výběr jako klik do mapy, se stavem a důvodem nedostupnosti. */
+  private spawnList(sel: DeployTarget | null) {
+    const list = h('div', { class: 'pf-spawn-list', role: 'radiogroup', 'aria-label': t('deploy.place') }, h('div', { class: 'pf-label' }, t('deploy.place')));
+    for (const tg of this.targets) {
+      const b = h('button', { class: `pf-spawn ${tg.rel}${tg.available ? '' : ' off'}${sel?.id === tg.id ? ' on' : ''}`, type: 'button', role: 'radio', 'aria-checked': sel?.id === tg.id ? 'true' : 'false' },
+        h('i', {}), h('b', {}, tg.name), h('small', {}, tg.available ? t('map.available') : t(tg.reason ?? 'deploy.reasonBlocked')));
+      b.addEventListener('click', () => this.selectTarget(tg.id));
+      b.addEventListener('dblclick', () => {
+        if (tg.available && this.intent.phase === 'idle') this.primaryAction();
+      });
+      list.append(b);
+    }
+    list.append(h('small', { class: 'pf-dim' }, t('deploy.dblHint')));
+    return list;
   }
 
   private drawSil() {
