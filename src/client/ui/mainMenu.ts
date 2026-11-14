@@ -15,7 +15,7 @@ export interface MenuHooks {
   /** Připojí se; volá onPhase; vrací null (úspěch) nebo kód chyby. */
   connect(address: string, name: string, onPhase: (p: Phase) => void, signal: AbortSignal): Promise<string | null>;
   openEditor(): void;
-  training(): void;
+  training(map?: 'street' | 'osada'): void;
   settingsView(): HTMLElement;
   controlsView(): HTMLElement;
   /** Náhled s ukázkovými daty (nikdy nepoužije produkční připojení). */
@@ -142,7 +142,7 @@ export class MainMenu {
         h('div', { class: 'pf-row-inline' }, addr, button(t('servers.connect'), () => void this.connect(addr.value.trim()), 'pf-btn primary'), button(t('servers.retry'), () => void this.refresh(), 'pf-btn')),
       );
     }
-    panel.append(h('div', { class: 'pf-row-inline pf-secondary' }, button(t('play.training'), () => this.hooks.training(), 'pf-btn'), button(t('nav.servers'), () => this.show('servers'), 'pf-btn')));
+    panel.append(h('div', { class: 'pf-row-inline pf-secondary' }, button(t('play.training'), () => this.hooks.training('street'), 'pf-btn'), button(t('play.trainingOsada'), () => this.hooks.training('osada'), 'pf-btn'), button(t('nav.servers'), () => this.show('servers'), 'pf-btn')));
     return panel;
   }
 

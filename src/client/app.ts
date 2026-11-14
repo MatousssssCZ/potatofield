@@ -12,6 +12,7 @@ import { buildRangeMap } from '../world/maps/range';
 import { buildStreetMap } from '../world/maps/street';
 import { buildShowcaseMap } from '../world/maps/showcase';
 import { buildOsadaSliceMap } from '../world/maps/osadaSlice';
+import { buildOsadaMap } from '../world/maps/osada';
 import { roadModel } from '../world/assets/osada/road';
 import { findCrossings, makeCrossing } from '../world/assets/osada/roadOps';
 import { Editor, TEST_SPAWN_ID } from './editor/editor';
@@ -149,10 +150,10 @@ export class App {
   }
 
   /** Trénink: offline Conquest na šabloně ulice s pilotními classami (bez botů). */
-  async training() {
+  async training(map: 'street' | 'osada' = 'street') {
     await this.saver.flush();
     this.editorDocBeforeNet = this.ed.doc;
-    const d = this.streetTemplate();
+    const d = map === 'osada' ? buildOsadaMap() : this.streetTemplate();
     this.openDoc(d, false);
     this.menu?.hide();
     document.body.classList.remove('mode-menu');
@@ -224,7 +225,7 @@ export class App {
     this.menu = new MainMenu({
       connect: (a, n, ph, sig) => this.connectDriver(a, n, { latencyMs: 0, jitterMs: 0, lossPct: 0 }, ph, sig),
       openEditor: () => this.openEditor(),
-      training: () => void this.training(),
+      training: (map) => void this.training(map),
       settingsView: () => this.settingsView.open(),
       controlsView: () => controlsView(this.settings),
       preview: !!PREVIEW,
@@ -1397,6 +1398,7 @@ export class App {
       { id: 'range', label: 'Šablona: střelnice' },
       { id: 'street', label: 'Šablona: ulice' },
       { id: 'showcase', label: 'Přehled sady 300' },
+      { id: 'osada', label: 'Mapa: Skladová osada' },
       { id: 'osadaSlice', label: 'Skladová osada · řez' },
       { id: 'import', label: 'Importovat…' },
       { id: 'export', label: 'Exportovat', primary: true },
@@ -1426,6 +1428,12 @@ export class App {
     else if (choice === 'showcase') {
       this.openDoc(buildShowcaseMap());
       toast('Přehled sady 300: všech 300 modelů po sekcích A–K, u každého cedule s číslem.');
+    }
+    else if (choice === 'osada') {
+      const d = buildOsadaMap();
+      d.id = `skladova_osada_${Date.now().toString(36)}`;
+      this.openDoc(d);
+      toast('Skladová osada: 4 body, dvě základny, 8 proti 8. Úpravy se ukládají jako vlastní kopie.');
     }
     else if (choice === 'osadaSlice') {
       this.openDoc(buildOsadaSliceMap());

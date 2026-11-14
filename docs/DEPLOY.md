@@ -38,6 +38,7 @@ Nastavení serveru (Render → služba → Environment): `PF_NAME` (název v sez
 - **Zákazy** platí podle síťové adresy a jen do restartu serveru (bez trvalého úložiště).
 - **Záznamy** (nahlášení, zákazy, chyby klientů) jdou do logu serveru; `PF_RECORDS=cesta` je navíc zapisuje do souboru
   (řádek = JSON). Chyby klientů chodí na `POST /client-error` – jen text chyby a zásobník volání, žádné osobní údaje.
+- **Mapa:** `PF_MAP=maps/skladova_osada.json` přepne server na Skladovou osadu (výchozí je `maps/street_reference.json`).
 - **Kola:** po konci kola pauza `PF_ROUND_BREAK` s (výchozí 20) a nové kolo s dalším scénářem mapy.
 
 ### Omezení bezplatného plánu

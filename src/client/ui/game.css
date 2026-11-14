@@ -690,19 +690,15 @@ body.mode-menu #app {
 .pf-deploy-right {
   position: relative;
 }
+.pf-deploy-body.with-list {
+  grid-template-columns: minmax(250px, 30%) 200px minmax(0, 1fr);
+}
 .pf-spawn-list {
-  position: absolute;
-  left: 10px;
-  top: 34px;
   display: flex;
   flex-direction: column;
   gap: 3px;
-  width: min(240px, 42%);
-  max-height: calc(100% - 90px);
+  min-height: 0;
   overflow: auto;
-  padding: 8px;
-  background: rgba(16, 18, 16, 0.82);
-  border: 1px solid var(--pf-line);
 }
 .pf-spawn {
   display: grid;

@@ -87,6 +87,32 @@ Testy: `tests/osadaRoads.test.ts` (22 testů: souvislý povrch po posunu uzlu a 
 
 Známé limity etapy 3: cesta zatím jen sleduje terén (terénní vrstva chybí); šířka jen globální; plocha křižovatky se řeší po dvojicích (hlavní + vedlejší), uzel se 3+ cestami funguje, ale každá vedlejší se ořízne jen o hlavní; odtažení napojeného uzlu vedlejší cesty spoj zruší (záměrně, ať uzel neskáče zpět); krajnice hlavní cesty vede pod ústím vedlejší (o 12 mm níž, není vidět).
 
+## 3c. Mapa Skladová osada (etapa 7) – hratelný blockout
+
+`src/world/maps/osada.ts` (`buildOsadaMap`), export `maps/skladova_osada.json` (`npm run maps`). Ve hře: hlavní menu →
+**Trénink – Skladová osada (offline)**; v editoru Mapa → **Mapa: Skladová osada** (otevře se jako vlastní kopie k úpravám);
+server: `PF_MAP=maps/skladova_osada.json` (výchozí mapa serveru zůstává referenční ulice).
+
+- Hrací plocha 236 × 196 m, sever = −Z. Modrá základna JZ, červená SV; A Náves (Z), B Skladový dvůr (SV), C Dílna (JZ),
+  D Vodojem (JV). Dva scénáře: „čtyři body“ (vše neutrální) a „rozdělená osada“ (A, C modří; B, D červení).
+- 21 vesnických domů (jeden průchozí), 5 hospodářských stavení, patrový dům s terasou jako dominanta návsi, zalomená clona
+  centrálního skladu (dvě křídla s průchody Z–V a S–J + přístavek), 4 další haly (dvě průjezdné), dílna s autodílnou,
+  vodojem s čerpacím domkem v ohradě se čtyřmi vstupy, dvě ohrazené základny se třemi výstupy krytými bariérou.
+- Terén: jižní nízký hřbet (4,2 m; haly mají hřeben ~7,5 m, takže není rozhlednou na areál), JV pahorky, val kolem hrací
+  plochy + hraniční zóny (6 s) místo neviditelných zdí; ochranné zóny základen (8 s).
+- Cesty: severní asfaltka (náves – dvůr), štěrkové propojení dílna – vodojem – červená základna, hliněný jižní obchvat,
+  betonový příjezd dvora.
+- Ověřeno testy (`tests/osadaMap.test.ts`, 20 testů): validace formátu, rozsah podle zadání, budovy se nepřekrývají,
+  všech 32 míst nasazení je volných, **žádný přímý průstřel** základna–základna ani mezi dvojicemi bodů, 14 tras prošla
+  skutečná simulace hráče (z obou základen na body, krátké spojky, průchozí interiéry, všechny vstupy vodojemu, obchvat),
+  server mapu načte a tick se vejde do rozpočtu. Trénink v prohlížeči: nasazení a hra bez chyb.
+
+Odchylky od konceptu a známé limity: budovy jsou pravoúhlé (L/U půdorysy a diagonální haly z konceptu zatím generátor
+neumí – nahrazeno přiléhajícími křídly); schody na terasy a opěrné zdi z konceptu jsou řešené mezerami ve zdech (terén je
+tam rovný); otevřený prostor mezi dílnou a sklady je řidší než na obrázku; vyváženost, výhledy z hřbetu a spawny **nebyly
+ověřeny hrou s lidmi**; výkon neměřen na cílovém notebooku (v editoru bez slučování ~790 volání vykreslení, ve hře ~415 a
+240 tis. trojúhelníků na nízké kvalitě z modré základny).
+
 ## 4. Plán dalších etap
 
 | Etapa | Obsah | Stav |
@@ -95,7 +121,7 @@ Známé limity etapy 3: cesta zatím jen sleduje terén (terénní vrstva chybí
 | 4 Ploty | navazování z koncového sloupku, T větve a spojení uzlů (FenceGraph), lokální změna typu/výšky s přechodovým sloupkem, branka/brána vložená klikem na segment s odmítnutím, když se nevejde; F02, F03, F05–F12 | neprovedeno |
 | 5 Budovy | půdorysy L/U (B03, B04, B09), úžlabí střech, ručně přidaná okna jako `overrides` (migrace schématu), terasy, schody, B02 patro, interiér s místnostmi | neprovedeno |
 | 6 Katalog 84 | zbylé typy, galerie všech 84, terénní tahy T02/T03, scatter s vylučovacími zónami G08, referenční obrázek G07 | neprovedeno |
-| 7 Mapa | blockout Skladové osady 230 × 190 m dle reference, přístupy, spawny, výhledy | neprovedeno |
+| 7 Mapa | hratelný blockout hotový (viz §3c); dopracování vzhledu a ladění podle playtestu zbývá | blockout hotov |
 | 8 Předání | měření výkonu, runtime export, návod ovládání | neprovedeno |
 
 **Přesný další krok:** dokončit etapu 3 – terénní vrstva cesty (nedestruktivní: efektivní terén = základ + vrstvy cest, použít v klientu, fyzice i na serveru; smazání cesty obnoví podklad), lokální šířka na úseku (`widthRanges` stejným mechanismem jako povrchy); poté etapa 4 (ploty: FenceGraph, navazování, T větve, brány).

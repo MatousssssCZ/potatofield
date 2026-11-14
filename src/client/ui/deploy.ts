@@ -327,8 +327,9 @@ export class DeployScreen {
     if (extra?.full) body = h('div', { class: 'pf-deploy-extra' }, extra.view());
     else {
       const left = extra ? h('div', { class: 'pf-deploy-left' }, extra.view()) : this.kitPanel(c);
-      const right = h('div', { class: 'pf-deploy-right' }, this.mapView.root, extra ? null : this.spawnList(sel));
-      body = h('div', { class: 'pf-deploy-body' }, left, right);
+      const right = h('div', { class: 'pf-deploy-right' }, this.mapView.root);
+      // Seznam míst je vlastní sloupec vedle mapy (nepřekrývá body na mapě).
+      body = extra ? h('div', { class: 'pf-deploy-body' }, left, right) : h('div', { class: 'pf-deploy-body with-list' }, left, this.spawnList(sel), right);
     }
     // Spodní pruh: classa, místo (rozbalovací seznam = stejný výběr jako mapa), stav, akce.
     const msg = this.intent.note ? t(this.intent.note.key, this.intent.note.vars) : this.message?.text;
