@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { BONE_INDEX, restPosition, type BoneName } from './rig';
+import { gearV2 } from './gearV2';
 
 /**
  * Programový model vojáka: souvislé tělo ze svislých profilů (trup, končetiny, hlava) se
@@ -9,7 +10,16 @@ import { BONE_INDEX, restPosition, type BoneName } from './rig';
  * Vlastní dílo projektu (bez převzatých modelů a textur).
  */
 export type SoldierFaction = 'usmc' | 'mec';
-export type SoldierVariant = 'base' | 'assault' | 'medic' | 'sniper';
+export type SoldierVariant = 'base' | 'assault' | 'medic' | 'sniper' | 'support' | 'engineer';
+
+/** Verze výstroje: 2 = gearV2 (všech 5 kitů), 1 = původní (pro porovnání, `?gear=v1`). */
+let gearVersion: 1 | 2 = 2;
+export function gearVersionOf() {
+  return gearVersion;
+}
+export function setGearVersion(v: 1 | 2) {
+  gearVersion = v;
+}
 
 export interface LodSpec {
   /** Radiální segmenty profilů těla. */
@@ -41,7 +51,7 @@ const SHIRT: [number, number, number, number] = [0, 0, 0.5, 1];
 const PANTS: [number, number, number, number] = [0.5, 0.5, 0.5, 0.5];
 const PLAIN: [number, number] = [0.75, 0.25];
 
-class Builder {
+export class Builder {
   readonly mats: Array<{ pos: number[]; uv: number[]; col: number[]; si: number[]; sw: number[]; smooth: boolean[] }> = [
     { pos: [], uv: [], col: [], si: [], sw: [], smooth: [] },
     { pos: [], uv: [], col: [], si: [], sw: [], smooth: [] },
@@ -310,7 +320,8 @@ export function buildSoldierGeometry(faction: SoldierFaction, variant: SoldierVa
   }
 
   // --- Výstroj (materiál 1) ---
-  gear(B, faction, variant, lod, headC);
+  if (gearVersion === 2) gearV2(B, faction, variant === 'base' ? 'support' : variant, lod, headC);
+  else gear(B, faction, variant, lod, headC);
   void usmc;
   const g = B.build();
   weather(g, faction);
@@ -542,7 +553,7 @@ export function makeUniformAtlas(faction: SoldierFaction): THREE.DataTexture {
 
 const cache = new Map<string, THREE.BufferGeometry>();
 export function soldierGeometry(faction: SoldierFaction, variant: SoldierVariant, lod: number): THREE.BufferGeometry {
-  const key = `${faction}:${variant}:${lod}`;
+  const key = `${gearVersion}:${faction}:${variant}:${lod}`;
   let g = cache.get(key);
   if (!g) cache.set(key, (g = buildSoldierGeometry(faction, variant, SOLDIER_LODS[lod])));
   return g;

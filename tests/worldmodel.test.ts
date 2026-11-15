@@ -56,8 +56,8 @@ describe('světové modely zbraní a LOD', () => {
       }
     });
     expect(geos.size).toBeLessThanOrEqual(36);
-    // Těla: nejvýš 2 frakce × 4 vzhledy × 3 LOD sdílených geometrií.
-    expect(bodies.size).toBeLessThanOrEqual(24);
+    // Těla: nejvýš 2 frakce × 5 kitů × 3 LOD sdílených geometrií.
+    expect(bodies.size).toBeLessThanOrEqual(30);
     console.log(`63 postav: LOD ${pool.lodCounts.join('/')}, viditelné trojúhelníky ${Math.round(tris)}`);
     pool.dispose();
   });

@@ -38,6 +38,13 @@ Arms (drillimpact, itch.io – licence neověřena, do repozitáře nevloženo).
 Soubory jsou beze změny (OGG), staženo 13. 11. 2026. Přiřazení ke zvukům hry je v tabulce `BANK` v `src/client/runtime/audio.ts`
 („sníh“ slouží jako písek). Textury třetích stran **nejsou** použity.
 
+## Uniformy a výstroj vojáků (CC0)
+
+| Soubory | Autor | Licence | Úpravy v projektu |
+|---|---|---|---|
+| `public/textures/soldier/*.png`, `palette.json` | externí návrh (vygenerováno přes ChatGPT dle `docs/ZADANI_CHATGPT_VOJACI.md`) | CC0 (prohlášení dodavatele) | `dl_shirt`, `dl_pants`: okraje prolnuty posunutou kopií, aby dlaždice byly bezešvé |
+| `src/client/render/soldier/gearV2.ts` | totéž | CC0 | opraveny importy; symbol medika posunut na zadní plochu batohu (u Dune League byl uvnitř) |
+
 ## Knihovny (runtime)
 
 | Knihovna | Verze | Licence | Použití |

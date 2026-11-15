@@ -107,7 +107,8 @@ describe('voják – modely a rozpočty', () => {
     expect(soldierLook('m16a2', 'teamA')).toEqual({ faction: 'usmc', variant: 'medic' });
     expect(soldierLook('akm', 'teamB')).toEqual({ faction: 'mec', variant: 'medic' });
     expect(soldierLook('m4a1', 'teamA')).toEqual({ faction: 'usmc', variant: 'assault' });
-    expect(soldierLook('pkm', 'teamB')).toEqual({ faction: 'mec', variant: 'base' }); // Support = frakční základ
+    expect(soldierLook('pkm', 'teamB')).toEqual({ faction: 'mec', variant: 'support' });
+    expect(soldierLook('r870', 'teamA')).toEqual({ faction: 'usmc', variant: 'engineer' });
     expect(soldierLook('svd', 'teamB')).toEqual({ faction: 'mec', variant: 'sniper' });
   });
 });

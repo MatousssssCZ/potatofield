@@ -9,6 +9,8 @@ import type { PlayerView } from './runtime/driver';
 import { SoldierPool } from './render/soldier';
 import { preloadSoldierModel } from './render/soldier/mannequin';
 import { preloadGunModels } from './render/weapons/glbWeapon';
+import { setGearVersion } from './render/soldier/body';
+if (new URLSearchParams(location.search).get('gear') === 'v1') setGearVersion(1);
 await Promise.all([preloadSoldierModel(import.meta.env.BASE_URL), preloadGunModels(import.meta.env.BASE_URL)]);
 
 /**
@@ -16,7 +18,7 @@ await Promise.all([preloadSoldierModel(import.meta.env.BASE_URL), preloadGunMode
  * zamíření, akce, životní stavy, LOD, hitboxy, playlist a klientský benchmark 16/32/64 postav.
  * Data jsou syntetická – nejde o síťový ani herní test.
  */
-const WEAPONS: Record<string, [string, string]> = { base: ['m249', 'pkm'], assault: ['m4a1', 'ak101'], medic: ['m16a2', 'akm'], sniper: ['m24', 'svd'] };
+const WEAPONS: Record<string, [string, string]> = { support: ['m249', 'pkm'], assault: ['m4a1', 'ak101'], medic: ['m16a2', 'akm'], engineer: ['r870', 'saiga'], sniper: ['m24', 'svd'] };
 
 const $ = <T extends HTMLElement>(s: string) => document.querySelector(s) as T;
 const canvas = $<HTMLCanvasElement>('#c');

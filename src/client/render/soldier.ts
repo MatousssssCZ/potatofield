@@ -3,7 +3,8 @@ import type { PlayerView } from '../runtime/driver';
 import { arsenalEntry } from '../../shared/config/arsenal';
 import { WORLD_LOD, worldWeapon } from './weapons/worldModel';
 import { BONE_INDEX, createSkeleton, type BoneName } from './soldier/rig';
-import { makeUniformAtlas, soldierGeometry, type SoldierFaction, type SoldierVariant } from './soldier/body';
+import { gearVersionOf, makeUniformAtlas, soldierGeometry, type SoldierFaction, type SoldierVariant } from './soldier/body';
+import { MEDIC_BACK } from './soldier/gearV2';
 import { SoldierAnimator, type AnimInput } from './soldier/animator';
 import { MannequinBody, hasMannequin } from './soldier/mannequin';
 
@@ -56,12 +57,14 @@ function gearOnly(src: THREE.BufferGeometry): THREE.BufferGeometry {
 export function soldierLook(weaponId: string, team: 'teamA' | 'teamB'): { faction: SoldierFaction; variant: SoldierVariant } {
   const e = arsenalEntry(weaponId);
   const faction: SoldierFaction = e?.faction === 'usmc' ? 'usmc' : e?.faction === 'mec' ? 'mec' : team === 'teamA' ? 'usmc' : 'mec';
-  const variant: SoldierVariant = e?.kit === 'assault' || e?.kit === 'medic' || e?.kit === 'sniper' ? e.kit : 'base';
+  const variant: SoldierVariant = e?.kit ?? 'base';
   return { faction, variant };
 }
 
 interface Soldier {
   id: string;
+  patch: THREE.Mesh;
+  medic: THREE.Mesh;
   group: THREE.Group;
   mesh: THREE.SkinnedMesh;
   bones: Record<BoneName, THREE.Bone>;
@@ -115,6 +118,22 @@ export class SoldierPool {
     this.root.name = 'soldiers';
   }
 
+  /** Obtisky (CC0): nášivka frakce na levém rameni a symbol zdravotníka na batohu medika. */
+  private decalGeo = new THREE.PlaneGeometry(1, 1);
+  private decalMats = new Map<string, THREE.MeshStandardMaterial>();
+  private decalMat(name: string) {
+    let m = this.decalMats.get(name);
+    if (!m) {
+      // Mimo prohlížeč (testy) bez načítání obrázku.
+      const t = typeof document === 'undefined' ? new THREE.Texture() : new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}textures/soldier/${name}.png`);
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.anisotropy = 4;
+      m = new THREE.MeshStandardMaterial({ map: t, transparent: true, alphaTest: 0.4, roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -2 });
+      this.decalMats.set(name, m);
+    }
+    return m;
+  }
+
   private create(id: string): Soldier {
     const { bones, byName, skeleton } = createSkeleton();
     const group = new THREE.Group();
@@ -135,7 +154,18 @@ export class SoldierPool {
     this.root.add(group, weapon);
     const body = hasMannequin() ? new MannequinBody(byName) : null;
     if (body) group.add(body.root);
-    const s: Soldier = { id, group, mesh, bones: byName, anim: new SoldierAnimator(byName), weapon, weaponId: '', look: '', lod: -1, wlod: -1, acc: 1, flash, flashUntil: 0, lastAlive: new THREE.Vector3(), diedAt: -1, life: 'alive', seen: true, body, death: 'clip', lastSpeed: 0, lastFwd: 1 };
+    // Nášivka: vnější strana levého ramene (kost upperArmL, klid −0,19 / 1,39 / 0), čelem k −X.
+    const patch = new THREE.Mesh(this.decalGeo, this.decalMat('fc_patch'));
+    patch.scale.set(0.08, 0.05, 1);
+    patch.position.set(-0.0235, -0.1, -0.012);
+    patch.rotation.y = -Math.PI / 2;
+    byName.upperArmL.add(patch);
+    // Symbol zdravotníka: záda batohu (kost spine2, klid 0 / 1,24 / 0), čelem k +Z.
+    const medic = new THREE.Mesh(this.decalGeo, this.decalMat('medic_symbol'));
+    medic.scale.set(0.085, 0.085, 1);
+    medic.visible = false;
+    byName.spine2.add(medic);
+    const s: Soldier = { id, patch, medic, group, mesh, bones: byName, anim: new SoldierAnimator(byName), weapon, weaponId: '', look: '', lod: -1, wlod: -1, acc: 1, flash, flashUntil: 0, lastAlive: new THREE.Vector3(), diedAt: -1, life: 'alive', seen: true, body, death: 'clip', lastSpeed: 0, lastFwd: 1 };
     this.soldiers.set(id, s);
     return s;
   }
@@ -211,6 +241,10 @@ export class SoldierPool {
           s.body.setFaction(lk.faction);
         }
         s.mesh.castShadow = lod < 2;
+        s.patch.material = this.decalMat(lk.faction === 'usmc' ? 'fc_patch' : 'dl_patch');
+        s.patch.visible = lod < 2;
+        s.medic.visible = lod < 2 && lk.variant === 'medic' && gearVersionOf() === 2;
+        s.medic.position.set(0, -0.02, MEDIC_BACK[lk.faction] + 0.0035);
         s.look = key;
         s.lod = lod;
       }
@@ -290,6 +324,11 @@ export class SoldierPool {
     for (const m of [...Object.values(this.bodyMats), this.gearMat, this.rifleMat, this.flashMat]) m.dispose();
     for (const t of this.atlases) t.dispose();
     this.flashGeo.dispose();
+    this.decalGeo.dispose();
+    for (const m of this.decalMats.values()) {
+      m.map?.dispose();
+      m.dispose();
+    }
     this.root.removeFromParent();
     this.soldiers.clear();
   }
