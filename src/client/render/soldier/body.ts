@@ -312,7 +312,33 @@ export function buildSoldierGeometry(faction: SoldierFaction, variant: SoldierVa
   // --- Výstroj (materiál 1) ---
   gear(B, faction, variant, lod, headC);
   void usmc;
-  return B.build();
+  const g = B.build();
+  weather(g, faction);
+  return g;
+}
+
+/**
+ * Špína a opotřebení do barev vrcholů: bláto a prach od kolen dolů a na botách, tmavší lokty
+ * a kolena, nepravidelné skvrny potu a oprachu. Deterministické (stejný voják vypadá stejně).
+ */
+function weather(g: THREE.BufferGeometry, faction: SoldierFaction) {
+  const pos = g.getAttribute('position') as THREE.BufferAttribute;
+  const col = g.getAttribute('color') as THREE.BufferAttribute;
+  const mud = faction === 'usmc' ? new THREE.Color('#8b7451') : new THREE.Color('#5a4733');
+  const c = new THREE.Color();
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+    const n = 0.5 + 0.5 * Math.sin(x * 41 + z * 23) * Math.cos(y * 37 + x * 17);
+    // Bláto: nejvíc u země, s roztřepeným okrajem.
+    const m = Math.min(1, Math.max(0, (0.5 - y) / 0.45)) * (0.35 + 0.65 * n) * 0.55;
+    // Oprach zad a ramen, potem ztmavené podpaží/pas.
+    const dust = Math.min(1, Math.max(0, (y - 1.1) / 0.35)) * 0.12 * n;
+    c.setRGB(col.getX(i), col.getY(i), col.getZ(i));
+    c.lerp(mud, m + dust);
+    const k = 1 - 0.1 * (1 - n) * Math.min(1, Math.max(0, (y - 0.5) / 0.9));
+    col.setXYZ(i, c.r * k, c.g * k, c.b * k);
+  }
+  col.needsUpdate = true;
 }
 
 /** Doplňky podle frakce a role (pevně na kostech). */
@@ -359,6 +385,37 @@ function gear(B: Builder, faction: SoldierFaction, variant: SoldierVariant, lod:
     }
   }
 
+  // Doplňky nad rámec základu: granáty, polní láhev, zásobníky, nášivka, chrániče loktů.
+  if (det > 0) {
+    // Dva granáty na pravé straně vesty (ranec = Engineer-like kit, jen vizuálně).
+    for (let i = 0; i < 2; i++) {
+      B.ellipsoid(1, new THREE.Vector3(0.152 + 0.008 * i, 1.12 - i * 0.065, -0.07), [0.026, 0.038, 0.026], 8, 6, usmc ? '#4d5636' : '#53503a', [['spine1', 0.6], ['spine2', 0.4]]);
+      B.box(1, new THREE.Vector3(0.152 + 0.008 * i, 1.158 - i * 0.065, -0.07), [0.014, 0.012, 0.014], '#6a6a62', [['spine1', 0.6], ['spine2', 0.4]]);
+    }
+    // Polní láhev na levém boku.
+    B.profile(1, [{ y: 0.78, rx: 0.036, rz: 0.03, cx: -0.2, cz: 0.07 }, { y: 0.9, rx: 0.04, rz: 0.034, cx: -0.2, cz: 0.07 }], 8, usmc ? '#6a6f4a' : '#565a3a', [['pelvis', 1]], null, true, true);
+    // Zásobníky v přední sumce (světlejší vršky vyčnívají nad klopu).
+    for (let i = 0; i < front; i++) B.box(1, new THREE.Vector3((i - (front - 1) / 2) * 0.075, 1.245, -0.12), [0.05, 0.03, 0.03], usmc ? '#2a2c26' : '#4a4234', [['spine2', 1]]);
+    // Nášivka frakce na rameni (vlastní jednoduchý znak: barevný pruh + bílý proužek).
+    const patch = usmc ? '#2f5d9a' : '#b2392e';
+    B.box(1, new THREE.Vector3(-0.19, 1.37, -0.02), [0.012, 0.055, 0.075], patch, [['spine2', 0.5], ['upperArmL', 0.5]]);
+    B.box(1, new THREE.Vector3(-0.1955, 1.37, -0.02), [0.004, 0.014, 0.075], '#e8e2d0', [['spine2', 0.5], ['upperArmL', 0.5]]);
+    // Chrániče loktů.
+    if (variant === 'assault' || variant === 'sniper') for (const side of ['L', 'R'] as const) {
+      const el = R(`lowerArm${side}`);
+      B.box(1, new THREE.Vector3(el.x + (side === 'L' ? -0.03 : 0.03), el.y + 0.035, 0.032), [0.07, 0.075, 0.03], usmc ? '#2c2c28' : '#3a3428', [[`lowerArm${side}`, 1]]);
+    }
+  }
+  // MEC: bandalír přes hruď a šátek na krku; USMC: komunikační kabel a ucho.
+  if (!usmc && variant !== 'sniper') {
+    B.box(1, new THREE.Vector3(0, 1.22, -0.118), [0.34, 0.03, 0.02], '#2f2a20', [['spine1', 0.5], ['spine2', 0.5]], new THREE.Euler(0, 0, 0.62));
+    if (det > 0) B.profile(1, [{ y: 1.43, rx: 0.075, rz: 0.07, cx: 0, cz: 0.005 }, { y: 1.5, rx: 0.062, rz: 0.058, cx: 0, cz: 0.008 }], seg, '#8a3a2a', [['neck', 0.6], ['spine2', 0.4]], null);
+  }
+  if (usmc && variant !== 'sniper' && det > 0) {
+    B.box(1, new THREE.Vector3(0.085, 1.625, -0.06), [0.012, 0.06, 0.012], '#1c1c1a', [['head', 1]]);
+    B.box(1, new THREE.Vector3(0.1, 1.745, 0.0), [0.012, 0.13, 0.012], '#1c1c1a', [['head', 1]], new THREE.Euler(0, 0, -0.15)); // krátká anténa
+  }
+
   // Batoh medika (nejvýraznější rozdíl zezadu a zboku).
   if (variant === 'medic') {
     const col = usmc ? '#565a3a' : '#5a5d3c';
@@ -378,6 +435,7 @@ function gear(B: Builder, faction: SoldierFaction, variant: SoldierVariant, lod:
     const col = patterned ? (p: THREE.Vector3) => new THREE.Color(Math.sin(p.x * 90) * Math.cos(p.z * 70 + p.y * 50) > 0.2 ? '#8f7c5c' : '#b8a57e') : helmetCol;
     B.ellipsoid(1, headC.clone().add(new THREE.Vector3(0, 0.025, 0.004)), [0.118, 0.12, 0.13], seg + 4, Math.max(5, seg - 3), col, head, Math.PI * 0.52);
     B.profile(1, [{ y: 1.648, rx: 0.124, rz: 0.136, cx: 0, cz: 0.004 }, { y: 1.635, rx: 0.126, rz: 0.138, cx: 0, cz: 0.004 }], seg + 4, helmetCol, head, null);
+    if (det > 0) B.profile(1, [{ y: 1.575, rx: 0.095, rz: 0.1, cx: 0, cz: 0 }, { y: 1.555, rx: 0.088, rz: 0.095, cx: 0, cz: 0 }], seg + 4, '#3b3a30', head, null); // podbradní řemínek
     if (variant !== 'medic') {
       const big = variant === 'assault' ? 1.25 : 1;
       B.profile(1, [{ y: 1.69, rx: 0.121, rz: 0.133, cx: 0, cz: 0.004 }, { y: 1.71, rx: 0.12, rz: 0.131, cx: 0, cz: 0.004 }], seg + 4, '#2a2a26', head, null); // pásek brýlí
@@ -454,7 +512,9 @@ export function makeUniformAtlas(faction: SoldierFaction): THREE.DataTexture {
         }
         const c = cols[k];
         const j = ((y0 + y) * n + x0 + x) * 4;
-        const g = 0.94 + r() * 0.08;
+        // Jemné tkaní látky + občasná tmavší „sklopená“ buňka pro hloubku vzoru.
+        const weave = ((x + y) & 1) === 0 ? 1.02 : 0.97;
+        const g = (0.94 + r() * 0.08) * weave * (r() < 0.03 ? 0.82 : 1);
         d[j] = Math.min(255, c.r * 255 * g);
         d[j + 1] = Math.min(255, c.g * 255 * g);
         d[j + 2] = Math.min(255, c.b * 255 * g);

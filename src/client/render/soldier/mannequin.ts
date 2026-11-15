@@ -87,8 +87,50 @@ const matCache = new Map<string, THREE.MeshStandardMaterial>();
 function factionMat(f: SoldierFaction, joint: boolean) {
   const k = `${f}:${joint ? 1 : 0}`;
   let m = matCache.get(k);
-  if (!m) matCache.set(k, (m = new THREE.MeshStandardMaterial({ color: LOOK[f][joint ? 1 : 0], roughness: 0.9, metalness: 0 })));
+  if (!m) {
+    m = new THREE.MeshStandardMaterial({ color: LOOK[f][joint ? 1 : 0], roughness: 0.9, metalness: 0 });
+    if (!joint) camoPatch(m, f);
+    matCache.set(k, m);
+  }
   return m;
+}
+
+/**
+ * Kamufláž a špína v shaderu podle klidové polohy (před skinováním, takže vzor drží na těle při
+ * animaci): USMC = digitální blokový vzor, MEC = měkké skvrny. Dole bláto/prach, jemné tkaní látky.
+ * Vlastní procedurální vzor (žádná převzatá textura).
+ */
+function camoPatch(m: THREE.MeshStandardMaterial, f: SoldierFaction) {
+  const usmc = f === 'usmc';
+  m.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vCamoP;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvCamoP = position;');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', `#include <common>
+varying vec3 vCamoP;
+float cH(vec3 p){ return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+{
+  vec3 q = vCamoP;
+  ${usmc ? `
+  vec3 c1 = floor(q * vec3(22.0, 22.0, 22.0)); float a = cH(c1);
+  vec3 c2 = floor(q * vec3(9.0, 9.0, 9.0) + 3.7); float b = cH(c2);
+  vec3 camo = vec3(0.55, 0.47, 0.34);
+  if (b > 0.62) camo = vec3(0.86, 0.78, 0.6);
+  if (b < 0.3) camo = vec3(0.4, 0.33, 0.23);
+  if (a > 0.85) camo *= 0.7;` : `
+  float n = sin(q.x * 11.0 + q.y * 5.0) + sin(q.y * 9.0 - q.z * 13.0 + 1.3) + sin(q.z * 7.0 + q.x * 6.0 + 2.1);
+  vec3 camo = vec3(0.42, 0.4, 0.28);
+  if (n > 1.0) camo = vec3(0.5, 0.42, 0.28);
+  if (n < -1.0) camo = vec3(0.26, 0.27, 0.2);`}
+  float weave = 0.97 + 0.05 * step(0.5, fract((q.x + q.y) * 90.0));
+  diffuseColor.rgb = pow(camo * weave, vec3(2.2));
+  float mud = clamp((0.55 - q.y) / 0.5, 0.0, 1.0) * (0.35 + 0.65 * cH(floor(q * 40.0))) * 0.6;
+  diffuseColor.rgb = mix(diffuseColor.rgb, ${usmc ? 'vec3(0.22, 0.15, 0.08)' : 'vec3(0.08, 0.05, 0.03)'}, mud);
+}`);
+  };
+  m.customProgramCacheKey = () => `camo-${f}`;
 }
 
 const _q = new THREE.Quaternion();
