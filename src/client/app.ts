@@ -30,6 +30,7 @@ import { preloadSoldierModel } from './render/soldier/mannequin';
 import { preloadGlbProps } from './render/glbProps';
 import { MaterialLibrary, TEXTURE_IDS, generateTextures, makeMacroNoise, sharedUniforms } from './render/materials';
 import { PostPipeline } from './render/post';
+import { GrassField } from './render/grass';
 import { QUALITY, type QualityProfile } from './render/quality';
 import { WorldView } from './render/worldView';
 import { PlaySession } from './runtime/session';
@@ -71,6 +72,7 @@ export class App {
   world!: WorldView;
   env!: EnvironmentRig;
   post!: PostPipeline;
+  grass: GrassField | null = null;
   phys!: PhysicsWorld;
   ed!: EditorDoc;
   history!: History;
@@ -197,7 +199,7 @@ export class App {
     this.scene.add(this.flags.root);
     this.scene.add(this.camera);
     this.env = new EnvironmentRig(r, this.scene);
-    this.post = new PostPipeline(r, this.scene, this.camera, this.quality);
+    this.post = new PostPipeline(r, this.scene, this.camera, this.quality, this.settings.filmEffects !== false);
 
     progress(0.9, 'Otevírám mapu…');
     let doc: MapDocument | null = null;
@@ -731,6 +733,12 @@ export class App {
     );
     const game = this.session.game;
     game.buildMap(this.footprints());
+    // Trsy trávy jen ve hře (v editoru by překážely při úpravách).
+    if (this.quality.grass > 0) {
+      this.grass ??= new GrassField(this.quality.grass, this.quality.grassRange);
+      this.scene.add(this.grass.mesh);
+      this.grass.setWorld(this.ed.doc.terrain, generateMap(this.ed.doc));
+    }
     game.onLeave = () => this.exitPlay();
     const inp = this.session.input;
     inp.bindings = bindingsOf(s);
@@ -1513,6 +1521,10 @@ export class App {
     }
     this.updateFlags(dt);
     this.env.update(this.camera.position, dt);
+    if (this.grass) {
+      this.grass.mesh.visible = !!this.session;
+      if (this.session) this.grass.update(this.camera.position, performance.now() / 1000);
+    }
     this.post.render(dt);
     this.frameTimes.push(dt * 1000);
     if (this.frameTimes.length > 300) this.frameTimes.shift();
@@ -1553,7 +1565,7 @@ export class App {
     const p95 = sorted[Math.floor(sorted.length * 0.95)] ?? 0;
     const c = this.counts();
     const lines = [
-      `${this.mode === 'play' ? 'TEST' : 'EDITOR'}  FPS ${(1000 / Math.max(1e-3, p50)).toFixed(0)}  p95 ${p95.toFixed(1)} ms  kvalita ${this.quality.label}${this.post.enabled ? ' +AO' : ''}`,
+      `${this.mode === 'play' ? 'TEST' : 'EDITOR'}  FPS ${(1000 / Math.max(1e-3, p50)).toFixed(0)}  p95 ${p95.toFixed(1)} ms  kvalita ${this.quality.label}${this.post.enabled ? ` +${this.post.features}` : ''}`,
       `draw ${info.render.calls}  tris ${(info.render.triangles / 1000).toFixed(0)}k  geo ${c.geometries}  tex ${c.textures}  scéna ${c.sceneObjects}  kolize ${c.colliders}  listenery ${c.listeners}  přepnutí ${this.switches}`,
     ];
     if (this.session) {

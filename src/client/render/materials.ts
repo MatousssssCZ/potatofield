@@ -25,16 +25,18 @@ export interface MatDef {
   envMapIntensity?: number;
   /** Kývání ve větru: výchylka v metrech u vrcholu (jen vzhled, kolize se nemění). */
   wind?: number;
+  /** Opotřebení svislých ploch: stékající vlhkost, odlupující se omítka, kouřové skvrny (0–1). */
+  wear?: number;
 }
 
 export const MATERIALS: Record<string, MatDef> = {
-  concrete: { tex: 'concrete', tile: 3, dust: 0.6, macro: 0.6 },
-  concreteLight: { tex: 'concreteLight', tile: 2.5, dust: 0.6, macro: 0.5 },
-  plaster: { tex: 'plaster', tile: 3, dust: 0.7, macro: 0.6 },
-  plasterWarm: { tex: 'plasterWarm', tile: 3, dust: 0.7, macro: 0.6 },
-  plasterWhite: { tex: 'plasterWhite', tile: 3, dust: 0.7, macro: 0.6 },
-  brick: { tex: 'brick', tile: 1.6, dust: 0.5, macro: 0.4 },
-  sandstone: { tex: 'sandstone', tile: 3, dust: 0.5, macro: 0.5 },
+  concrete: { tex: 'concrete', tile: 3, wear: 0.7, dust: 0.6, macro: 0.6 },
+  concreteLight: { tex: 'concreteLight', tile: 2.5, wear: 0.7, dust: 0.6, macro: 0.5 },
+  plaster: { tex: 'plaster', tile: 3, wear: 1, dust: 0.7, macro: 0.6 },
+  plasterWarm: { tex: 'plasterWarm', tile: 3, wear: 1, dust: 0.7, macro: 0.6 },
+  plasterWhite: { tex: 'plasterWhite', tile: 3, wear: 0.9, dust: 0.7, macro: 0.6 },
+  brick: { tex: 'brick', tile: 1.6, wear: 0.6, dust: 0.5, macro: 0.4 },
+  sandstone: { tex: 'sandstone', tile: 3, wear: 0.8, dust: 0.5, macro: 0.5 },
   paving: { tex: 'paving', tile: 2, dust: 0.0, macro: 0.5 },
   asphalt: { tex: 'asphalt', tile: 5, dust: 0.0, macro: 0.6 },
   sand: { tex: 'sand', tile: 6, macro: 0.5 },
@@ -50,10 +52,10 @@ export const MATERIALS: Record<string, MatDef> = {
   paint: { tex: 'paint', tile: 2 },
   paintDim: { tex: 'paintDim', tile: 2 },
   target: { tex: 'target', tile: 1 },
-  plasterOchre: { tex: 'plasterOchre', tile: 3, dust: 0.7, macro: 0.6 },
-  concreteDark: { tex: 'concreteDark', tile: 2.5, dust: 0.3, macro: 0.5 },
-  metalSheet: { tex: 'metalSheet', tile: 2.4, dust: 0.5, macro: 0.4 },
-  metalSheetRust: { tex: 'metalSheetRust', tile: 2.4, dust: 0.5, macro: 0.4 },
+  plasterOchre: { tex: 'plasterOchre', tile: 3, wear: 1, dust: 0.7, macro: 0.6 },
+  concreteDark: { tex: 'concreteDark', tile: 2.5, wear: 0.5, dust: 0.3, macro: 0.5 },
+  metalSheet: { tex: 'metalSheet', tile: 2.4, wear: 0.5, dust: 0.5, macro: 0.4 },
+  metalSheetRust: { tex: 'metalSheetRust', tile: 2.4, wear: 0.5, dust: 0.5, macro: 0.4 },
   containerRed: { tex: 'containerRed', tile: 2.5, dust: 0.5, macro: 0.3 },
   containerBlue: { tex: 'containerBlue', tile: 2.5, dust: 0.5, macro: 0.3 },
   containerGreen: { tex: 'containerGreen', tile: 2.5, dust: 0.5, macro: 0.3 },
@@ -286,7 +288,7 @@ export const sharedUniforms = {
  * Úprava standardního shaderu: velkoplošná variace barvy (proti viditelnému opakování)
  * a prach u paty objektu podle atributu `aBaseH` (výška nad podstavou objektu).
  */
-export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, macro: number, blur = 0, wind = 0) {
+export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, macro: number, blur = 0, wind = 0, wear = 0) {
   mat.onBeforeCompile = (sh) => {
     // Rozpití textury: posun výběru mip úrovně (bias) u barvy, normály a ORM.
     if (blur > 0) {
@@ -305,6 +307,7 @@ export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, m
     sh.uniforms.uMacroAmt = { value: macro };
     sh.uniforms.uTime = sharedUniforms.uTime;
     sh.uniforms.uWind = { value: wind };
+    sh.uniforms.uWear = { value: wear };
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\nattribute float aBaseH;\nvarying float vBaseH;\nvarying vec3 vWPos;\nuniform float uTime;\nuniform float uWind;')
       .replace(
@@ -320,7 +323,7 @@ export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, m
     sh.fragmentShader = sh.fragmentShader
       .replace(
         '#include <common>',
-        '#include <common>\nuniform sampler2D uMacro;\nuniform vec3 uDustColor;\nuniform float uDust;\nuniform float uMacroAmt;\nvarying float vBaseH;\nvarying vec3 vWPos;',
+        '#include <common>\nuniform sampler2D uMacro;\nuniform vec3 uDustColor;\nuniform float uDust;\nuniform float uMacroAmt;\nuniform float uWear;\nvarying float vBaseH;\nvarying vec3 vWPos;',
       )
       .replace(
         '#include <map_fragment>',
@@ -334,10 +337,23 @@ export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, m
           float dn = texture2D(uMacro, wp * 0.23).b;
           float dustT = (1.0 - smoothstep(0.0, 0.7 + dn * 0.6, vBaseH)) * uDust * (0.55 + 0.45 * dn);
           diffuseColor.rgb = mix(diffuseColor.rgb, uDustColor, dustT * 0.6);
+          if (uWear > 0.0) {
+            // Svislé stopy po vodě (stékají od římsy), odlupující se omítka u země, tmavé skvrny od kouře.
+            vec2 hz = vec2(vWPos.x + vWPos.z, vWPos.y);
+            float st = texture2D(uMacro, vec2(hz.x * 0.38, hz.y * 0.03)).g;
+            float streak = smoothstep(0.6, 0.82, st) * smoothstep(0.1, 1.2, vBaseH);
+            diffuseColor.rgb *= 1.0 - 0.26 * streak * uWear;
+            float pe = texture2D(uMacro, hz * 0.55 + 4.3).b;
+            float peel = smoothstep(0.7, 0.76, pe) * (1.0 - smoothstep(0.4, 2.4, vBaseH));
+            vec3 under = diffuseColor.rgb * vec3(0.52, 0.47, 0.42);
+            diffuseColor.rgb = mix(diffuseColor.rgb, under, peel * 0.85 * uWear);
+            float soot = smoothstep(0.72, 0.9, texture2D(uMacro, hz * 0.21 + 9.1).r) * 0.22;
+            diffuseColor.rgb *= 1.0 - soot * uWear;
+          }
         }`,
       );
   };
-  mat.customProgramCacheKey = () => `weather-${dust.toFixed(2)}-${macro.toFixed(2)}-b${blur.toFixed(2)}-w${wind > 0 ? 1 : 0}`;
+  mat.customProgramCacheKey = () => `weather-${dust.toFixed(2)}-${macro.toFixed(2)}-b${blur.toFixed(2)}-w${wind > 0 ? 1 : 0}-e${wear > 0 ? 1 : 0}`;
 }
 
 const LABEL_STYLES: Record<string, { bg: string; fg: string; font: string; border: boolean; glow?: number }> = {
@@ -381,7 +397,7 @@ export class MaterialLibrary {
       sm.aoMapIntensity = 1;
     }
     if (def.emissive) sm.emissive = new THREE.Color(def.emissive);
-    patchWeathering(sm, def.dust ?? 0, def.macro ?? 0, tex ? q : 0, def.wind ?? 0);
+    patchWeathering(sm, def.dust ?? 0, def.macro ?? 0, tex ? q : 0, def.wind ?? 0, def.wear ?? 0);
     sm.name = id;
     this.cache.set(key, sm);
     return sm;

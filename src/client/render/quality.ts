@@ -15,7 +15,14 @@ export interface QualityProfile {
   antialias: boolean;
   /** Ambientní zastínění v obrazovém prostoru (volitelný kosmetický efekt). */
   ao: boolean;
+  /** Filmové vrstvy po vykreslení: barevné ladění, vinětace, zrnitost (levný jeden průchod). */
+  grade: boolean;
+  /** Bloom (záře slunce a odlesků) – jen na silnější grafice. */
+  bloom: boolean;
   maxDecals: number;
+  /** Trsy trávy: nejvýš instancí a dosah (m); 0 = vypnuto. */
+  grass: number;
+  grassRange: number;
 }
 
 export const QUALITY: Record<QualityProfile['id'], QualityProfile> = {
@@ -30,7 +37,11 @@ export const QUALITY: Record<QualityProfile['id'], QualityProfile> = {
     anisotropy: 2,
     antialias: false,
     ao: false,
+    grade: false,
+    bloom: false,
     maxDecals: 64,
+    grass: 0,
+    grassRange: 0,
   },
   standard: {
     id: 'standard',
@@ -43,7 +54,11 @@ export const QUALITY: Record<QualityProfile['id'], QualityProfile> = {
     anisotropy: 8,
     antialias: true,
     ao: false,
+    grade: true,
+    bloom: false,
     maxDecals: 192,
+    grass: 2600,
+    grassRange: 26,
   },
   high: {
     id: 'high',
@@ -56,7 +71,11 @@ export const QUALITY: Record<QualityProfile['id'], QualityProfile> = {
     anisotropy: 16,
     antialias: true,
     ao: true,
+    grade: true,
+    bloom: true,
     maxDecals: 384,
+    grass: 6000,
+    grassRange: 40,
   },
 };
 

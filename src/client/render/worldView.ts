@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import type { MapDocument, TerrainData } from '../../shared/map/schema';
 import type { GeneratedObject } from '../../world/registry';
 import { buildObjectGeometry } from './geometry';
+import { buildSurround } from './surround';
 import { MATERIALS, sharedUniforms, type MaterialLibrary, type TexSet } from './materials';
 
 /**
@@ -276,7 +277,16 @@ export class WorldView {
     mesh.userData.objectId = '__terrain';
     this.root.add(mesh);
     this.terrainMesh = mesh;
+    // Daleký plán: kopce a siluety za hranicí mapy (jen vzhled).
+    this.surround?.removeFromParent();
+    this.surround?.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.geometry) m.geometry.dispose();
+    });
+    this.surround = buildSurround(t, this.textures.get('sand')?.map);
+    this.root.add(this.surround);
   }
+  private surround: THREE.Group | null = null;
 
   private terrainMat: THREE.MeshStandardMaterial | null = null;
   private terrainMaterial(): THREE.MeshStandardMaterial {
@@ -325,6 +335,22 @@ export class WorldView {
             vec4 uA = mix(texture2D(uUrban, uvA * 1.4), texture2D(uUrban, uvB * 1.7), 0.4);
             col = mix(col, uA, gUrbanMix);
             col.rgb *= 0.86 + 0.26 * m2;
+            // Detail terénu: drobné kamínky, vrásky větru v písku a praskliny vyschlé hlíny (jen vzhled).
+            {
+              vec2 wp = vWPos.xz;
+              float pb = texture2D(uMacro, wp * 1.9).b;
+              float pb2 = texture2D(uMacro, wp * 4.3 + 7.1).r;
+              float peb = smoothstep(0.78, 0.86, pb) * (0.5 + 0.5 * pb2);
+              col.rgb = mix(col.rgb, col.rgb * 0.55 + vec3(0.05, 0.045, 0.04), peb * 0.55);
+              float pl = smoothstep(0.88, 0.93, texture2D(uMacro, wp * 3.1 + 3.7).g);
+              col.rgb = mix(col.rgb, col.rgb * 1.22, pl * 0.35);
+              float ripple = sin(dot(wp, vec2(0.84, 0.54)) * 5.5 + m1 * 14.0 + m2 * 5.0);
+              float flatK = smoothstep(0.9, 0.99, vUpN) * (1.0 - gTerrainMix);
+              col.rgb *= 1.0 + ripple * 0.035 * flatK;
+              float cr = abs(texture2D(uMacro, wp * 0.33 + 1.9).g - 0.5);
+              float crack = (1.0 - smoothstep(0.0, 0.03, cr)) * smoothstep(0.35, 0.75, gTerrainMix) * flatK;
+              col.rgb *= 1.0 - crack * 0.38;
+            }
             // Debug: příliš prudké svahy (> 45°) červeně (jen zobrazení, nic se nevyrovnává).
             if (uSlopeDebug > 0.5 && vUpN < 0.7071) col.rgb = mix(col.rgb, vec3(1.0, 0.1, 0.05), 0.65);
             diffuseColor *= col;
@@ -342,7 +368,7 @@ export class WorldView {
           }`,
         );
     };
-    m.customProgramCacheKey = () => 'terrain-v2';
+    m.customProgramCacheKey = () => 'terrain-v3';
     this.terrainMat = m;
     return m;
   }

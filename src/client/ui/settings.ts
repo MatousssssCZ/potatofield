@@ -35,6 +35,8 @@ export interface Settings {
   softTextures: boolean;
   /** Vzhled prostředí blíž BF2 (sytější obloha, slabší opar). */
   bf2Look: boolean;
+  /** Filmové efekty (barevné ladění, vinětace, bloom podle kvality); změna znovu načte stránku. */
+  filmEffects: boolean;
   /** Vlastní klávesy (jen změněné akce). */
   bindings: Partial<Record<Action, string[]>>;
   /** Vzhled zbraně ve volném testu editoru (výbavu jinak určuje nasazení). */
@@ -64,6 +66,7 @@ export const DEFAULT_SETTINGS: Settings = {
   showFps: false,
   softTextures: true,
   bf2Look: true,
+  filmEffects: true,
   bindings: {},
   weapon: 'm4a1',
 };
@@ -238,6 +241,7 @@ export class SettingsView {
         settingRow(t('set.fullscreen'), check('fullscreen')),
         settingRow(t('set.softTextures'), check('softTextures'), t('set.softTexturesHint')),
         settingRow(t('set.bf2Look'), check('bf2Look'), t('set.bf2LookHint')),
+        settingRow(t('set.film'), check('filmEffects'), t('set.filmHint')),
         settingRow(t('set.fps'), check('showFps')),
       );
     } else if (this.cat === 'audio') {
@@ -321,7 +325,7 @@ export class SettingsView {
         this.onClose?.();
       }, 'pf-btn'),
       button(t('common.apply'), () => {
-        const reload = this.work.quality !== this.current().quality || this.work.softTextures !== this.current().softTextures;
+        const reload = this.work.quality !== this.current().quality || this.work.softTextures !== this.current().softTextures || this.work.filmEffects !== this.current().filmEffects;
         if (this.work.lang && this.work.lang !== lang()) setLang(this.work.lang);
         this.apply(structuredClone(this.work), reload);
         this.note = t('set.applied');
