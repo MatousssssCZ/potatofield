@@ -53,6 +53,7 @@ import { Thumbnails } from './editor/thumbnails';
 import { DEFAULT_FACTIONS } from '../shared/config/arsenal';
 import { PROTOCOL_VERSION } from '../shared/net/protocol';
 import { insecureFromHttps } from './ui/servers';
+import { applyBakedLight, disableBakedLight, smokeSources } from './render/bakedLight';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
 const EDITOR_VFOV = 60;
@@ -73,6 +74,8 @@ export class App {
   env!: EnvironmentRig;
   post!: PostPipeline;
   grass: GrassField | null = null;
+  /** Doba zapečení stínu a AO (ms), pro dev výpis. */
+  bakeMs = 0;
   phys!: PhysicsWorld;
   ed!: EditorDoc;
   history!: History;
@@ -739,6 +742,10 @@ export class App {
       this.scene.add(this.grass.mesh);
       this.grass.setWorld(this.ed.doc.terrain, generateMap(this.ed.doc));
     }
+    // Zapečený stín budov a AO na terénu pro celou mapu (svět se ve hře nemění).
+    const genAll = generateMap(this.ed.doc);
+    this.bakeMs = applyBakedLight(this.ed.doc.terrain, genAll, this.env.sunDirection, this.quality.shadowRange);
+    game.effects.setSmokeSources(smokeSources(genAll));
     game.onLeave = () => this.exitPlay();
     const inp = this.session.input;
     inp.bindings = bindingsOf(s);
@@ -980,6 +987,7 @@ export class App {
     }
     document.body.classList.replace('mode-play', 'mode-editor');
     $('#hud').classList.add('hidden');
+    disableBakedLight();
     this.world.setMode('editor');
     this.env.shadowRate = 0;
     this.world.update(0);

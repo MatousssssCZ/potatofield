@@ -127,6 +127,10 @@ export class EnvironmentRig {
     }),
   );
   private sunDir = new THREE.Vector3(0, 1, 0);
+  /** Směr ke slunci (jednotkový). */
+  get sunDirection() {
+    return this.sunDir.clone();
+  }
   private envRT: THREE.WebGLRenderTarget | null = null;
   private shadowRange = 45;
   private time = 0;

@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import type { MapDocument, TerrainData } from '../../shared/map/schema';
 import type { GeneratedObject } from '../../world/registry';
 import { buildObjectGeometry } from './geometry';
+import { bakeUniforms } from './bakedLight';
 import { buildSurround } from './surround';
 import { MATERIALS, sharedUniforms, type MaterialLibrary, type TexSet } from './materials';
 
@@ -307,6 +308,7 @@ export class WorldView {
       sh.uniforms.uUrbanN = { value: urban.normalMap };
       sh.uniforms.uMacro = sharedUniforms.uMacro;
       sh.uniforms.uSlopeDebug = this.slopeDebug;
+      Object.assign(sh.uniforms, bakeUniforms);
       sh.vertexShader = sh.vertexShader
         .replace('#include <common>', '#include <common>\nattribute float aDirt;\nattribute float aUrban;\nvarying vec3 vWPos;\nvarying float vUpN;\nvarying float vDirt;\nvarying float vUrban;')
         .replace(
@@ -316,7 +318,7 @@ export class WorldView {
       sh.fragmentShader = sh.fragmentShader
         .replace(
           '#include <common>',
-          '#include <common>\nuniform sampler2D uDirt;\nuniform sampler2D uDirtN;\nuniform sampler2D uUrban;\nuniform sampler2D uUrbanN;\nuniform sampler2D uMacro;\nuniform float uSlopeDebug;\nvarying vec3 vWPos;\nvarying float vUpN;\nvarying float vDirt;\nvarying float vUrban;\nfloat gTerrainMix;\nfloat gUrbanMix;',
+          '#include <common>\nuniform sampler2D uDirt;\nuniform sampler2D uDirtN;\nuniform sampler2D uUrban;\nuniform sampler2D uUrbanN;\nuniform sampler2D uMacro;\nuniform float uSlopeDebug;\nuniform sampler2D uBake;\nuniform vec4 uBakeRect;\nuniform float uBakeOn;\nuniform vec2 uShadowFar;\nvarying vec3 vWPos;\nvarying float vUpN;\nvarying float vDirt;\nvarying float vUrban;\nfloat gTerrainMix;\nfloat gUrbanMix;',
         )
         .replace(
           '#include <map_fragment>',
@@ -354,6 +356,14 @@ export class WorldView {
             // Debug: příliš prudké svahy (> 45°) červeně (jen zobrazení, nic se nevyrovnává).
             if (uSlopeDebug > 0.5 && vUpN < 0.7071) col.rgb = mix(col.rgb, vec3(1.0, 0.1, 0.05), 0.65);
             diffuseColor *= col;
+            // Zapečené světlo: AO u paty zdí všude, sluneční stín budov za dosahem stínové mapy.
+            if (uBakeOn > 0.5) {
+              vec2 bu = (vWPos.xz - uBakeRect.xy) * uBakeRect.zw;
+              vec2 bk = texture2D(uBake, bu).rg;
+              diffuseColor.rgb *= mix(0.6, 1.0, bk.g);
+              float far = smoothstep(uShadowFar.x, uShadowFar.y, distance(vWPos.xz, cameraPosition.xz));
+              diffuseColor.rgb *= mix(1.0, 0.48, (1.0 - bk.r) * far);
+            }
           }`,
         )
         .replace(
@@ -368,7 +378,7 @@ export class WorldView {
           }`,
         );
     };
-    m.customProgramCacheKey = () => 'terrain-v3';
+    m.customProgramCacheKey = () => 'terrain-v4';
     this.terrainMat = m;
     return m;
   }

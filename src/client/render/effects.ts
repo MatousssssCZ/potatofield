@@ -157,11 +157,56 @@ export class Effects {
     }
   }
 
+  private smokeSrc: THREE.Vector3[] = [];
+  private smokePuffs: Puff[] = [];
+  private smokeAcc = 0;
+  private camPos = new THREE.Vector3();
+
+  /** Zdroje tenkých sloupců kouře (vraky); kouří jen ty do 140 m od kamery. */
+  setSmokeSources(list: THREE.Vector3[]) {
+    this.smokeSrc = list;
+  }
+
+  private smokeStep(dt: number) {
+    if (this.maxDecals <= 0) return; // nízká kvalita: bez kouře
+    this.smokeAcc += dt;
+    while (this.smokeAcc > 0.22) {
+      this.smokeAcc -= 0.22;
+      for (const src of this.smokeSrc) {
+        if (src.distanceToSquared(this.camPos) > 140 * 140) continue;
+        let p = this.smokePuffs.find((x) => x.life <= 0);
+        if (!p) {
+          if (this.smokePuffs.length >= 90) break;
+          const sprite = new THREE.Sprite(this.puffMat.clone());
+          this.root.add(sprite);
+          p = { sprite, vel: new THREE.Vector3(), life: 0, max: 1 };
+          this.smokePuffs.push(p);
+        }
+        (p.sprite.material as THREE.SpriteMaterial).color.set(Math.random() < 0.5 ? '#4a4540' : '#615a52');
+        p.sprite.visible = true;
+        p.sprite.position.set(src.x + (Math.random() - 0.5) * 0.6, src.y, src.z + (Math.random() - 0.5) * 0.6);
+        p.vel.set(0.35 + Math.random() * 0.2, 1.1 + Math.random() * 0.4, 0.12 + (Math.random() - 0.5) * 0.2);
+        p.max = p.life = 4.5 + Math.random() * 2;
+      }
+    }
+    for (const p of this.smokePuffs) {
+      if (p.life <= 0) continue;
+      p.life -= dt;
+      p.sprite.position.addScaledVector(p.vel, dt);
+      p.vel.x += dt * 0.08; // vítr ohýbá sloupec
+      const k = 1 - p.life / p.max;
+      p.sprite.scale.setScalar(0.9 + k * 4.5);
+      (p.sprite.material as THREE.SpriteMaterial).opacity = Math.min(1, k * 6) * (1 - k) * 0.85;
+      if (p.life <= 0) p.sprite.visible = false;
+    }
+  }
+
   private motePts: THREE.Points | null = null;
   private moteBase: Float32Array | null = null;
 
   /** Prachová zrnka vznášející se ve světle kolem kamery (jemná atmosféra; vypnuto, když je `n` 0). */
   motes(cam: THREE.Vector3, time: number, n: number) {
+    this.camPos.copy(cam);
     if (n <= 0) {
       if (this.motePts) this.motePts.visible = false;
       return;
@@ -172,7 +217,17 @@ export class Effects {
       this.moteBase = base;
       const g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
-      const m = new THREE.PointsMaterial({ color: '#fff1cf', size: 0.035, transparent: true, opacity: 0.35, depthWrite: false, sizeAttenuation: true });
+      // Kulaté měkké zrnko (jinak by se body kreslily jako čtverečky).
+      const cv = document.createElement('canvas');
+      cv.width = cv.height = 32;
+      const cx = cv.getContext('2d')!;
+      const gr = cx.createRadialGradient(16, 16, 0, 16, 16, 16);
+      gr.addColorStop(0, 'rgba(255,255,255,1)');
+      gr.addColorStop(0.4, 'rgba(255,255,255,0.5)');
+      gr.addColorStop(1, 'rgba(255,255,255,0)');
+      cx.fillStyle = gr;
+      cx.fillRect(0, 0, 32, 32);
+      const m = new THREE.PointsMaterial({ color: '#fff1cf', size: 0.022, map: new THREE.CanvasTexture(cv), transparent: true, opacity: 0.3, depthWrite: false, sizeAttenuation: true });
       this.motePts = new THREE.Points(g, m);
       this.motePts.frustumCulled = false;
       this.root.add(this.motePts);
@@ -188,7 +243,9 @@ export class Effects {
       const x = ((((wx - cam.x) % (2 * R)) + 3 * R) % (2 * R)) - R;
       const z = ((((wz - cam.z) % (2 * R)) + 3 * R) % (2 * R)) - R;
       const y = 0.3 + b[i * 3 + 1] * 7 + 0.15 * Math.sin(time * 0.7 + i * 1.7);
-      pos.setXYZ(i, cam.x + x, cam.y - 1.6 + y, cam.z + z);
+      // Zrnka těsně u kamery odsunout (zblízka by byla příliš velká).
+      const d2 = x * x + z * z, push = d2 < 4 ? 2 / Math.sqrt(d2 + 1e-4) : 1;
+      pos.setXYZ(i, cam.x + x * push, cam.y - 1.6 + y, cam.z + z * push);
     }
     pos.needsUpdate = true;
   }
@@ -233,6 +290,7 @@ export class Effects {
   }
 
   update(dt: number) {
+    this.smokeStep(dt);
     for (const p of this.puffs) {
       if (p.life <= 0) continue;
       p.life -= dt;
@@ -285,6 +343,11 @@ export class Effects {
       c.mesh.visible = false;
     }
     if (this.motePts) this.motePts.visible = false;
+    for (const p of this.smokePuffs) {
+      p.life = 0;
+      p.sprite.visible = false;
+    }
+    this.smokeSrc = [];
   }
 
   dispose() {
@@ -296,6 +359,7 @@ export class Effects {
     this.chipGeo.dispose();
     for (const m of this.chipMats.values()) m.dispose();
     this.motePts?.geometry.dispose();
+    (this.motePts?.material as THREE.PointsMaterial | undefined)?.map?.dispose();
     (this.motePts?.material as THREE.Material | undefined)?.dispose();
     this.casingMat.dispose();
     this.decalGeo.dispose();
