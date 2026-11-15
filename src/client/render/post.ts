@@ -30,7 +30,7 @@ const GradeShader = {
       vec3 s = col * col * (3.0 - 2.0 * col);
       col = mix(col, s, 0.45 * uAmount);
       // Teplé světlo, chladné stíny.
-      vec3 warm = vec3(1.06, 1.015, 0.93), cool = vec3(0.93, 0.99, 1.07);
+      vec3 warm = vec3(1.06, 1.015, 0.93), cool = vec3(0.975, 0.99, 1.025);
       col *= mix(cool, warm, smoothstep(0.12, 0.7, l));
       // Sytost (písek a modrá obloha).
       float g = dot(col, vec3(0.299, 0.587, 0.114));
