@@ -80,6 +80,7 @@ export class Game {
   private scopeBlend = 0;
   private scope: ScopeView | null = null;
 
+  private moteCount = 0;
   constructor(
     private camera: THREE.PerspectiveCamera,
     readonly input: InputSystem,
@@ -94,6 +95,7 @@ export class Game {
     this.fpId = weaponId;
     this.fp = this.makeFp(weaponId);
     this.effects = new Effects(quality.maxDecals);
+    this.moteCount = quality.id === 'low' ? 0 : quality.id === 'high' ? 260 : 140;
     scene.add(this.effects.root);
     this.soldiers = new SoldierPool(quality.id);
     scene.add(this.soldiers.root);
@@ -295,6 +297,7 @@ export class Game {
     }
     this.updateSounds();
     this.effects.update(frameDt);
+    this.effects.motes(this.camera.position, this.now, this.moteCount);
     this.nades.sync(this.driver.grenades(), this.simTime, frameDt);
     this.nades.update(frameDt);
     this.hudT += frameDt;

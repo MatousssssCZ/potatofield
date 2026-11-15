@@ -89,3 +89,9 @@ objektů po materiálech mimo editor (instancing opakovaných dílů oken).
 - HUD: DOM aktualizovaný 20×/s; minimapa = jeden `drawImage` předkresleného podkladu + značky. Silueta zbraně se kreslí jednou na zbraň.
 - Taktický podklad mapy: jednorázově při vstupu do hry (≤ 2048 × 2048 px, max 6 px/m), ~16 MB paměti plátna u velké mapy.
 - Neměřeno na cílovém zařízení (prostředí bez GPU).
+
+## Grafická dávka (grade, bloom, tráva, opotřebení, daleký plán, atmosféra)
+
+Nic z toho nebylo měřeno na reálném HW (žádné FPS pro i5-1335U). Náklady jsou řízené profilem kvality:
+`low` = bez barevného ladění, bloomu, trávy a prachových zrnek; `standard` = ladění + tráva (2600 trsů, 26 m) + 140 zrnek;
+`high` = + bloom, 6000 trsů (40 m), 260 zrnek. Filmové efekty lze vypnout v Nastavení (`filmEffects`).

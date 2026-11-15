@@ -127,7 +127,74 @@ export class Effects {
     c.mesh.visible = true;
   }
 
+  private chips: Array<{ mesh: THREE.Mesh; vel: THREE.Vector3; spin: number; life: number }> = [];
+  private chipGeo = new THREE.BoxGeometry(0.02, 0.014, 0.018);
+  private chipMats = new Map<string, THREE.MeshStandardMaterial>();
+
+  /** Úlomky ze zásahu do tvrdého povrchu: pár drobných kousků barvy povrchu letí a padají. Nejvýš 48. */
+  private debris(point: THREE.Vector3, normal: THREE.Vector3, surface: string) {
+    if (surface === 'flesh' || surface === 'fabric' || surface === 'metal' || this.maxDecals <= 0) return;
+    const key = DUST[surface] ?? DUST.concrete;
+    let mat = this.chipMats.get(key);
+    if (!mat) this.chipMats.set(key, (mat = new THREE.MeshStandardMaterial({ color: key, roughness: 1 })));
+    const n = 3 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < n; i++) {
+      let c = this.chips.find((x) => x.life <= 0);
+      if (!c) {
+        if (this.chips.length >= 48) return;
+        const mesh = new THREE.Mesh(this.chipGeo, mat);
+        this.root.add(mesh);
+        c = { mesh, vel: new THREE.Vector3(), spin: 0, life: 0 };
+        this.chips.push(c);
+      }
+      c.mesh.material = mat;
+      c.mesh.scale.setScalar(0.6 + Math.random() * 1.2);
+      c.mesh.position.copy(point).addScaledVector(normal, 0.03);
+      c.vel.copy(normal).multiplyScalar(1.2 + Math.random() * 2).add(new THREE.Vector3((Math.random() - 0.5) * 1.6, Math.random() * 1.2, (Math.random() - 0.5) * 1.6));
+      c.spin = 8 + Math.random() * 20;
+      c.life = 0.7 + Math.random() * 0.5;
+      c.mesh.visible = true;
+    }
+  }
+
+  private motePts: THREE.Points | null = null;
+  private moteBase: Float32Array | null = null;
+
+  /** Prachová zrnka vznášející se ve světle kolem kamery (jemná atmosféra; vypnuto, když je `n` 0). */
+  motes(cam: THREE.Vector3, time: number, n: number) {
+    if (n <= 0) {
+      if (this.motePts) this.motePts.visible = false;
+      return;
+    }
+    if (!this.motePts) {
+      const base = new Float32Array(n * 3);
+      for (let i = 0; i < base.length; i++) base[i] = Math.random();
+      this.moteBase = base;
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+      const m = new THREE.PointsMaterial({ color: '#fff1cf', size: 0.035, transparent: true, opacity: 0.35, depthWrite: false, sizeAttenuation: true });
+      this.motePts = new THREE.Points(g, m);
+      this.motePts.frustumCulled = false;
+      this.root.add(this.motePts);
+    }
+    this.motePts.visible = true;
+    const pos = this.motePts.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const b = this.moteBase!;
+    const R = 16;
+    for (let i = 0; i < pos.count; i++) {
+      // Pevná mřížka kolem kamery (zalamovaná), pomalý vítr a vlnění.
+      const wx = (b[i * 3] * 2 * R + time * 0.35 + 3 * Math.sin(time * 0.3 + i)) ;
+      const wz = (b[i * 3 + 2] * 2 * R + time * 0.12);
+      const x = ((((wx - cam.x) % (2 * R)) + 3 * R) % (2 * R)) - R;
+      const z = ((((wz - cam.z) % (2 * R)) + 3 * R) % (2 * R)) - R;
+      const y = 0.3 + b[i * 3 + 1] * 7 + 0.15 * Math.sin(time * 0.7 + i * 1.7);
+      pos.setXYZ(i, cam.x + x, cam.y - 1.6 + y, cam.z + z);
+    }
+    pos.needsUpdate = true;
+  }
+
   impact(point: THREE.Vector3, normal: THREE.Vector3, surface: string) {
+    this.debris(point, normal, surface);
     const col = new THREE.Color(DUST[surface] ?? DUST.concrete);
     const n = surface === 'flesh' ? 3 : 5;
     for (let i = 0; i < n; i++) {
@@ -186,6 +253,15 @@ export class Effects {
       c.mesh.rotation.z += c.spin * 0.6 * dt;
       if (c.life <= 0) c.mesh.visible = false;
     }
+    for (const c of this.chips) {
+      if (c.life <= 0) continue;
+      c.life -= dt;
+      c.vel.y -= 9.8 * dt;
+      c.mesh.position.addScaledVector(c.vel, dt);
+      c.mesh.rotation.x += c.spin * dt;
+      c.mesh.rotation.y += c.spin * 0.7 * dt;
+      if (c.life <= 0) c.mesh.visible = false;
+    }
     for (let i = this.tracers.length - 1; i >= 0; i--) {
       const t = this.tracers[i];
       t.life -= dt;
@@ -204,10 +280,11 @@ export class Effects {
       p.life = 0;
       p.sprite.visible = false;
     }
-    for (const c of this.casings) {
+    for (const c of [...this.casings, ...this.chips]) {
       c.life = 0;
       c.mesh.visible = false;
     }
+    if (this.motePts) this.motePts.visible = false;
   }
 
   dispose() {
@@ -216,6 +293,10 @@ export class Effects {
     });
     for (const t of this.tracers) t.line.geometry.dispose();
     this.casingGeo.dispose();
+    this.chipGeo.dispose();
+    for (const m of this.chipMats.values()) m.dispose();
+    this.motePts?.geometry.dispose();
+    (this.motePts?.material as THREE.Material | undefined)?.dispose();
     this.casingMat.dispose();
     this.decalGeo.dispose();
     this.decalMat.map?.dispose();
