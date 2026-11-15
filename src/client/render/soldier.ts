@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { PlayerView } from '../runtime/driver';
-import { arsenalEntry } from '../../shared/config/arsenal';
+import { ITEM_EQUIP, SIDEARMS, WEAPON_IDS, arsenalEntry } from '../../shared/config/arsenal';
 import { WORLD_LOD, worldWeapon } from './weapons/worldModel';
 import { BONE_INDEX, createSkeleton, type BoneName } from './soldier/rig';
 import { gearVersionOf, makeUniformAtlas, soldierGeometry, type SoldierFaction, type SoldierVariant } from './soldier/body';
@@ -230,24 +230,7 @@ export class SoldierPool {
       const wid = p.weapon.weaponId || 'm4a1';
       const lk = soldierLook(p.primary ?? wid, p.team);
       const key = `${lk.faction}:${lk.variant}`;
-      if (key !== s.look || lod !== s.lod) {
-        // Model těla na blízko a střední vzdálenost; nejvzdálenější LOD zůstává procedurální (levný).
-        const model = !!s.body && lod < 2;
-        const full = soldierGeometry(lk.faction, lk.variant, lod);
-        s.mesh.geometry = model ? gearOnly(full) : full;
-        s.mesh.material = [model ? this.hiddenMat : this.bodyMats[lk.faction], this.gearMat];
-        if (s.body) {
-          s.body.visible = model;
-          s.body.setFaction(lk.faction);
-        }
-        s.mesh.castShadow = lod < 2;
-        s.patch.material = this.decalMat(lk.faction === 'usmc' ? 'fc_patch' : 'dl_patch');
-        s.patch.visible = lod < 2;
-        s.medic.visible = lod < 2 && lk.variant === 'medic' && gearVersionOf() === 2;
-        s.medic.position.set(0, -0.02, MEDIC_BACK[lk.faction] + 0.0035);
-        s.look = key;
-        s.lod = lod;
-      }
+      if (key !== s.look || lod !== s.lod) this.applyLook(s, lk, lod);
       let wl = s.wlod;
       if (d < WORLD_LOD[0] - 2) wl = 0;
       else if (d > WORLD_LOD[1] + 2) wl = 2;
@@ -313,6 +296,76 @@ export class SoldierPool {
         this.soldiers.delete(id);
       }
     }
+  }
+
+  /** Tělo a výstroj podle frakce, role a LOD (geometrie a materiály jsou sdílené a v cache). */
+  private applyLook(s: Soldier, lk: { faction: SoldierFaction; variant: SoldierVariant }, lod: number) {
+    // Model těla na blízko a střední vzdálenost; nejvzdálenější LOD zůstává procedurální (levný).
+    const model = !!s.body && lod < 2;
+    const full = soldierGeometry(lk.faction, lk.variant, lod);
+    s.mesh.geometry = model ? gearOnly(full) : full;
+    s.mesh.material = [model ? this.hiddenMat : this.bodyMats[lk.faction], this.gearMat];
+    if (s.body) {
+      s.body.visible = model;
+      s.body.setFaction(lk.faction);
+    }
+    s.mesh.castShadow = lod < 2;
+    s.patch.material = this.decalMat(lk.faction === 'usmc' ? 'fc_patch' : 'dl_patch');
+    s.patch.visible = lod < 2;
+    s.medic.visible = lod < 2 && lk.variant === 'medic' && gearVersionOf() === 2;
+    s.medic.position.set(0, -0.02, MEDIC_BACK[lk.faction] + 0.0035);
+    s.look = `${lk.faction}:${lk.variant}`;
+    s.lod = lod;
+  }
+
+  /**
+   * Příprava před hrou, aby se nic nestavělo uprostřed boje: geometrie těl všech frakcí, rolí a LOD,
+   * world modely všech zbraní a předmětů a pár vojáků mimo záběr pro překlad shaderů
+   * (`renderer.compile`). Bez toho se model stavěl, až když se voják poprvé objevil – typicky
+   * přemožitel odhalený serverem v okamžiku smrti (zaseknutí ~0,2 s). Vrací úklid po překladu.
+   */
+  warmup(): () => void {
+    const variants: SoldierVariant[] = ['base', 'assault', 'medic', 'support', 'engineer', 'sniper'];
+    for (const f of ['usmc', 'mec'] as SoldierFaction[])
+      for (const v of variants)
+        for (let lod = 0; lod < 3; lod++) {
+          const g = soldierGeometry(f, v, lod);
+          if (lod < 2 && hasMannequin()) gearOnly(g);
+        }
+    for (const id of [...WEAPON_IDS, ...Object.keys(SIDEARMS), ...Object.keys(ITEM_EQUIP)]) {
+      try {
+        worldWeapon(id, this.quality);
+      } catch {
+        /* položka bez world modelu (např. lékárna jen v ruce) */
+      }
+    }
+    const ids: string[] = [];
+    for (const f of ['usmc', 'mec'] as SoldierFaction[])
+      for (const lod of [0, 2]) {
+        const id = `__warm_${f}_${lod}`;
+        const s = this.create(id);
+        this.applyLook(s, { faction: f, variant: f === 'usmc' ? 'medic' : 'assault' }, lod);
+        s.group.position.set(0, -1000, 0);
+        s.weapon.position.set(0, -1000, 0);
+        s.weapon.geometry = worldWeapon(WEAPON_IDS[0], this.quality).lods[lod];
+        s.flash.visible = true;
+        // Bez ořezu, aby se jednou skutečně vykreslili (pod mapou, nikdo je nevidí).
+        s.group.traverse((o) => (o.frustumCulled = false));
+        s.weapon.traverse((o) => (o.frustumCulled = false));
+        s.group.updateMatrixWorld(true);
+        ids.push(id);
+      }
+    return () => {
+      for (const id of ids) {
+        const s = this.soldiers.get(id);
+        if (!s) continue;
+        s.group.removeFromParent();
+        s.weapon.removeFromParent();
+        s.mesh.skeleton.dispose();
+        s.body?.dispose();
+        this.soldiers.delete(id);
+      }
+    };
   }
 
   get count() {

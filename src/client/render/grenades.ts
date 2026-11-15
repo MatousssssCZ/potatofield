@@ -65,9 +65,12 @@ export class GrenadeRenderer {
     const tex = new THREE.CanvasTexture(d);
     tex.colorSpace = THREE.SRGBColorSpace;
     this.scorchMat = new THREE.MeshStandardMaterial({ map: tex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, roughness: 1 });
-    for (let i = 0; i < 2; i++) {
+    // Světla výbuchu jsou trvale „zapnutá“ s nulovou intenzitou: změna počtu světel ve scéně by
+    // donutila Three.js překompilovat shadery všech osvětlených materiálů (zaseknutí při 1. výbuchu).
+    // Jedno světlo (stojí výkon v každém osvětleném pixelu i s nulovou intenzitou); další výbuch ho převezme.
+    for (let i = 0; i < 1; i++) {
       const light = new THREE.PointLight('#ffb060', 0, 18, 2);
-      light.visible = false;
+      light.position.set(0, -1000, 0);
       this.root.add(light);
       this.lights.push({ light, life: 0 });
     }
@@ -145,7 +148,6 @@ export class GrenadeRenderer {
   explode(pos: THREE.Vector3, groundNormal = new THREE.Vector3(0, 1, 0)) {
     const L = this.lights.reduce((a, b) => (a.life < b.life ? a : b));
     L.light.position.copy(pos).add(new THREE.Vector3(0, 0.6, 0));
-    L.light.visible = true;
     L.life = 0.28;
     // Ohnivá koule (aditivní), pak tmavý kouř a prach, úlomky.
     for (let i = 0; i < 10; i++) {
@@ -191,13 +193,49 @@ export class GrenadeRenderer {
     this.scorches.push(s);
   }
 
+  /**
+   * Příprava před hrou: částice všech druhů a spálenina se vytvoří předem (viditelné, ale mimo
+   * záběr), aby je `renderer.compile` přeložil hned a první výbuch nečekal na shadery.
+   */
+  warmup() {
+    const far = new THREE.Vector3(0, -1000, 0);
+    const kinds: Array<[THREE.Texture, boolean]> = [[this.fireTex, true], [this.fireTex, false], ...this.smokeTex.map((t) => [t, false] as [THREE.Texture, boolean])];
+    // Mimo záběr a bez ořezu: přeloží se a jednou vykreslí (neviditelně pod mapou).
+    const ps = kinds.map(([t, add]) => {
+      const p = this.particle(t, add);
+      p.sprite.position.copy(far);
+      p.sprite.frustumCulled = false;
+      return p;
+    });
+    const scorch = new THREE.Mesh(this.scorchGeo, this.scorchMat);
+    scorch.position.copy(far);
+    scorch.frustumCulled = false;
+    this.root.add(scorch);
+    const nade = new THREE.Mesh(itemGeometry('frag'), this.mat);
+    nade.position.copy(far);
+    nade.frustumCulled = false;
+    this.root.add(nade);
+    return () => {
+      for (const p of ps) {
+        p.life = 0;
+        p.sprite.visible = false;
+        p.sprite.frustumCulled = true;
+      }
+      scorch.removeFromParent();
+      nade.removeFromParent();
+    };
+  }
+
   update(dt: number) {
     this.time += dt;
     for (const L of this.lights) {
       if (L.life <= 0) continue;
       L.life -= dt;
       L.light.intensity = Math.max(0, L.life / 0.28) * 60;
-      if (L.life <= 0) L.light.visible = false;
+      if (L.life <= 0) {
+        L.light.intensity = 0;
+        L.light.position.set(0, -1000, 0);
+      }
     }
     for (const p of this.particles) {
       if (p.life <= 0) continue;

@@ -112,6 +112,22 @@ export class PostPipeline {
     else this.renderer.render(this.scene, this.camera);
   }
 
+  /**
+   * Překlad shaderů scény dopředu. Se zapnutým post-processingem se scéna kreslí do textury
+   * (lineární barvy, bez tone mappingu), takže se musí překládat s tímtéž cílem – jinak by
+   * `compile` připravil varianty pro obrazovku a skutečné kreslení by stejně překládalo znovu.
+   */
+  compile() {
+    const R = this.renderer;
+    const prev = R.getRenderTarget();
+    if (this.composer) R.setRenderTarget(this.composer.readBuffer);
+    R.compile(this.scene, this.camera);
+    // Jedno skutečné vykreslení: ovladače GPU často dokončí překlad až při prvním kreslení
+    // a Three.js při něm ověřuje stav programu (synchronní čekání). Ať se to stane teď.
+    R.render(this.scene, this.camera);
+    R.setRenderTarget(prev);
+  }
+
   dispose() {
     this.composer?.dispose();
     void this.ao;

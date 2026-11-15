@@ -95,3 +95,15 @@ objektů po materiálech mimo editor (instancing opakovaných dílů oken).
 Nic z toho nebylo měřeno na reálném HW (žádné FPS pro i5-1335U). Náklady jsou řízené profilem kvality:
 `low` = bez barevného ladění, bloomu, trávy a prachových zrnek; `standard` = ladění + tráva (2600 trsů, 26 m) + 140 zrnek;
 `high` = + bloom, 6000 trsů (40 m), 260 zrnek. Filmové efekty lze vypnout v Nastavení (`filmEffects`).
+
+## Zaseknutí při prvním výbuchu a při smrti (opraveno)
+
+Měřeno nástrojem `scripts/hitch-probe.ts` (počítá nově přeložené shadery a CPU profil kolem události):
+
+- **Výbuch granátu**: zapnutí bodového světla výbuchu změnilo počet světel ve scéně a Three.js překládal
+  shadery všech osvětlených materiálů (18–34 programů). Světlo je teď trvale ve scéně s nulovou intenzitou.
+- **Smrt**: server oběti odhalí přemožitele; když ho klient dosud neviděl, stavěl teprve teď jeho tělo
+  a world model zbraně (~0,2 s na hlavním vlákně). Geometrie všech frakcí/rolí/LOD a modely zbraní se
+  teď staví při vstupu do hry (`Game.warmup`), shadery se předem přeloží se stejným cílem kreslení jako
+  ve hře (`PostPipeline.compile`, včetně jednoho vykreslení).
+- Cena: delší vstup do hry (v SwiftShaderu ~3,5 s, na skutečném GPU neměřeno).

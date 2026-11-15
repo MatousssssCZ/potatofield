@@ -75,6 +75,7 @@ export class App {
   post!: PostPipeline;
   grass: GrassField | null = null;
   /** Doba zapečení stínu a AO (ms), pro dev výpis. */
+  warmMs = 0;
   bakeMs = 0;
   phys!: PhysicsWorld;
   ed!: EditorDoc;
@@ -746,6 +747,13 @@ export class App {
     const genAll = generateMap(this.ed.doc);
     this.bakeMs = applyBakedLight(this.ed.doc.terrain, genAll, this.env.sunDirection, this.quality.shadowRange);
     game.effects.setSmokeSources(smokeSources(genAll));
+    // Modely vojáků a zbraní, efekty výbuchu a jejich shadery dopředu – ne až v boji (zaseknutí
+    // při prvním výbuchu granátu a při smrti, kdy server odhalí dosud neviděného přemožitele).
+    const tw = performance.now();
+    const unwarm = game.warmup();
+    this.post.compile();
+    unwarm();
+    this.warmMs = performance.now() - tw;
     game.onLeave = () => this.exitPlay();
     const inp = this.session.input;
     inp.bindings = bindingsOf(s);

@@ -465,6 +465,20 @@ export class Game {
     return true;
   }
 
+  /**
+   * Příprava před hrou (volá ji aplikace při vstupu do hry, ještě na obrazovce nasazení):
+   * postaví modely vojáků a zbraní a vytvoří efekty výbuchu, aby je `renderer.compile` přeložil
+   * dopředu. Vrací úklid, který se volá po překladu.
+   */
+  warmup(): () => void {
+    const a = this.soldiers.warmup();
+    const b = this.nades.warmup();
+    return () => {
+      a();
+      b();
+    };
+  }
+
   // ---------------- kamera po vyřazení ----------------
 
   private killcam: { killer: string; at: number; target: THREE.Vector3; named: boolean } | null = null;
