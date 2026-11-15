@@ -1,7 +1,7 @@
 /**
  * Připraví model vojáka z Quaternius „Universal Animation Library [Standard]“ (CC0):
  * ponechá jen klipy, které hra používá, odstraní nepoužitá data a zkvantuje geometrii.
- * Použití: node scripts/prepare-soldier.mjs <cesta/UAL1_Standard.glb> public/models/soldier/ual_soldier.glb
+ * Použití: node scripts/prepare-soldier.mjs <cesta/UAL1_Standard.glb> assets-src/soldier/ual_soldier.glb
  */
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';

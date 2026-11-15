@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
-import { mannequinSource } from '../soldier/mannequin';
+import { isMenMesh, mannequinSource } from '../soldier/mannequin';
 import type { Hand } from './hands';
 
 /**
@@ -70,6 +70,10 @@ export class FPArms {
     scene.traverse((o) => {
       if ((o as THREE.Bone).isBone) bones.set(o.name, o as THREE.Bone);
     });
+    // Tělo z „Animated Men“ se pro vlastní pohled nepoužívá (ruce bez prstů) – jen Mannequin.
+    const men: THREE.Object3D[] = [];
+    scene.traverse((o) => (o as THREE.SkinnedMesh).isSkinnedMesh && isMenMesh(o as THREE.Mesh) && men.push(o));
+    for (const o of men) o.removeFromParent();
     // Geometrie: jen trojúhelníky paží; skupina 0 = rukáv, 1 = ruka (rukavice).
     scene.traverse((o) => {
       const m = o as THREE.SkinnedMesh;

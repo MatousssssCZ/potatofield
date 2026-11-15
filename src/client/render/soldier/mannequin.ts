@@ -62,7 +62,7 @@ export async function preloadSoldierModel(base = '/'): Promise<void> {
   try {
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
-    const g = await loader.loadAsync(`${base}models/soldier/ual_soldier.glb`);
+    const g = await loader.loadAsync(`${base}models/soldier/soldier_men.glb`);
     source = { scene: g.scene, clips: g.animations };
   } catch (e) {
     console.warn('Model vojáka se nenačetl, zůstává procedurální tělo.', e);
@@ -76,6 +76,27 @@ export function mannequinSource() {
 
 export function hasMannequin() {
   return source !== null;
+}
+
+/** Skinovaný mesh těla z „Animated Men“ (materiály Men_Cloth / Men_Rest). */
+export function isMenMesh(m: THREE.Mesh) {
+  return [].concat(m.material as never).some((x: THREE.Material) => x.name.startsWith('Men_'));
+}
+let menBody: boolean | null = null;
+function hasMenBody() {
+  if (menBody === null) {
+    menBody = false;
+    source?.scene.traverse((o) => {
+      if ((o as THREE.Mesh).isMesh && isMenMesh(o as THREE.Mesh)) menBody = true;
+    });
+  }
+  return menBody;
+}
+
+/** Kůže, vlasy, oči a boty těla z „Animated Men“ (barva vrcholů). */
+let restMatCache: THREE.MeshStandardMaterial | null = null;
+function restMat() {
+  return (restMatCache ??= new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, metalness: 0 }));
 }
 
 /** Barvy uniformy podle frakce (tělo, klouby). */
@@ -202,15 +223,24 @@ export class MannequinBody {
     const scene = cloneSkinned(source!.scene);
     scene.rotation.y = Math.PI;
     this.root.add(scene);
+    // Tělo z „Animated Men“ (převázané na kostru UAL, viz scripts/prepare-men-soldier.mjs) má přednost;
+    // původní Mannequin v souboru zůstává jen pro paže v první osobě.
+    const men = hasMenBody();
+    const drop: THREE.Object3D[] = [];
     scene.traverse((o) => {
       if ((o as THREE.Bone).isBone) this.bones.set(o.name, o as THREE.Bone);
       const m = o as THREE.SkinnedMesh;
       if (m.isSkinnedMesh) {
+        if (men && !isMenMesh(m)) {
+          drop.push(m);
+          return;
+        }
         m.castShadow = true;
         m.frustumCulled = false;
         this.meshes.push(m);
       }
     });
+    for (const o of drop) o.removeFromParent();
     this.mixer = new THREE.AnimationMixer(scene);
     for (const c of source!.clips) this.actions.set(c.name, this.mixer.clipAction(c));
     this.calibrate();
@@ -220,8 +250,8 @@ export class MannequinBody {
     if (f === this.faction) return;
     this.faction = f;
     for (const m of this.meshes) {
-      const name = (Array.isArray(m.material) ? m.material[0] : m.material).name;
-      m.material = factionMat(f, /Joint/i.test(name));
+      const name = m.userData.srcMat ?? (m.userData.srcMat = (Array.isArray(m.material) ? m.material[0] : m.material).name);
+      m.material = name === 'Men_Rest' ? restMat() : factionMat(f, /Joint/i.test(name));
     }
   }
 
