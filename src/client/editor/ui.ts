@@ -168,6 +168,12 @@ export function buildCatalog(onPick: (assetId: string) => void, deps: { thumbs: 
     });
     b.append(star);
     b.addEventListener('click', () => onPick(id));
+    // Přetažení do pohledu: předmět se položí tam, kde se pustí.
+    b.draggable = true;
+    b.addEventListener('dragstart', (e) => {
+      e.dataTransfer?.setData('application/x-pf-asset', id);
+      if (e.dataTransfer) e.dataTransfer.effectAllowed = 'copy';
+    });
     return b;
   };
   const assetTile = (a: AssetDef, tag = '') =>

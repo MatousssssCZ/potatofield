@@ -1853,12 +1853,13 @@ export class Editor {
   }
 
   /** Vloží nový objekt z katalogu na místo ve středu pohledu. */
-  insertAsset(assetId: string) {
+  /** Vloží předmět doprostřed pohledu, nebo pod daný bod obrazovky (přetažení z katalogu). */
+  insertAsset(assetId: string, at?: { x: number; y: number }) {
     const def = getAsset(assetId);
     if (!def) return;
     if (def.params.some((q) => q.type === 'points')) return this.startRoad(assetId);
     const r = this.canvas.getBoundingClientRect();
-    const hit = this.pick(r.left + r.width / 2, r.top + r.height / 2, true);
+    const hit = this.pick(at?.x ?? r.left + r.width / 2, at?.y ?? r.top + r.height / 2, true);
     let p = hit.point;
     if (!p) {
       const dir = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(this.pitch, this.yaw, 0, 'YXZ'));

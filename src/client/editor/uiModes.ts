@@ -15,7 +15,7 @@ export type EditorMode = 'select' | 'build' | 'terrain' | 'paint' | 'play';
 
 export const MODE_INFO: Record<EditorMode, { title: string; sub: string; hint: string; chip: string }> = {
   select: { title: 'Scéna', sub: 'Klikni na objekt v pohledu nebo v seznamu', chip: 'Vybrat', hint: 'Klik = výběr · Ctrl+klik = přidat · táhni = posun · G / R / S = posun / otočit / měřítko · F = zaměřit' },
-  build: { title: 'Stavět', sub: 'Klikni na předmět – vloží se doprostřed pohledu', chip: 'Stavět', hint: 'Klik v katalogu = vložit doprostřed pohledu · pak táhni na místo · R = otočit · Ctrl+D = další kus' },
+  build: { title: 'Stavět', sub: 'Přetáhni předmět do scény, nebo klikni – vloží se doprostřed pohledu', chip: 'Stavět', hint: 'Přetáhni z katalogu do pohledu · klik = doprostřed pohledu · R = otočit · Ctrl+D = další kus' },
   terrain: { title: 'Terén', sub: 'Tvar krajiny: kopce, prohlubně, srovnání', chip: 'Terén', hint: 'Táhni = štětec · Shift + táhni = opačně · [ ] = velikost štětce · RMB + WASD = létat' },
   paint: { title: 'Povrch', sub: 'Hlína, město a tráva přímo na terén; rozsévání palem', chip: 'Povrch', hint: 'Táhni = malovat · Shift + táhni = ubrat · [ ] = velikost štětce' },
   play: { title: 'Hra', sub: 'Týmy, spawny, kontrolní body, zóny a scénáře', chip: 'Hra', hint: 'Přidej spawn nebo bod tlačítkem – objeví se uprostřed pohledu, pak ho přetáhni · Del = smazat' },

@@ -1123,6 +1123,21 @@ export class App {
       b.addEventListener('click', () => this.setEditorMode(b.dataset.mode as EditorMode));
     }
     $('#scene-search').addEventListener('input', () => (this.uiDirty = true));
+    // Přetažení předmětu z katalogu do pohledu.
+    const view = $('#view');
+    view.addEventListener('dragover', (e) => {
+      if (e.dataTransfer?.types.includes('application/x-pf-asset')) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+      }
+    });
+    view.addEventListener('drop', (e) => {
+      const id = e.dataTransfer?.getData('application/x-pf-asset');
+      if (!id || this.mode !== 'editor') return;
+      e.preventDefault();
+      if (this.editor.terrainMode) this.editor.setTerrainMode(false);
+      this.editor.insertAsset(id, { x: e.clientX, y: e.clientY });
+    });
     // Zobrazení ▾: rozbalovací nabídka přepínačů pohledu.
     const viewMenu = $('#view-menu');
     $('#tb-view').addEventListener('click', (e) => {
