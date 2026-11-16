@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { patchIndoor } from './bakedLight';
 import { Sky } from 'three/examples/jsm/objects/Sky.js';
 import type { EnvironmentProfile } from '../../shared/map/schema';
 import type { QualityProfile } from './quality';
@@ -163,6 +164,7 @@ export class EnvironmentRig {
   }
 
   /**
+   * Připraví materiály ve scéně: odraz oblohy jen lesklým a úprava interiérů (bez slunce) všem.
    * Přiřadí odraz oblohy lesklým materiálům ve scéně (nové materiály před prvním vykreslením,
    * každý jen jednou – průchod scénou je levný). Volá se každý snímek z `update`.
    */
@@ -177,6 +179,18 @@ export class EnvironmentRig {
         this.reflSeen.add(m);
         const sm = m as THREE.MeshStandardMaterial;
         if (!sm.isMeshStandardMaterial) continue;
+        // Interiéry bez slunce (patchIndoor) – připojí se k vlastní úpravě shaderu materiálu.
+        if (!sm.userData.indoorPatched) {
+          sm.userData.indoorPatched = true;
+          const key = sm.customProgramCacheKey();
+          const prev = sm.onBeforeCompile;
+          sm.onBeforeCompile = (sh, r) => {
+            prev.call(sm, sh, r);
+            patchIndoor(sh);
+          };
+          sm.customProgramCacheKey = () => `${key}|in1`;
+          sm.needsUpdate = true;
+        }
         if (sm.userData.envBase === undefined) sm.userData.envBase = sm.envMapIntensity;
         const want = EnvironmentRig.reflective(sm) ? tex : null;
         if (sm.envMap !== want) {

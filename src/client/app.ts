@@ -53,7 +53,7 @@ import { Thumbnails } from './editor/thumbnails';
 import { DEFAULT_FACTIONS } from '../shared/config/arsenal';
 import { PROTOCOL_VERSION } from '../shared/net/protocol';
 import { insecureFromHttps } from './ui/servers';
-import { applyBakedLight, disableBakedLight, smokeSources } from './render/bakedLight';
+import { applyBakedLight, applyIndoor, disableBakedLight, disableIndoor, indoorAt, smokeSources } from './render/bakedLight';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
 const EDITOR_VFOV = 60;
@@ -751,6 +751,9 @@ export class App {
     const genAll = generateMap(this.ed.doc);
     this.bakeMs = applyBakedLight(this.ed.doc.terrain, genAll, this.env.sunDirection, this.quality.shadowRange);
     game.effects.setSmokeSources(smokeSources(genAll));
+    // Interiéry (pod střechou, patrem, podloubím) bez slunce a bez stínové mapy; stín jen pod vojáky.
+    this.bakeMs += applyIndoor(this.ed.doc.terrain, genAll);
+    game.soldiers.indoor = indoorAt;
     // Modely vojáků a zbraní, efekty výbuchu a jejich shadery dopředu – ne až v boji (zaseknutí
     // při prvním výbuchu granátu a při smrti, kdy server odhalí dosud neviděného přemožitele).
     const tw = performance.now();
@@ -1002,6 +1005,7 @@ export class App {
     document.body.classList.replace('mode-play', 'mode-editor');
     $('#hud').classList.add('hidden');
     disableBakedLight();
+    disableIndoor();
     this.world.setMode('editor');
     this.env.shadowRate = 0;
     this.world.update(0);

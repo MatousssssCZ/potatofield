@@ -96,21 +96,54 @@ export class PostPipeline {
       out.uniforms.uAmount = { value: 1 };
       this.grade = out;
     }
+    if (!q.antialias) {
+      // Levné vyhlazení hran místo 4× MSAA (to na integrované grafice stojí nejvíc paměťové propustnosti):
+      // FXAA-lite – 4 sousední vzorky + 2 podél hrany, jen tam, kde je kontrast jasu. Před tone mappingem.
+      const fxaa = `
+        uniform vec2 uTexel;
+        float fxL(vec3 c) { return sqrt(dot(c, vec3(0.299, 0.587, 0.114))); }
+        vec4 fxaaSample(vec2 uv) {
+          vec4 c = texture2D(tDiffuse, uv);
+          float lc = fxL(c.rgb);
+          float ln = fxL(texture2D(tDiffuse, uv + vec2(0.0, uTexel.y)).rgb), ls = fxL(texture2D(tDiffuse, uv - vec2(0.0, uTexel.y)).rgb);
+          float le = fxL(texture2D(tDiffuse, uv + vec2(uTexel.x, 0.0)).rgb), lw = fxL(texture2D(tDiffuse, uv - vec2(uTexel.x, 0.0)).rgb);
+          float lo = min(lc, min(min(ln, ls), min(le, lw))), hi = max(lc, max(max(ln, ls), max(le, lw)));
+          float range = hi - lo;
+          if (range < max(0.05, hi * 0.16)) return c;
+          // Směr hrany ze sklonu jasu; vzorky podél hrany (kolmo na gradient).
+          vec2 dir = normalize(vec2(-(ln - ls), le - lw) + 1e-5) * uTexel;
+          vec3 a = texture2D(tDiffuse, uv + dir * 0.75).rgb, b = texture2D(tDiffuse, uv - dir * 0.75).rgb;
+          float k = clamp(range / max(hi, 1e-3) * 1.6, 0.0, 1.0);
+          return vec4(mix(c.rgb, (a + b + c.rgb) / 3.0, k), c.a);
+        }
+      `;
+      const fs = out.material.fragmentShader;
+      out.material.fragmentShader = fs.replace('varying vec2 vUv;', `varying vec2 vUv;\n${fxaa}`).replace('gl_FragColor = texture2D( tDiffuse, vUv );', 'gl_FragColor = fxaaSample( vUv );');
+      out.uniforms.uTexel = { value: new THREE.Vector2(1 / size.x, 1 / size.y) };
+      this.fxaa = out;
+    }
     this.composer.addPass(out);
   }
+
+  /** Výstupní průchod s FXAA (uniform uTexel podle velikosti). */
+  private fxaa: OutputPass | null = null;
 
   get enabled() {
     return this.composer !== null;
   }
 
   get features() {
-    return [this.ao ? 'AO' : '', this.bloom ? 'bloom' : '', this.grade ? 'grade' : ''].filter(Boolean).join('+');
+    return [this.ao ? 'AO' : '', this.bloom ? 'bloom' : '', this.grade ? 'grade' : '', this.fxaa ? 'FXAA' : ''].filter(Boolean).join('+');
   }
 
   setSize(w: number, h: number) {
     if (!this.composer) return;
     this.composer.setPixelRatio(this.renderer.getPixelRatio());
     this.composer.setSize(w, h);
+    if (this.fxaa) {
+      const sz = this.renderer.getDrawingBufferSize(new THREE.Vector2());
+      this.fxaa.uniforms.uTexel.value = new THREE.Vector2(1 / sz.x, 1 / sz.y);
+    }
   }
 
   render(dt: number) {

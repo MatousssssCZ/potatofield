@@ -63,6 +63,8 @@ export function soldierLook(weaponId: string, team: 'teamA' | 'teamB'): { factio
 
 interface Soldier {
   id: string;
+  /** Měkký stín pod vojákem v interiéru (tam se slunce ani stínová mapa nepočítá). */
+  blob: THREE.Mesh;
   patch: THREE.Mesh;
   medic: THREE.Mesh;
   group: THREE.Group;
@@ -105,6 +107,25 @@ export class SoldierPool {
   /** Statistika (počty podle LOD těla a viditelné postavy). */
   lodCounts = [0, 0, 0];
   visibleCount = 0;
+  /** Je místo v interiéru (pod stropem)? Nastavuje aplikace z mřížky stropů. */
+  indoor: ((x: number, y: number, z: number) => boolean) | null = null;
+  private blobGeo = new THREE.PlaneGeometry(0.95, 0.95).rotateX(-Math.PI / 2);
+  private blobMat = (() => {
+    let map: THREE.Texture | null = null;
+    if (typeof document !== 'undefined') {
+      const c = document.createElement('canvas');
+      c.width = c.height = 64;
+      const g = c.getContext('2d')!;
+      const r = g.createRadialGradient(32, 32, 2, 32, 32, 31);
+      r.addColorStop(0, 'rgba(0,0,0,0.62)');
+      r.addColorStop(0.55, 'rgba(0,0,0,0.38)');
+      r.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = r;
+      g.fillRect(0, 0, 64, 64);
+      map = new THREE.CanvasTexture(c);
+    }
+    return new THREE.MeshBasicMaterial({ color: '#000000', map, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+  })();
   /** Náhledová scéna: vynucený LOD těla (−1 = podle vzdálenosti). */
   forceLod = -1;
 
@@ -165,7 +186,11 @@ export class SoldierPool {
     medic.scale.set(0.085, 0.085, 1);
     medic.visible = false;
     byName.spine2.add(medic);
-    const s: Soldier = { id, patch, medic, group, mesh, bones: byName, anim: new SoldierAnimator(byName), weapon, weaponId: '', look: '', lod: -1, wlod: -1, acc: 1, flash, flashUntil: 0, lastAlive: new THREE.Vector3(), diedAt: -1, life: 'alive', seen: true, body, death: 'clip', lastSpeed: 0, lastFwd: 1 };
+    const blob = new THREE.Mesh(this.blobGeo, this.blobMat);
+    blob.visible = false;
+    blob.renderOrder = 1;
+    this.root.add(blob);
+    const s: Soldier = { id, blob, patch, medic, group, mesh, bones: byName, anim: new SoldierAnimator(byName), weapon, weaponId: '', look: '', lod: -1, wlod: -1, acc: 1, flash, flashUntil: 0, lastAlive: new THREE.Vector3(), diedAt: -1, life: 'alive', seen: true, body, death: 'clip', lastSpeed: 0, lastFwd: 1 };
     this.soldiers.set(id, s);
     return s;
   }
@@ -218,6 +243,11 @@ export class SoldierPool {
       const inView = !camera || this.frustum.intersectsSphere(sphere);
       s.group.visible = show && inView;
       s.weapon.visible = s.group.visible;
+      s.blob.visible = s.group.visible && !!this.indoor?.(pos.x, pos.y, pos.z);
+      if (s.blob.visible) {
+        s.blob.position.set(pos.x, pos.y + 0.03, pos.z);
+        s.blob.scale.set(p.life === 'dead' ? 1.5 : 1, 1, p.life === 'dead' ? 1.5 : 1);
+      }
       if (!s.group.visible) continue;
       this.visibleCount++;
       const d = eye ? pos.distanceTo(eye) : 0;
@@ -289,6 +319,7 @@ export class SoldierPool {
     }
     for (const [id, s] of this.soldiers) {
       if (!s.seen) {
+        s.blob.removeFromParent();
         s.group.removeFromParent();
         s.weapon.removeFromParent();
         s.mesh.skeleton.dispose();
@@ -359,6 +390,7 @@ export class SoldierPool {
       for (const id of ids) {
         const s = this.soldiers.get(id);
         if (!s) continue;
+        s.blob.removeFromParent();
         s.group.removeFromParent();
         s.weapon.removeFromParent();
         s.mesh.skeleton.dispose();
@@ -377,6 +409,9 @@ export class SoldierPool {
     for (const m of [...Object.values(this.bodyMats), this.gearMat, this.rifleMat, this.flashMat]) m.dispose();
     for (const t of this.atlases) t.dispose();
     this.flashGeo.dispose();
+    this.blobGeo.dispose();
+    this.blobMat.map?.dispose();
+    this.blobMat.dispose();
     this.decalGeo.dispose();
     for (const m of this.decalMats.values()) {
       m.map?.dispose();

@@ -116,3 +116,16 @@ Měřeno nástrojem `scripts/hitch-probe.ts` (počítá nově přeložené shade
   (rozlišení kleslo 1280×720 → 819×460); na skutečném notebooku neměřeno.
 - **Integrovaná grafika s výchozí kvalitou** (Standardní, hráč ji sám nezvolil): bez násobku DPI
   (`maxDpr` 1) a bez 4× MSAA ve vyrovnávací paměti post-processingu.
+
+## Co bylo zbytečně drahé (měřeno `scripts/gpu-cost.ts`, SwiftShader – poměry, ne FPS)
+
+- **Odraz oblohy (IBL) na všech materiálech** – ~30 % času snímku; teď jen kov, sklo, voda, zbraně.
+  Rozptýlená složka IBL se přičítá k hemisféře (stejný jas).
+- **ORM textura čtená 3×** (drsnost, kov, AO) – teď jednou (`shareOrm`).
+- **Barevné ladění jako samostatný průchod** – sloučeno do výstupního průchodu; post-processing 9–13 % → ~4–8 %.
+- **4× MSAA ve vyrovnávací paměti na integrované grafice** – místo něj FXAA-lite ve výstupním průchodu.
+- **Stínová mapa** o polovinu menší (Nízká 512, Standardní 1024, Vysoká 2048) – měkčí stíny.
+- **Interiéry** (pod střechou, patrem, podloubím): slunce ani stínová mapa se nepočítají (`patchIndoor`, mřížka stropů
+  `ceilingGrid`), pod vojáky měkký stín.
+- Zkoušeno a vráceno: hloubkový předprůchod (překreslování budov je ~2,4×, ale v měření nepomohl).
+- Celkem: snímek ulice 1741 → ~1280 ms (−26 %) v SwiftShaderu; na skutečném GPU neměřeno.

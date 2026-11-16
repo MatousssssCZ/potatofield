@@ -10,6 +10,7 @@ const port = await server.listen(0);
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 page.on('pageerror', (e: Error) => { if (!/pointer lock/i.test(e.message)) console.log('[pageerror]', e.message); });
+page.on('console', (m: any) => { if (/THREE|ERROR/.test(m.text())) console.log('[console]', m.text().slice(0, 1200)); });
 await page.goto(`${url}?q=${q}`);
 await page.waitForFunction(() => document.querySelector('#loading')?.classList.contains('hidden'), null, { timeout: 240000 });
 await page.evaluate(([ws]: string[]) => (window as any).__pf.connectTo(ws, 'Foto'), [`ws://127.0.0.1:${port}`]);
@@ -17,7 +18,10 @@ await page.waitForFunction(() => (window as any).__pf.session?.game?.driver?.loc
 await page.evaluate(() => { const d = (window as any).__pf.session.game.driver; d.requestSpawn(d.spawnOptions()[0]?.id ?? null); });
 await page.waitForTimeout(2500);
 const [a] = [...server.sim.players.values()];
-const views: Array<[string, number, number, number, number]> = [['ulice', 0, 10, 0, -0.05], ['bok', -4, -5, 2.1, -0.14], ['zpet', 2, -20, Math.PI, -0.05]];
+// Volitelně jiný post-processing (např. FXAA místo MSAA): POST='{"antialias":false}'.
+if (process.env.POST) await page.evaluate(`(async () => { const A = window.__pf; const { PostPipeline } = await import('/src/client/render/post.ts'); A.post = new PostPipeline(A.renderer, A.scene, A.camera, { ...A.quality, ...${process.env.POST} }, true); A.resize(); })()`);
+// Pohledy: [název, x, z, otočení (rad), sklon]; vlastní přes VIEWS='[["n",x,z,yaw,pitch]]'.
+const views: Array<[string, number, number, number, number]> = process.env.VIEWS ? JSON.parse(process.env.VIEWS) : [['ulice', 0, 10, 0, -0.05], ['bok', -4, -5, 2.1, -0.14], ['zpet', 2, -20, Math.PI, -0.05]];
 for (const [name, x, z, yaw, pitch] of views) {
   a.ctrl.place(a.state, { x, y: 0.1, z }, yaw);
   a.state.pitch = pitch;

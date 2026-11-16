@@ -49,9 +49,14 @@ export class GrassField {
     m.onBeforeCompile = (sh) => {
       sh.uniforms.uTime = { value: 0 };
       this.uTime = sh.uniforms.uTime;
+      sh.uniforms.uFade = { value: new THREE.Vector2(radius * 0.5, radius * 0.95) };
       sh.vertexShader = sh.vertexShader
         .replace('#include <common>', '#include <common>\nuniform float uTime;\nvarying float vTip;')
-        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvTip = position.y / 0.6;\n{ vec3 w0 = (instanceMatrix * vec4(position, 1.0)).xyz; transformed.x += sin(uTime * 1.7 + w0.x * 0.8 + w0.z * 0.6) * 0.06 * vTip; transformed.z += cos(uTime * 1.3 + w0.z * 0.7) * 0.04 * vTip; }');
+        .replace('#include <common>', '#include <common>\nuniform vec2 uFade;')
+        .replace(
+          '#include <begin_vertex>',
+          // Plynulý náběh se vzdáleností: trs roste z nuly mezi uFade.y a uFade.x (žádné náhlé objevení).
+          '#include <begin_vertex>\nvTip = position.y / 0.6;\n{ vec3 ip = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz; float gk = 1.0 - smoothstep(uFade.x, uFade.y, distance(ip.xz, cameraPosition.xz)); transformed *= gk * gk * (3.0 - 2.0 * gk); }\n{ vec3 w0 = (instanceMatrix * vec4(position, 1.0)).xyz; transformed.x += sin(uTime * 1.7 + w0.x * 0.8 + w0.z * 0.6) * 0.06 * vTip; transformed.z += cos(uTime * 1.3 + w0.z * 0.7) * 0.04 * vTip; }');
       sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vTip;').replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb *= mix(0.62, 1.18, vTip);');
     };
     this.mesh = new THREE.InstancedMesh(g, m, max);
@@ -145,7 +150,9 @@ export class GrassField {
         hc = Math.imul(hc ^ (hc >>> 15), 2654435761);
         const cluster = ((hc >>> 0) % 1000) / 1000;
         if (r3 > 0.12 + cluster * 0.7) continue;
-        if (d > R * 0.6 && r3 > (0.12 + cluster * 0.7) * (1 - (d - R * 0.6) / (R * 0.4))) continue; // řídne k okraji
+        // Dál od kamery řidší (každý druhý až třetí trs), aby velký dosah nestál moc vrcholů; zbylé trsy jsou o kus větší.
+        const far = Math.max(0, (d - R * 0.35) / (R * 0.65));
+        if (far > 0 && r3 > (0.12 + cluster * 0.7) * (1 - 0.6 * far)) continue;
         if (this.covered(x, z)) continue;
         const dirt = t.dirt ? t.dirt[Math.max(0, Math.min(t.samplesZ - 1, Math.round((z - t.origin[1]) / t.spacing))) * t.samplesX + Math.max(0, Math.min(t.samplesX - 1, Math.round((x - t.origin[0]) / t.spacing)))] ?? 0 : 0;
         void dirt;
@@ -155,7 +162,7 @@ export class GrassField {
         const sl = Math.abs((heightAt(t, x + 1, z) ?? y) - y) + Math.abs((heightAt(t, x, z + 1) ?? y) - y);
         if (sl > 0.55) continue;
         q.setFromAxisAngle(up, r1 * Math.PI * 2);
-        const k = 0.65 + r2 * 0.9;
+        const k = (0.65 + r2 * 0.9) * (1 + 0.35 * far);
         pos.set(x, y - 0.02, z);
         sc.set(k, k * (0.8 + r3 * 0.7), k);
         m.compose(pos, q, sc);

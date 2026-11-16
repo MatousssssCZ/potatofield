@@ -179,3 +179,137 @@ export function smokeSources(gen: GeneratedObject[]): THREE.Vector3[] {
   }
   return out.slice(0, 12);
 }
+
+/**
+ * Interiéry bez slunce: výška stropu nad každou buňkou (m, absolutně; Infinity = otevřené nebe).
+ * Strop = vodorovná deska (střecha, patro, markýza, strop podloubí) aspoň 1,9 m nad zemí. Svislé
+ * díly (zdi, sloupy) strop netvoří, takže fasády patrových domů zůstanou venku. Ve shaderu je bod
+ * „uvnitř“, když leží pod stropem své buňky (vzorkuje se kousek před plochou ve směru normály,
+ * aby vnější strana zdi patřila ven a vnitřní dovnitř).
+ */
+export const CEIL_CELL = 0.5;
+export function ceilingGrid(terrain: TerrainData, gen: GeneratedObject[], cell = CEIL_CELL) {
+  const w = (terrain.samplesX - 1) * terrain.spacing, d = (terrain.samplesZ - 1) * terrain.spacing;
+  const nx = Math.ceil(w / cell), nz = Math.ceil(d / cell);
+  const ceil = new Float32Array(nx * nz).fill(Infinity);
+  const [x0, z0] = terrain.origin;
+  const ground = terrainSampler(terrain);
+  for (const g of gen) {
+    const o = g.object;
+    if (o.gameHidden) continue;
+    const [px, py, pz] = o.transform.position;
+    const yaw = o.transform.rotation[1], sc = o.transform.scale ?? 1;
+    const c = Math.cos(yaw), s = Math.sin(yaw);
+    for (const p of g.parts) {
+      if (p.render === false) continue;
+      if (p.shape !== 'box' && p.shape !== 'wedge' && p.shape !== 'cylinder') continue;
+      const sx = p.size[0] * sc, sy = p.size[1] * sc, sz = p.size[2] * sc;
+      if (Math.min(sx, sz) < 0.9 || sy > (p.shape === 'wedge' ? 2.5 : 0.7)) continue; // jen desky, ne zdi
+      const yBot = py + (p.pos[1] - p.size[1] / 2) * sc;
+      const hx = p.size[0] / 2, hz = p.size[2] / 2;
+      const ry = p.rot?.[1] ?? 0, cr = Math.cos(ry), sr = Math.sin(ry);
+      const step = (cell * 0.5) / Math.max(sc, 1e-3);
+      for (let u = -hx; u <= hx + 1e-6; u += step)
+        for (let v = -hz; v <= hz + 1e-6; v += step) {
+          const lx = p.pos[0] + cr * u + sr * v, lz = p.pos[2] - sr * u + cr * v;
+          const wx = px + (c * lx + s * lz) * sc, wz = pz + (-s * lx + c * lz) * sc;
+          const i = Math.floor((wx - x0) / cell), j = Math.floor((wz - z0) / cell);
+          if (i < 0 || j < 0 || i >= nx || j >= nz) continue;
+          const gy = ground(x0 + (i + 0.5) * cell, z0 + (j + 0.5) * cell);
+          if (yBot < gy + 1.9 || yBot > gy + 15) continue;
+          const k = j * nx + i;
+          if (yBot < ceil[k]) ceil[k] = yBot;
+        }
+    }
+  }
+  return { ceil, nx, nz, x0, z0, cell };
+}
+
+/** Uniformy interiérů (sdílené všemi osvětlenými materiály, viz patchIndoor). */
+export const indoorUniforms = {
+  uCeil: { value: null as THREE.Texture | null },
+  uCeilRect: { value: new THREE.Vector4(0, 0, 1, 1) },
+  uCeilOn: { value: 0 },
+};
+
+let ceilCpu: ReturnType<typeof ceilingGrid> | null = null;
+
+/** Nahraje mřížku stropů pro shadery; vrací dobu výpočtu (ms). */
+export function applyIndoor(terrain: TerrainData, gen: GeneratedObject[]) {
+  const t0 = performance.now();
+  const g = ceilingGrid(terrain, gen);
+  ceilCpu = g;
+  const data = new Float32Array(g.ceil.length);
+  for (let k = 0; k < data.length; k++) data[k] = Number.isFinite(g.ceil[k]) ? g.ceil[k] : -1e5; // bez stropu = „strop“ hluboko pod zemí → venku
+  indoorUniforms.uCeil.value?.dispose();
+  const tex = new THREE.DataTexture(data, g.nx, g.nz, THREE.RedFormat, THREE.FloatType);
+  tex.magFilter = tex.minFilter = THREE.NearestFilter;
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.needsUpdate = true;
+  indoorUniforms.uCeil.value = tex;
+  indoorUniforms.uCeilRect.value.set(g.x0, g.z0, 1 / (g.nx * g.cell), 1 / (g.nz * g.cell));
+  indoorUniforms.uCeilOn.value = 1;
+  return performance.now() - t0;
+}
+
+export function disableIndoor() {
+  indoorUniforms.uCeilOn.value = 0;
+  ceilCpu = null;
+}
+
+/** Je bod pod stropem (uvnitř)? Pro stín pod vojáky v interiéru. */
+export function indoorAt(x: number, y: number, z: number) {
+  const g = ceilCpu;
+  if (!g) return false;
+  const i = Math.floor((x - g.x0) / g.cell), j = Math.floor((z - g.z0) / g.cell);
+  if (i < 0 || j < 0 || i >= g.nx || j >= g.nz) return false;
+  return y + 0.6 < g.ceil[j * g.nx + i] - 0.05;
+}
+
+/**
+ * Úprava osvětleného materiálu: uvnitř (pod stropem) se nepočítá slunce ani jeho stínová mapa,
+ * okolní světlo je o něco slabší. Venku se nic nemění.
+ */
+export function patchIndoor(sh: { uniforms: Record<string, unknown>; vertexShader: string; fragmentShader: string }) {
+  if (!sh.fragmentShader.includes('#include <lights_fragment_begin>') || !sh.vertexShader.includes('#include <worldpos_vertex>')) return;
+  Object.assign(sh.uniforms, indoorUniforms);
+  sh.vertexShader = sh.vertexShader
+    .replace('#include <common>', '#include <common>\nvarying vec3 vInW;')
+    .replace(
+      '#include <worldpos_vertex>',
+      `#include <worldpos_vertex>
+      {
+        vec4 inW = vec4(transformed, 1.0);
+        #ifdef USE_BATCHING
+          inW = batchingMatrix * inW;
+        #endif
+        #ifdef USE_INSTANCING
+          inW = instanceMatrix * inW;
+        #endif
+        vInW = (modelMatrix * inW).xyz;
+      }`,
+    );
+  // Jen sluneční (směrová) světla; bodové světlo výbuchu svítí i uvnitř.
+  const chunk = THREE.ShaderChunk.lights_fragment_begin;
+  const a = chunk.indexOf('#if ( NUM_SUN_LIGHTS > 0 )'), b = chunk.indexOf('#if ( NUM_RECT_AREA_LIGHTS > 0 )');
+  if (a < 0 || b < a) return; // jiná verze Three.js – raději beze změny
+  const sun = chunk
+    .slice(a, b)
+    .replace(/\( directLight\.visible && receiveShadow \)/g, '( directLight.visible && receiveShadow && gIndoor < 0.5 )')
+    .replace(/RE_Direct\( directLight, geometryPosition/g, 'directLight.color *= 1.0 - gIndoor;\n\t\tRE_Direct( directLight, geometryPosition');
+  const begin = chunk.slice(0, a) + sun + chunk.slice(b);
+  sh.fragmentShader = sh.fragmentShader
+    .replace('#include <common>', '#include <common>\nvarying vec3 vInW;\nuniform sampler2D uCeil;\nuniform vec4 uCeilRect;\nuniform float uCeilOn;')
+    .replace(
+      '#include <lights_fragment_begin>',
+      `float gIndoor = 0.0;
+      if (uCeilOn > 0.5) {
+        vec3 inN = inverseTransformDirection(normal, viewMatrix);
+        vec3 inQ = vInW + inN * 0.6;
+        vec2 cu = (inQ.xz - uCeilRect.xy) * uCeilRect.zw;
+        if (cu.x > 0.0 && cu.y > 0.0 && cu.x < 1.0 && cu.y < 1.0) gIndoor = step(inQ.y, textureLod(uCeil, cu, 0.0).r - 0.05);
+      }
+      ${begin}`,
+    )
+    .replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\nreflectedLight.indirectDiffuse *= 1.0 - 0.3 * gIndoor;');
+}
