@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { N8AOPass } from 'n8ao';
 import type { QualityProfile } from './quality';
@@ -46,7 +45,8 @@ const GradeShader = {
 export class PostPipeline {
   private composer: EffectComposer | null = null;
   private ao: InstanceType<typeof N8AOPass> | null = null;
-  private grade: ShaderPass | null = null;
+  /** Výstupní průchod s barevným laděním (uniformy uTime, uAmount). */
+  private grade: OutputPass | null = null;
   private bloom: UnrealBloomPass | null = null;
   private t = 0;
 
@@ -82,11 +82,21 @@ export class PostPipeline {
       this.bloom = new UnrealBloomPass(new THREE.Vector2(size.x / 2, size.y / 2), 0.22, 0.6, 1.05);
       this.composer.addPass(this.bloom);
     }
-    this.composer.addPass(new OutputPass());
+    // Barevné ladění se počítá přímo ve výstupním průchodu (tone mapping + sRGB): o jeden celoobrazovkový
+    // průchod a jeden zápis/čtení celé vyrovnávací paměti méně – stejný výsledek.
+    const out = new OutputPass();
     if (useGrade) {
-      this.grade = new ShaderPass(GradeShader);
-      this.composer.addPass(this.grade);
+      const g = GradeShader.fragmentShader;
+      const body = g.slice(g.indexOf('vec3 col = c.rgb;'), g.lastIndexOf('gl_FragColor'));
+      const helpers = 'uniform float uTime; uniform float uAmount;\nfloat hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233)) + uTime) * 43758.5453); }\n';
+      const fs = out.material.fragmentShader;
+      const end = fs.lastIndexOf('}');
+      out.material.fragmentShader = fs.slice(0, end).replace('varying vec2 vUv;', `varying vec2 vUv;\n${helpers}`) + `\n{ vec4 c = clamp(gl_FragColor, 0.0, 1.0);\n${body}\ngl_FragColor = vec4(clamp(col, 0.0, 1.0), c.a); }\n}`;
+      out.uniforms.uTime = { value: 0 };
+      out.uniforms.uAmount = { value: 1 };
+      this.grade = out;
     }
+    this.composer.addPass(out);
   }
 
   get enabled() {

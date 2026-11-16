@@ -35,9 +35,9 @@ describe('dynamické rozlišení', () => {
     expect(d.scale).toBe(1);
   });
 
-  it('integrovaná grafika: standard bez násobku DPI a MSAA, jen bez vlastní volby', () => {
+  it('integrovaná grafika: standard bez MSAA (rozlišení beze změny), jen bez vlastní volby', () => {
     const q = forDevice(QUALITY.standard, 'ANGLE (Intel, Intel(R) UHD Graphics 620 Direct3D11)', false);
-    expect(q.maxDpr).toBe(1);
+    expect(q.maxDpr).toBe(QUALITY.standard.maxDpr);
     expect(q.antialias).toBe(false);
     expect(forDevice(QUALITY.standard, 'ANGLE (Intel, Intel(R) UHD Graphics 620)', true)).toBe(QUALITY.standard);
     expect(forDevice(QUALITY.standard, 'NVIDIA GeForce RTX 3060', false)).toBe(QUALITY.standard);

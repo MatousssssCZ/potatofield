@@ -31,7 +31,7 @@ export interface Settings {
   colorblind: Colorblind;
   netDiag: boolean;
   showFps: boolean;
-  /** Automaticky snížit rozlišení, když hra nestíhá (výchozí zapnuto). */
+  /** Automaticky snížit rozlišení, když hra nestíhá (výchozí vypnuto – hráč si ho může zapnout). */
   dynamicRes?: boolean;
   /** Měkké textury ve stylu BF2 (nižší rozlišení, rozmazání); změna znovu načte stránku. */
   softTextures: boolean;
@@ -66,7 +66,7 @@ export const DEFAULT_SETTINGS: Settings = {
   colorblind: 'none',
   netDiag: false,
   showFps: false,
-  dynamicRes: true,
+  dynamicRes: false,
   softTextures: true,
   bf2Look: true,
   filmEffects: true,

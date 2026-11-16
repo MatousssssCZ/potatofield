@@ -755,6 +755,7 @@ export class App {
     // při prvním výbuchu granátu a při smrti, kdy server odhalí dosud neviděného přemožitele).
     const tw = performance.now();
     const unwarm = game.warmup();
+    this.env.assignReflections(); // odraz oblohy u kovů ještě před překladem (jinak by se překládalo znovu)
     this.post.compile();
     unwarm();
     this.warmMs = performance.now() - tw;
@@ -1508,7 +1509,7 @@ export class App {
   resize() {
     const vp = $('#viewport');
     const w = Math.max(1, vp.clientWidth), h = Math.max(1, vp.clientHeight);
-    const dyn = this.session && this.settings.dynamicRes !== false ? this.dynRes.scale : 1;
+    const dyn = this.session && this.settings.dynamicRes ? this.dynRes.scale : 1;
     const dpr = Math.min(window.devicePixelRatio || 1, this.quality.maxDpr) * this.quality.renderScale * dyn;
     this.renderer.setPixelRatio(dpr);
     this.renderer.setSize(w, h, false);
@@ -1520,7 +1521,7 @@ export class App {
   /** Ve hře: při dlouhých snímcích sníží rozlišení renderu (a při rezervě vrátí); viz DynamicResolution. */
   private adaptResolution(dt: number) {
     const g = this.session?.game;
-    if (!g || this.settings.dynamicRes === false || document.hidden) return;
+    if (!g || !this.settings.dynamicRes || document.hidden) return;
     if (this.dynRes.push(dt * 1000)) this.resize();
     if (!this.slowHinted && this.quality.id !== 'low' && this.dynRes.slowFor >= 10000) {
       this.slowHinted = true;

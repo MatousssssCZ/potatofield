@@ -134,6 +134,59 @@ export class EnvironmentRig {
     return this.sunDir.clone();
   }
   private envRT: THREE.WebGLRenderTarget | null = null;
+  private envTex: THREE.Texture | null = null;
+  private envScale = 1;
+  private reflSeen = new WeakSet<THREE.Material>();
+
+  /**
+   * Okolní světlo jen z hemisféry. Dřív k ní přispívalo i IBL (PMREM odraz oblohy) na všech
+   * materiálech – to bylo jedno z nejdražších míst v shaderu každého pixelu (~30 % snímku), a přitom
+   * matný písek a omítka z něj mají jen rozptýlenou složku. Ta se teď přičte k hemisféře
+   * (π × barva prostředí × intenzita, stejně jako ji počítá Three.js), takže jas zůstává.
+   */
+  private setAmbient(look: SkyLook, ambient: number) {
+    const lin = (hex: string) => new THREE.Color(hex);
+    const zen = lin(look.envZenith), hor = lin(look.envHorizon), gnd = lin(look.hemiGround).multiplyScalar(0.6);
+    const envSky = hor.clone().lerp(zen, 0.6), envGround = hor.clone().multiplyScalar(0.8).lerp(gnd, 0.6);
+    const k = Math.PI * look.envIntensity;
+    const sky = lin(look.hemiSky).multiplyScalar(look.hemiIntensity * ambient).add(envSky.multiplyScalar(k));
+    const ground = lin(look.hemiGround).multiplyScalar(look.hemiIntensity * ambient).add(envGround.multiplyScalar(k));
+    const m = Math.max(sky.r, sky.g, sky.b, 1e-4);
+    this.hemi.intensity = m;
+    this.hemi.color.copy(sky.multiplyScalar(1 / m));
+    this.hemi.groundColor.copy(ground.multiplyScalar(1 / m));
+  }
+
+  /** Lesklý materiál (kov, sklo, voda, kovové díly zbraní) – jen ten dostane odraz oblohy. */
+  static reflective(m: THREE.MeshStandardMaterial) {
+    return /metal|Metal|glass|water/.test(m.name) || (!m.metalnessMap && m.metalness >= 0.3) || m.roughness < 0.25;
+  }
+
+  /**
+   * Přiřadí odraz oblohy lesklým materiálům ve scéně (nové materiály před prvním vykreslením,
+   * každý jen jednou – průchod scénou je levný). Volá se každý snímek z `update`.
+   */
+  assignReflections() {
+    const tex = this.envTex;
+    if (!tex) return;
+    this.scene.traverse((o) => {
+      const mm = (o as THREE.Mesh).material;
+      if (!mm) return;
+      for (const m of Array.isArray(mm) ? mm : [mm]) {
+        if (this.reflSeen.has(m)) continue;
+        this.reflSeen.add(m);
+        const sm = m as THREE.MeshStandardMaterial;
+        if (!sm.isMeshStandardMaterial) continue;
+        if (sm.userData.envBase === undefined) sm.userData.envBase = sm.envMapIntensity;
+        const want = EnvironmentRig.reflective(sm) ? tex : null;
+        if (sm.envMap !== want) {
+          sm.envMap = want;
+          sm.needsUpdate = true;
+        }
+        sm.envMapIntensity = sm.userData.envBase * this.envScale;
+      }
+    });
+  }
   private shadowRange = 45;
   private time = 0;
   /**
@@ -200,9 +253,7 @@ export class EnvironmentRig {
 
     this.sun.color.set(env.sunColor);
     this.sun.intensity = env.sunIntensity * (env.preset === 'overcastRain' ? 0.35 : 1);
-    this.hemi.color.set(look.hemiSky);
-    this.hemi.groundColor.set(look.hemiGround);
-    this.hemi.intensity = look.hemiIntensity * env.ambientIntensity;
+    this.setAmbient(look, env.ambientIntensity);
     this.fog.color.set(env.fogColor);
     // FogExp2: f = exp(−(d·density)²) → 50 % při d = √ln2 / density. Vypnutá mlha = hustota 0.
     const fogOn = env.fogEnabled !== false;
@@ -293,8 +344,11 @@ export class EnvironmentRig {
     envScene.add(dome);
     this.envRT?.dispose();
     this.envRT = pm.fromScene(envScene, 0, 0.1, 100);
-    this.scene.environment = this.envRT.texture;
-    this.scene.environmentIntensity = look.envIntensity;
+    // Odraz oblohy jen u lesklých materiálů (kov, sklo, voda); viz assignReflections.
+    this.scene.environment = null;
+    this.envTex = this.envRT.texture;
+    this.envScale = look.envIntensity;
+    this.reflSeen = new WeakSet();
     pm.dispose();
     dome.geometry.dispose();
     mat.dispose();
@@ -303,6 +357,7 @@ export class EnvironmentRig {
   /** Stínová kamera sleduje pohled, přichycená na texely (bez mihotání). */
   update(focus: THREE.Vector3, dt: number) {
     this.time += dt;
+    this.assignReflections();
     this.sky.material.uniforms.time.value = this.time;
     const sh = this.sun.shadow;
     const texel = (this.shadowRange * 2) / Math.max(1, sh.mapSize.x);

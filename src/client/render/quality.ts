@@ -112,13 +112,13 @@ export function qualityForGpu(gpu: string, cores: number): QualityProfile['id'] 
 }
 
 /**
- * Úprava doporučené kvality pro integrovanou grafiku (notebooky): render v rozlišení obrazovky
- * bez násobku DPI a bez MSAA ve vyrovnávací paměti post-processingu (na sdílené paměti nejdražší).
+ * Úprava doporučené kvality pro integrovanou grafiku (notebooky): bez 4× MSAA ve vyrovnávací paměti
+ * post-processingu (na sdílené paměti nejdražší); hrany pak vyhlazuje levné FXAA ve výstupním průchodu.
  * Jen když hráč kvalitu sám nezvolil.
  */
 export function forDevice(q: QualityProfile, gpu: string, chosen: boolean): QualityProfile {
   if (chosen || q.id !== 'standard' || !isIntegratedGpu(gpu)) return q;
-  return { ...q, maxDpr: 1, antialias: false };
+  return { ...q, antialias: false };
 }
 
 /**

@@ -5,7 +5,7 @@ import type { GeneratedObject } from '../../world/registry';
 import { buildObjectGeometry } from './geometry';
 import { bakeUniforms } from './bakedLight';
 import { buildSurround } from './surround';
-import { MATERIALS, sharedUniforms, type MaterialLibrary, type TexSet } from './materials';
+import { MATERIALS, shareOrm, sharedUniforms, type MaterialLibrary, type TexSet } from './materials';
 
 /**
  * Vizuální reprezentace mapy. Každý objekt mapy = jedna skupina se stabilním ID
@@ -377,8 +377,9 @@ export class WorldView {
             normal = normalize( tbn * mapN );
           }`,
         );
+      shareOrm(m, sh);
     };
-    m.customProgramCacheKey = () => 'terrain-v4';
+    m.customProgramCacheKey = () => 'terrain-v5';
     this.terrainMat = m;
     return m;
   }

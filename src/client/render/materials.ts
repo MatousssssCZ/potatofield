@@ -285,6 +285,33 @@ export const sharedUniforms = {
 };
 
 /**
+ * Jedno čtení ORM textury místo tří: Three.js čte drsnost, kovovost i AO každou zvlášť, i když jde
+ * o tutéž texturu (R = AO, G = drsnost, B = kov). Stejný výsledek, o dvě čtení textury na pixel méně.
+ * Funguje i po úpravě chunků s posunem mip (rozpití) – posun se převezme z čtení drsnosti.
+ */
+export function shareOrm(mat: THREE.MeshStandardMaterial, sh: { fragmentShader: string }) {
+  const orm = mat.roughnessMap;
+  if (!orm) return;
+  const inline = (name: string) => (sh.fragmentShader.includes(`#include <${name}>`) ? (THREE.ShaderChunk as Record<string, string>)[name] : null);
+  const rough = inline('roughnessmap_fragment');
+  if (rough) sh.fragmentShader = sh.fragmentShader.replace('#include <roughnessmap_fragment>', rough);
+  // Čtení drsnosti → společná proměnná gOrm (zachová případný posun mip).
+  const re = /vec4 texelRoughness = texture2D\( roughnessMap, ([^;]*);/;
+  if (!re.test(sh.fragmentShader)) return;
+  sh.fragmentShader = sh.fragmentShader.replace(re, 'vec4 gOrm = texture2D( roughnessMap, $1;\n\tvec4 texelRoughness = gOrm;');
+  if (mat.metalnessMap === orm) {
+    const m = inline('metalnessmap_fragment');
+    if (m) sh.fragmentShader = sh.fragmentShader.replace('#include <metalnessmap_fragment>', m);
+    sh.fragmentShader = sh.fragmentShader.replace(/texture2D\( metalnessMap, [^;]*;/, 'gOrm;');
+  }
+  if (mat.aoMap === orm) {
+    const a = inline('aomap_fragment');
+    if (a) sh.fragmentShader = sh.fragmentShader.replace('#include <aomap_fragment>', a);
+    sh.fragmentShader = sh.fragmentShader.replace(/texture2D\( aoMap, vAoMapUv[^)]*\)\.r/, 'gOrm.r');
+  }
+}
+
+/**
  * Úprava standardního shaderu: velkoplošná variace barvy (proti viditelnému opakování)
  * a prach u paty objektu podle atributu `aBaseH` (výška nad podstavou objektu).
  */
@@ -301,6 +328,7 @@ export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, m
         .replace('#include <metalnessmap_fragment>', biased(THREE.ShaderChunk.metalnessmap_fragment, ['metalnessMap']))
         .replace('#include <aomap_fragment>', biased(THREE.ShaderChunk.aomap_fragment, ['aoMap']));
     }
+    shareOrm(mat, sh);
     sh.uniforms.uMacro = sharedUniforms.uMacro;
     sh.uniforms.uDustColor = sharedUniforms.uDustColor;
     sh.uniforms.uDust = { value: dust };
