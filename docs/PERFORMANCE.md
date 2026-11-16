@@ -107,3 +107,12 @@ Měřeno nástrojem `scripts/hitch-probe.ts` (počítá nově přeložené shade
   teď staví při vstupu do hry (`Game.warmup`), shadery se předem přeloží se stejným cílem kreslení jako
   ve hře (`PostPipeline.compile`, včetně jednoho vykreslení).
 - Cena: delší vstup do hry (v SwiftShaderu ~3,5 s, na skutečném GPU neměřeno).
+
+## Slabší notebooky (integrovaná grafika)
+
+- **Dynamické rozlišení** (Nastavení → Automatické rozlišení, výchozí zapnuto): když medián doby snímku
+  za 1,5 s přesáhne 22 ms, rozlišení renderu klesne (až na 55 %, u Nízké 60 %); při rezervě se vrací.
+  Když hra nestíhá ani na minimu ~10 s, HUD jednou doporučí kvalitu Nízká. Ověřeno jen v SwiftShaderu
+  (rozlišení kleslo 1280×720 → 819×460); na skutečném notebooku neměřeno.
+- **Integrovaná grafika s výchozí kvalitou** (Standardní, hráč ji sám nezvolil): bez násobku DPI
+  (`maxDpr` 1) a bez 4× MSAA ve vyrovnávací paměti post-processingu.

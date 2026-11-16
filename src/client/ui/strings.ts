@@ -230,6 +230,7 @@ const cs = {
   'set.cb.tritan': 'Tritanopie',
   'set.netDiag': 'Síťová diagnostika',
   'set.fps': 'Ukazatel FPS',
+  'set.dynamicRes': 'Automatické rozlišení (při nízkém FPS)',
   'set.softTextures': 'Měkké textury (styl BF2)',
   'set.film': 'Filmové efekty',
   'set.filmHint': 'Barevné ladění, vinětace a (na silnější grafice) záře slunce. Změna znovu načte stránku.',
@@ -385,6 +386,7 @@ const cs = {
   'hud.resupply': 'Drž LMB – doplnit munici: {name}',
   'hud.resupplySelf': 'Drž LMB – doplnit munici sobě',
   'sys.revived': 'Oživil jsi: {name}',
+  'sys.slow': 'Hra na tomto zařízení nestíhá ani se sníženým rozlišením – zkus Nastavení → Kvalita: Nízká.',
 } as const;
 
 export type StringKey = keyof typeof cs;
@@ -617,6 +619,7 @@ const en: Record<StringKey, string> = {
   'set.cb.tritan': 'Tritanopia',
   'set.netDiag': 'Network diagnostics',
   'set.fps': 'FPS counter',
+  'set.dynamicRes': 'Automatic resolution (when FPS is low)',
   'set.softTextures': 'Soft textures (BF2 style)',
   'set.film': 'Film effects',
   'set.filmHint': 'Colour grading, vignette and (on stronger GPUs) sun glow. Changing it reloads the page.',
@@ -772,6 +775,7 @@ const en: Record<StringKey, string> = {
   'hud.resupply': 'Hold LMB – resupply: {name}',
   'hud.resupplySelf': 'Hold LMB – resupply yourself',
   'sys.revived': 'You revived: {name}',
+  'sys.slow': 'The game is struggling on this device even at reduced resolution – try Settings → Quality: Low.',
 };
 
 export const STRINGS: Record<'cs' | 'en', Record<StringKey, string>> = { cs, en };

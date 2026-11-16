@@ -470,6 +470,11 @@ export class Game {
    * postaví modely vojáků a zbraní a vytvoří efekty výbuchu, aby je `renderer.compile` přeložil
    * dopředu. Vrací úklid, který se volá po překladu.
    */
+  /** Systémová zpráva v HUD (např. upozornění na výkon). */
+  notice(text: string) {
+    this.hud.system(text, this.now);
+  }
+
   warmup(): () => void {
     const a = this.soldiers.warmup();
     const b = this.nades.warmup();

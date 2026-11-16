@@ -31,7 +31,7 @@ import { preloadGlbProps } from './render/glbProps';
 import { MaterialLibrary, TEXTURE_IDS, generateTextures, makeMacroNoise, sharedUniforms } from './render/materials';
 import { PostPipeline } from './render/post';
 import { GrassField } from './render/grass';
-import { QUALITY, type QualityProfile } from './render/quality';
+import { DynamicResolution, QUALITY, forDevice, type QualityProfile } from './render/quality';
 import { WorldView } from './render/worldView';
 import { PlaySession } from './runtime/session';
 import { GameAudio } from './runtime/audio';
@@ -40,7 +40,7 @@ import { TeamUi } from './ui/teamUi';
 import type { WsLike } from '../shared/net/client';
 import type { GameDriver } from './runtime/driver';
 import type { Team } from '../shared/map/schema';
-import { SettingsView, applyUiSettings, bindingsOf, controlsView, keyLabel, loadSettings, saveSettings, type Settings } from './ui/settings';
+import { DETECTED, SettingsView, applyUiSettings, bindingsOf, controlsView, keyLabel, loadSettings, saveSettings, type Settings } from './ui/settings';
 import { MainMenu, type Phase } from './ui/mainMenu';
 import { PauseMenu } from './ui/pause';
 import { TeamScreens, scoreboard } from './ui/teamScreens';
@@ -76,6 +76,9 @@ export class App {
   grass: GrassField | null = null;
   /** Doba zapečení stínu a AO (ms), pro dev výpis. */
   warmMs = 0;
+  /** Dynamické rozlišení podle doby snímku (jen ve hře). */
+  private dynRes!: DynamicResolution;
+  private slowHinted = false;
   bakeMs = 0;
   phys!: PhysicsWorld;
   ed!: EditorDoc;
@@ -172,7 +175,8 @@ export class App {
   async init() {
     const urlQ = new URLSearchParams(location.search).get('q');
     if (urlQ && urlQ in QUALITY) this.settings.quality = urlQ as QualityProfile['id'];
-    this.quality = QUALITY[this.settings.quality];
+    this.quality = forDevice(QUALITY[this.settings.quality], DETECTED.gpu, !!this.settings.qualityChosen);
+    this.dynRes = new DynamicResolution(1, this.quality.id === 'low' ? 0.6 : 0.55);
     const canvas = $<HTMLCanvasElement>('#view');
     const r = new THREE.WebGLRenderer({ canvas, antialias: this.quality.antialias, powerPreference: 'high-performance', stencil: false });
     r.outputColorSpace = THREE.SRGBColorSpace;
@@ -988,6 +992,7 @@ export class App {
     this.session = null;
     this.mode = 'editor';
     this.switches++;
+    if (this.dynRes.scale < 1) this.resize(); // editor v plném rozlišení profilu
     if (document.fullscreenElement) {
       const kb = (navigator as unknown as { keyboard?: { unlock?: () => void } }).keyboard;
       kb?.unlock?.();
@@ -1503,12 +1508,24 @@ export class App {
   resize() {
     const vp = $('#viewport');
     const w = Math.max(1, vp.clientWidth), h = Math.max(1, vp.clientHeight);
-    const dpr = Math.min(window.devicePixelRatio || 1, this.quality.maxDpr) * this.quality.renderScale;
+    const dyn = this.session && this.settings.dynamicRes !== false ? this.dynRes.scale : 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, this.quality.maxDpr) * this.quality.renderScale * dyn;
     this.renderer.setPixelRatio(dpr);
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.post.setSize(w, h);
+  }
+
+  /** Ve hře: při dlouhých snímcích sníží rozlišení renderu (a při rezervě vrátí); viz DynamicResolution. */
+  private adaptResolution(dt: number) {
+    const g = this.session?.game;
+    if (!g || this.settings.dynamicRes === false || document.hidden) return;
+    if (this.dynRes.push(dt * 1000)) this.resize();
+    if (!this.slowHinted && this.quality.id !== 'low' && this.dynRes.slowFor >= 10000) {
+      this.slowHinted = true;
+      g.notice(t('sys.slow'));
+    }
   }
 
   private loop = (now: number) => {
@@ -1542,6 +1559,7 @@ export class App {
       if (this.session) this.grass.update(this.camera.position, performance.now() / 1000);
     }
     this.post.render(dt);
+    this.adaptResolution(dt);
     this.frameTimes.push(dt * 1000);
     if (this.frameTimes.length > 300) this.frameTimes.shift();
     this.devT += dt;

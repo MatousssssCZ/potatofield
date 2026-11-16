@@ -31,6 +31,8 @@ export interface Settings {
   colorblind: Colorblind;
   netDiag: boolean;
   showFps: boolean;
+  /** Automaticky snížit rozlišení, když hra nestíhá (výchozí zapnuto). */
+  dynamicRes?: boolean;
   /** Měkké textury ve stylu BF2 (nižší rozlišení, rozmazání); změna znovu načte stránku. */
   softTextures: boolean;
   /** Vzhled prostředí blíž BF2 (sytější obloha, slabší opar). */
@@ -64,6 +66,7 @@ export const DEFAULT_SETTINGS: Settings = {
   colorblind: 'none',
   netDiag: false,
   showFps: false,
+  dynamicRes: true,
   softTextures: true,
   bf2Look: true,
   filmEffects: true,
@@ -243,6 +246,7 @@ export class SettingsView {
         settingRow(t('set.bf2Look'), check('bf2Look'), t('set.bf2LookHint')),
         settingRow(t('set.film'), check('filmEffects'), t('set.filmHint')),
         settingRow(t('set.fps'), check('showFps')),
+        settingRow(t('set.dynamicRes'), check('dynamicRes')),
       );
     } else if (this.cat === 'audio') {
       body = h('div', { class: 'pf-set-body' }, settingRow(t('set.volume'), slider('volume', 0, 1, 0.05, pct)));
