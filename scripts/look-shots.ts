@@ -5,7 +5,17 @@ import { GameServer } from '../server/gameServer';
 import { buildStreetMap } from '../src/world/maps/street';
 const { chromium } = createRequire(import.meta.url)('playwright');
 const [url = 'http://localhost:5173/', out = '.', q = 'standard'] = process.argv.slice(2);
-const server = await GameServer.create(buildStreetMap(), { conquest: false });
+const doc = buildStreetMap();
+// GRASS=1: namalovat vrstvu trávy (pruhy a ostrůvky kolem startu) pro kontrolu vzhledu.
+if (process.env.GRASS) {
+  const t = doc.terrain;
+  t.grass = t.heights.map((_, i) => {
+    const x = t.origin[0] + (i % t.samplesX) * t.spacing, z = t.origin[1] + Math.floor(i / t.samplesX) * t.spacing;
+    const v = Math.max(0, 1 - Math.hypot(x - 3, z - 12) / 7) + Math.max(0, 1 - Math.hypot(x + 6, z - 6) / 5) + (Math.abs(x) > 16 ? 0.6 : 0);
+    return Math.round(Math.min(1, v * 1.6) * 100) / 100;
+  });
+}
+const server = await GameServer.create(doc, { conquest: false });
 const port = await server.listen(0);
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });

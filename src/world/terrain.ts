@@ -4,7 +4,7 @@ import type { TerrainData } from '../shared/map/schema';
  * Štětce terénu (čisté funkce nad výškovým polem – testovatelné, sdílené).
  * Síla je v metrech za sekundu (u malování v podílu za sekundu) → tah nezávisí na FPS.
  */
-export type BrushKind = 'raise' | 'lower' | 'smooth' | 'flatten' | 'paintDirt' | 'paintUrban' | 'paintErase';
+export type BrushKind = 'raise' | 'lower' | 'smooth' | 'flatten' | 'paintDirt' | 'paintUrban' | 'paintGrass' | 'paintGrassLess' | 'paintErase';
 
 export interface Brush {
   kind: BrushKind;
@@ -57,6 +57,7 @@ export function applyBrush(t: TerrainData, b: Brush, x: number, z: number, dt: n
   if (b.kind === 'paintDirt' && !t.dirt) t.dirt = new Array(t.heights.length).fill(0);
   if ((b.kind === 'paintUrban' || b.kind === 'paintErase') && !t.urban) t.urban = new Array(t.heights.length).fill(0);
   if (b.kind === 'paintErase' && !t.dirt) t.dirt = new Array(t.heights.length).fill(0);
+  if ((b.kind === 'paintGrass' || b.kind === 'paintGrassLess' || b.kind === 'paintErase') && !t.grass) t.grass = new Array(t.heights.length).fill(0);
   const src = b.kind === 'smooth' ? t.heights.slice() : t.heights;
   for (let iz = reg.z0; iz <= reg.z1; iz++)
     for (let ix = reg.x0; ix <= reg.x1; ix++) {
@@ -70,9 +71,12 @@ export function applyBrush(t: TerrainData, b: Brush, x: number, z: number, dt: n
       if (isPaint) {
         if (b.kind === 'paintDirt') t.dirt![i] = r2(Math.min(1, t.dirt![i] + k));
         else if (b.kind === 'paintUrban') t.urban![i] = r2(Math.min(1, t.urban![i] + k));
+        else if (b.kind === 'paintGrass') t.grass![i] = r2(Math.min(1, t.grass![i] + k));
+        else if (b.kind === 'paintGrassLess') t.grass![i] = r2(Math.max(0, t.grass![i] - k));
         else {
           t.dirt![i] = r2(Math.max(0, t.dirt![i] - k));
           t.urban![i] = r2(Math.max(0, t.urban![i] - k));
+          t.grass![i] = r2(Math.max(0, t.grass![i] - k));
         }
         continue;
       }
@@ -102,15 +106,17 @@ const r2 = (v: number) => Math.round(v * 100) / 100;
 
 /** Kopie hodnot oblasti (pro undo). */
 export function readRegion(t: TerrainData, r: Region) {
-  const out: { heights: number[]; dirt?: number[]; urban?: number[] } = { heights: [] };
+  const out: { heights: number[]; dirt?: number[]; urban?: number[]; grass?: number[] } = { heights: [] };
   if (t.dirt) out.dirt = [];
   if (t.urban) out.urban = [];
+  if (t.grass) out.grass = [];
   for (let iz = r.z0; iz <= r.z1; iz++)
     for (let ix = r.x0; ix <= r.x1; ix++) {
       const i = sampleIndex(t, ix, iz);
       out.heights.push(t.heights[i]);
       out.dirt?.push(t.dirt![i]);
       out.urban?.push(t.urban![i]);
+      out.grass?.push(t.grass![i]);
     }
   return out;
 }
@@ -119,12 +125,14 @@ export function writeRegion(t: TerrainData, r: Region, v: ReturnType<typeof read
   let k = 0;
   if (v.dirt && !t.dirt) t.dirt = new Array(t.heights.length).fill(0);
   if (v.urban && !t.urban) t.urban = new Array(t.heights.length).fill(0);
+  if (v.grass && !t.grass) t.grass = new Array(t.heights.length).fill(0);
   for (let iz = r.z0; iz <= r.z1; iz++)
     for (let ix = r.x0; ix <= r.x1; ix++, k++) {
       const i = sampleIndex(t, ix, iz);
       t.heights[i] = v.heights[k];
       if (v.dirt) t.dirt![i] = v.dirt[k];
       if (v.urban) t.urban![i] = v.urban[k];
+      if (v.grass) t.grass![i] = v.grass[k];
     }
 }
 

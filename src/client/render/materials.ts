@@ -280,6 +280,8 @@ export function makeMacroNoise(): THREE.DataTexture {
 export const sharedUniforms = {
   uMacro: { value: null as THREE.Texture | null },
   uDustColor: { value: new THREE.Color('#b59b77') },
+  /** Prachový film na všech površích objektů (podíl barvy prachu). */
+  uDustAll: { value: 0.12 },
   /** Čas pro vítr ve vegetaci (s); nastavuje hlavní smyčka. */
   uTime: { value: 0 },
 };
@@ -331,6 +333,7 @@ export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, m
     shareOrm(mat, sh);
     sh.uniforms.uMacro = sharedUniforms.uMacro;
     sh.uniforms.uDustColor = sharedUniforms.uDustColor;
+    sh.uniforms.uDustAll = sharedUniforms.uDustAll;
     sh.uniforms.uDust = { value: dust };
     sh.uniforms.uMacroAmt = { value: macro };
     sh.uniforms.uTime = sharedUniforms.uTime;
@@ -351,7 +354,7 @@ export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, m
     sh.fragmentShader = sh.fragmentShader
       .replace(
         '#include <common>',
-        '#include <common>\nuniform sampler2D uMacro;\nuniform vec3 uDustColor;\nuniform float uDust;\nuniform float uMacroAmt;\nuniform float uWear;\nvarying float vBaseH;\nvarying vec3 vWPos;',
+        '#include <common>\nuniform sampler2D uMacro;\nuniform vec3 uDustColor;\nuniform float uDustAll;\nuniform float uDust;\nuniform float uMacroAmt;\nuniform float uWear;\nvarying float vBaseH;\nvarying vec3 vWPos;',
       )
       .replace(
         '#include <map_fragment>',
@@ -363,19 +366,27 @@ export function patchWeathering(mat: THREE.MeshStandardMaterial, dust: number, m
           float macroV = mix(1.0, (0.8 + 0.4 * m1) * (0.92 + 0.16 * m2), uMacroAmt);
           diffuseColor.rgb *= macroV;
           float dn = texture2D(uMacro, wp * 0.23).b;
-          float dustT = (1.0 - smoothstep(0.0, 0.7 + dn * 0.6, vBaseH)) * uDust * (0.55 + 0.45 * dn);
-          diffuseColor.rgb = mix(diffuseColor.rgb, uDustColor, dustT * 0.6);
+          // Prach od země (vyšší a silnější pás), prachový film všude a prach na vodorovných plochách
+          // (římsy, parapety, střechy, horní hrany beden), tmavé skvrny špíny ve velkém měřítku.
+          float dustT = (1.0 - smoothstep(0.0, 1.1 + dn * 0.9, vBaseH)) * uDust * (0.6 + 0.4 * dn);
+          float upF = 0.0;
+          #ifndef FLAT_SHADED
+            upF = smoothstep(0.55, 0.95, inverseTransformDirection(normalize(vNormal), viewMatrix).y);
+          #endif
+          float film = uDustAll * (0.6 + 0.4 * dn) + upF * 0.38 * (0.5 + 0.5 * dn) * step(0.01, uDust + uMacroAmt);
+          diffuseColor.rgb = mix(diffuseColor.rgb, uDustColor, clamp(dustT * 0.75 + film, 0.0, 0.85));
+          diffuseColor.rgb *= 1.0 - 0.13 * smoothstep(0.58, 0.82, m1) * uMacroAmt;
           if (uWear > 0.0) {
             // Svislé stopy po vodě (stékají od římsy), odlupující se omítka u země, tmavé skvrny od kouře.
             vec2 hz = vec2(vWPos.x + vWPos.z, vWPos.y);
             float st = texture2D(uMacro, vec2(hz.x * 0.38, hz.y * 0.03)).g;
             float streak = smoothstep(0.6, 0.82, st) * smoothstep(0.1, 1.2, vBaseH);
-            diffuseColor.rgb *= 1.0 - 0.26 * streak * uWear;
+            diffuseColor.rgb *= 1.0 - 0.34 * streak * uWear;
             float pe = texture2D(uMacro, hz * 0.55 + 4.3).b;
             float peel = smoothstep(0.7, 0.76, pe) * (1.0 - smoothstep(0.4, 2.4, vBaseH));
             vec3 under = diffuseColor.rgb * vec3(0.52, 0.47, 0.42);
             diffuseColor.rgb = mix(diffuseColor.rgb, under, peel * 0.85 * uWear);
-            float soot = smoothstep(0.72, 0.9, texture2D(uMacro, hz * 0.21 + 9.1).r) * 0.22;
+            float soot = smoothstep(0.7, 0.9, texture2D(uMacro, hz * 0.21 + 9.1).r) * 0.28;
             diffuseColor.rgb *= 1.0 - soot * uWear;
           }
         }`,

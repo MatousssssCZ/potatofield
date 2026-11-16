@@ -33,6 +33,8 @@ export interface TerrainData {
   dirt?: number[];
   /** Volitelná malovaná vrstva: podíl hrubého městského povrchu 0–1 na vzorek. */
   urban?: number[];
+  /** Volitelná malovaná vrstva: suchá tráva 0–1 na vzorek (povrch + 3D stébla ve hře, hustota podle hodnoty). */
+  grass?: number[];
 }
 
 export interface EnvironmentProfile {

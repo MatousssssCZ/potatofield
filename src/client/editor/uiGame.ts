@@ -258,6 +258,8 @@ export function renderTerrainPanel(root: HTMLElement, editor: Editor, onChange: 
     ['flatten', 'Srovnat'],
     ['paintDirt', 'Hlína'],
     ['paintUrban', 'Městský povrch'],
+    ['paintGrass', 'Tráva +'],
+    ['paintGrassLess', 'Tráva −'],
     ['paintErase', 'Smazat malbu'],
   ];
   const grid = el('div', { class: 'btnrow' });

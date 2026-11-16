@@ -33,12 +33,13 @@ export class WorldView {
     if (pos.count !== t.heights.length) return this.setTerrain(t);
     for (let i = 0; i < t.heights.length; i++) pos.setY(i, t.heights[i]);
     pos.needsUpdate = true;
-    const d = g.getAttribute('aDirt') as THREE.BufferAttribute, u = g.getAttribute('aUrban') as THREE.BufferAttribute;
+    const d = g.getAttribute('aDirt') as THREE.BufferAttribute, u = g.getAttribute('aUrban') as THREE.BufferAttribute, gr = g.getAttribute('aGrass') as THREE.BufferAttribute;
     for (let i = 0; i < t.heights.length; i++) {
       d.setX(i, t.dirt?.[i] ?? 0);
       u.setX(i, t.urban?.[i] ?? 0);
+      gr.setX(i, t.grass?.[i] ?? 0);
     }
-    d.needsUpdate = u.needsUpdate = true;
+    d.needsUpdate = u.needsUpdate = gr.needsUpdate = true;
     g.computeVertexNormals();
     g.computeBoundingSphere();
   }
@@ -310,15 +311,15 @@ export class WorldView {
       sh.uniforms.uSlopeDebug = this.slopeDebug;
       Object.assign(sh.uniforms, bakeUniforms);
       sh.vertexShader = sh.vertexShader
-        .replace('#include <common>', '#include <common>\nattribute float aDirt;\nattribute float aUrban;\nvarying vec3 vWPos;\nvarying float vUpN;\nvarying float vDirt;\nvarying float vUrban;')
+        .replace('#include <common>', '#include <common>\nattribute float aDirt;\nattribute float aUrban;\nattribute float aGrass;\nvarying float vGrass;\nvarying vec3 vWPos;\nvarying float vUpN;\nvarying float vDirt;\nvarying float vUrban;')
         .replace(
           '#include <worldpos_vertex>',
-          '#include <worldpos_vertex>\nvWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvUpN = normal.y;\nvDirt = aDirt;\nvUrban = aUrban;',
+          '#include <worldpos_vertex>\nvWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvUpN = normal.y;\nvDirt = aDirt;\nvUrban = aUrban;\nvGrass = aGrass;',
         );
       sh.fragmentShader = sh.fragmentShader
         .replace(
           '#include <common>',
-          '#include <common>\nuniform sampler2D uDirt;\nuniform sampler2D uDirtN;\nuniform sampler2D uUrban;\nuniform sampler2D uUrbanN;\nuniform sampler2D uMacro;\nuniform float uSlopeDebug;\nuniform sampler2D uBake;\nuniform vec4 uBakeRect;\nuniform float uBakeOn;\nuniform vec2 uShadowFar;\nvarying vec3 vWPos;\nvarying float vUpN;\nvarying float vDirt;\nvarying float vUrban;\nfloat gTerrainMix;\nfloat gUrbanMix;',
+          '#include <common>\nuniform sampler2D uDirt;\nuniform sampler2D uDirtN;\nuniform sampler2D uUrban;\nuniform sampler2D uUrbanN;\nuniform sampler2D uMacro;\nuniform float uSlopeDebug;\nuniform sampler2D uBake;\nuniform vec4 uBakeRect;\nuniform float uBakeOn;\nuniform vec2 uShadowFar;\nvarying vec3 vWPos;\nvarying float vUpN;\nvarying float vDirt;\nvarying float vUrban;\nvarying float vGrass;\nfloat gTerrainMix;\nfloat gUrbanMix;',
         )
         .replace(
           '#include <map_fragment>',
@@ -336,7 +337,17 @@ export class WorldView {
             vec4 col = mix(sA, dA, gTerrainMix);
             vec4 uA = mix(texture2D(uUrban, uvA * 1.4), texture2D(uUrban, uvB * 1.7), 0.4);
             col = mix(col, uA, gUrbanMix);
+            // Navátý písek na dlažbě a silnici, tmavé skvrny špíny (olej, vlhko, saze).
+            col.rgb = mix(col.rgb, sA.rgb * 0.95, gUrbanMix * (0.16 + 0.32 * smoothstep(0.4, 0.8, m1)));
+            col.rgb *= 1.0 - 0.15 * smoothstep(0.6, 0.86, m2);
             col.rgb *= 0.86 + 0.26 * m2;
+            // Malovaná tráva: pod stébly suchý slámový podklad (stébla ve hře rostou podle stejné vrstvy).
+            {
+              float gw = clamp(vGrass * (0.85 + 0.3 * m2), 0.0, 1.0);
+              float stw = texture2D(uMacro, vWPos.xz * 2.7 + 5.3).g;
+              vec3 straw = mix(vec3(0.42, 0.38, 0.22), vec3(0.66, 0.58, 0.34), 0.35 + 0.65 * stw);
+              col.rgb = mix(col.rgb, straw * (0.85 + 0.3 * m1), smoothstep(0.05, 0.6, gw) * 0.85);
+            }
             // Detail terénu: drobné kamínky, vrásky větru v písku a praskliny vyschlé hlíny (jen vzhled).
             {
               vec2 wp = vWPos.xz;
@@ -361,6 +372,7 @@ export class WorldView {
               vec2 bu = (vWPos.xz - uBakeRect.xy) * uBakeRect.zw;
               vec2 bk = texture2D(uBake, bu).rg;
               diffuseColor.rgb *= mix(0.6, 1.0, bk.g);
+              diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.8, 0.74, 0.66), (1.0 - bk.g) * 0.55); // špína a nánosy u paty zdí
               float far = smoothstep(uShadowFar.x, uShadowFar.y, distance(vWPos.xz, cameraPosition.xz));
               diffuseColor.rgb *= mix(1.0, 0.48, (1.0 - bk.r) * far);
             }
@@ -379,7 +391,7 @@ export class WorldView {
         );
       shareOrm(m, sh);
     };
-    m.customProgramCacheKey = () => 'terrain-v5';
+    m.customProgramCacheKey = () => 'terrain-v7';
     this.terrainMat = m;
     return m;
   }
@@ -436,6 +448,7 @@ export function terrainGeometry(t: TerrainData, tile: number): THREE.BufferGeome
   g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
   g.setAttribute('aDirt', new THREE.BufferAttribute(Float32Array.from(t.dirt ?? new Array(nx * nz).fill(0)), 1));
   g.setAttribute('aUrban', new THREE.BufferAttribute(Float32Array.from(t.urban ?? new Array(nx * nz).fill(0)), 1));
+  g.setAttribute('aGrass', new THREE.BufferAttribute(Float32Array.from(t.grass ?? new Array(nx * nz).fill(0)), 1));
   g.setIndex(idx);
   g.computeVertexNormals();
   g.computeBoundingSphere();

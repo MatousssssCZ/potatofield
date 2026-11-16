@@ -177,7 +177,7 @@ export function validateMap(input: unknown, opts: { fileBytes?: number } = {}): 
             break;
           }
         }
-        for (const layer of ['dirt', 'urban'] as const) {
+        for (const layer of ['dirt', 'urban', 'grass'] as const) {
           const arr = t[layer];
           if (arr === undefined) continue;
           if (!Array.isArray(arr) || arr.length !== n) {

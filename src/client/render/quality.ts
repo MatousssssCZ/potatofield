@@ -57,8 +57,8 @@ export const QUALITY: Record<QualityProfile['id'], QualityProfile> = {
     grade: true,
     bloom: false,
     maxDecals: 192,
-    grass: 5200,
-    grassRange: 55,
+    grass: 9000,
+    grassRange: 45,
   },
   high: {
     id: 'high',
@@ -74,8 +74,8 @@ export const QUALITY: Record<QualityProfile['id'], QualityProfile> = {
     grade: true,
     bloom: true,
     maxDecals: 384,
-    grass: 9000,
-    grassRange: 80,
+    grass: 16000,
+    grassRange: 70,
   },
 };
 

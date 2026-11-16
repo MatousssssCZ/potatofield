@@ -21,3 +21,17 @@ describe('interiéry: mřížka stropů', () => {
     expect(at(g, 5, 5)).toBe(Infinity);
   });
 });
+
+import { applyBrush } from '../src/world/terrain';
+
+describe('tráva jako malovaný povrch', () => {
+  it('štětec Tráva + přidává a Tráva − ubírá jen vrstvu trávy', () => {
+    const t = { samplesX: 11, samplesZ: 11, spacing: 1, origin: [-5, -5], heights: new Array(121).fill(0), baseMaterial: 'sand' } as unknown as TerrainData;
+    applyBrush(t, { kind: 'paintGrass', radius: 3, strength: 1 } as never, 0, 0, 0.5);
+    const mid = 5 * 11 + 5;
+    expect(t.grass![mid]).toBeCloseTo(0.5, 2);
+    applyBrush(t, { kind: 'paintGrassLess', radius: 3, strength: 1 } as never, 0, 0, 0.2);
+    expect(t.grass![mid]).toBeCloseTo(0.3, 2);
+    expect(t.dirt).toBeUndefined();
+  });
+});

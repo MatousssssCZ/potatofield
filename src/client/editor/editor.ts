@@ -85,7 +85,7 @@ export class Editor {
   terrainMode = false;
   brush: Brush = { kind: 'raise', radius: 6, strength: 1.5 };
   onTerrainPreview: () => void = () => {};
-  private stroke: { snapshot: ReturnType<typeof readRegion>; full: number[]; dirt?: number[]; urban?: number[]; region: Region | null } | null = null;
+  private stroke: { snapshot: ReturnType<typeof readRegion>; full: number[]; dirt?: number[]; urban?: number[]; grass?: number[]; region: Region | null } | null = null;
   brushPoint: THREE.Vector3 | null = null;
   /**
    * Sázení palem štětcem (v režimu terénu místo úprav výšek): tah vysází palmy s rozestupem,
@@ -1872,7 +1872,7 @@ export class Editor {
       if (pickHeight) return;
     }
     // Snímek celého pole (jen kopie čísel) → přesné „před“ pro undo jedné položky.
-    this.stroke = { snapshot: readRegion(t, { x0: 0, z0: 0, x1: 0, z1: 0 }), full: t.heights.slice(), dirt: t.dirt?.slice(), urban: t.urban?.slice(), region: null };
+    this.stroke = { snapshot: readRegion(t, { x0: 0, z0: 0, x1: 0, z1: 0 }), full: t.heights.slice(), dirt: t.dirt?.slice(), urban: t.urban?.slice(), grass: t.grass?.slice(), region: null };
   }
 
   private updateBrush(dt: number) {
@@ -1909,9 +1909,9 @@ export class Editor {
     const t = this.ed.doc.terrain;
     const after = readRegion(t, st.region);
     // „Před“ ze snímku na začátku tahu.
-    const tmp = { ...t, heights: st.full, dirt: st.dirt ?? (after.dirt ? new Array(t.heights.length).fill(0) : undefined), urban: st.urban ?? (after.urban ? new Array(t.heights.length).fill(0) : undefined) };
+    const tmp = { ...t, heights: st.full, dirt: st.dirt ?? (after.dirt ? new Array(t.heights.length).fill(0) : undefined), urban: st.urban ?? (after.urban ? new Array(t.heights.length).fill(0) : undefined), grass: st.grass ?? (after.grass ? new Array(t.heights.length).fill(0) : undefined) };
     const before = readRegion(tmp, st.region);
-    const label = { raise: 'Zvýšit terén', lower: 'Snížit terén', smooth: 'Vyhladit terén', flatten: 'Srovnat terén', paintDirt: 'Malovat hlínu', paintUrban: 'Malovat městský povrch', paintErase: 'Smazat malbu' }[this.brush.kind];
+    const label = { raise: 'Zvýšit terén', lower: 'Snížit terén', smooth: 'Vyhladit terén', flatten: 'Srovnat terén', paintDirt: 'Malovat hlínu', paintUrban: 'Malovat městský povrch', paintGrass: 'Přidat trávu', paintGrassLess: 'Ubrat trávu', paintErase: 'Smazat malbu' }[this.brush.kind];
     this.history.execute({ label, changes: [{ kind: 'terrain', region: st.region, before, after }] });
   }
 
