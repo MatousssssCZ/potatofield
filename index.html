@@ -12,66 +12,88 @@
       <header id="toolbar">
         <div class="tb-group">
           <span class="logo">POTATOFIELD</span>
-          <button id="tb-map" title="Mapy: nová, otevřít, import, export">Mapa ▾</button>
-          <span id="tb-mapname" class="mapname"></span>
+          <button id="tb-map" title="Mapy: nová, otevřít, import, export">Soubor ▾</button>
+          <div class="mapinfo"><span id="tb-mapname" class="mapname"></span><span id="st-save" class="save">●</span></div>
+          <button id="tb-undo" class="icon" title="Zpět (Ctrl+Z)" aria-label="Zpět">↶</button>
+          <button id="tb-redo" class="icon" title="Znovu (Ctrl+Shift+Z / Ctrl+Y)" aria-label="Znovu">↷</button>
         </div>
         <div class="tb-group">
-          <button id="tb-undo" title="Zpět (Ctrl+Z)">↶</button>
-          <button id="tb-redo" title="Znovu (Ctrl+Shift+Z / Ctrl+Y)">↷</button>
-          <span class="sep"></span>
-          <button id="tb-check" title="Kontrola mapy (s opravami)">✓ Kontrola</button>
-          <button id="tb-help" title="Klávesové zkratky (? nebo F1)">?</button>
-          <span class="sep"></span>
-          <button id="tb-vis-vol" class="on" title="Objemy zabírání, vazby spawnů">Objemy</button>
-          <button id="tb-vis-col" title="Zobrazit kolizní tvary">Kolize</button>
-          <button id="tb-vis-slope" title="Zvýraznit svahy nad 45°">Svahy</button>
-        </div>
-        <div class="tb-group">
+          <div class="dropdown">
+            <button id="tb-view" title="Co zobrazit v pohledu" aria-haspopup="true">👁 Zobrazení ▾</button>
+            <div id="view-menu" class="menu hidden" role="menu">
+              <button id="tb-vis-vol" class="on" role="menuitemcheckbox" title="Objemy zabírání, vazby spawnů">Objemy bodů a spawnů</button>
+              <button id="tb-vis-col" role="menuitemcheckbox" title="Zobrazit kolizní tvary">Kolizní tvary</button>
+              <button id="tb-vis-slope" role="menuitemcheckbox" title="Zvýraznit svahy nad 45°">Prudké svahy (nad 45°)</button>
+              <button id="tb-hints" role="menuitemcheckbox" title="Nápověda u kurzoru">Nápověda u kurzoru</button>
+            </div>
+          </div>
+          <button id="tb-check" title="Kontrola mapy (s opravami)">Kontrola <span id="tb-issues" class="badge hidden">0</span></button>
+          <button id="tb-help" class="icon" title="Klávesové zkratky (? nebo F1)" aria-label="Nápověda a zkratky">?</button>
+          <button id="tb-mapset" title="Název, prostředí, terén a pravidla hry">Nastavení mapy</button>
           <button id="tb-net" title="Hlavní menu: hrát, servery, nastavení">☰ Menu</button>
           <button id="tb-play" class="primary" title="Testovat (F5)">▶ Testovat <kbd>F5</kbd></button>
         </div>
       </header>
+      <nav id="modes" aria-label="Režimy editoru">
+        <button data-mode="select" class="on" title="Vybrat a upravit objekty (1)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l6 17 2-7 7-2z"/></svg><span>Vybrat</span><kbd>1</kbd></button>
+        <button data-mode="build" title="Stavět: katalog předmětů (2)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/></svg><span>Stavět</span><kbd>2</kbd></button>
+        <button data-mode="terrain" title="Tvar terénu (3)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 19l6-9 4 5 3-4 7 8z"/></svg><span>Terén</span><kbd>3</kbd></button>
+        <button data-mode="paint" title="Povrch: hlína, město, tráva; rozsévání (4)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20c4 0 5-3 5-5l9-9a2 2 0 00-3-3l-9 9c-2 0-5 1-5 5"/></svg><span>Povrch</span><kbd>4</kbd></button>
+        <button data-mode="play" title="Hra: týmy, spawny, body, zóny, scénáře (5)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4h11l-2 4 2 4H5"/></svg><span>Hra</span><kbd>5</kbd></button>
+      </nav>
       <aside id="left" class="panel">
         <div class="panel-head">
-          <div class="tabs"><button data-tab="catalog" class="on">Katalog</button><button data-tab="scene">Scéna</button><button data-tab="terrain">Terén</button></div>
-          <button class="collapse" data-collapse="left" title="Sbalit panel">«</button>
+          <div class="mode-head"><span id="mode-title" class="title">Scéna</span><small id="mode-sub"></small></div>
+          <button class="collapse icon" data-collapse="left" title="Sbalit panel" aria-label="Sbalit panel">«</button>
         </div>
-        <div class="tab-body" data-body="catalog">
-          <input id="cat-search" type="search" placeholder="Hledat…" autocomplete="off" />
+        <div class="tab-body" data-body="select">
+          <input id="scene-search" class="search" type="search" placeholder="Hledat ve scéně…" autocomplete="off" />
+          <div id="scene-list"></div>
+        </div>
+        <div class="tab-body hidden" data-body="build">
+          <input id="cat-search" class="search" type="search" placeholder="Hledat v katalogu (zeď, palma, bedna…)" autocomplete="off" />
+          <div id="cat-chips" class="chips"></div>
           <div id="cat-list"></div>
         </div>
-        <div class="tab-body hidden" data-body="scene"><div id="scene-list"></div></div>
         <div class="tab-body hidden" data-body="terrain"><div id="terrain-panel"></div></div>
+        <div class="tab-body hidden" data-body="paint"><div id="paint-panel"></div></div>
+        <div class="tab-body hidden" data-body="play"><div id="play-panel"></div></div>
       </aside>
       <main id="viewport">
         <canvas id="view"></canvas>
-        <button class="expand hidden" data-expand="left" title="Rozbalit katalog">»</button>
+        <button class="expand hidden" data-expand="left" title="Rozbalit panel">»</button>
         <button class="expand hidden" data-expand="right" title="Rozbalit vlastnosti">«</button>
         <div id="hud" class="hidden">
           <div id="crosshair"><i class="t"></i><i class="b"></i><i class="l"></i><i class="r"></i></div>
         </div>
         <div id="dev" class="hidden"></div>
         <div id="toasts"></div>
-        <div id="viewhint">RMB + WASD létat · prostřední tlačítko = otáčet kolem · LMB výběr a tažení · G/R/S posun/rotace/měřítko · Ctrl+C/V · ? = všechny zkratky</div>
+        <div id="mode-chip" class="vchip"><span class="dim">Režim</span> <b id="mode-chip-name">Vybrat</b> <span id="mode-chip-sel"></span></div>
+        <div id="sel-bar" class="hidden" role="toolbar" aria-label="Akce s výběrem"></div>
+        <div id="view-chips">
+          <label class="vchip">▦ Mřížka <select id="st-grid"><option value="0.25">0,25 m</option><option value="0.5" selected>0,5 m</option><option value="1">1 m</option><option value="2">2 m</option></select></label>
+          <label class="vchip">⟳ Rotace <select id="st-rot"><option value="15" selected>15°</option><option value="45">45°</option><option value="90">90°</option><option value="0">volná</option></select></label>
+          <span id="st-snap" class="vchip on">Přichytávání zap. <span class="dim">(Alt vypne)</span></span>
+        </div>
+        <div id="viewhint"></div>
+        <section id="issues" class="hidden" aria-label="Kontrola mapy"></section>
       </main>
       <aside id="right" class="panel">
         <div class="panel-head">
           <span class="title">Vlastnosti</span>
-          <button class="collapse" data-collapse="right" title="Sbalit panel">»</button>
+          <button class="collapse icon" data-collapse="right" title="Sbalit panel" aria-label="Sbalit panel">»</button>
         </div>
         <div id="inspector"></div>
       </aside>
       <footer id="status">
-        <span id="st-save" class="save">●</span>
-        <label>Mřížka <select id="st-grid"><option>0.25</option><option selected>0.5</option><option>1</option><option>2</option></select> m</label>
-        <label>Rotace <select id="st-rot"><option value="15" selected>15°</option><option value="90">90°</option><option value="0">volná</option></select></label>
-        <span id="st-snap"></span>
-        <span id="st-speed"></span>
         <span id="st-count"></span>
+        <span id="st-speed"></span>
         <span class="grow"></span>
         <span id="st-hint"></span>
       </footer>
     </div>
+
+    <div id="mapset" class="hidden" role="dialog" aria-label="Nastavení mapy"></div>
 
     <div id="loading">
       <div class="brand">POTATOFIELD</div>

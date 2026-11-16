@@ -22,7 +22,7 @@ export interface PlantBrush {
 
 const isPalm = (assetId: string) => assetId.startsWith('nature.palm') || assetId.startsWith('glb.tree_palm');
 
-import { applyBrush, heightAt, readRegion, unionRegion, type Brush, type Region } from '../../world/terrain';
+import { applyBrush, heightAt, readRegion, unionRegion, type Brush, type BrushKind, type Region } from '../../world/terrain';
 
 export const TEST_SPAWN_ID = '__testSpawn';
 
@@ -66,6 +66,14 @@ const HINTS_KEY = 'pf.editorHints';
  * u ulice úchopy bodů. Všechny změny mapy jdou přes History (undo/redo). Listenery se registrují
  * přes `on()` a `detach()` je všechny odebere (přepínání do hry je nehromadí).
  */
+const INVERT: Partial<Record<BrushKind, BrushKind>> = {
+  raise: 'lower',
+  lower: 'raise',
+  paintDirt: 'paintDirtLess',
+  paintUrban: 'paintUrbanLess',
+  paintGrass: 'paintGrassLess',
+};
+
 export class Editor {
   readonly root = new THREE.Group();
   readonly selection = new Set<string>();
@@ -92,6 +100,8 @@ export class Editor {
    * každá je „Random palma“ s vlastním semínkem; `erase` palmy v kruhu maže.
    */
   plant: PlantBrush | null = null;
+  /** Druh štětce aktuálního tahu, když ho Shift obrátil (malba ubírá, zvýšit ↔ snížit). */
+  private strokeKind: BrushKind | null = null;
   private plantStroke: { added: MapObject[]; removed: Set<string> } | null = null;
   private brushRing: THREE.Line;
   private pointerNdc = new THREE.Vector2(9, 9);
@@ -1524,7 +1534,41 @@ export class Editor {
     return c;
   }
 
-  /** G = posun, R = rotace, S = měřítko výběru bez držení myši. */
+  /** Horní střed výběru ve světě (kotva plovoucí lišty akcí); null bez výběru. */
+  selectionTop(): THREE.Vector3 | null {
+    if (!this.selection.size || this.terrainMode) return null;
+    const box = new THREE.Box3();
+    for (const id of this.selection) {
+      const g = this.groupOf(id);
+      if (g) box.expandByObject(g);
+    }
+    if (box.isEmpty()) return null;
+    const c = box.getCenter(new THREE.Vector3());
+    c.y = box.max.y;
+    return c;
+  }
+
+  /** Nápověda u kurzoru zap./vyp. (pamatuje se v prohlížeči). */
+  setHints(on: boolean) {
+    this.showHints = on;
+    try {
+      localStorage.setItem(HINTS_KEY, on ? '1' : '0');
+    } catch {
+      /* bez úložiště */
+    }
+  }
+
+  /** Úprava výběru z plovoucí lišty: stejné jako klávesy G / R / S. */
+  beginTransform(key: 'G' | 'R' | 'S') {
+    if (!this.selection.size || this.terrainMode || this.drag) return;
+    this.startModal(key);
+  }
+
+  /** Probíhá tažení nebo G/R/S (číslice pak zadávají hodnotu, nepřepínají režimy). */
+  get transforming() {
+    return !!this.drag;
+  }
+
   private startModal(key: 'G' | 'R' | 'S') {
     const ids = this.movable();
     if (!ids.length) return this.onToast('Nejdřív vyber předmět (klik).');
@@ -1740,7 +1784,9 @@ export class Editor {
     if (this.roadDraft) return 'Klik = další bod ulice · Enter / dvojklik = hotovo\nBackspace = zpět o bod · Esc = zrušit';
     if (this.terrainMode) {
       if (this.plant) return this.plant.erase ? 'Táhni = smazat palmy v kruhu' : 'Táhni = sázet palmy (rozestup a druh vlevo)';
-      return 'Táhni = upravit terén štětcem\nShift+klik = nabrat výšku pro Srovnat';
+      if (this.brush.kind.startsWith('paint')) return 'Táhni = malovat · Shift + táhni = ubrat\n[ ] velikost štětce';
+      if (this.brush.kind === 'flatten') return 'Táhni = srovnat na cílovou výšku\nShift+klik = nabrat výšku · [ ] velikost';
+      return 'Táhni = upravit terén · Shift + táhni = opačně\n[ ] velikost štětce';
     }
     const h = this.pickHandle();
     if (h) {
@@ -1865,6 +1911,12 @@ export class Editor {
     const p = this.terrainHit();
     if (!p) return;
     const t = this.ed.doc.terrain;
+    // Shift: u malby ubrat (stejná vrstva), u Zvýšit/Snížit opačný směr; u Srovnat nabrat výšku.
+    this.strokeKind = null;
+    if (pickHeight && this.brush.kind !== 'flatten') {
+      this.strokeKind = INVERT[this.brush.kind] ?? null;
+      pickHeight = false;
+    }
     if (pickHeight || (this.brush.kind === 'flatten' && this.brush.target === undefined)) {
       this.brush.target = Math.round((heightAt(t, p.x, p.z) ?? 0) * 100) / 100;
       this.onToast(`Cílová výška srovnání: ${this.brush.target.toFixed(2)} m`);
@@ -1896,7 +1948,7 @@ export class Editor {
     }
     if (this.plantStroke && p) this.stepPlant(p, Math.min(dt, 0.1));
     if (this.stroke && p) {
-      const r = applyBrush(t, this.brush, p.x, p.z, Math.min(dt, 0.1));
+      const r = applyBrush(t, this.strokeKind ? { ...this.brush, kind: this.strokeKind } : this.brush, p.x, p.z, Math.min(dt, 0.1));
       this.stroke.region = unionRegion(this.stroke.region, r);
       this.onTerrainPreview();
     }
@@ -1911,7 +1963,8 @@ export class Editor {
     // „Před“ ze snímku na začátku tahu.
     const tmp = { ...t, heights: st.full, dirt: st.dirt ?? (after.dirt ? new Array(t.heights.length).fill(0) : undefined), urban: st.urban ?? (after.urban ? new Array(t.heights.length).fill(0) : undefined), grass: st.grass ?? (after.grass ? new Array(t.heights.length).fill(0) : undefined) };
     const before = readRegion(tmp, st.region);
-    const label = { raise: 'Zvýšit terén', lower: 'Snížit terén', smooth: 'Vyhladit terén', flatten: 'Srovnat terén', paintDirt: 'Malovat hlínu', paintUrban: 'Malovat městský povrch', paintGrass: 'Přidat trávu', paintGrassLess: 'Ubrat trávu', paintErase: 'Smazat malbu' }[this.brush.kind];
+    const labels: Record<BrushKind, string> = { raise: 'Zvýšit terén', lower: 'Snížit terén', smooth: 'Vyhladit terén', flatten: 'Srovnat terén', paintDirt: 'Malovat hlínu', paintUrban: 'Malovat městský povrch', paintGrass: 'Přidat trávu', paintGrassLess: 'Ubrat trávu', paintDirtLess: 'Ubrat hlínu', paintUrbanLess: 'Ubrat městský povrch', paintErase: 'Smazat malbu' };
+    const label = labels[this.strokeKind ?? this.brush.kind];
     this.history.execute({ label, changes: [{ kind: 'terrain', region: st.region, before, after }] });
   }
 
@@ -2058,6 +2111,15 @@ function buildHelp(toggleHints: () => boolean, hintsOn: () => boolean): HTMLDivE
   const el = document.createElement('div');
   el.className = 'shortcuts hidden';
   const groups: [string, [string, string][]][] = [
+    ['Režimy (lišta vlevo)', [
+      ['1', 'Vybrat – objekty, strom scény'],
+      ['2', 'Stavět – katalog předmětů'],
+      ['3', 'Terén – zvýšit, snížit, vyhladit, srovnat'],
+      ['4', 'Povrch – hlína, město, tráva; palmy'],
+      ['5', 'Hra – týmy, spawny, body, zóny, scénáře'],
+      ['[ / ]', 'menší / větší štětec (Terén, Povrch)'],
+      ['Shift + tah štětcem', 'opačně: ubrat malbu, snížit místo zvýšit'],
+    ]],
     ['Kamera', [
       ['RMB + W A S D', 'létat'],
       ['Mezerník / Shift', 'nahoru / dolů (při létání)'],

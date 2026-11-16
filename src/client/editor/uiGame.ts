@@ -62,7 +62,7 @@ export interface GameUiState {
 }
 
 /** Vložení markeru do středu pohledu. */
-export function insertMarker(ed: EditorDoc, history: History, editor: Editor, kind: 'flag' | 'spawnA' | 'spawnB' | 'zone', at: [number, number, number]) {
+export function insertMarker(ed: EditorDoc, history: History, editor: Editor, kind: 'flag' | 'spawnA' | 'spawnB' | 'zone' | 'boundary', at: [number, number, number]) {
   const p: [number, number, number] = [Math.round(at[0] * 2) / 2, Math.round(at[1] * 100) / 100, Math.round(at[2] * 2) / 2];
   if (kind === 'flag') {
     const cp: ControlPoint = {
@@ -78,8 +78,10 @@ export function insertMarker(ed: EditorDoc, history: History, editor: Editor, ki
     };
     history.execute(cmds.addEntity('controlPoints', cp, 'Vložit vlajku'));
     editor.select([markerId.cp(cp.id)]);
-  } else if (kind === 'zone') {
-    const z: Zone = { id: ed.newId('zone'), kind: 'forbidden', center: [p[0], p[1] + 5, p[2]], halfExtents: [10, 5, 10], yaw: 0, appliesTo: ['teamB'], countdown: 10 };
+  } else if (kind === 'zone' || kind === 'boundary') {
+    const z: Zone = kind === 'zone'
+      ? { id: ed.newId('zone'), kind: 'forbidden', center: [p[0], p[1] + 5, p[2]], halfExtents: [10, 5, 10], yaw: 0, appliesTo: ['teamB'], countdown: 10 }
+      : { id: ed.newId('zone'), kind: 'boundary', center: [p[0], p[1] + 10, p[2]], halfExtents: [60, 20, 60], yaw: 0, appliesTo: ['teamA', 'teamB'], countdown: 10 };
     history.execute(cmds.addEntity('zones', z, 'Vložit zónu'));
     editor.select([markerId.zn(z.id)]);
   } else {

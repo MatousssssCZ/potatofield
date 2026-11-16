@@ -19,7 +19,9 @@ import { Editor, TEST_SPAWN_ID } from './editor/editor';
 import { EditorDoc, History, cmds, type Change } from './editor/editorDoc';
 import { AutoSaver, MapStore, exportMapFile, readMapFile } from './editor/persistence';
 import { buildCatalog, issuesList, modal, renderInspector, renderSceneList, toast } from './editor/ui';
-import { insertMarker, renderTerrainPanel, type GameUiState } from './editor/uiGame';
+import { insertMarker, type GameUiState } from './editor/uiGame';
+import { MODE_INFO, enterBrushMode, renderPaintPanel, renderPlayPanel, renderTerrainTools, type EditorMode } from './editor/uiModes';
+import { MapSettingsDialog } from './editor/mapSettings';
 import { debugLines } from '../shared/physics/world';
 import { heightAt } from '../world/terrain';
 import type { MapObject } from '../shared/map/schema';
@@ -96,6 +98,11 @@ export class App {
   /** Žebříky po objektech (pro simulaci lezení v testu). */
   ladders = new Map<string, LadderDef[]>();
   gameUi: GameUiState = { scenario: null };
+  /** Režim editoru (lišta vlevo): určuje panel i chování myši. */
+  editorMode: EditorMode = 'select';
+  private mapSet: MapSettingsDialog | null = null;
+  /** Počet problémů z poslední kontroly (odznak u tlačítka Kontrola). */
+  private issueCount: { n: number; err: boolean } | null = null;
   readonly audio = new GameAudio();
   private colliderLines: THREE.LineSegments | null = null;
   menu: MainMenu | null = null;
@@ -291,6 +298,9 @@ export class App {
     this.editor.updateSpawnMarker();
     this.editor.markers.rebuild(doc);
     this.editor.onTerrainPreview = () => this.world.updateTerrain(this.ed.doc.terrain);
+    this.mapSet = new MapSettingsDialog(this.ed, this.history, { groundAll: () => this.groundAllObjects(), fitTerrain: () => this.fitTerrainToObjects(), openPlayMode: () => this.setEditorMode('play') });
+    this.issueCount = null;
+    this.setEditorMode(this.editorMode);
     this.gameUi.scenario = null;
     this.editor.attach();
     this.unsub = this.ed.onChange((changes) => this.applyChanges(changes));
@@ -1012,6 +1022,7 @@ export class App {
     this.world.update(0);
     this.editor.attach();
     if (this.editorCam) this.editor.restoreCamera(this.editorCam);
+    this.setEditorMode(this.editorMode);
     this.camera.fov = EDITOR_VFOV;
     this.camera.updateProjectionMatrix();
     this.resize();
@@ -1034,15 +1045,8 @@ export class App {
   private bindUI() {
     this.thumbs = new Thumbnails();
     this.catalog = buildCatalog((id) => {
-      if (id.startsWith('marker.')) {
-        const r = $('#view').getBoundingClientRect();
-        const hit = this.editor.pick(r.left + r.width / 2, r.top + r.height / 2, true).point;
-        const at: [number, number, number] = hit ? [hit.x, hit.y, hit.z] : [this.camera.position.x, 0, this.camera.position.z - 10];
-        insertMarker(this.ed, this.history, this.editor, ({ 'marker.flag': 'flag', 'marker.spawnA': 'spawnA', 'marker.spawnB': 'spawnB', 'marker.zone': 'zone' } as const)[id as 'marker.flag']!, at);
-      } else {
-        if (this.editor.terrainMode) this.editor.setTerrainMode(false);
-        this.editor.insertAsset(id);
-      }
+      if (this.editor.terrainMode) this.editor.setTerrainMode(false);
+      this.editor.insertAsset(id);
     }, {
       thumbs: this.thumbs,
       used: () => {
@@ -1115,13 +1119,44 @@ export class App {
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-expand]')) {
       b.addEventListener('click', () => this.setCollapsed(b.dataset.expand!, false));
     }
-    for (const b of document.querySelectorAll<HTMLButtonElement>('.tabs button')) {
-      b.addEventListener('click', () => {
-        for (const x of document.querySelectorAll('.tabs button')) x.classList.toggle('on', x === b);
-        for (const body of document.querySelectorAll<HTMLElement>('.tab-body')) body.classList.toggle('hidden', body.dataset.body !== b.dataset.tab);
-        this.uiDirty = true;
-      });
+    for (const b of document.querySelectorAll<HTMLButtonElement>('#modes button')) {
+      b.addEventListener('click', () => this.setEditorMode(b.dataset.mode as EditorMode));
     }
+    $('#scene-search').addEventListener('input', () => (this.uiDirty = true));
+    // Zobrazení ▾: rozbalovací nabídka přepínačů pohledu.
+    const viewMenu = $('#view-menu');
+    $('#tb-view').addEventListener('click', (e) => {
+      e.stopPropagation();
+      viewMenu.classList.toggle('hidden');
+      $('#tb-hints').classList.toggle('on', this.editor.showHints);
+    });
+    document.addEventListener('click', (e) => {
+      if (!viewMenu.contains(e.target as Node)) viewMenu.classList.add('hidden');
+    });
+    $('#tb-hints').addEventListener('click', () => {
+      this.editor.setHints(!this.editor.showHints);
+      $('#tb-hints').classList.toggle('on', this.editor.showHints);
+    });
+    $('#tb-mapset').addEventListener('click', () => this.mapSet?.open());
+    // Klávesy režimů 1–5 a velikost štětce [ ].
+    window.addEventListener('keydown', (e) => {
+      if (this.mode !== 'editor' || e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) return;
+      if (!$('#modal').classList.contains('hidden') || this.mapSet?.visible || this.editor.transforming) return;
+      const modes: EditorMode[] = ['select', 'build', 'terrain', 'paint', 'play'];
+      const d = /^Digit([1-5])$/.exec(e.code);
+      if (d) {
+        e.preventDefault();
+        this.setEditorMode(modes[Number(d[1]) - 1]);
+      } else if ((e.code === 'BracketLeft' || e.code === 'BracketRight') && this.editor.terrainMode) {
+        e.preventDefault();
+        const r = this.editor.brush.radius;
+        this.editor.brush.radius = Math.min(40, Math.max(1, Math.round((e.code === 'BracketRight' ? r * 1.2 + 0.5 : r / 1.2 - 0.5) * 2) / 2));
+        toast(`Velikost štětce ${this.editor.brush.radius} m`);
+        this.uiDirty = true;
+      }
+    });
     $<HTMLInputElement>('#file-import').addEventListener('change', (e) => void this.importFile(e.target as HTMLInputElement));
     // Panel inspektoru: po opuštění pole dokreslit odloženou změnu.
     $('#inspector').addEventListener('focusout', () => setTimeout(() => (this.uiDirty = true), 0));
@@ -1133,6 +1168,41 @@ export class App {
     this.resize();
   }
 
+  /**
+   * Přepne režim editoru: panel vlevo, chování myši (štětec jen v Terénu a Povrchu),
+   * nápovědu a štítek v pohledu. Klávesy 1–5.
+   */
+  setEditorMode(mode: EditorMode) {
+    this.editorMode = mode;
+    for (const b of document.querySelectorAll<HTMLButtonElement>('#modes button')) {
+      b.classList.toggle('on', b.dataset.mode === mode);
+      b.setAttribute('aria-pressed', String(b.dataset.mode === mode));
+    }
+    for (const body of document.querySelectorAll<HTMLElement>('#left .tab-body')) body.classList.toggle('hidden', body.dataset.body !== mode);
+    const info = MODE_INFO[mode];
+    $('#mode-title').textContent = info.title;
+    $('#mode-sub').textContent = info.sub;
+    $('#mode-chip-name').textContent = info.chip;
+    $('#viewhint').textContent = info.hint;
+    if (this.editor) {
+      if (mode === 'terrain' || mode === 'paint') enterBrushMode(this.editor, mode);
+      else if (this.editor.terrainMode) {
+        this.editor.plant = null;
+        this.editor.setTerrainMode(false);
+      }
+    }
+    if (document.body.classList.contains('left-collapsed')) this.setCollapsed('left', false);
+    this.uiDirty = true;
+  }
+
+  /** Vložení herní značky doprostřed pohledu (režim Hra). */
+  private insertGameMarker(kind: 'flag' | 'spawnA' | 'spawnB' | 'zone' | 'boundary') {
+    const r = $('#view').getBoundingClientRect();
+    const hit = this.editor.pick(r.left + r.width / 2, r.top + r.height / 2, true).point;
+    const at: [number, number, number] = hit ? [hit.x, hit.y, hit.z] : [this.camera.position.x, 0, this.camera.position.z - 10];
+    insertMarker(this.ed, this.history, this.editor, kind, at);
+  }
+
   private renderUI() {
     renderInspector(this.ed, this.history, this.editor, {
       missing: (id) => this.world.missing.get(id),
@@ -1142,10 +1212,25 @@ export class App {
       dropToSurface: (ids) => this.dropToSurface(ids),
       groundAll: () => this.groundAllObjects(),
       fitTerrain: () => this.fitTerrainToObjects(),
+      openMapSettings: () => this.mapSet?.open(),
+      mode: this.editorMode,
     });
-    if (!$('[data-body="terrain"]').classList.contains('hidden')) renderTerrainPanel($('#terrain-panel'), this.editor, () => (this.uiDirty = true));
-    if (!$('[data-body="scene"]').classList.contains('hidden')) renderSceneList(this.ed, this.history, this.editor);
+    const m = this.editorMode;
+    if (m === 'select') renderSceneList(this.ed, this.history, this.editor);
+    else if (m === 'terrain') renderTerrainTools($('#terrain-panel'), this.editor, () => (this.uiDirty = true));
+    else if (m === 'paint') renderPaintPanel($('#paint-panel'), this.editor, () => (this.uiDirty = true));
+    else if (m === 'play') renderPlayPanel($('#play-panel'), this.ed, this.history, this.editor, { insert: (k) => this.insertGameMarker(k), spawnIssue: () => this.spawnIssue() });
     this.catalog?.refresh();
+    this.mapSet?.refresh();
+    const n = this.editor.selection.size;
+    $('#mode-chip-sel').textContent = n === 1 ? `· vybráno ${objectLabel(this.ed, [...this.editor.selection][0])}` : n > 1 ? `· vybráno ${n}` : '';
+    const badge = $('#tb-issues');
+    badge.classList.toggle('hidden', !this.issueCount);
+    if (this.issueCount) {
+      badge.textContent = String(this.issueCount.n);
+      badge.className = `badge${this.issueCount.err ? ' err' : this.issueCount.n ? '' : ' ok'}`;
+      if (!this.issueCount.n) badge.textContent = '✓';
+    }
     $<HTMLButtonElement>('#tb-undo').disabled = !this.history.canUndo;
     $<HTMLButtonElement>('#tb-redo').disabled = !this.history.canRedo;
     $('#tb-undo').title = this.history.undoLabel ? `Zpět: ${this.history.undoLabel} (Ctrl+Z)` : 'Zpět (Ctrl+Z)';
@@ -1163,12 +1248,13 @@ export class App {
         : this.saver.state === 'error'
           ? `● ${this.saver.message}`
           : '● Ukládám…';
-    $('#st-snap').textContent = this.editor.snapDisabled ? 'Přichycení VYPNUTO (Alt)' : '';
+    const snap = $('#st-snap');
+    snap.className = `vchip ${this.editor.snapDisabled ? 'off' : 'on'}`;
+    snap.innerHTML = this.editor.snapDisabled ? 'Přichytávání vyp. <span class="dim">(Alt)</span>' : 'Přichytávání zap. <span class="dim">(Alt vypne)</span>';
     $('#st-speed').textContent = `Kamera ${this.editor.settings.flySpeed.toFixed(0)} m/s`;
     $('#st-count').textContent = `${this.ed.doc.objects.length} objektů · výběr ${this.editor.selection.size}`;
-    $('#st-hint').textContent = this.editor.drawingRoad
-      ? 'Kreslení ulice: klik = bod · Enter / dvojklik = hotovo · Backspace = zpět o bod · Esc = zrušit'
-      : 'Táhni = posun · G/R/S + číslo = přesně · prstenec = rotace · kostky = rozměry · Ctrl+C/V · ? zkratky · F5 testovat';
+    $('#st-hint').textContent = this.editor.drawingRoad ? 'Kreslení ulice: klik = bod · Enter / dvojklik = hotovo · Backspace = zpět o bod · Esc = zrušit' : '1–5 režimy · ? zkratky · F5 testovat · Ctrl+S uložit';
+    $('#viewhint').textContent = this.editor.drawingRoad ? 'Kreslení ulice: klik = bod · Enter = hotovo · Esc = zrušit' : MODE_INFO[this.editorMode].hint;
   }
 
   /**
@@ -1320,15 +1406,24 @@ export class App {
       });
       if (!counted.length) issues.push({ severity: 'warning', path: `scénář ${sc.name}`, message: 'žádný bod se nepočítá do bleed – tickety budou ubývat jen smrtí' });
     }
-    // Vykreslení: řádky s tlačítky.
-    const body = document.createElement('div');
-    if (!issues.length) {
-      body.textContent = 'Bez chyb a upozornění. (Kontrola neprokazuje vyváženost mapy.)';
-      await modal('Kontrola mapy', body, [{ id: 'ok', label: 'Zavřít', primary: true }]);
-      return;
-    }
+    // Vykreslení: spodní šuplík v pohledu (mapa zůstává vidět), u tlačítka odznak s počtem.
+    const errs = issues.filter((i) => i.severity === 'error').length;
+    this.issueCount = { n: issues.length, err: errs > 0 };
+    this.uiDirty = true;
+    const drawer = $('#issues');
+    drawer.replaceChildren();
+    drawer.classList.remove('hidden');
+    const mk = (tag: string, cls: string, text?: string) => {
+      const e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+    const head = mk('div', 'head');
+    head.append(mk('b', '', 'Kontrola mapy'), mk('span', 'dim', issues.length ? `${errs} chyb · ${issues.length - errs} upozornění` : 'Bez chyb a upozornění (kontrola neprokazuje vyváženost mapy).'));
+    head.appendChild(mk('span', '', ''));
+    (head.lastChild as HTMLElement).style.flex = '1';
     const fixable = issues.filter((i) => i.fix);
-    const close = () => document.getElementById('modal')!.classList.add('hidden');
     const runFixes = (list: Issue[], label: string) => {
       // Po skupinách: nejdřív odsunout překryvy, pak položit na zem, nakonec spawny (každá
       // skupina se počítá až po předchozí, aby opravy na sebe navazovaly).
@@ -1353,46 +1448,86 @@ export class App {
       else toast('Opravu se nepodařilo najít automaticky – použij Ukázat.', 'warn');
       void this.checkMap();
     };
-    const head = document.createElement('div');
-    head.className = 'check-head';
-    head.textContent = `${issues.length} ${issues.length === 1 ? 'problém' : issues.length < 5 ? 'problémy' : 'problémů'}, z toho ${fixable.length} jde opravit automaticky.`;
     if (fixable.length) {
-      const all = document.createElement('button');
-      all.className = 'primary';
-      all.textContent = `Opravit vše (${fixable.length})`;
+      const all = mk('button', 'primary', `Opravit vše (${fixable.length})`);
       all.addEventListener('click', () => runFixes(fixable, 'Opravit vše'));
       head.appendChild(all);
     }
-    body.appendChild(head);
-    const ul = document.createElement('ul');
-    ul.className = 'check-list';
-    for (const i of issues.slice(0, 80)) {
-      const li = document.createElement('li');
-      li.className = i.severity === 'error' ? 'err' : 'wrn';
-      const tx = document.createElement('span');
-      tx.textContent = `${i.path ? i.path + ': ' : ''}${i.message}`;
-      li.appendChild(tx);
+    const again = mk('button', '', 'Zkontrolovat znovu');
+    again.addEventListener('click', () => void this.checkMap());
+    const close = mk('button', '', 'Zavřít');
+    close.addEventListener('click', () => drawer.classList.add('hidden'));
+    head.append(again, close);
+    drawer.appendChild(head);
+    for (const i of issues.slice(0, 120)) {
+      const row = mk('div', `issue ${i.severity === 'error' ? 'err' : 'wrn'}`);
+      row.append(mk('span', 'ic', i.severity === 'error' ? '⛔' : '⚠'), mk('span', 'tx', `${i.path ? i.path + ': ' : ''}${i.message}`));
       if (i.show) {
-        const b = document.createElement('button');
-        b.textContent = 'Ukázat';
+        const b = mk('button', '', 'Ukázat');
         b.addEventListener('click', () => {
-          close();
+          this.setEditorMode('select');
           this.editor.select(i.show!.filter((id) => id === TEST_SPAWN_ID || id.startsWith('sp:') || this.ed.getObject(id)), false);
           this.editor.frameSelection();
         });
-        li.appendChild(b);
+        row.appendChild(b);
       }
       if (i.fix) {
-        const b = document.createElement('button');
-        b.textContent = i.fix.label;
+        const b = mk('button', 'primary', i.fix.label);
         b.addEventListener('click', () => runFixes([i], i.fix!.label));
-        li.appendChild(b);
+        row.appendChild(b);
       }
-      ul.appendChild(li);
+      drawer.appendChild(row);
     }
-    if (issues.length > 80) ul.appendChild(Object.assign(document.createElement('li'), { textContent: `… a dalších ${issues.length - 80}` }));
-    body.appendChild(ul);
-    await modal('Kontrola mapy', body, [{ id: 'ok', label: 'Zavřít', primary: true }]);
+    if (issues.length > 120) drawer.appendChild(mk('div', 'dim', `… a dalších ${issues.length - 120}`));
+  }
+
+  /** Plovoucí lišta akcí nad výběrem (posun, otočit, na zem, duplikovat, smazat). */
+  private selBarKey = '';
+  private updateSelBar() {
+    const bar = $('#sel-bar');
+    const top = this.mode === 'editor' ? this.editor.selectionTop() : null;
+    if (!top || this.editor.transforming) {
+      bar.classList.add('hidden');
+      return;
+    }
+    const v = top.clone().project(this.camera);
+    const vp = $('#viewport').getBoundingClientRect();
+    if (v.z > 1 || Math.abs(v.x) > 1.6) {
+      bar.classList.add('hidden');
+      return;
+    }
+    const half = (bar.offsetWidth || 380) / 2 + 8;
+    const x = Math.min(vp.width - half, Math.max(half, ((v.x + 1) / 2) * vp.width));
+    const y = Math.min(vp.height - 60, Math.max(64, ((1 - v.y) / 2) * vp.height - 14));
+    bar.style.left = `${x}px`;
+    bar.style.top = `${y}px`;
+    bar.classList.remove('hidden');
+    const ids = [...this.editor.selection];
+    const key = ids.join(',');
+    if (key === this.selBarKey) return;
+    this.selBarKey = key;
+    const objs = ids.filter((id) => this.ed.getObject(id));
+    const acts: Array<[string, string, string, () => void, string?]> = [
+      ['✥ Posun', 'G', 'Posunout (G, pak X/Y/Z nebo číslo)', () => this.editor.beginTransform('G')],
+      ['⟳ Otočit', 'R', 'Otočit (R, pak úhel)', () => this.editor.beginTransform('R')],
+    ];
+    if (objs.length) acts.push(['⬇ Na zem', '', 'Položit na povrch pod objektem', () => this.dropToSurface(objs)], ['⧉ Duplikovat', 'Ctrl+D', 'Duplikovat', () => this.editor.duplicate()]);
+    acts.push(['◎ Zaměřit', 'F', 'Kamera na výběr', () => this.editor.frameSelection()], ['🗑 Smazat', 'Del', 'Smazat výběr', () => this.editor.deleteSelection(), 'danger']);
+    bar.replaceChildren(
+      ...acts.map(([label, key2, title, fn, cls]) => {
+        const b = document.createElement('button');
+        b.title = title;
+        if (cls) b.className = cls;
+        b.textContent = label;
+        if (key2) {
+          const k = document.createElement('kbd');
+          k.textContent = key2;
+          b.appendChild(k);
+        }
+        b.addEventListener('click', fn);
+        return b;
+      }),
+    );
   }
 
   private async mapMenu() {
@@ -1553,6 +1688,7 @@ export class App {
       // Náhledy katalogu: po dvou na snímek, jen v editoru (vykreslí se do rohu, scéna je přepíše).
       if (this.thumbs?.pending) this.thumbs.pump(this.renderer, this.world, 2);
       this.editor.update(dt);
+      this.updateSelBar();
       if (this.uiDirty) {
         this.uiDirty = false;
         this.renderUI();
@@ -1639,3 +1775,13 @@ export class App {
 }
 
 export { TEST_SPAWN_ID, vFovFromH16x9 };
+
+function objectLabel(ed: EditorDoc, id: string) {
+  const o = ed.getObject(id);
+  if (o) return o.editor?.name || getAsset(o.assetId)?.label || o.assetId;
+  if (id === TEST_SPAWN_ID) return 'testovací spawn';
+  if (id.startsWith('cp:')) return 'kontrolní bod';
+  if (id.startsWith('sp:')) return 'spawn';
+  if (id.startsWith('zn:')) return 'zóna';
+  return id;
+}

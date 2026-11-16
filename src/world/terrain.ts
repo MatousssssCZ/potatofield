@@ -4,7 +4,7 @@ import type { TerrainData } from '../shared/map/schema';
  * Štětce terénu (čisté funkce nad výškovým polem – testovatelné, sdílené).
  * Síla je v metrech za sekundu (u malování v podílu za sekundu) → tah nezávisí na FPS.
  */
-export type BrushKind = 'raise' | 'lower' | 'smooth' | 'flatten' | 'paintDirt' | 'paintUrban' | 'paintGrass' | 'paintGrassLess' | 'paintErase';
+export type BrushKind = 'raise' | 'lower' | 'smooth' | 'flatten' | 'paintDirt' | 'paintUrban' | 'paintGrass' | 'paintGrassLess' | 'paintDirtLess' | 'paintUrbanLess' | 'paintErase';
 
 export interface Brush {
   kind: BrushKind;
@@ -54,8 +54,8 @@ export function applyBrush(t: TerrainData, b: Brush, x: number, z: number, dt: n
   const reg = brushRegion(t, x, z, b.radius);
   if (!reg) return null;
   const isPaint = b.kind.startsWith('paint');
-  if (b.kind === 'paintDirt' && !t.dirt) t.dirt = new Array(t.heights.length).fill(0);
-  if ((b.kind === 'paintUrban' || b.kind === 'paintErase') && !t.urban) t.urban = new Array(t.heights.length).fill(0);
+  if ((b.kind === 'paintDirt' || b.kind === 'paintDirtLess') && !t.dirt) t.dirt = new Array(t.heights.length).fill(0);
+  if ((b.kind === 'paintUrban' || b.kind === 'paintUrbanLess' || b.kind === 'paintErase') && !t.urban) t.urban = new Array(t.heights.length).fill(0);
   if (b.kind === 'paintErase' && !t.dirt) t.dirt = new Array(t.heights.length).fill(0);
   if ((b.kind === 'paintGrass' || b.kind === 'paintGrassLess' || b.kind === 'paintErase') && !t.grass) t.grass = new Array(t.heights.length).fill(0);
   const src = b.kind === 'smooth' ? t.heights.slice() : t.heights;
@@ -73,6 +73,8 @@ export function applyBrush(t: TerrainData, b: Brush, x: number, z: number, dt: n
         else if (b.kind === 'paintUrban') t.urban![i] = r2(Math.min(1, t.urban![i] + k));
         else if (b.kind === 'paintGrass') t.grass![i] = r2(Math.min(1, t.grass![i] + k));
         else if (b.kind === 'paintGrassLess') t.grass![i] = r2(Math.max(0, t.grass![i] - k));
+        else if (b.kind === 'paintDirtLess') t.dirt![i] = r2(Math.max(0, t.dirt![i] - k));
+        else if (b.kind === 'paintUrbanLess') t.urban![i] = r2(Math.max(0, t.urban![i] - k));
         else {
           t.dirt![i] = r2(Math.max(0, t.dirt![i] - k));
           t.urban![i] = r2(Math.max(0, t.urban![i] - k));
