@@ -13,6 +13,13 @@ const BANK: Record<string, string[]> = {
   stepGrass: [0, 1, 2, 3, 4].map((i) => `footstep_grass_00${i}`),
   stepWood: [0, 1, 2, 3, 4].map((i) => `footstep_wood_00${i}`),
   stepSand: [0, 1, 2, 3, 4].map((i) => `footstep_snow_00${i}`),
+  stepCarpet: [0, 1, 2, 3, 4].map((i) => `footstep_carpet_00${i}`),
+  // Nahrávky přebíjení (CC0, dodal autor hry): výřezy z celých sekvencí, viz ASSET_CREDITS.md.
+  rifleMagOut: ['rifleMagOut'],
+  rifleMagIn: ['rifleMagIn'],
+  pistolMagOut: ['pistolMagOut'],
+  pistolMagIn: ['pistolMagIn'],
+  shotgunPump: ['shotgunPump'],
   stepMetal: [0, 1, 2].map((i) => `impactMetal_light_00${i}`),
   hitHard: [0, 1, 2, 3].map((i) => `impactGeneric_light_00${i}`),
   hitMetal: [0, 1, 2].map((i) => `impactMetal_medium_00${i}`),
@@ -31,7 +38,7 @@ const BANK: Record<string, string[]> = {
   pouch: ['handleSmallLeather'],
 };
 
-const STEP_BANK: Record<string, string> = { concrete: 'stepConcrete', plaster: 'stepConcrete', brick: 'stepConcrete', asphalt: 'stepConcrete', metal: 'stepMetal', wood: 'stepWood', sand: 'stepSand', dirt: 'stepGrass', fabric: 'stepGrass', flesh: 'stepGrass' };
+const STEP_BANK: Record<string, string> = { concrete: 'stepConcrete', plaster: 'stepConcrete', brick: 'stepConcrete', asphalt: 'stepConcrete', metal: 'stepMetal', wood: 'stepWood', sand: 'stepSand', dirt: 'stepGrass', fabric: 'stepCarpet', flesh: 'stepGrass' };
 const HIT_BANK: Record<string, string> = { concrete: 'hitHard', plaster: 'hitHard', brick: 'hitHard', asphalt: 'hitHard', metal: 'hitMetal', wood: 'hitWood', sand: 'hitSoft', dirt: 'hitSoft', fabric: 'hitSoft', flesh: 'hitFlesh' };
 
 interface PlayOpts {
@@ -331,12 +338,12 @@ export class GameAudio {
   }
 
   /** Mechanika zbraně: pumpa, vložení náboje, víko, závěr; `pos` pro cizího hráče. */
-  mech(kind: 'pump' | 'shell' | 'cover' | 'bolt' | 'magOut' | 'magIn' | 'rack', pos: V3Like | null = null) {
+  mech(kind: 'pump' | 'shell' | 'cover' | 'bolt' | 'magOut' | 'magIn' | 'rack', pos: V3Like | null = null, gun: 'rifle' | 'pistol' = 'rifle') {
     const o: PlayOpts = { pos, ref: 1.5, gain: pos ? 0.9 : 0.6 };
     if (kind === 'magOut') {
-      if (!this.sample('latch', o)) this.burst({ gain: 0.2, decay: 0.05, lp: 3500, hp: 500, rate: 0.8 }, o);
+      if (!this.sample(gun === 'pistol' ? 'pistolMagOut' : 'rifleMagOut', o) && !this.sample('latch', o)) this.burst({ gain: 0.2, decay: 0.05, lp: 3500, hp: 500, rate: 0.8 }, o);
     } else if (kind === 'magIn') {
-      if (!this.sample('click', { ...o, rate: 0.85 })) this.burst({ gain: 0.24, decay: 0.05, lp: 4200, hp: 600 }, o);
+      if (!this.sample(gun === 'pistol' ? 'pistolMagIn' : 'rifleMagIn', o) && !this.sample('click', { ...o, rate: 0.85 })) this.burst({ gain: 0.24, decay: 0.05, lp: 4200, hp: 600 }, o);
     } else if (kind === 'rack' || kind === 'bolt') {
       const ok = this.sample('latch', { ...o, rate: 1.25 });
       this.sample('click', { ...o, delay: 0.13, rate: 1.1 });
@@ -345,6 +352,7 @@ export class GameAudio {
         this.burst({ gain: 0.22, decay: 0.05, lp: 3800, hp: 500, rate: 0.85, delay: 0.12 }, o);
       }
     } else if (kind === 'pump') {
+      if (this.sample('shotgunPump', o)) return;
       const ok = this.sample('latch', { ...o, rate: 0.9 });
       this.sample('latch', { ...o, delay: 0.16, rate: 1.05 });
       if (!ok) {

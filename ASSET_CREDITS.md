@@ -36,6 +36,8 @@ Arms (drillimpact, itch.io – licence neověřena, do repozitáře nevloženo).
 | Impact Sounds 1.0 (kroky beton / tráva / dřevo / sníh, dopady kov / dřevo / měkké / obecné / úder, plech) – 34 souborů | Kenney – [kenney.nl/assets/impact-sounds](https://kenney.nl/assets/impact-sounds) | CC0 1.0 (License.txt v balíčku) | `public/audio/footstep_*`, `impact*` – kroky podle povrchu, dopady střel, zásah do těla |
 | RPG Audio (metalClick, metalLatch, beltHandle, cloth, drawKnife, knifeSlice, handleSmallLeather) – 11 souborů | Kenney – [kenney.nl/assets/rpg-audio](https://kenney.nl/assets/rpg-audio) | CC0 1.0 | `public/audio/` – přebíjení, závěr, přehození výbavy, nůž, brašna |
 | Sci-fi Sounds (explosionCrunch 000–002, lowFrequency_explosion_000) – 4 soubory | Kenney – [kenney.nl/assets/sci-fi-sounds](https://kenney.nl/assets/sci-fi-sounds) | CC0 1.0 | `public/audio/` – výbuch granátu |
+| Impact Sounds 1.0 – kroky po koberci (`footstep_carpet_000–004`) | Kenney – [kenney.nl/assets/impact-sounds](https://kenney.nl/assets/impact-sounds) | CC0 1.0 | `public/audio/footstep_carpet_*` – kroky po látce / koberci (povrch `fabric`); dodáno autorem hry 17. 11. 2026 |
+| Přebíjení pušky, pistole a pumpa brokovnice (`assaultriflereload1.wav`, `gunreload1.wav`, `shotguncock.wav`) | dodal autor hry (podle něj CC0 / volné dílo; původní zdroj neuveden) | CC0 1.0 | originály `assets-src/audio/`; výřezy (mono OGG) `public/audio/rifleMagOut`, `rifleMagIn`, `pistolMagOut`, `pistolMagIn`, `shotgunPump` – vyjmutí a zasunutí zásobníku, pumpa |
 
 Soubory jsou beze změny (OGG), staženo 13. 11. 2026. Přiřazení ke zvukům hry je v tabulce `BANK` v `src/client/runtime/audio.ts`
 („sníh“ slouží jako písek). Textury třetích stran **nejsou** použity.

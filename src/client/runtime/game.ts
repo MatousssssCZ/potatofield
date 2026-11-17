@@ -427,7 +427,8 @@ export class Game {
         if (this.reloadCue.key !== key) this.reloadCue = { key, done: 0 };
         const k = (this.simTime - w.actionStart) / Math.max(0.01, w.actionEnd - w.actionStart);
         const cues: Array<[number, 'magOut' | 'magIn' | 'rack' | 'cover']> = style === 'belt' ? [[0.12, 'cover'], [0.55, 'magIn'], [0.82, 'cover'], [0.93, 'rack']] : [[0.2, 'magOut'], [0.62, 'magIn'], ...(w.reloadEmpty ? ([[0.86, 'rack']] as Array<[number, 'rack']>) : [])];
-        while (this.reloadCue.done < cues.length && k >= cues[this.reloadCue.done][0]) this.audio.mech(cues[this.reloadCue.done++][1]);
+        const gun = item in SIDEARMS ? 'pistol' : 'rifle';
+        while (this.reloadCue.done < cues.length && k >= cues[this.reloadCue.done][0]) this.audio.mech(cues[this.reloadCue.done++][1], null, gun);
       }
     }
   }
