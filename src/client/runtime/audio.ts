@@ -38,8 +38,8 @@ const BANK: Record<string, string[]> = {
   pouch: ['handleSmallLeather'],
 };
 
-const STEP_BANK: Record<string, string> = { concrete: 'stepConcrete', plaster: 'stepConcrete', brick: 'stepConcrete', asphalt: 'stepConcrete', metal: 'stepMetal', wood: 'stepWood', sand: 'stepSand', dirt: 'stepGrass', fabric: 'stepCarpet', flesh: 'stepGrass' };
-const HIT_BANK: Record<string, string> = { concrete: 'hitHard', plaster: 'hitHard', brick: 'hitHard', asphalt: 'hitHard', metal: 'hitMetal', wood: 'hitWood', sand: 'hitSoft', dirt: 'hitSoft', fabric: 'hitSoft', flesh: 'hitFlesh' };
+const STEP_BANK: Record<string, string> = { concrete: 'stepConcrete', plaster: 'stepConcrete', brick: 'stepConcrete', asphalt: 'stepConcrete', metal: 'stepMetal', wood: 'stepWood', sand: 'stepSand', dirt: 'stepGrass', grass: 'stepGrass', gravel: 'stepConcrete', fabric: 'stepCarpet', flesh: 'stepGrass' };
+const HIT_BANK: Record<string, string> = { concrete: 'hitHard', plaster: 'hitHard', brick: 'hitHard', asphalt: 'hitHard', metal: 'hitMetal', wood: 'hitWood', sand: 'hitSoft', dirt: 'hitSoft', grass: 'hitSoft', gravel: 'hitHard', fabric: 'hitSoft', flesh: 'hitFlesh' };
 
 interface PlayOpts {
   gain?: number;

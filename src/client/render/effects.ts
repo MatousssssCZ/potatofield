@@ -21,6 +21,8 @@ const DUST: Record<string, string> = {
   wood: '#8a6a48',
   metal: '#ffd28a',
   fabric: '#b39e78',
+  grass: '#a8935a',
+  gravel: '#9c968a',
   flesh: '#6a1a12',
 };
 

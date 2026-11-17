@@ -362,7 +362,20 @@ export class Game {
   /** Povrch pod nohama (materiál kolize nebo terén). */
   private surfaceUnder(p: { x: number; y: number; z: number }): string {
     const hit = this.phys?.castRay({ x: p.x, y: p.y + 0.4, z: p.z }, { x: 0, y: -1, z: 0 }, 1.2);
-    return hit?.surface ?? 'sand';
+    if (hit && hit.objectId !== '__terrain') return hit.surface;
+    // Terén: povrch podle malovaných vrstev (tráva, hlína, městský povrch), jinak písek.
+    const t = this.doc.terrain;
+    const at = (arr: number[] | undefined) => {
+      if (!arr) return 0;
+      const fx = (p.x - t.origin[0]) / t.spacing, fz = (p.z - t.origin[1]) / t.spacing;
+      const i = Math.round(fx), j = Math.round(fz);
+      if (i < 0 || j < 0 || i >= t.samplesX || j >= t.samplesZ) return 0;
+      return arr[j * t.samplesX + i] ?? 0;
+    };
+    const grass = at(t.grass), dirt = at(t.dirt), urban = at(t.urban);
+    const best = Math.max(grass, dirt, urban);
+    if (best < 0.35) return 'sand';
+    return best === grass ? 'grass' : best === urban ? 'gravel' : 'dirt';
   }
 
   /** Kroky podle ujeté dráhy a povrchu (vlastní i cizí do 40 m), posluchač a zvuky přebíjení. */
