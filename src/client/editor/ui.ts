@@ -1,5 +1,5 @@
 import type { MapObject } from '../../shared/map/schema';
-import { allAssets, getAsset, resolveParams, terrainContext, type AssetDef, type ParamSpec } from '../../world/registry';
+import { allAssets, generateObject, getAsset, resolveParams, STRETCH, stretchAxes, terrainContext, type AssetDef, type ParamSpec } from '../../world/registry';
 import { cmds, type EditorDoc, type History } from './editorDoc';
 import { TEST_SPAWN_ID, type Editor } from './editor';
 import { markerId } from './markers';
@@ -578,7 +578,34 @@ export function renderInspector(ed: EditorDoc, history: History, editor: Editor,
     btn('⟳', 'Otočit o 90° doprava', () => upd('Rotace', (x) => (x.transform.rotation[1] = rad(((yaw - 90 + 540) % 360) - 180)))),
   );
   place.appendChild(prop('Natočení', '° kolem svislé osy', rot));
-  if (def?.uniformScale) place.appendChild(prop('Měřítko', `${def.uniformScale.min}–${def.uniformScale.max}×`, numInput(o.transform.scale ?? 1, { min: def.uniformScale.min, max: def.uniformScale.max, step: 0.05, unit: '×' }, (v) => upd('Měřítko', (x) => (x.transform.scale = v)))));
+  // Rozměr v metrech po osách bez parametru generátoru (procedurální roztažení, ne měřítko).
+  const ax = def ? stretchAxes(def) : { x: false, y: false, z: false };
+  if (ax.x || ax.y || ax.z) {
+    const ext = objectExtent(o, ed);
+    if (ext) {
+      const legacy = o.transform.scale ?? 1;
+      const cur = (o.transform.stretch ?? [1, 1, 1]).map((v) => v * legacy);
+      const dims = el('div', { class: 'vec3' });
+      (['x', 'y', 'z'] as const).forEach((a, i) => {
+        const n = numInput(r4n(ext[i]), { min: 0.05, max: 500, step: editor.settings.grid / 2, unit: 'm' }, (v) => {
+          const st = cur.slice() as [number, number, number];
+          st[i] = Math.min(STRETCH.max, Math.max(STRETCH.min, Math.round(cur[i] * (v / ext[i]) * 1e4) / 1e4));
+          upd('Rozměr', (x) => {
+            x.transform.stretch = st.every((q) => q === 1) ? undefined : st;
+            delete x.transform.scale;
+          });
+        });
+        n.dataset.axis = ['Š', 'V', 'H'][i];
+        if (!ax[a]) (n.querySelector('input') as HTMLInputElement).disabled = true;
+        dims.appendChild(n);
+      });
+      place.appendChild(propStack('Rozměr (m) – šířka, výška, hloubka', dims));
+      if (o.transform.stretch || legacy !== 1) place.appendChild(btn('↺ Původní rozměr', 'Vrátit předmět na výchozí rozměr', () => upd('Původní rozměr', (x) => {
+        delete x.transform.stretch;
+        delete x.transform.scale;
+      })));
+    }
+  }
   const prow = el('div', { class: 'btnrow' });
   prow.append(btn('⬇ Položit na zem', 'Jednorázově položí objekt na povrch pod ním (terén nebo objekt)', () => extra.dropToSurface([id])), btn('Zaměřit (F)', 'Kamera na objekt', () => editor.frameSelection()));
   place.appendChild(prow);
@@ -721,4 +748,19 @@ function roadPanel(root: HTMLElement, o: MapObject, ed: EditorDoc, history: Hist
 function alertNote(root: HTMLElement, text: string) {
   root.querySelector('.road-alert')?.remove();
   root.appendChild(el('div', { class: 'note warn road-alert' }, `⚠ ${text}`));
+}
+
+const r4n = (v: number) => Math.round(v * 100) / 100;
+
+/** Skutečný rozměr předmětu [š, v, h] v metrech (z vygenerovaných dílů, bez natočení). */
+function objectExtent(o: MapObject, ed: EditorDoc): [number, number, number] | null {
+  const parts = generateObject(o, ed.doc.terrain, ed.doc.objects).parts.filter((p) => p.render !== false && p.shape !== 'label');
+  if (!parts.length) return null;
+  const mn = [Infinity, Infinity, Infinity], mx = [-Infinity, -Infinity, -Infinity];
+  for (const p of parts) for (let i = 0; i < 3; i++) {
+    mn[i] = Math.min(mn[i], p.pos[i] - p.size[i] / 2);
+    mx[i] = Math.max(mx[i], p.pos[i] + p.size[i] / 2);
+  }
+  const s = o.transform.scale ?? 1;
+  return [(mx[0] - mn[0]) * s, (mx[1] - mn[1]) * s, (mx[2] - mn[2]) * s];
 }

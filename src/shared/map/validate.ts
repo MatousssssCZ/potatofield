@@ -230,6 +230,10 @@ export function validateMap(input: unknown, opts: { fileBytes?: number } = {}): 
         c.vec3(o.transform.position, `${p}.transform.position`);
         c.vec3(o.transform.rotation, `${p}.transform.rotation`, 100);
         if (o.transform.scale !== undefined) c.num(o.transform.scale, `${p}.transform.scale`, 0.1, 10);
+        if (o.transform.stretch !== undefined) {
+          c.vec3(o.transform.stretch, `${p}.transform.stretch`, 10);
+          if (Array.isArray(o.transform.stretch) && o.transform.stretch.some((v) => typeof v === 'number' && v < 0.1)) c.err(`${p}.transform.stretch`, 'roztažení musí být aspoň 0,1');
+        }
       }
       if (c.obj(o.params, `${p}.params`)) {
         const keys = Object.keys(o.params);

@@ -15,6 +15,11 @@ export interface Transform {
   rotation: Vec3;
   /** Jednotné měřítko rigidní rekvizity (parametrické objekty mají 1). */
   scale?: number;
+  /**
+   * Roztažení předmětu po osách [x, y, z] (výchozí 1): díly se prodlouží v daném směru (textura se
+   * nenatahuje – mapuje se v metrech). Jen u os, které nemají vlastní rozměrový parametr generátoru.
+   */
+  stretch?: Vec3;
 }
 
 export interface TerrainData {

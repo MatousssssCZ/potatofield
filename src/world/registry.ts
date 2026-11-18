@@ -1,6 +1,6 @@
 import type { MapDocument, MapObject, TerrainData } from '../shared/map/schema';
 import { heightAt } from './terrain';
-import { laddersToWorld, partsToColliders, type ColliderDef, type LadderDef, type LadderLocal, type Part } from './parts';
+import { laddersToWorld, partsToColliders, stretchParts, type ColliderDef, type LadderDef, type LadderLocal, type Part } from './parts';
 
 export interface ParamSpec {
   key: string;
@@ -100,6 +100,18 @@ export function registerAsset(def: AssetDef) {
   registry.set(def.assetId, def);
 }
 
+/** Rozsah roztažení po ose (násobek původního rozměru). */
+export const STRETCH = { min: 0.25, max: 4 };
+
+/**
+ * Osy, ve kterých jde předmět roztáhnout úchopem: ty, které nemají vlastní rozměrový parametr
+ * (ten mění tvar generátorem – víc modulů, pater, polí). Kreslené trasy a značky ne.
+ */
+export function stretchAxes(def: AssetDef): { x: boolean; y: boolean; z: boolean } {
+  if (def.category === 'markers' || def.params.some((q) => q.type === 'points') || def.mount) return { x: false, y: false, z: false };
+  return { x: !def.sizeParams?.x, y: !def.sizeParams?.y, z: !def.sizeParams?.z };
+}
+
 export function getAsset(assetId: string): AssetDef | undefined {
   return registry.get(assetId);
 }
@@ -177,7 +189,13 @@ export function generateObject(o: MapObject, terrain?: TerrainData, neighbors?: 
   }
   const material = o.material && def.materials.includes(o.material) ? o.material : def.defaultMaterial;
   const p = resolveParams(def, o.params);
-  return { object: o, parts: def.generate(p, o.seed, material, terrainContext(o, terrain, neighbors)), ladders: def.ladders ? laddersToWorld(o, def.ladders(p)) : [] };
+  let parts = def.generate(p, o.seed, material, terrainContext(o, terrain, neighbors));
+  const st = o.transform.stretch;
+  if (st) {
+    const ax = stretchAxes(def);
+    parts = stretchParts(parts, [ax.x ? st[0] : 1, ax.y ? st[1] : 1, ax.z ? st[2] : 1]);
+  }
+  return { object: o, parts, ladders: def.ladders ? laddersToWorld(o, def.ladders(p)) : [] };
 }
 
 export function generateMap(doc: MapDocument): GeneratedObject[] {

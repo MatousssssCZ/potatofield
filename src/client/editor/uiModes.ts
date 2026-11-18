@@ -14,7 +14,7 @@ import { renderScenarios } from './uiGame';
 export type EditorMode = 'select' | 'build' | 'terrain' | 'paint' | 'play';
 
 export const MODE_INFO: Record<EditorMode, { title: string; sub: string; hint: string; chip: string }> = {
-  select: { title: 'Scéna', sub: 'Klikni na objekt v pohledu nebo v seznamu', chip: 'Vybrat', hint: 'Klik = výběr · Ctrl+klik = přidat · táhni = posun · G / R / S = posun / otočit / měřítko · F = zaměřit' },
+  select: { title: 'Scéna', sub: 'Klikni na objekt v pohledu nebo v seznamu', chip: 'Vybrat', hint: 'Klik = výběr · Ctrl+klik = přidat · táhni = posun · G / R = posun / otočit · kostky = rozměr v daném směru · F = zaměřit' },
   build: { title: 'Stavět', sub: 'Přetáhni předmět do scény, nebo klikni – vloží se doprostřed pohledu', chip: 'Stavět', hint: 'Přetáhni z katalogu do pohledu · klik = doprostřed pohledu · R = otočit · Ctrl+D = další kus' },
   terrain: { title: 'Terén', sub: 'Tvar krajiny: kopce, prohlubně, srovnání', chip: 'Terén', hint: 'Táhni = štětec · Shift + táhni = opačně · [ ] = velikost štětce · RMB + WASD = létat' },
   paint: { title: 'Povrch', sub: 'Hlína, město a tráva přímo na terén; rozsévání palem', chip: 'Povrch', hint: 'Táhni = malovat · Shift + táhni = ubrat · [ ] = velikost štětce' },

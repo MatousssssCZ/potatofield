@@ -58,6 +58,8 @@ export interface Part {
    * modelu v lokálních souřadnicích (sám model se nijak neposouvá). Bez kolize – ta jsou zvláštní díly.
    */
   model?: string;
+  /** Model: roztažení sítě po osách kolem počátku objektu (z `transform.stretch`). */
+  mscale?: [number, number, number];
   /**
    * List palmy ('frond'): žebro z počátku podél lokální +Y (délka size[1]), šířka size[0],
    * prověšení konce k lokální +Z o `bend` m (ve světě dolů), lístky do „V“ pod úhlem `fold` (rad)
@@ -217,5 +219,27 @@ export function laddersToWorld(o: MapObject, list: LadderLocal[]): LadderDef[] {
     const f = rotate(q, { x: Math.sin(yaw), y: 0, z: Math.cos(yaw) });
     const fl = Math.hypot(f.x, f.z) || 1;
     return { id: `${o.id}#${i}`, base, height: l.height * s, width: l.width * s, facing: { x: f.x / fl, y: 0, z: f.z / fl }, climbOffset: 0.42 };
+  });
+}
+
+/**
+ * Roztažení dílů po osách objektu (procedurálně, ne `mesh.scale`): poloha dílu se posune, rozměr
+ * dílu se prodlouží o roztažení ve směru jeho vlastních os. Textury se mapují v metrech, takže se
+ * nenatahují (delší bedna má víc prken, ne širší prkna). Kolize jdou ze stejných dílů.
+ */
+export function stretchParts(parts: Part[], s: [number, number, number]): Part[] {
+  if (s[0] === 1 && s[1] === 1 && s[2] === 1) return parts;
+  return parts.map((p) => {
+    const q: Part = { ...p, pos: [p.pos[0] * s[0], p.pos[1] * s[1], p.pos[2] * s[2]] };
+    const [rx, ry, rz] = p.rot ?? [0, 0, 0];
+    const rq = quatFromEuler(rx, ry, rz);
+    const f = [0, 1, 2].map((i) => {
+      const a = rotate(rq, { x: i === 0 ? 1 : 0, y: i === 1 ? 1 : 0, z: i === 2 ? 1 : 0 });
+      return Math.hypot(a.x * s[0], a.y * s[1], a.z * s[2]);
+    });
+    q.size = [p.size[0] * f[0], p.size[1] * f[1], p.size[2] * f[2]];
+    if (p.path) q.path = p.path.map(([x, y, z]) => [x * s[0], y * s[1], z * s[2]]);
+    if (p.shape === 'model') q.mscale = [(p.mscale?.[0] ?? 1) * s[0], (p.mscale?.[1] ?? 1) * s[1], (p.mscale?.[2] ?? 1) * s[2]];
+    return q;
   });
 }

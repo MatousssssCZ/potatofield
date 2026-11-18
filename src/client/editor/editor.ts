@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { MapObject, Transform } from '../../shared/map/schema';
-import { generateObject, getAsset, resolveParams, terrainContext, type AssetDef } from '../../world/registry';
+import { generateObject, getAsset, resolveParams, STRETCH, stretchAxes, terrainContext, type AssetDef } from '../../world/registry';
 import { roadModel } from '../../world/assets/osada/road';
 import { snapEndToRoad } from '../../world/assets/osada/roadOps';
 import { formatRanges, parseRanges, pointAt, project, refToS, sToRef, type RangeRef } from '../../world/assets/osada/roadGraph';
@@ -367,9 +367,9 @@ export class Editor {
       return;
     }
     if (ctrl) return;
-    if (!this.drag && !this.terrainMode && (e.code === 'KeyG' || e.code === 'KeyR' || e.code === 'KeyS')) {
+    if (!this.drag && !this.terrainMode && (e.code === 'KeyG' || e.code === 'KeyR')) {
       e.preventDefault();
-      this.startModal(e.code === 'KeyG' ? 'G' : e.code === 'KeyR' ? 'R' : 'S');
+      this.startModal(e.code === 'KeyG' ? 'G' : 'R');
       return;
     }
     switch (e.code) {
@@ -802,14 +802,14 @@ export class Editor {
     const def = o && getAsset(o.assetId);
     if (!o || !def) return;
     const cube = () => new THREE.BoxGeometry(1, 1, 1);
-    if (def.sizeParams) {
-      for (const axis of ['x', 'z', 'y'] as const) {
-        if (!def.sizeParams[axis]) continue;
-        for (const sign of axis === 'y' ? ([1] as const) : ([1, -1] as const)) add(cube(), this.handleMat.size, { kind: 'size', axis, sign });
-      }
-    } else if (def.uniformScale)
-      // Jednotné měřítko: čtyři rohy u země (vždy na očích, i u vysokých předmětů); tažení ven = větší.
-      for (const corner of [[1, 1], [1, -1], [-1, 1], [-1, -1]] as [number, number][]) add(cube(), this.handleMat.uniform, { kind: 'uniform', axis: 'x', sign: 1, corner });
+    // Rozměrové úchopy na stranách a nahoře: osa s parametrem generátoru mění tvar (moduly, patra,
+    // pole), ostatní osy předmět procedurálně roztáhnou (díly se prodlouží, textura se nenatahuje).
+    // Jednotné zvětšování / zmenšování celého předmětu se nenabízí.
+    const st = stretchAxes(def);
+    for (const axis of ['x', 'z', 'y'] as const) {
+      if (!def.sizeParams?.[axis] && !st[axis]) continue;
+      for (const sign of axis === 'y' ? ([1] as const) : ([1, -1] as const)) add(cube(), this.handleMat.size, { kind: 'size', axis, sign });
+    }
     const ps = def.params.find((q) => q.type === 'points');
     if (ps) {
       const pts = parsePoints(String(resolveParams(def, o.params)[ps.key]));
@@ -1368,7 +1368,7 @@ export class Editor {
       return cmds.update(this.ed, d.id, (x) => (x.transform.scale = v), 'Měřítko');
     }
     const key = def.sizeParams?.[d.axis];
-    if (!key) return null;
+    if (!key) return this.stretchCommand(o, def, d);
     const p = resolveParams(def, o.params);
     const spec = def.params.find((q) => q.key === key)!;
     let v = (p[key] as number) * d.f;
@@ -1398,6 +1398,47 @@ export class Editor {
       x.params[key] = v;
       x.transform.position = pos;
     }, 'Rozměry');
+  }
+
+  /**
+   * Roztažení po ose bez rozměrového parametru: nový násobek (staré jednotné měřítko se převede),
+   * rozměr na mřížku (bez Alt), protilehlá strana zůstane na místě.
+   */
+  private stretchCommand(o: MapObject, def: AssetDef, d: Extract<Drag, { kind: 'size' }>): Command | null {
+    const ai = d.axis === 'x' ? 0 : d.axis === 'y' ? 1 : 2;
+    const legacy = o.transform.scale ?? 1;
+    const cur = (o.transform.stretch ?? [1, 1, 1]).map((v) => v * legacy) as V3;
+    let v = cur[ai] * d.f;
+    if (!this.altHeld && d.ext > 0) {
+      const len = Math.max(this.settings.grid / 2, Math.round((d.ext * d.f) / (this.settings.grid / 2)) * (this.settings.grid / 2));
+      v = cur[ai] * (len / d.ext);
+    }
+    v = r4(THREE.MathUtils.clamp(v, STRETCH.min, STRETCH.max));
+    const stretch = [...cur] as V3;
+    stretch[ai] = v;
+    const next: MapObject = { ...structuredClone(o), transform: { ...o.transform, scale: undefined, stretch } };
+    const geo = buildObjectGeometry(generateObject(next, this.ed.doc.terrain, this.ed.doc.objects).parts);
+    const nb = new THREE.Box3();
+    for (const { geometry } of geo.byMaterial.values()) {
+      geometry.computeBoundingBox();
+      nb.union(geometry.boundingBox!);
+      geometry.dispose();
+    }
+    const pos = [...o.transform.position] as V3;
+    if (d.axis !== 'y' && !nb.isEmpty()) {
+      const nopp = d.sign > 0 ? nb.min[d.axis] : nb.max[d.axis];
+      const shift = new THREE.Vector3();
+      shift[d.axis] = d.opp * legacy - nopp;
+      shift.applyEuler(new THREE.Euler(0, o.transform.rotation[1], 0));
+      pos[0] = r4(pos[0] + shift.x);
+      pos[2] = r4(pos[2] + shift.z);
+    }
+    if (!nb.isEmpty()) this.onToast(`${def.label}: ${r4(nb.max.x - nb.min.x)} × ${r4(nb.max.z - nb.min.z)} m, výška ${r4(nb.max.y - nb.min.y)} m`);
+    return cmds.update(this.ed, o.id, (x) => {
+      x.transform.stretch = stretch.every((q) => q === 1) ? undefined : stretch;
+      delete x.transform.scale;
+      x.transform.position = pos;
+    }, 'Roztáhnout');
   }
 
   // ---------------- kreslení ulice ----------------
@@ -1798,7 +1839,7 @@ export class Editor {
       return 'Táhni = přidat bod ulice';
     }
     const { id } = this.pick(this.pointerClient.x + this.canvas.getBoundingClientRect().left, this.pointerClient.y + this.canvas.getBoundingClientRect().top);
-    if (id && this.selection.has(id)) return 'Táhni = posunout · G / R / S = posun / rotace / měřítko\nCtrl+C / Ctrl+V · Ctrl+D duplikovat · Del smazat · F zaměřit';
+    if (id && this.selection.has(id)) return 'Táhni = posunout · G / R = posun / rotace · oranžové kostky = rozměr v daném směru\nCtrl+C / Ctrl+V · Ctrl+D duplikovat · Del smazat · F zaměřit';
     if (id) return 'Klik = vybrat · Ctrl+klik = přidat do výběru';
     return 'Tažení = výběr rámečkem · prostřední tlačítko = otáčet kolem\nRMB + WASD = létat · ? = všechny zkratky';
   }
@@ -2141,11 +2182,11 @@ function buildHelp(toggleHints: () => boolean, hintsOn: () => boolean): HTMLDivE
       ['táhni předmět', 'posun po terénu (Alt = bez mřížky a magnetu)'],
       ['táhni budovu k budově', 'magnet: přilepí líc na líc a srovná hrany (do 0,6 m)'],
       ['modrý prstenec', 'rotace'],
-      ['oranžové kostky', 'rozměry / měřítko'],
-      ['G / R / S', 'posun / rotace / měřítko bez držení myši'],
+      ['oranžové kostky', 'rozšířit / zúžit / zvýšit v daném směru (protější strana drží)'],
+      ['G / R', 'posun / rotace bez držení myši'],
       ['X / Y / Z (při G)', 'jen po ose'],
       ['číslo + Enter', 'přesná hodnota (m, °, násobek) – i při tažení myší'],
-      ['LMB / Enter', 'potvrdit úpravu G/R/S'],
+      ['LMB / Enter', 'potvrdit úpravu G/R'],
       ['Esc / RMB', 'zrušit úpravu'],
     ]],
     ['Operace', [

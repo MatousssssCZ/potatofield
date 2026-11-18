@@ -398,7 +398,17 @@ export function buildObjectGeometry(parts: Part[], scale = 1): ObjectGeometry {
           const k = `${m.material}|${cast ? 1 : 0}`;
           let e = builders.get(k);
           if (!e) builders.set(k, (e = { b: new Builder(), cast }));
-          e.b.mesh(m.pos, m.nrm, m.uv, m.index, scale, tileOf(m.material));
+          let mp = m.pos;
+          const ms = p.mscale;
+          if (ms) {
+            mp = new Float32Array(m.pos.length);
+            for (let i = 0; i < mp.length; i += 3) {
+              mp[i] = m.pos[i] * ms[0];
+              mp[i + 1] = m.pos[i + 1] * ms[1];
+              mp[i + 2] = m.pos[i + 2] * ms[2];
+            }
+          }
+          e.b.mesh(mp, m.nrm, m.uv, m.index, scale, tileOf(m.material));
         }
         continue;
       }
