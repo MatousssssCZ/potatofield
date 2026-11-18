@@ -14,7 +14,7 @@
   --pf-accent-ink: #1b1d12;
   --pf-team: #66bbee;
   --pf-squad: #88cf70;
-  --pf-enemy: #f06a62;
+  --pf-enemy: #ff8577;
   --pf-neutral: #d6d8ce;
   --pf-warn: #e8a24a;
   --pf-danger: #d0574c;
@@ -51,6 +51,8 @@
 }
 .enemy {
   color: var(--pf-enemy);
+  /* Červená na světlém písku a obloze: tmavý obrys, aby byla čitelná všude. */
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.95), 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 .squad {
   color: var(--pf-squad);
@@ -141,7 +143,7 @@
 }
 .pf-btn.danger {
   border-color: var(--pf-danger);
-  color: #f2b4ad;
+  color: #ffc6be;
 }
 .pf-btn.big {
   font-size: 1.25em;
@@ -465,7 +467,7 @@ body.mode-menu #app {
   color: var(--pf-accent);
 }
 .pf-nav-item.danger {
-  color: #f2b4ad;
+  color: #ffc6be;
 }
 .pf-nav-sep {
   height: 1px;
@@ -1277,6 +1279,8 @@ body.mode-play .tui-log {
 }
 .h-ident {
   color: var(--pf-enemy);
+  font-weight: 700;
+  text-shadow: 0 0 3px #000, 0 1px 2px #000, 1px 0 2px #000;
   font-size: 1.1em;
   position: absolute;
   top: -130px;
@@ -1768,7 +1772,7 @@ body.mode-play .tui-log {
   color: #5eb3ff;
 }
 .h-feed .enemy {
-  color: #ff6f61;
+  color: var(--pf-enemy);
 }
 body.mode-play .tui-log div {
   background: none;

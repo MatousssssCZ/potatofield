@@ -812,7 +812,12 @@ export class App {
       if (game.driver.local()?.alive) void this.lockPointer();
     };
     this.pause = new PauseMenu({
-      resume: () => void this.lockPointer(),
+      resume: () => {
+        // Pauzu zavřít hned (jinak by zámek myši odmítla, protože obrazovka s kurzorem je otevřená).
+        // Když prohlížeč zámek nepovolí (krátce po Esc), zůstane výzva „klikni pro návrat do hry“.
+        this.pause?.show(false);
+        void this.lockPointer();
+      },
       deploy: () => {
         // Nasazení za živa: změna výbavy platí pro příští nasazení (obrazovka to vysvětluje).
         this.pause?.show(false);
@@ -948,8 +953,8 @@ export class App {
     const picker = document.querySelector('.pf-map-picker:not(.hidden)');
     if (picker) return picker.classList.add('hidden');
     if (this.pause?.visible) {
+      this.pause.show(false);
       if (g.driver.local()?.alive) void this.lockPointer();
-      else this.pause.show(false);
     } else if (dep.visible) {
       dep.close();
       if (g.driver.local()?.alive) void this.lockPointer();

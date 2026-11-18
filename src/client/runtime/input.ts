@@ -149,7 +149,12 @@ export class InputSystem {
   requestLock() {
     const p = this.canvas.requestPointerLock?.({ unadjustedMovement: true } as never) as unknown as Promise<void> | undefined;
     // Některé prohlížeče unadjustedMovement nepodporují → zkusit znovu bez něj.
-    p?.catch?.(() => this.canvas.requestPointerLock());
+    p?.catch?.(() => {
+      // Prohlížeč zámek krátce po opuštění (Esc) odmítá – druhý pokus bez unadjustedMovement;
+      // když neprojde ani ten, hra ukáže výzvu ke kliknutí (nová uživatelská akce).
+      const q = this.canvas.requestPointerLock() as unknown as Promise<void> | undefined;
+      q?.catch?.(() => {});
+    });
   }
 
   releaseLock() {
