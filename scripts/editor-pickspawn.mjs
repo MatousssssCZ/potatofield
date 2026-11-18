@@ -10,11 +10,10 @@ await p.goto(`${url}?editor&q=low`);
 await p.waitForFunction(() => window.__pf && window.__pf.editor, null, { timeout: 240000 });
 await p.waitForTimeout(1500);
 const ok = (c, m) => { console.log(c ? 'OK  ' : 'FAIL', m); if (!c) process.exitCode = 1; };
-// Přehledová mapa.
+// Referenční ulice.
 const t0 = Date.now();
 const info = await p.evaluate(async () => {
-  const { buildShowcaseMap } = await import('/src/world/maps/showcase.ts');
-  const d = buildShowcaseMap();
+  const d = window.__pf.streetTemplate();
   window.__pf.openDoc(d, false);
   return { n: d.objects.length, spawn: d.testSpawn.position };
 });

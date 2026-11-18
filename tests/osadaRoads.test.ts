@@ -3,8 +3,6 @@ import { generateObject, getAsset, resolveParams, terrainContext, type Part } fr
 import { roadEditPoints, roadModel, roadToWorld } from '../src/world/assets/osada/road';
 import { buildCurve, formatRanges, parseIds, parseRanges, pointAt, project, refToS, resolveSurfaces, sToRef, transitionRule, type SurfaceRange } from '../src/world/assets/osada/roadGraph';
 import { branchFrom, findCrossings, insertNodeAt, joinRoads, makeCrossing, snapEndToRoad, splitRoad } from '../src/world/assets/osada/roadOps';
-import { buildOsadaSliceMap } from '../src/world/maps/osadaSlice';
-import { validateMap } from '../src/shared/map/validate';
 import { formatPoints, parsePoints, type Pt } from '../src/world/assets/roads';
 import type { MapObject } from '../src/shared/map/schema';
 
@@ -231,22 +229,6 @@ describe('Silnice: graf – rozdělit, spojit, větvit, T/X křižovatky', () =>
 });
 
 describe('Silnice: mapa a formát', () => {
-  it('scéna řezu (úseky, spoj T) projde validací formátu a uložení/načtení dá stejnou geometrii', () => {
-    const doc = buildOsadaSliceMap();
-    const v = validateMap(JSON.parse(JSON.stringify(doc)));
-    expect(v.issues.filter((i) => i.severity === 'error')).toEqual([]);
-    const back = JSON.parse(JSON.stringify(doc));
-    for (const o of doc.objects.filter((x) => x.assetId === 'osada.road')) {
-      const a = generateObject(o, doc.terrain, doc.objects).parts;
-      const b = generateObject(back.objects.find((x: MapObject) => x.id === o.id), back.terrain, back.objects).parts;
-      expect(JSON.stringify(b)).toEqual(JSON.stringify(a));
-    }
-  });
-  it('vadné úseky v souboru odmítne validace (JSON), neznámé ID uzlů ne', () => {
-    const doc = buildOsadaSliceMap();
-    doc.objects[0].params.ranges = '{nope';
-    expect(validateMap(JSON.parse(JSON.stringify(doc))).issues.some((i) => i.severity === 'error' && i.path.includes('ranges'))).toBe(true);
-  });
   it('100× změna šířky: stejný počet dílů, deterministický výsledek', () => {
     let o = road('r', [0, 0], { points: '0,0;20,5;35,25', ranges: formatRanges([rng(['n1', 0.3], ['n2', 0.5])]) });
     o.params.nodeIds = 'n1;n2;n3';

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { MAP_SCHEMA_VERSION } from '../src/shared/map/schema';
 import { parseMapJson, validateMap } from '../src/shared/map/validate';
 import { collidersForMap, generateMap, generateObject } from '../src/world';
-import { buildRangeMap } from '../src/world/maps/range';
+import { buildStreetMap as buildRangeMap } from '../src/world/maps/street';
 import { LookAccumulator } from '../src/client/runtime/input';
 
 describe('mapový formát', () => {

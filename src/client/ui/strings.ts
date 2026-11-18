@@ -30,7 +30,6 @@ const cs = {
   'play.none': 'Žádný dostupný server',
   'play.noneHint': 'Nenašli jsme žádný kompatibilní server s volným místem. Server na bezplatném hostingu se po nečinnosti probouzí až minutu – zkus to znovu, zadej jinou adresu, nebo si zahraj trénink.',
   'play.training': 'Trénink – ulice (offline)',
-  'play.trainingOsada': 'Trénink – Skladová osada (offline)',
 
   'mode.conquest': 'Conquest',
   'mode.free': 'Volná hra',
@@ -419,7 +418,6 @@ const en: Record<StringKey, string> = {
   'play.none': 'No server available',
   'play.noneHint': 'No compatible server with a free slot was found. A server on free hosting can take up to a minute to wake up after being idle – retry, enter another address, or play training.',
   'play.training': 'Training – street (offline)',
-  'play.trainingOsada': 'Training – Warehouse Village (offline)',
 
   'mode.conquest': 'Conquest',
   'mode.free': 'Free play',

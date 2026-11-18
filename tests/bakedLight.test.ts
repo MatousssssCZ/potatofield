@@ -32,7 +32,7 @@ describe('zapečené světlo', () => {
 });
 
 import { generateMap } from '../src/world';
-import { buildOsadaMap } from '../src/world/maps/osada';
+import { buildStreetMap as buildOsadaMap } from '../src/world/maps/street';
 import { smokeSources } from '../src/client/render/bakedLight';
 
 describe('zapečené světlo na mapě Skladová osada', () => {

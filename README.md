@@ -196,16 +196,6 @@ FPS a p95 času snímku, draw calls, trojúhelníky, poloha, rychlost, `grounded
 sprint, výdrž, ADS průběh, sim tick, zahozené simulační kroky a **důvody blokace** akcí
 (např. „leh: blokace po dopadu“, „stoj: nad hlavou není místo“).
 
-## Technická střelnice
-
-Mapa `maps/range_technical.json` (generovaná z `src/world/maps/range.ts`):
-
-- dráha 100 m s metrovými čarami po 5 m a cedulemi 10/25/50/75/100 m,
-- figuríny na 10/25/50/100 m a jedna bočně se pohybující (35 m),
-- schody 15/30/45 cm (30 cm projde, 45 cm ne), svahy 30/45/60° (60° nelze vyjít),
-- nízké průchody pro dřep (strop 1,45 m) a leh (0,75 m),
-- zdi, rohy, tenká zeď 5 cm, schodiště na plošinu se zídkou, kryty (bedny, sudy, bariéry, pytle).
-
 ## Struktura
 
 ```

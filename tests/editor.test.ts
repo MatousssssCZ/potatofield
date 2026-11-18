@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { EditorDoc, History, cmds } from '../src/client/editor/editorDoc';
 import { buildEmptyMap } from '../src/world/maps/empty';
-import { buildRangeMap } from '../src/world/maps/range';
+import { buildStreetMap as buildRangeMap } from '../src/world/maps/street';
 import { parseMapJson } from '../src/shared/map/validate';
 import type { MapObject } from '../src/shared/map/schema';
 

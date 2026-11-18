@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { OSADA_META, allAssets, collidersForMap, generateObject, getAsset, resolveParams, type Part } from '../src/world';
 import { DOOR, WINDOW, hallLayout, houseLayout } from '../src/world/assets/osada/buildings';
 import { fenceLayout } from '../src/world/assets/osada/routes';
-import { buildOsadaSliceMap } from '../src/world/maps/osadaSlice';
 import type { MapObject } from '../src/shared/map/schema';
 import { makeWorld } from './helpers';
 import { walkRoute } from './setWalk';
@@ -166,23 +165,3 @@ describe('R01 / R03 cesta', () => {
   });
 });
 
-describe('Skladová osada: testovací scéna vertikálního řezu', () => {
-  it('uložení a načtení (JSON) dá stejná ID, seedy, parametry a geometrii', () => {
-    const doc = buildOsadaSliceMap();
-    const back = JSON.parse(JSON.stringify(doc));
-    expect(back.objects.map((o: MapObject) => [o.id, o.seed, o.assetId])).toEqual(doc.objects.map((o) => [o.id, o.seed, o.assetId]));
-    for (let i = 0; i < doc.objects.length; i++) {
-      const a = generateObject(doc.objects[i], doc.terrain, doc.objects).parts;
-      const b = generateObject(back.objects[i], back.terrain, back.objects).parts;
-      expect(JSON.stringify(b)).toEqual(JSON.stringify(a));
-    }
-    expect(back.controlPoints.map((c: { id: string }) => c.id)).toEqual(['cp_baseA', 'cp_A', 'cp_baseB']);
-  });
-  it('obsahuje všechny typy řezu, bez konfliktů kromě záměrně zamčených dveří', () => {
-    const doc = buildOsadaSliceMap();
-    const ids = new Set(doc.objects.map((o) => o.assetId));
-    for (const id of ['osada.house', 'osada.hall', 'osada.road', 'osada.fence', 'osada.boulder']) expect(ids.has(id)).toBe(true);
-    for (const o of doc.objects) expect(getAsset(o.assetId)!.validate?.(resolveParams(getAsset(o.assetId)!, o.params)) ?? [], o.editor?.name).toEqual([]);
-    expect(doc.spawnPoints.some((s) => s.teams.includes('teamA')) && doc.spawnPoints.some((s) => s.teams.includes('teamB'))).toBe(true);
-  });
-});

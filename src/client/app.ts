@@ -8,11 +8,7 @@ import { validateMap } from '../shared/map/validate';
 import { PhysicsWorld, initRapier } from '../shared/physics/world';
 import { generateObject, partsToColliders, collidersForMap, generateMap, getAsset, resolveParams, terrainContext, type LadderDef } from '../world';
 import { buildEmptyMap } from '../world/maps/empty';
-import { buildRangeMap } from '../world/maps/range';
 import { buildStreetMap } from '../world/maps/street';
-import { buildShowcaseMap } from '../world/maps/showcase';
-import { buildOsadaSliceMap } from '../world/maps/osadaSlice';
-import { buildOsadaMap } from '../world/maps/osada';
 import { roadModel } from '../world/assets/osada/road';
 import { findCrossings, makeCrossing } from '../world/assets/osada/roadOps';
 import { Editor, TEST_SPAWN_ID } from './editor/editor';
@@ -167,10 +163,10 @@ export class App {
   }
 
   /** Trénink: offline Conquest na šabloně ulice s pilotními classami (bez botů). */
-  async training(map: 'street' | 'osada' = 'street') {
+  async training() {
     await this.saver.flush();
     this.editorDocBeforeNet = this.ed.doc;
-    const d = map === 'osada' ? buildOsadaMap() : this.streetTemplate();
+    const d = this.streetTemplate();
     this.openDoc(d, false);
     this.menu?.hide();
     document.body.classList.remove('mode-menu');
@@ -232,7 +228,7 @@ export class App {
       console.warn('IndexedDB nedostupná', e);
       setTimeout(() => toast('Lokální úložiště není dostupné – ukládejte exportem do souboru.', 'warn'), 500);
     }
-    this.openDoc(doc ?? this.rangeTemplate(), false);
+    this.openDoc(doc ?? this.streetTemplate(), false);
 
     this.bindUI();
     const ro = new ResizeObserver(() => this.resize());
@@ -244,7 +240,7 @@ export class App {
     this.menu = new MainMenu({
       connect: (a, n, ph, sig) => this.connectDriver(a, n, { latencyMs: 0, jitterMs: 0, lossPct: 0 }, ph, sig),
       openEditor: () => this.openEditor(),
-      training: (map) => void this.training(map),
+      training: () => void this.training(),
       settingsView: () => this.settingsView.open(),
       controlsView: () => controlsView(this.settings),
       preview: !!PREVIEW,
@@ -258,12 +254,6 @@ export class App {
   streetTemplate() {
     const d = buildStreetMap();
     d.id = `street_${Date.now().toString(36)}`;
-    return d;
-  }
-
-  private rangeTemplate() {
-    const d = buildRangeMap();
-    d.id = `range_${Date.now().toString(36)}`;
     return d;
   }
 
@@ -1586,11 +1576,8 @@ export class App {
     const choice = await modal('Mapy', body, [
       { id: 'close', label: 'Zavřít' },
       { id: 'new', label: 'Nová mapa' },
-      { id: 'range', label: 'Šablona: střelnice' },
       { id: 'street', label: 'Šablona: ulice' },
-      { id: 'showcase', label: 'Přehled sady 300' },
-      { id: 'osada', label: 'Mapa: Skladová osada' },
-      { id: 'osadaSlice', label: 'Skladová osada · řez' },
+      ...(maps.some((m) => m.id !== this.ed.doc.id) ? [{ id: 'purge', label: 'Smazat ostatní mapy…' }] : []),
       { id: 'import', label: 'Importovat…' },
       { id: 'export', label: 'Exportovat', primary: true },
     ]);
@@ -1614,21 +1601,17 @@ export class App {
         this.openDoc(buildEmptyMap('Nová mapa', size, sp));
       }
     }
-    else if (choice === 'range') this.openDoc(this.rangeTemplate());
     else if (choice === 'street') this.openDoc(this.streetTemplate());
-    else if (choice === 'showcase') {
-      this.openDoc(buildShowcaseMap());
-      toast('Přehled sady 300: všech 300 modelů po sekcích A–K, u každého cedule s číslem.');
-    }
-    else if (choice === 'osada') {
-      const d = buildOsadaMap();
-      d.id = `skladova_osada_${Date.now().toString(36)}`;
-      this.openDoc(d);
-      toast('Skladová osada: 4 body, dvě základny, 8 proti 8. Úpravy se ukládají jako vlastní kopie.');
-    }
-    else if (choice === 'osadaSlice') {
-      this.openDoc(buildOsadaSliceMap());
-      toast('Skladová osada – vertikální řez: dům, hala, cesty, plot, zeď, balvany, bod A a spawny.');
+    else if (choice === 'purge') {
+      const others = maps.filter((m) => m.id !== this.ed.doc.id);
+      const c = await modal('Smazat ostatní mapy', `Smazat ${others.length} uložených map z tohoto prohlížeče? Zůstane jen otevřená mapa „${this.ed.doc.name}“. Nejde to vrátit – důležité mapy nejdřív exportuj.`, [
+        { id: 'no', label: 'Zrušit' },
+        { id: 'yes', label: `Smazat ${others.length}`, primary: true },
+      ]);
+      if (c === 'yes') {
+        for (const m of others) await this.store.remove(m.id);
+        toast(`Smazáno ${others.length} map, zůstala „${this.ed.doc.name}“.`);
+      }
     }
     else if (choice === 'import') $<HTMLInputElement>('#file-import').click();
     else if (choice === 'export') exportMapFile(this.ed.doc);

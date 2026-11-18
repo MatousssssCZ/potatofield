@@ -14,7 +14,7 @@ await page.waitForFunction(() => document.querySelector('#loading')?.classList.c
 let lastMap = null;
 for (const v of views) {
   if (v.map && v.map !== lastMap) {
-    await page.evaluate(async (m) => { const a = window.__pf; if (a.mode === 'play') a.exitPlay(); a.openDoc(m === 'street' ? a.streetTemplate() : m === 'range' ? a['rangeTemplate']() : (await import('/src/world/maps/empty.ts')).buildEmptyMap(), false); if (window.__setupMap) await window.__setupMap(a); }, v.map);
+    await page.evaluate(async (m) => { const a = window.__pf; if (a.mode === 'play') a.exitPlay(); a.openDoc(m === 'street' ? a.streetTemplate() : (await import('/src/world/maps/empty.ts')).buildEmptyMap(), false); if (window.__setupMap) await window.__setupMap(a); }, v.map);
     lastMap = v.map;
   }
   if (v.eval) await page.evaluate(v.eval);
