@@ -324,6 +324,15 @@
   min-width: 52px;
   color: var(--pf-dim);
 }
+.pf-btn.pf-sound-test {
+  min-width: 0;
+  padding: 2px 10px;
+}
+.pf-set-note {
+  color: var(--pf-dim);
+  font-size: 0.86em;
+  margin: 12px 0 0;
+}
 .pf-key {
   font-family: var(--pf-font);
   min-width: 96px;

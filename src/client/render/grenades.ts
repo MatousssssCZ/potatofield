@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { GrenadeView } from '../runtime/driver';
 import { itemGeometry } from './weapons/items';
+import { SmokeCloud } from './smoke';
 
 /**
  * Granáty ve světě: letící / ležící granát (stejný model jako v ruce), výbuch (záblesk světla,
@@ -37,13 +38,31 @@ function softTexture(seed: number, puffy: boolean) {
   return t;
 }
 
+/** Tři varianty obláčku vedle sebe v jedné textuře (kouř = jeden materiál, jedno volání). */
+function smokeAtlas(): THREE.Texture {
+  const c = document.createElement('canvas');
+  c.width = 384;
+  c.height = 128;
+  const g = c.getContext('2d')!;
+  [11, 29, 47].forEach((seed, i) => g.drawImage(softTexture(seed, true).image as HTMLCanvasElement, i * 128, 0));
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
 export class GrenadeRenderer {
   readonly root = new THREE.Group();
   private meshes = new Map<string, THREE.Mesh>();
   private mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7, metalness: 0.2 });
   private particles: Particle[] = [];
   private fireTex = softTexture(3, false);
-  private smokeTex = [softTexture(11, true), softTexture(29, true), softTexture(47, true)];
+  private smokeAtlas = smokeAtlas();
+  /** Kouř dýmovnic a výbuchů: jedno instancované volání. */
+  readonly smoke = new SmokeCloud(this.smokeAtlas);
+  /** Závoj přes obraz, když je kamera uvnitř clony (náhrada za vrstvy obláčků u kamery). */
+  private veil: THREE.Mesh | null = null;
+  private veilA = 0;
+  private veilWarm = 0;
   private lights: Array<{ light: THREE.PointLight; life: number }> = [];
   private scorchGeo = new THREE.CircleGeometry(1.4, 20);
   private scorchMat: THREE.MeshStandardMaterial;
@@ -53,6 +72,7 @@ export class GrenadeRenderer {
 
   constructor(private maxParticles = 420) {
     this.root.name = 'grenades';
+    this.root.add(this.smoke.mesh);
     const d = document.createElement('canvas');
     d.width = d.height = 128;
     const g = d.getContext('2d')!;
@@ -111,10 +131,10 @@ export class GrenadeRenderer {
       m.position.lerp(new THREE.Vector3(n.pos.x, n.pos.y, n.pos.z), 1 - Math.exp(-dt * 25));
       m.rotation.x += dt * 8;
       m.rotation.z += dt * 5;
-      // Hořící dýmovnice: emise kouře (~9 obláčků/s), poslední 4 s řídne.
+      // Hořící dýmovnice: emise kouře (~4 větší obláčky/s), poslední 4 s řídne.
       if (n.kind === 'smoke' && n.smokeUntil > simTime) {
         const left = n.smokeUntil - simTime;
-        const rate = 9 * Math.min(1, left / 4);
+        const rate = 4 * Math.min(1, left / 4);
         const acc = (this.smokeAcc.get(n.id) ?? 0) + dt * rate;
         let k = Math.floor(acc);
         this.smokeAcc.set(n.id, acc - k);
@@ -129,19 +149,19 @@ export class GrenadeRenderer {
   }
 
   private smokePuff(at: THREE.Vector3, left: number) {
-    const p = this.particle(this.smokeTex[(Math.random() * 3) | 0], false);
-    const life = Math.min(left + 4, 9 + Math.random() * 4);
-    p.life = p.max = life;
-    p.sprite.position.copy(at).add(new THREE.Vector3((Math.random() - 0.5) * 0.4, 0.2, (Math.random() - 0.5) * 0.4));
     const a = Math.random() * Math.PI * 2;
-    const sp = 0.4 + Math.random() * 0.7;
-    p.vel.set(Math.cos(a) * sp, 0.25 + Math.random() * 0.35, Math.sin(a) * sp);
-    p.size0 = 0.6;
-    p.size1 = 4.5 + Math.random() * 2.5;
-    p.fadeIn = 0.6;
+    const sp = 0.5 + Math.random() * 0.8;
     const g = 0.78 + Math.random() * 0.12;
-    (p.sprite.material as THREE.SpriteMaterial).color.setRGB(g, g, g * 0.97);
-    (p.sprite.material as THREE.SpriteMaterial).rotation = Math.random() * Math.PI * 2;
+    this.smoke.emit({
+      pos: at.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.4, 0.3, (Math.random() - 0.5) * 0.4)),
+      vel: new THREE.Vector3(Math.cos(a) * sp, 0.25 + Math.random() * 0.35, Math.sin(a) * sp),
+      life: Math.min(left + 4, 10 + Math.random() * 4),
+      size0: 0.8,
+      size1: 7 + Math.random() * 3,
+      fadeIn: 0.6,
+      color: [g, g, g * 0.97],
+      opacity: 0.9,
+    });
   }
 
   /** Výbuch tříštivého granátu. */
@@ -160,19 +180,19 @@ export class GrenadeRenderer {
       p.fadeIn = 0;
       (p.sprite.material as THREE.SpriteMaterial).color.setRGB(1, 0.62 + Math.random() * 0.2, 0.3);
     }
-    for (let i = 0; i < 16; i++) {
-      const p = this.particle(this.smokeTex[i % 3], false);
-      p.life = p.max = 1.8 + Math.random() * 1.6;
-      p.sprite.position.copy(pos).add(new THREE.Vector3((Math.random() - 0.5) * 0.8, 0.3 + Math.random() * 0.6, (Math.random() - 0.5) * 0.8));
+    for (let i = 0; i < 12; i++) {
       const a = Math.random() * Math.PI * 2;
-      p.vel.set(Math.cos(a) * (1 + Math.random() * 2.5), 1.2 + Math.random() * 1.8, Math.sin(a) * (1 + Math.random() * 2.5));
-      p.size0 = 1;
-      p.size1 = 3.5 + Math.random() * 2;
-      p.fadeIn = 0.05;
       // Tmavý kouř výbuchu (lineární barva – na obrazovce středně šedohnědý).
       const g = 0.07 + Math.random() * 0.05;
-      (p.sprite.material as THREE.SpriteMaterial).color.setRGB(g * 1.1, g, g * 0.85);
-      (p.sprite.material as THREE.SpriteMaterial).rotation = Math.random() * Math.PI * 2;
+      this.smoke.emit({
+        pos: pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.8, 0.3 + Math.random() * 0.6, (Math.random() - 0.5) * 0.8)),
+        vel: new THREE.Vector3(Math.cos(a) * (1 + Math.random() * 2.5), 1.2 + Math.random() * 1.8, Math.sin(a) * (1 + Math.random() * 2.5)),
+        life: 1.8 + Math.random() * 1.6,
+        size0: 1,
+        size1: 3.8 + Math.random() * 2,
+        fadeIn: 0.05,
+        color: [g * 1.1, g, g * 0.85],
+      });
     }
     for (let i = 0; i < 14; i++) {
       const p = this.particle(this.fireTex, false);
@@ -199,7 +219,10 @@ export class GrenadeRenderer {
    */
   warmup() {
     const far = new THREE.Vector3(0, -1000, 0);
-    const kinds: Array<[THREE.Texture, boolean]> = [[this.fireTex, true], [this.fireTex, false], ...this.smokeTex.map((t) => [t, false] as [THREE.Texture, boolean])];
+    const kinds: Array<[THREE.Texture, boolean]> = [[this.fireTex, true], [this.fireTex, false]];
+    // Kouř: jeden obláček mimo záběr, ať se shader přeloží předem.
+    this.smoke.emit({ pos: far, vel: new THREE.Vector3(), life: 0.5, size0: 1, size1: 1, color: [1, 1, 1] });
+    this.smoke.update(0, new THREE.Vector3(0, -1010, 0));
     // Mimo záběr a bez ořezu: přeloží se a jednou vykreslí (neviditelně pod mapou).
     const ps = kinds.map(([t, add]) => {
       const p = this.particle(t, add);
@@ -226,8 +249,12 @@ export class GrenadeRenderer {
     };
   }
 
-  update(dt: number) {
+  update(dt: number, camera?: THREE.Camera) {
     this.time += dt;
+    if (camera) {
+      this.smoke.update(dt, camera.position);
+      this.updateVeil(dt, camera);
+    }
     for (const L of this.lights) {
       if (L.life <= 0) continue;
       L.life -= dt;
@@ -256,10 +283,35 @@ export class GrenadeRenderer {
     }
   }
 
+  /** Kamera uvnitř kouře: jedna šedá plocha přes obraz místo desítek obláčků u očí. */
+  private updateVeil(dt: number, camera: THREE.Camera) {
+    const target = this.smoke.count ? this.smoke.densityAt(camera.position) : 0;
+    this.veilA += (target - this.veilA) * (1 - Math.exp(-dt * 6));
+    if (!this.veil) {
+      this.veil = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), new THREE.MeshBasicMaterial({ color: new THREE.Color(0.62, 0.62, 0.6), transparent: true, opacity: 0, depthTest: false, depthWrite: false, fog: false }));
+      this.veil.position.set(0, 0, -0.2);
+      this.veil.renderOrder = 999;
+      this.veil.frustumCulled = false;
+      this.veilWarm = 3;
+    }
+    if (this.veil.parent !== camera) camera.add(this.veil);
+    (this.veil.material as THREE.MeshBasicMaterial).opacity = Math.min(0.94, this.veilA);
+    // Prvních pár snímků viditelný s nulovou průhledností: shader se přeloží hned, ne až v kouři.
+    if (this.veilWarm > 0) this.veilWarm--;
+    this.veil.visible = this.veilWarm > 0 || this.veilA > 0.01;
+  }
+
   dispose() {
     this.root.removeFromParent();
+    this.smoke.dispose();
+    this.smokeAtlas.dispose();
+    if (this.veil) {
+      this.veil.removeFromParent();
+      this.veil.geometry.dispose();
+      (this.veil.material as THREE.Material).dispose();
+    }
     for (const p of this.particles) (p.sprite.material as THREE.Material).dispose();
-    for (const t of [this.fireTex, ...this.smokeTex]) t.dispose();
+    this.fireTex.dispose();
     this.mat.dispose();
     this.scorchGeo.dispose();
     (this.scorchMat.map as THREE.Texture | null)?.dispose();

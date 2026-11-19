@@ -32,7 +32,7 @@ import { GrassField, preloadGrass } from './render/grass';
 import { DynamicResolution, QUALITY, forDevice, type QualityProfile } from './render/quality';
 import { WorldView } from './render/worldView';
 import { PlaySession } from './runtime/session';
-import { GameAudio } from './runtime/audio';
+import { GameAudio, type SoundBus } from './runtime/audio';
 import { NetDriver } from './runtime/netDriver';
 import { TeamUi } from './ui/teamUi';
 import type { WsLike } from '../shared/net/client';
@@ -113,7 +113,21 @@ export class App {
   readonly settingsView = new SettingsView(
     () => this.settings,
     (s, reload) => this.applySettings(s, reload),
+    undefined,
+    (bus, v, master) => this.previewSound(bus, v, master),
   );
+  private previewT = 0;
+
+  /** Ukázka skupiny zvuků z nastavení; po chvíli se vrátí uložené hlasitosti (nastavení jde zrušit). */
+  private previewSound(bus: SoundBus, v: number, master: number) {
+    this.audio.setVolume(master);
+    this.audio.preview(bus, v);
+    clearTimeout(this.previewT);
+    this.previewT = window.setTimeout(() => {
+      this.audio.setVolume(this.settings.volume);
+      this.audio.setBusVolumes(this.settings.sound);
+    }, 2500);
+  }
 
   /** Potvrzené nastavení: uložit a promítnout do běžící hry i UI. */
   applySettings(s: Settings, reload = false) {
@@ -122,6 +136,7 @@ export class App {
     applyUiSettings(s);
     this.env.apply(this.ed.doc.environment, this.quality, s.bf2Look !== false);
     this.audio.setVolume(s.volume);
+    this.audio.setBusVolumes(s.sound);
     const g = this.session?.game;
     if (g) g.settings = { hFov: s.hFov, bob: s.bob, landingKick: s.landingKick, weapon: s.weapon, adsSens: s.adsSens };
     const i = this.session?.input;
@@ -1066,6 +1081,7 @@ export class App {
     });
     applyUiSettings(this.settings);
     this.audio.volume = this.settings.volume;
+    this.audio.setBusVolumes(this.settings.sound);
     applyStatic();
     onLang(() => applyStatic());
     window.addEventListener('keydown', this.scoreKey, true);

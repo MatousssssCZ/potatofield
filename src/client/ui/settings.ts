@@ -1,3 +1,4 @@
+import { DEFAULT_BUS_VOLUME, SOUND_BUSES, type SoundBus } from '../runtime/audio';
 import { CAMERA } from '../../shared/config/camera';
 import { QUALITY, detectQuality, type QualityProfile } from '../render/quality';
 import { DEFAULT_BINDINGS, InputSystem, type Action } from '../runtime/input';
@@ -25,6 +26,8 @@ export interface Settings {
   crouchToggle: boolean;
   fullscreen: boolean;
   volume: number;
+  /** Hlasitost skupin zvuků (násobek celkové), 0–1,5. */
+  sound: Record<SoundBus, number>;
   hudScale: number;
   hudOpacity: number;
   textSize: 's' | 'm' | 'l';
@@ -60,6 +63,7 @@ export const DEFAULT_SETTINGS: Settings = {
   crouchToggle: false,
   fullscreen: true,
   volume: 0.6,
+  sound: { ...DEFAULT_BUS_VOLUME },
   hudScale: 1,
   hudOpacity: 1,
   textSize: 'm',
@@ -84,7 +88,7 @@ export function loadSettings(): Settings {
     if (raw) {
       const v = JSON.parse(raw);
       // Migrace: starší verze nemají nová pole – doplní se výchozí, známá pole zůstanou.
-      if (v && typeof v === 'object') s = { ...s, ...v, version: SETTINGS_VERSION, bindings: { ...(v.bindings ?? {}) } };
+      if (v && typeof v === 'object') s = { ...s, ...v, version: SETTINGS_VERSION, bindings: { ...(v.bindings ?? {}) }, sound: { ...DEFAULT_BUS_VOLUME, ...(v.sound ?? {}) } };
     }
   } catch {
     /* bez úložiště nebo poškozená hodnota → výchozí */
@@ -182,6 +186,8 @@ export class SettingsView {
     private current: () => Settings,
     private apply: (s: Settings, needsReload: boolean) => void,
     private onClose?: () => void,
+    /** Ukázka skupiny zvuků: skupina, její hlasitost, celková hlasitost. */
+    private preview?: (bus: SoundBus, volume: number, master: number) => void,
   ) {
     this.work = structuredClone(current());
     this.render();
@@ -249,7 +255,26 @@ export class SettingsView {
         settingRow(t('set.dynamicRes'), check('dynamicRes')),
       );
     } else if (this.cat === 'audio') {
-      body = h('div', { class: 'pf-set-body' }, settingRow(t('set.volume'), slider('volume', 0, 1, 0.05, pct)));
+      // Skupiny: posuvník mění hlasitost a po puštění zahraje ukázku (s celkovou hlasitostí z nastavení).
+      const busRow = (b: SoundBus) => {
+        const val = h('span', { class: 'pf-val tnum' }, pct(w.sound[b]));
+        const inp = h('input', { type: 'range', min: 0, max: 1.5, step: 0.05, value: w.sound[b], 'aria-label': t(`set.sound.${b}` as StringKey) }) as HTMLInputElement;
+        inp.addEventListener('input', () => {
+          w.sound = { ...w.sound, [b]: Number(inp.value) };
+          val.textContent = pct(Number(inp.value));
+          this.renderFooter();
+        });
+        inp.addEventListener('change', () => this.preview?.(b, Number(inp.value), w.volume));
+        const test = button('▶', () => this.preview?.(b, w.sound[b], w.volume), 'pf-btn pf-sound-test');
+        test.title = t('set.sound.test');
+        return settingRow(t(`set.sound.${b}` as StringKey), h('div', { class: 'pf-slider' }, inp, val, test));
+      };
+      body = h('div', { class: 'pf-set-body' },
+        settingRow(t('set.volume'), slider('volume', 0, 1, 0.05, pct)),
+        h('h4', {}, t('set.sound.groups')),
+        ...SOUND_BUSES.map(busRow),
+        h('p', { class: 'pf-set-note' }, t('set.sound.hint')),
+      );
     } else if (this.cat === 'controls') {
       const b = bindingsOf(w);
       const owner = (code: string, except: Action) => (Object.keys(b) as Action[]).find((a) => a !== except && b[a].includes(code));

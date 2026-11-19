@@ -108,6 +108,13 @@ export class FPItem {
     this.root.name = 'fpItem';
   }
 
+  /** Znovu zobrazená položka z mezipaměti: znovu vytáhnout, zapomenout staré použití. */
+  reactivate() {
+    this.lastSeq = -1;
+    this.swingAt = -10;
+    this.equipT = 0;
+  }
+
   update(dt: number, ps: PlayerState, ws: WeaponState | null, simTime: number, bobPhase: number, bobAmp: number, lookDYaw: number, lookDPitch: number) {
     this.time += dt;
     if (!ws) return;

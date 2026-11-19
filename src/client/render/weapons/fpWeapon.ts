@@ -150,6 +150,17 @@ export class FPWeapon {
   private dry = 0;
 
   /** Stisk spouště s prázdnou zbraní: krátké škubnutí (zvuk řeší hra). */
+  /** Znovu zobrazená zbraň z mezipaměti: zapomenout výstřely a pohyby z doby, kdy byla schovaná. */
+  reactivate() {
+    this.lastSeq = -1;
+    this.maxSeq = -1;
+    this.flashUntil = 0;
+    this.kick = this.kickV = 0;
+    this.pumpStart = -1;
+    this.boltStart = -1;
+    this.dry = 0;
+  }
+
   dryFire() {
     this.dry = 1;
   }

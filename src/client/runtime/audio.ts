@@ -7,6 +7,11 @@
 export type ShotKind = 'rifle' | 'mg' | 'shotgun' | 'sniper' | 'pistol';
 export type V3Like = { x: number; y: number; z: number };
 
+/** Skupiny zvuků s vlastní hlasitostí (nastavení → Zvuk). */
+export const SOUND_BUSES = ['shots', 'explosions', 'steps', 'impacts', 'gear', 'ui'] as const;
+export type SoundBus = (typeof SOUND_BUSES)[number];
+export const DEFAULT_BUS_VOLUME: Record<SoundBus, number> = { shots: 1, explosions: 1, steps: 1, impacts: 1, gear: 1, ui: 1 };
+
 /** Sady nahrávek: klíč → soubory v public/audio (bez přípony). */
 const BANK: Record<string, string[]> = {
   stepConcrete: [0, 1, 2, 3, 4].map((i) => `footstep_concrete_00${i}`),
@@ -51,6 +56,8 @@ interface PlayOpts {
   occluded?: boolean;
   rate?: number;
   delay?: number;
+  /** Skupina hlasitosti (výchozí rozhraní). */
+  bus?: SoundBus;
 }
 
 export class GameAudio {
@@ -62,6 +69,9 @@ export class GameAudio {
   private last = new Map<string, number>();
   private ear: V3Like = { x: 0, y: 0, z: 0 };
   volume = 0.6;
+  /** Hlasitost skupin (násobek celkové hlasitosti). */
+  busVolume: Record<SoundBus, number> = { ...DEFAULT_BUS_VOLUME };
+  private buses = new Map<SoundBus, GainNode>();
   /** Kvalitnější prostorový zvuk pro sluchátka (HRTF); vypnuto = levnější stereo. */
   hrtf = true;
   /** Kořen souborů (Vite BASE_URL). */
@@ -70,6 +80,41 @@ export class GameAudio {
   setVolume(v: number) {
     this.volume = v;
     if (this.master) this.master.gain.value = v;
+  }
+
+  setBusVolume(bus: SoundBus, v: number) {
+    this.busVolume[bus] = v;
+    const g = this.buses.get(bus);
+    if (g) g.gain.value = v;
+  }
+
+  setBusVolumes(v: Partial<Record<SoundBus, number>> | undefined) {
+    for (const b of SOUND_BUSES) this.setBusVolume(b, v?.[b] ?? 1);
+  }
+
+  /** Ukázka skupiny (nastavení): zahraje typický zvuk s danou hlasitostí skupiny. */
+  preview(bus: SoundBus, volume: number) {
+    this.unlock();
+    this.setBusVolume(bus, volume);
+    if (bus === 'shots') this.shot('rifle');
+    else if (bus === 'explosions') this.explosionAt({ ...this.ear, x: this.ear.x + 25 });
+    else if (bus === 'steps') this.footstep('concrete', null, 1);
+    else if (bus === 'impacts') this.impactAt('metal', { ...this.ear, x: this.ear.x + 3 });
+    else if (bus === 'gear') this.mech('magIn');
+    else this.hitmarker('kill');
+  }
+
+  /** Uzel skupiny (vytvoří se při prvním použití, napojený na master). */
+  private busNode(bus: SoundBus): GainNode | null {
+    if (!this.ctx || !this.master) return null;
+    let g = this.buses.get(bus);
+    if (!g) {
+      g = this.ctx.createGain();
+      g.gain.value = this.busVolume[bus];
+      g.connect(this.master);
+      this.buses.set(bus, g);
+    }
+    return g;
   }
 
   /** Zavolat z obsluhy kliknutí/klávesy. */
@@ -154,7 +199,11 @@ export class GameAudio {
   private out(o: PlayOpts): AudioNode | null {
     const ctx = this.ctx;
     if (!ctx || !this.master) return null;
-    let node: AudioNode = this.master;
+    const bus = this.busNode(o.bus ?? 'ui');
+    if (!bus) return null;
+    // Ztlumená skupina: zdroj vůbec nevznikne (ušetří uzly a CPU).
+    if (this.busVolume[o.bus ?? 'ui'] <= 0) return null;
+    let node: AudioNode = bus;
     if (o.pos) {
       const p = ctx.createPanner();
       p.panningModel = this.hrtf ? 'HRTF' : 'equalpower';
@@ -242,7 +291,8 @@ export class GameAudio {
 
   private tone(freq: number, gain: number, decay: number, delay = 0) {
     const ctx = this.ctx;
-    if (!ctx || !this.master) return;
+    const bus = this.busNode('ui');
+    if (!ctx || !bus || this.busVolume.ui <= 0) return;
     const t = ctx.currentTime + delay;
     const osc = ctx.createOscillator();
     osc.type = 'triangle';
@@ -250,13 +300,14 @@ export class GameAudio {
     const g = ctx.createGain();
     g.gain.setValueAtTime(gain, t);
     g.gain.exponentialRampToValueAtTime(0.0008, t + decay);
-    osc.connect(g).connect(this.master);
+    osc.connect(g).connect(bus);
     osc.start(t);
     osc.stop(t + decay + 0.03);
   }
 
   /** Syntéza výstřelu podle druhu zbraně: třesk, úder těla a dozvuk. */
-  private gun(kind: ShotKind, o: PlayOpts) {
+  private gun(kind: ShotKind, o0: PlayOpts) {
+    const o: PlayOpts = { ...o0, bus: 'shots' };
     const r = 0.95 + Math.random() * 0.1;
     if (kind === 'shotgun') {
       this.burst({ gain: 1.0, decay: 0.14, lp: 5000, hp: 140, rate: r * 0.75 }, o);
@@ -293,7 +344,7 @@ export class GameAudio {
   /** Výbuch granátu. */
   explosionAt(pos: V3Like, occluded = false) {
     const d = this.dist(pos);
-    const o: PlayOpts = { pos, ref: 16, occluded, delay: Math.min(0.9, d / 343) };
+    const o: PlayOpts = { pos, ref: 16, occluded, delay: Math.min(0.9, d / 343), bus: 'explosions' };
     const ok = this.sample('boom', { ...o, gain: 1.6, rate: 0.8 });
     this.sample('boomLow', { ...o, gain: 1.3 });
     if (!ok) this.burst({ gain: 1, decay: 0.35, lp: 4200, hp: 40, rate: 0.55 }, o);
@@ -303,14 +354,14 @@ export class GameAudio {
 
   /** Syčení dýmovnice. */
   hissAt(pos: V3Like) {
-    this.burst({ gain: 0.5, decay: 1.2, lp: 6000, hp: 1800, rate: 1.3 }, { pos, ref: 3 });
+    this.burst({ gain: 0.5, decay: 1.2, lp: 6000, hp: 1800, rate: 1.3 }, { pos, ref: 3, bus: 'explosions' });
   }
 
   /** Dopad střely na povrch. */
   impactAt(surface: string, pos: V3Like) {
     const d = this.dist(pos);
     if (d > 90) return;
-    const o: PlayOpts = { pos, ref: 2.5, gain: surface === 'flesh' ? 0.9 : 0.7 };
+    const o: PlayOpts = { pos, ref: 2.5, gain: surface === 'flesh' ? 0.9 : 0.7, bus: 'impacts' };
     if (this.sample(HIT_BANK[surface] ?? 'hitHard', o)) return;
     const lp = surface === 'metal' ? 7000 : surface === 'wood' ? 2500 : surface === 'sand' || surface === 'dirt' ? 1200 : 3500;
     this.burst({ gain: 0.5, decay: surface === 'metal' ? 0.12 : 0.06, lp, hp: 400 }, o);
@@ -322,7 +373,7 @@ export class GameAudio {
    */
   footstep(surface: string, pos: V3Like | null, loud: number, prone = false) {
     if (pos && this.dist(pos) > 40) return;
-    const o: PlayOpts = { pos, ref: 2, gain: (pos ? 0.9 : 0.45) * (0.25 + 0.75 * loud) };
+    const o: PlayOpts = { pos, ref: 2, gain: (pos ? 0.9 : 0.45) * (0.25 + 0.75 * loud), bus: 'steps' };
     if (prone) {
       if (!this.sample('cloth', { ...o, gain: (o.gain ?? 1) * 0.7 })) this.burst({ gain: 0.08, decay: 0.12, lp: 1800, hp: 300 }, o);
       return;
@@ -332,14 +383,14 @@ export class GameAudio {
 
   /** Dopad po skoku / pádu. */
   land(surface: string, pos: V3Like | null, hard = false) {
-    const o: PlayOpts = { pos, ref: 2.5, gain: hard ? 1.2 : 0.6, rate: 0.8 };
+    const o: PlayOpts = { pos, ref: 2.5, gain: hard ? 1.2 : 0.6, rate: 0.8, bus: 'steps' };
     this.sample(STEP_BANK[surface] ?? 'stepConcrete', o);
-    if (hard) this.thump(60, 0.5, 0.18, { pos, ref: 2.5 });
+    if (hard) this.thump(60, 0.5, 0.18, { pos, ref: 2.5, bus: 'steps' });
   }
 
   /** Mechanika zbraně: pumpa, vložení náboje, víko, závěr; `pos` pro cizího hráče. */
   mech(kind: 'pump' | 'shell' | 'cover' | 'bolt' | 'magOut' | 'magIn' | 'rack', pos: V3Like | null = null, gun: 'rifle' | 'pistol' = 'rifle') {
-    const o: PlayOpts = { pos, ref: 1.5, gain: pos ? 0.9 : 0.6 };
+    const o: PlayOpts = { pos, ref: 1.5, gain: pos ? 0.9 : 0.6, bus: 'gear' };
     if (kind === 'magOut') {
       if (!this.sample(gun === 'pistol' ? 'pistolMagOut' : 'rifleMagOut', o) && !this.sample('latch', o)) this.burst({ gain: 0.2, decay: 0.05, lp: 3500, hp: 500, rate: 0.8 }, o);
     } else if (kind === 'magIn') {
@@ -366,7 +417,7 @@ export class GameAudio {
 
   /** Přehození výbavy (látka / popruh), tasení nože, sek, sáhnutí do brašny. */
   handle(kind: 'switch' | 'knifeDraw' | 'knife' | 'pouch', pos: V3Like | null = null) {
-    const o: PlayOpts = { pos, ref: 1.5, gain: pos ? 0.8 : 0.5 };
+    const o: PlayOpts = { pos, ref: 1.5, gain: pos ? 0.8 : 0.5, bus: 'gear' };
     const set = kind === 'switch' ? 'cloth' : kind === 'knifeDraw' ? 'knifeDraw' : kind === 'knife' ? 'knife' : 'pouch';
     if (!this.sample(set, o)) this.burst({ gain: 0.1, decay: 0.08, lp: 2500, hp: 400 }, o);
   }
@@ -393,6 +444,6 @@ export class GameAudio {
   /** Vlastní zranění: tupý úder do těla. */
   hurt(amount: number) {
     const g = Math.min(1, 0.35 + amount / 80);
-    if (!this.sample('hitFlesh', { gain: g })) this.thump(90, g * 0.6, 0.12);
+    if (!this.sample('hitFlesh', { gain: g, bus: 'impacts' })) this.thump(90, g * 0.6, 0.12, { bus: 'impacts' });
   }
 }

@@ -54,6 +54,13 @@ export class Game {
   private lastLandSeen = -1;
   fp: FPWeapon | FPItem;
   private fpId: string;
+  /**
+   * Zobrazení v ruce podle položky a rukou: postaví se jednou a při výměně se jen přepne
+   * viditelnost (stavba modelu, textury a nový překlad shaderu by při každé výměně zasekly hru).
+   */
+  private fpCache = new Map<string, FPWeapon | FPItem>();
+  /** Předem stavěné zobrazení, které je pár snímků vykreslené v nulové velikosti (překlad, nahrání). */
+  private fpWarm: { fp: FPWeapon | FPItem; frames: number } | null = null;
   readonly effects: Effects;
   readonly hud: Hud;
   readonly soldiers: SoldierPool;
@@ -94,6 +101,7 @@ export class Game {
   ) {
     this.fpId = weaponId;
     this.fp = this.makeFp(weaponId);
+    this.fpCache.set(this.fpKey(weaponId), this.fp);
     this.effects = new Effects(quality.maxDecals);
     this.moteCount = quality.id === 'low' ? 0 : quality.id === 'high' ? 260 : 140;
     scene.add(this.effects.root);
@@ -223,6 +231,64 @@ export class Game {
     return this.identT >= 0.6 ? best.name : null;
   }
 
+  private fpKey(weaponId: string) {
+    const prim = this.driver.local()?.primary;
+    return `${weaponId}|${prim ? weaponDef(prim).hands : ''}`;
+  }
+
+  /** Zobrazení v ruce z mezipaměti (nebo nové). */
+  private fpFor(weaponId: string) {
+    const key = this.fpKey(weaponId);
+    let fp = this.fpCache.get(key);
+    if (fp) {
+      if (this.fpWarm?.fp === fp) this.endFpWarm();
+      fp.reactivate();
+    } else {
+      fp = this.makeFp(weaponId);
+      this.fpCache.set(key, fp);
+    }
+    return fp;
+  }
+
+  private endFpWarm() {
+    const w = this.fpWarm;
+    if (!w) return;
+    this.fpWarm = null;
+    w.fp.root.scale.setScalar(1);
+    if (w.fp !== this.fp) w.fp.root.visible = false;
+  }
+
+  /**
+   * Po nasazení postupně (jedna položka za pár snímků) postaví zobrazení všech položek výbavy a
+   * nechá je vykreslit v nulové velikosti – výměna zbraně v boji pak nic nestaví ani nepřekládá.
+   * Zobrazení s jinými rukama (jiná výbava) se uvolní.
+   */
+  private prebuildFp() {
+    if (this.fpWarm) {
+      if (--this.fpWarm.frames <= 0) this.endFpWarm();
+      return;
+    }
+    const me = this.driver.local();
+    const items = me?.inv?.items;
+    if (!items) return;
+    for (const it of items) {
+      const key = this.fpKey(it.id);
+      if (this.fpCache.has(key)) continue;
+      const fp = this.makeFp(it.id);
+      this.fpCache.set(key, fp);
+      fp.root.visible = true;
+      fp.root.scale.setScalar(1e-4);
+      this.fpWarm = { fp, frames: 2 };
+      return;
+    }
+    const keep = new Set(items.map((it) => this.fpKey(it.id)));
+    for (const [k, fp] of this.fpCache)
+      if (!keep.has(k) && fp !== this.fp) {
+        fp.dispose();
+        this.fpCache.delete(k);
+      }
+  }
+
   /** Zbraň v první osobě podle výbavy (přestaví se, když server potvrdí jinou zbraň). */
   private makeFp(weaponId: string) {
     // Ruce podle nositele (frakce + classa primární zbraně), ne podle aktivní položky.
@@ -299,7 +365,7 @@ export class Game {
     this.effects.update(frameDt);
     this.effects.motes(this.camera.position, this.now, this.moteCount);
     this.nades.sync(this.driver.grenades(), this.simTime, frameDt);
-    this.nades.update(frameDt);
+    this.nades.update(frameDt, this.camera);
     this.hudT += frameDt;
     if (this.hudT > 0.05) {
       const hdt = this.hudT;
@@ -677,12 +743,13 @@ export class Game {
       this.scope?.update(null, 0, 0);
       return;
     }
-    if (w.weaponId !== this.fpId) {
-      this.fp.dispose();
+    if (w.weaponId !== this.fpId || this.fpCache.get(this.fpKey(w.weaponId)) !== this.fp) {
+      this.fp.root.visible = false;
       this.fpId = w.weaponId;
-      this.fp = this.makeFp(w.weaponId);
+      this.fp = this.fpFor(w.weaponId);
     }
     this.fp.root.visible = true;
+    this.prebuildFp();
     const p = this.prev && this.prev.tick < s.tick ? this.prev : s;
     const eyeA = eyePosition(this.cfg, p), eyeB = eyePosition(this.cfg, s);
     const eye = new THREE.Vector3(lerp(eyeA.x, eyeB.x, alpha), lerp(eyeA.y, eyeB.y, alpha), lerp(eyeA.z, eyeB.z, alpha));
@@ -759,7 +826,8 @@ export class Game {
   }
 
   dispose() {
-    this.fp.dispose();
+    for (const fp of new Set([this.fp, ...this.fpCache.values()])) fp.dispose();
+    this.fpCache.clear();
     this.tags.dispose();
     this.effects.dispose();
     this.soldiers.dispose();

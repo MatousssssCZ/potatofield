@@ -190,6 +190,10 @@ Nastavení má kategorie Obraz / Zvuk / Ovládání / Rozhraní (velikost a prů
 textu, barvy pro barvoslepé, jazyk, síťová diagnostika) a tlačítka Použít / Zrušit / Výchozí. Hra se standardně spouští na celou obrazovku s Keyboard Lock – jinak by
 kombinace Ctrl+W (dřep + vpřed) zavřela kartu prohlížeče. Lze vypnout v Nastavení.
 
+Nastavení → Zvuk: celková hlasitost a k ní hlasitost šesti skupin (0–150 %): výstřely, výbuchy
+a granáty, kroky a dopady, zásahy a dopady střel, přebíjení a výstroj, potvrzení zásahu a rozhraní.
+Tlačítko ▶ (a puštění posuvníku) přehraje ukázku; skupina na 0 % se vůbec nepřehrává.
+
 ### Dev panel (F3)
 
 FPS a p95 času snímku, draw calls, trojúhelníky, poloha, rychlost, `grounded`, postoj a výška těla,
