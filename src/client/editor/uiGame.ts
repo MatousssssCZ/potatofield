@@ -3,6 +3,7 @@ import type { BrushKind } from '../../world/terrain';
 import { cmds, type EditorDoc, type History } from './editorDoc';
 import type { Editor, PlantBrush } from './editor';
 import { markerId } from './markers';
+import { pointInPolygon, polygonArea, withPolygon, zoneOutline, zoneWorld } from '../../shared/map/zoneShape';
 
 /** UI herních markerů, scénářů a terénních štětců. */
 
@@ -98,17 +99,23 @@ export function insertMarker(ed: EditorDoc, history: History, editor: Editor, ki
   }
 }
 
-/** Výška terénu pod obdélníkem zóny (min / max ze vzorků mřížky ~5 m). */
-function groundSpan(editor: Editor, cx: number, cz: number, hx: number, hz: number, yaw: number): [number, number] {
+/** Výška terénu pod půdorysem zóny (min / max: vrcholy + vzorky mřížky ~5 m uvnitř). */
+function groundSpan(editor: Editor, z: Pick<Zone, 'center' | 'yaw' | 'halfExtents' | 'points'>): [number, number] {
   let lo = Infinity, hi = -Infinity;
+  const pts = zoneOutline(z);
+  const take = (lp: [number, number]) => {
+    const [wx, wz] = zoneWorld(z, lp);
+    const y = editor.groundY(wx, wz);
+    lo = Math.min(lo, y);
+    hi = Math.max(hi, y);
+  };
+  pts.forEach(take);
+  const [hx, , hz] = z.halfExtents;
   const n = Math.min(24, Math.max(2, Math.ceil((Math.max(hx, hz) * 2) / 5)));
-  const c = Math.cos(yaw), sn = Math.sin(yaw);
   for (let i = 0; i <= n; i++)
     for (let j = 0; j <= n; j++) {
-      const lx = -hx + (2 * hx * i) / n, lz = -hz + (2 * hz * j) / n;
-      const y = editor.groundY(cx + c * lx + sn * lz, cz - sn * lx + c * lz);
-      lo = Math.min(lo, y);
-      hi = Math.max(hi, y);
+      const lp: [number, number] = [-hx + (2 * hx * i) / n, -hz + (2 * hz * j) / n];
+      if (pointInPolygon(lp[0], lp[1], pts)) take(lp);
     }
   return [lo, hi];
 }
@@ -133,21 +140,22 @@ export function zoneTeamsAt(ed: EditorDoc, x: number, z: number): Team[] {
   return [best === 'teamA' ? 'teamB' : 'teamA'];
 }
 
-/** Nová zóna z obdélníku na zemi (a, b = rohy XZ): výška podle terénu, chytré týmy, zapnutá ve všech scénářích. */
+/** Nová zóna z obdélníku na zemi (a, b = rohy XZ). */
 export function insertZoneRect(ed: EditorDoc, history: History, editor: Editor, kind: Zone['kind'], a: [number, number], b: [number, number]) {
+  insertZonePolygon(ed, history, editor, kind, [[a[0], a[1]], [b[0], a[1]], [b[0], b[1]], [a[0], b[1]]]);
+}
+
+/** Nová zóna z vrcholů ve světě [x, z]: výška podle terénu, chytré týmy, zapnutá ve všech scénářích. */
+export function insertZonePolygon(ed: EditorDoc, history: History, editor: Editor, kind: Zone['kind'], world: Array<[number, number]>) {
   const r2 = (v: number) => Math.round(v * 100) / 100;
-  const cx = r2((a[0] + b[0]) / 2), cz = r2((a[1] + b[1]) / 2);
-  const hx = Math.max(0.5, r2(Math.abs(b[0] - a[0]) / 2)), hz = Math.max(0.5, r2(Math.abs(b[1] - a[1]) / 2));
-  const [lo, hi] = groundSpan(editor, cx, cz, hx, hz, 0);
+  const draft = withPolygon<Zone>({ id: ed.newId('zone'), kind, center: [0, 0, 0], halfExtents: [1, 1, 1], yaw: 0, appliesTo: [], countdown: 10 }, world);
+  const [lo, hi] = groundSpan(editor, draft);
   const bottom = lo - ZONE_BELOW, top = hi + ZONE_TOP[kind];
   const z: Zone = {
-    id: ed.newId('zone'),
-    kind,
-    center: [cx, r2((bottom + top) / 2), cz],
-    halfExtents: [hx, r2((top - bottom) / 2), hz],
-    yaw: 0,
-    appliesTo: kind === 'boundary' ? ['teamA', 'teamB'] : zoneTeamsAt(ed, cx, cz),
-    countdown: 10,
+    ...draft,
+    center: [draft.center[0], r2((bottom + top) / 2), draft.center[2]],
+    halfExtents: [draft.halfExtents[0], r2((top - bottom) / 2), draft.halfExtents[2]],
+    appliesTo: kind === 'boundary' ? ['teamA', 'teamB'] : zoneTeamsAt(ed, draft.center[0], draft.center[2]),
   };
   const label = kind === 'forbidden' ? 'Vložit zakázanou zónu' : 'Vložit hranici mapy';
   // Zóna se rovnou zapne ve všech scénářích – jinak by ve hře nic nedělala. Jedna položka historie.
@@ -248,7 +256,7 @@ function seg<T extends string>(opts: Array<[T, string]>, on: (v: T) => boolean, 
 function renderZoneInspector(root: HTMLElement, z: Zone, ed: EditorDoc, history: History, editor: Editor, upd: <T>(label: string, fn: (x: T) => void) => void) {
   const forb = z.kind === 'forbidden';
   root.appendChild(el('h3', {}, forb ? '⛔ Zakázaná zóna' : '▭ Hranice mapy'));
-  root.appendChild(el('div', { class: 'meta' }, `ID ${z.id} · úchopy na stěnách a nahoře mění rozměr přímo ve scéně`));
+  root.appendChild(el('div', { class: 'meta' }, `ID ${z.id} · táhni vrcholy (Shift + klik = smazat, ◆ na hraně = nový bod), nahoře výška`));
   const u = (label: string, fn: (x: Zone) => void) => upd<Zone>(label, fn);
 
   row(root, 'Typ', undefined, seg<Zone['kind']>([['forbidden', 'Zakázaná'], ['boundary', 'Hranice mapy']], (v) => v === z.kind, (v) => u('Typ zóny', (x) => {
@@ -264,6 +272,11 @@ function renderZoneInspector(root: HTMLElement, z: Zone, ed: EditorDoc, history:
   for (const [i, l] of dims) {
     const inp = num(z.halfExtents[i] * 2, 1, 4000, 1, (nv) => u('Rozměr zóny', (x) => {
       const bottom = x.center[1] - x.halfExtents[1];
+      // Mnohoúhelník se ve směru osy roztáhne / smrskne (tvar zůstane).
+      if (i !== 1 && x.points) {
+        const k = nv / 2 / x.halfExtents[i];
+        x.points = x.points.map((q) => (i === 0 ? [Math.round(q[0] * k * 100) / 100, q[1]] : [q[0], Math.round(q[1] * k * 100) / 100]));
+      }
       x.halfExtents[i] = nv / 2;
       if (i === 1) x.center[1] = Math.round((bottom + nv / 2) * 100) / 100;
     }));
@@ -272,6 +285,15 @@ function renderZoneInspector(root: HTMLElement, z: Zone, ed: EditorDoc, history:
     he.appendChild(inp);
   }
   row(root, 'Rozměr', 'Š × H × V (m)', he);
+  const outline = zoneOutline(z);
+  const shape = el('div', { style: 'display:flex;align-items:center;gap:8px;flex:1;flex-wrap:wrap' });
+  shape.appendChild(el('span', {}, `${outline.length} vrcholů · ${Math.round(Math.abs(polygonArea(outline)))} m²`));
+  if (z.points) {
+    const rect = el('button', { title: 'Nahradit tvar obdélníkem kolem současných bodů' }, '▭ Na obdélník');
+    rect.addEventListener('click', () => u('Zóna na obdélník', (x) => delete x.points));
+    shape.appendChild(rect);
+  }
+  row(root, 'Tvar', 'táhni vrcholy ve scéně', shape);
 
   const quick = el('div', { class: 'seg' });
   const qb = (label: string, title: string, fn: () => void) => {
@@ -279,7 +301,7 @@ function renderZoneInspector(root: HTMLElement, z: Zone, ed: EditorDoc, history:
     b.addEventListener('click', fn);
     quick.appendChild(b);
   };
-  const span = () => groundSpan(editor, z.center[0], z.center[2], z.halfExtents[0], z.halfExtents[2], z.yaw);
+  const span = () => groundSpan(editor, z);
   qb('⤓ Na zem', 'Spodek zóny kousek pod nejnižší terén, výška zůstane', () => {
     const [lo] = span();
     u('Zóna na zem', (x) => (x.center[1] = Math.round((lo - ZONE_BELOW + x.halfExtents[1]) * 100) / 100));

@@ -1,3 +1,4 @@
+import { isSimplePolygon, polygonArea, ZONE_POINTS } from './zoneShape';
 import {
   MAP_LIMITS,
   MAP_SCHEMA_VERSION,
@@ -321,6 +322,20 @@ export function validateMap(input: unknown, opts: { fileBytes?: number } = {}): 
         if ((z.halfExtents as number[]).some((v) => v <= 0)) c.err(`${p}.halfExtents`, 'rozměry musí být kladné');
       }
       c.num(z.yaw, `${p}.yaw`, -100, 100);
+      if (z.points !== undefined && c.arr(z.points, `${p}.points`, ZONE_POINTS.max)) {
+        const pts = z.points as unknown[];
+        const ok = pts.every((q, j) => {
+          const good = Array.isArray(q) && q.length === 2 && q.every((v) => typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= MAP_LIMITS.maxCoord);
+          if (!good) c.err(`${p}.points[${j}]`, 'očekávám [x, z] v mezích souřadnic');
+          return good;
+        });
+        if (pts.length < ZONE_POINTS.min) c.err(`${p}.points`, `mnohoúhelník potřebuje aspoň ${ZONE_POINTS.min} body`);
+        else if (ok) {
+          const poly = pts as [number, number][];
+          if (!isSimplePolygon(poly)) c.err(`${p}.points`, 'hrany mnohoúhelníku se kříží');
+          else if (Math.abs(polygonArea(poly)) < 1) c.err(`${p}.points`, 'mnohoúhelník má skoro nulovou plochu');
+        }
+      }
       if (c.arr(z.appliesTo, `${p}.appliesTo`, 2)) z.appliesTo.forEach((t, j) => c.oneOf(t, `${p}.appliesTo[${j}]`, TEAMS));
       c.num(z.countdown, `${p}.countdown`, 1, 120);
     });

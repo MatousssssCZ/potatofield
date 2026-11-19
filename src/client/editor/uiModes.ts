@@ -364,13 +364,13 @@ export function renderPlayPanel(root: HTMLElement, ed: EditorDoc, history: Histo
     b.addEventListener('click', () => deps.drawZone(kind));
     zs.appendChild(b);
   };
-  zb('✏ Zakázaná zóna', 'Táhni po zemi obdélník; klik = 20 × 20 m', 'forbidden');
-  zb('✏ Hranice mapy', 'Táhni po zemi obdélník hrací plochy', 'boundary');
+  zb('✏ Zakázaná zóna', 'Klikej vrcholy po zemi (Enter = hotovo), nebo táhni obdélník', 'forbidden');
+  zb('✏ Hranice mapy', 'Klikej vrcholy hrací plochy po zemi (Enter = hotovo), nebo táhni obdélník', 'boundary');
   root.appendChild(zs);
-  if (!doc.zones.length) root.appendChild(el('div', { class: 'tip' }, 'Zakázaná zóna chrání základnu: nakresli ji po zemi, výška a tým (nepřítel nejbližší základny) se nastaví samy a zóna se zapne ve všech scénářích.'));
+  if (!doc.zones.length) root.appendChild(el('div', { class: 'tip' }, 'Zakázaná zóna chrání základnu: naklikej její vrcholy po zemi (libovolný mnohoúhelník), výška a tým (nepřítel nejbližší základny) se nastaví samy a zóna se zapne ve všech scénářích.'));
   for (const z of doc.zones) {
     const off = !doc.scenarios.some((sc) => sc.zoneIds.includes(z.id));
-    const size = `${Math.round(z.halfExtents[0] * 2)} × ${Math.round(z.halfExtents[2] * 2)} m`;
+    const size = z.points ? `${z.points.length} vrcholů` : `${Math.round(z.halfExtents[0] * 2)} × ${Math.round(z.halfExtents[2] * 2)} m`;
     rowSel(markerId.zn(z.id), null, `${off ? '⚠ ' : ''}${z.kind === 'boundary' ? 'Hranice mapy' : 'Zakázaná zóna'}`, off ? 'v žádném scénáři' : `pro ${z.appliesTo.map((t) => (t === 'teamA' ? 'A' : 'B')).join('+') || '—'} · ${size}`);
   }
 

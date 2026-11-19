@@ -15,7 +15,7 @@ import { Editor, TEST_SPAWN_ID } from './editor/editor';
 import { EditorDoc, History, cmds, type Change } from './editor/editorDoc';
 import { AutoSaver, MapStore, exportMapFile, readMapFile } from './editor/persistence';
 import { buildCatalog, issuesList, modal, renderInspector, renderSceneList, toast } from './editor/ui';
-import { insertMarker, insertZoneRect, type GameUiState } from './editor/uiGame';
+import { insertMarker, insertZonePolygon, type GameUiState } from './editor/uiGame';
 import { MODE_INFO, enterBrushMode, renderPaintPanel, renderPlayPanel, renderTerrainTools, type EditorMode } from './editor/uiModes';
 import { MapSettingsDialog } from './editor/mapSettings';
 import { debugLines } from '../shared/physics/world';
@@ -1213,10 +1213,10 @@ export class App {
     insertMarker(this.ed, this.history, this.editor, kind, at);
   }
 
-  /** Nástroj „nakreslit zónu“: obdélník po zemi → nová zóna s výškou podle terénu. */
+  /** Nástroj „nakreslit zónu“: vrcholy (nebo obdélník) po zemi → nová zóna s výškou podle terénu. */
   private async drawZone(kind: 'forbidden' | 'boundary') {
     const r = await this.editor.drawZone(kind);
-    if (r) insertZoneRect(this.ed, this.history, this.editor, kind, r.a, r.b);
+    if (r) insertZonePolygon(this.ed, this.history, this.editor, kind, r);
     this.uiDirty = true;
   }
 

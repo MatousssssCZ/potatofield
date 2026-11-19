@@ -17,6 +17,12 @@ Vazby se odkazují přes ID, nikdy přes jména.
 | `environment` | `EnvironmentProfile` | slunce, mlha, předvolba oblohy – odděleno od geometrie |
 | `objects` | `MapObject[]` | instance generátorů |
 | `controlPoints`, `spawnPoints`, `zones`, `scenarios` | | herní data (Conquest, krok 5–7) |
+
+Zóna (`zones[]`): `center`, `halfExtents`, `yaw`, `kind` (`forbidden` = trest uvnitř, `boundary` = trest
+venku), `appliesTo`, `countdown` a volitelně `points` – půdorys jako mnohoúhelník 3–64 vrcholů `[x, z]`
+v lokálních souřadnicích vůči středu, natočený o `yaw` (stejně jako `rotation.y` v three.js). Hrany se
+nesmí křížit a plocha musí být aspoň 1 m². Výška je vždy `center.y ± halfExtents.y`; bez `points` je
+půdorys obdélník `±halfExtents.x / z`.
 | `testSpawn?` | `Transform` | marker pro testovací režim editoru |
 
 ## `MapObject`

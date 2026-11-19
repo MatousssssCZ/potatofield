@@ -5,6 +5,9 @@ import { activeItem, createInventory, resolveRequest, switchTo, type Inventory }
 import { stepItem, type ItemHooks } from './items';
 import { itemHooksFor, stepGrenades, type Grenade } from './matchItems';
 import type { MapDocument, SpawnPoint, Team, Zone } from '../map/schema';
+import { insideZone } from '../map/zoneShape';
+
+export { insideZone };
 import type { V3 } from '../math';
 import type { PhysicsWorld } from '../physics/world';
 import type { LadderDef } from '../../world/parts';
@@ -546,12 +549,6 @@ export function zoneViolated(z: Zone, p: V3) {
   return z.kind === 'boundary' ? !insideZone(z, p) : insideZone(z, p);
 }
 
-export function insideZone(z: Zone, p: V3) {
-  const dx = p.x - z.center[0], dz = p.z - z.center[2];
-  const c = Math.cos(-z.yaw), s = Math.sin(-z.yaw);
-  const lx = dx * c - dz * s, lz = dx * s + dz * c;
-  return Math.abs(lx) <= z.halfExtents[0] && Math.abs(lz) <= z.halfExtents[2] && Math.abs(p.y + 0.9 - z.center[1]) <= z.halfExtents[1];
-}
 
 function hash(s: string) {
   let h = 2166136261;

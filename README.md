@@ -219,12 +219,15 @@ a scénáři dialog nabídne Conquest (scénář + tým): zabírání, tickety, 
 
 ### Zóny
 
-V režimu Hra (5) tlačítko **✏ Zakázaná zóna** / **✏ Hranice mapy**: táhni obdélník po zemi (klik =
-20 × 20 m, Esc zruší). Výška se dopočítá z terénu, zakázaná zóna dostane tým nepřítele nejbližší
-základny a zapne se ve všech scénářích. Vybraná zóna má úchopy na stěnách a nahoře (protilehlá stěna
-stojí, mřížka 1 m, Alt volně, číslo = přesná délka). Inspektor: typ, komu vadí, Š × H × V, „Na zem“,
-„Celá výška“, otočení o 90°, odpočet a zapnutí po scénářích. Zakázaná zóna trestá pobyt uvnitř,
-hranice mapy pobyt venku.
+Zóna je libovolný mnohoúhelník (3–64 vrcholů) s výškou. V režimu Hra (5) tlačítko
+**✏ Zakázaná zóna** / **✏ Hranice mapy**: klikej vrcholy po zemi, Enter / dvojklik / klik na první bod
+tvar uzavře, Backspace vrátí bod, Esc zruší; tažení hned prvním stiskem nakreslí obdélník. Výška se
+dopočítá z terénu, zakázaná zóna dostane tým nepřítele nejbližší základny a zapne se ve všech
+scénářích. Vybraná zóna: koule = vrcholy (táhnout, Shift + klik smaže), kosočtverec na hraně přidá
+vrchol, kostka nahoře mění výšku, prstenec otáčí. Inspektor: typ, komu vadí, Š × H × V (mnohoúhelník
+se roztáhne), počet vrcholů a plocha, „Na obdélník“, „Na zem“, „Celá výška“, odpočet a scénáře.
+Zakázaná zóna trestá pobyt uvnitř, hranice mapy pobyt venku. Starší obdélníkové zóny (bez `points`)
+platí dál a na mnohoúhelník se převedou první úpravou vrcholu.
 
 ## Prohlížeč zbraní
 

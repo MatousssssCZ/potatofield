@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { zoneOutline } from '../../shared/map/zoneShape';
 import type { ControlPoint, MapDocument, SpawnPoint, TeamOwner, Zone } from '../../shared/map/schema';
 
 export const TEAM_COLORS: Record<TeamOwner | 'both', string> = {
@@ -148,16 +149,16 @@ export class MarkerView {
   }
 
   private addZone(z: Zone) {
-    const g = new THREE.Group();
-    const box = new THREE.BoxGeometry(z.halfExtents[0] * 2, z.halfExtents[1] * 2, z.halfExtents[2] * 2);
-    const fill = new THREE.Mesh(box, new THREE.MeshBasicMaterial({ color: z.kind === 'forbidden' ? '#ff3b2f' : '#ffd23f', transparent: true, opacity: 0.12, depthWrite: false, side: THREE.DoubleSide }));
-    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(box), new THREE.LineBasicMaterial({ color: z.kind === 'forbidden' ? '#ff6a4d' : '#ffe27a' }));
-    edges.raycast = () => {};
-    g.add(fill, edges);
-    g.position.set(...z.center);
-    g.rotation.y = z.yaw;
+    const g = zoneMesh(z);
     tag(g, markerId.zn(z.id));
     this.root.add(g);
+  }
+
+  /** Náhled během úprav: přestaví jen jednu zónu (bez zápisu do dokumentu). */
+  previewZone(z: Zone) {
+    const old = this.objectFor(markerId.zn(z.id));
+    if (old) this.dispose(old);
+    this.addZone(z);
   }
 
   update(t: number) {
@@ -172,6 +173,26 @@ export class MarkerView {
   objectFor(sel: string): THREE.Object3D | undefined {
     return this.root.children.find((c) => c.userData.special === sel);
   }
+}
+
+/** Hranol zóny podle půdorysu (mnohoúhelník nebo obdélník), výška center.y ± halfExtents.y. */
+export function zoneMesh(z: Zone, opacity = 0.12): THREE.Group {
+  const pts = zoneOutline(z);
+  const h = z.halfExtents[1] * 2;
+  // Tvar v rovině XY (x, −z), vytažení po +Z, otočení −90° kolem X: (x, −z, e) → (x, e, z).
+  const shape = new THREE.Shape(pts.map(([x, lz]) => new THREE.Vector2(x, -lz)));
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: h, bevelEnabled: false });
+  geo.rotateX(-Math.PI / 2);
+  geo.translate(0, -z.halfExtents[1], 0);
+  const col = z.kind === 'forbidden' ? '#ff3b2f' : '#ffd23f';
+  const g = new THREE.Group();
+  const fill = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide }));
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 20), new THREE.LineBasicMaterial({ color: z.kind === 'forbidden' ? '#ff6a4d' : '#ffe27a' }));
+  edges.raycast = () => {};
+  g.add(fill, edges);
+  g.position.set(...z.center);
+  g.rotation.y = z.yaw;
+  return g;
 }
 
 function tag(o: THREE.Object3D, id: string) {

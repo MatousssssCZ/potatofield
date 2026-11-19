@@ -109,6 +109,12 @@ export interface Zone {
   center: Vec3;
   halfExtents: Vec3;
   yaw: number;
+  /**
+   * Půdorys jako mnohoúhelník (3–64 vrcholů) v lokálních souřadnicích [x, z] vůči středu, natočený o yaw.
+   * Bez něj je půdorys obdélník ±halfExtents. Výška je vždy center.y ± halfExtents.y; halfExtents x/z
+   * u mnohoúhelníku jen obaluje body (pro přehled).
+   */
+  points?: [number, number][];
   /** Týmy, pro které zóna platí. */
   appliesTo: Team[];
   countdown: number;
