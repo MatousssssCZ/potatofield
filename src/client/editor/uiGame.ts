@@ -79,11 +79,8 @@ export function insertMarker(ed: EditorDoc, history: History, editor: Editor, ki
     history.execute(cmds.addEntity('controlPoints', cp, 'Vložit vlajku'));
     editor.select([markerId.cp(cp.id)]);
   } else if (kind === 'zone' || kind === 'boundary') {
-    const z: Zone = kind === 'zone'
-      ? { id: ed.newId('zone'), kind: 'forbidden', center: [p[0], p[1] + 5, p[2]], halfExtents: [10, 5, 10], yaw: 0, appliesTo: ['teamB'], countdown: 10 }
-      : { id: ed.newId('zone'), kind: 'boundary', center: [p[0], p[1] + 10, p[2]], halfExtents: [60, 20, 60], yaw: 0, appliesTo: ['teamA', 'teamB'], countdown: 10 };
-    history.execute(cmds.addEntity('zones', z, 'Vložit zónu'));
-    editor.select([markerId.zn(z.id)]);
+    const r = kind === 'zone' ? 10 : 60;
+    insertZoneRect(ed, history, editor, kind === 'zone' ? 'forbidden' : 'boundary', [p[0] - r, p[2] - r], [p[0] + r, p[2] + r]);
   } else {
     const team: Team = kind === 'spawnA' ? 'teamA' : 'teamB';
     // Přiřadit k nejbližšímu bodu do 40 m (lze změnit v inspektoru).
@@ -99,6 +96,65 @@ export function insertMarker(ed: EditorDoc, history: History, editor: Editor, ki
     history.execute(cmds.addEntity('spawnPoints', sp, 'Vložit spawn'));
     editor.select([markerId.sp(sp.id)]);
   }
+}
+
+/** Výška terénu pod obdélníkem zóny (min / max ze vzorků mřížky ~5 m). */
+function groundSpan(editor: Editor, cx: number, cz: number, hx: number, hz: number, yaw: number): [number, number] {
+  let lo = Infinity, hi = -Infinity;
+  const n = Math.min(24, Math.max(2, Math.ceil((Math.max(hx, hz) * 2) / 5)));
+  const c = Math.cos(yaw), sn = Math.sin(yaw);
+  for (let i = 0; i <= n; i++)
+    for (let j = 0; j <= n; j++) {
+      const lx = -hx + (2 * hx * i) / n, lz = -hz + (2 * hz * j) / n;
+      const y = editor.groundY(cx + c * lx + sn * lz, cz - sn * lx + c * lz);
+      lo = Math.min(lo, y);
+      hi = Math.max(hi, y);
+    }
+  return [lo, hi];
+}
+
+/** Výchozí výška zóny nad terénem: zakázaná 30 m, hranice 80 m (s rezervou pod terén). */
+const ZONE_TOP = { forbidden: 30, boundary: 80 } as const;
+const ZONE_BELOW = 3;
+
+/** Komu má nová zakázaná zóna vadit: nepříteli nejbližší základny (spawn bez bodu nebo vlastněný nedobyvatelný bod). */
+export function zoneTeamsAt(ed: EditorDoc, x: number, z: number): Team[] {
+  let best: Team | null = null, bd = Infinity;
+  const consider = (t: Team, p: [number, number, number]) => {
+    const d = Math.hypot(p[0] - x, p[2] - z);
+    if (d < bd) {
+      bd = d;
+      best = t;
+    }
+  };
+  for (const sp of ed.doc.spawnPoints) if (!sp.controlPointId && sp.teams.length === 1) consider(sp.teams[0], sp.position);
+  for (const cp of ed.doc.controlPoints) if (cp.defaultOwner !== 'neutral' && !cp.capturable) consider(cp.defaultOwner, cp.position);
+  if (!best) return ['teamB'];
+  return [best === 'teamA' ? 'teamB' : 'teamA'];
+}
+
+/** Nová zóna z obdélníku na zemi (a, b = rohy XZ): výška podle terénu, chytré týmy, zapnutá ve všech scénářích. */
+export function insertZoneRect(ed: EditorDoc, history: History, editor: Editor, kind: Zone['kind'], a: [number, number], b: [number, number]) {
+  const r2 = (v: number) => Math.round(v * 100) / 100;
+  const cx = r2((a[0] + b[0]) / 2), cz = r2((a[1] + b[1]) / 2);
+  const hx = Math.max(0.5, r2(Math.abs(b[0] - a[0]) / 2)), hz = Math.max(0.5, r2(Math.abs(b[1] - a[1]) / 2));
+  const [lo, hi] = groundSpan(editor, cx, cz, hx, hz, 0);
+  const bottom = lo - ZONE_BELOW, top = hi + ZONE_TOP[kind];
+  const z: Zone = {
+    id: ed.newId('zone'),
+    kind,
+    center: [cx, r2((bottom + top) / 2), cz],
+    halfExtents: [hx, r2((top - bottom) / 2), hz],
+    yaw: 0,
+    appliesTo: kind === 'boundary' ? ['teamA', 'teamB'] : zoneTeamsAt(ed, cx, cz),
+    countdown: 10,
+  };
+  const label = kind === 'forbidden' ? 'Vložit zakázanou zónu' : 'Vložit hranici mapy';
+  // Zóna se rovnou zapne ve všech scénářích – jinak by ve hře nic nedělala. Jedna položka historie.
+  const changes = [...cmds.addEntity('zones', z, label).changes];
+  for (const sc of ed.doc.scenarios) changes.push(...cmds.entity<Scenario>(ed, 'scenarios', sc.id, (x) => (x.zoneIds = [...new Set([...x.zoneIds, z.id])]), label).changes);
+  history.execute({ label, changes });
+  editor.select([markerId.zn(z.id)]);
 }
 
 export function renderMarkerInspector(root: HTMLElement, sel: string, ed: EditorDoc, history: History, _editor: Editor, state: GameUiState, rerender: () => void) {
@@ -175,19 +231,108 @@ export function renderMarkerInspector(root: HTMLElement, sel: string, ed: Editor
     root.appendChild(el('div', { class: 'note' }, 'Spawn u bodu je dostupný, když bod vlastní tým a bod má povolený spawn. Bez vazby = základna týmu (vždy dostupná).'));
     return;
   }
-  const z = e as Zone;
-  root.appendChild(el('h3', {}, '⛔ Zóna'));
-  root.appendChild(el('div', { class: 'meta' }, `ID ${z.id}`));
-  row(root, 'Typ', undefined, sel_([['forbidden', 'Zakázaná zóna'], ['boundary', 'Hranice mapy']], z.kind, (v) => upd<Zone>('Typ zóny', (x) => (x.kind = v as Zone['kind']))));
-  row(root, 'Střed', 'm', vec(z.center, (i, v) => upd<Zone>('Posun zóny', (x) => (x.center[i] = v))));
+  renderZoneInspector(root, e as Zone, ed, history, _editor, upd as <T>(label: string, fn: (x: T) => void) => void);
+}
+
+/** Přepínací tlačítka (segment). */
+function seg<T extends string>(opts: Array<[T, string]>, on: (v: T) => boolean, click: (v: T) => void) {
+  const d = el('div', { class: 'seg' });
+  for (const [v, l] of opts) {
+    const b = el('button', { class: on(v) ? 'on' : '', 'aria-pressed': String(on(v)) }, l);
+    b.addEventListener('click', () => click(v));
+    d.appendChild(b);
+  }
+  return d;
+}
+
+function renderZoneInspector(root: HTMLElement, z: Zone, ed: EditorDoc, history: History, editor: Editor, upd: <T>(label: string, fn: (x: T) => void) => void) {
+  const forb = z.kind === 'forbidden';
+  root.appendChild(el('h3', {}, forb ? '⛔ Zakázaná zóna' : '▭ Hranice mapy'));
+  root.appendChild(el('div', { class: 'meta' }, `ID ${z.id} · úchopy na stěnách a nahoře mění rozměr přímo ve scéně`));
+  const u = (label: string, fn: (x: Zone) => void) => upd<Zone>(label, fn);
+
+  row(root, 'Typ', undefined, seg<Zone['kind']>([['forbidden', 'Zakázaná'], ['boundary', 'Hranice mapy']], (v) => v === z.kind, (v) => u('Typ zóny', (x) => {
+    x.kind = v;
+    if (v === 'boundary') x.appliesTo = ['teamA', 'teamB'];
+  })));
+  row(root, forb ? 'Vadí týmu' : 'Platí pro', forb ? 'komu běží odpočet' : 'kdo nesmí ven', seg<Team>([['teamA', 'Tým A'], ['teamB', 'Tým B']], (t) => z.appliesTo.includes(t), (t) => u('Týmy zóny', (x) => (x.appliesTo = toggle(x.appliesTo, t, !x.appliesTo.includes(t))))));
+  if (!z.appliesTo.length) root.appendChild(el('div', { class: 'tip warn' }, '⚠ Zóna nevadí žádnému týmu – ve hře nic nedělá.'));
+
+  // Rozměr: Š / H / V v metrech; změna drží spodek zóny (výška roste nahoru).
   const he = el('div', { class: 'vec' });
-  z.halfExtents.forEach((v, i) => he.appendChild(num(v * 2, 1, 2000, 0.5, (nv) => upd<Zone>('Rozměr zóny', (x) => (x.halfExtents[i] = nv / 2)))));
-  row(root, 'Rozměr', 'm (X, Y, Z)', he);
-  row(root, 'Natočení', '°', num(deg(z.yaw), -360, 360, 15, (v) => upd<Zone>('Natočení zóny', (x) => (x.yaw = rad(v)))));
-  row(root, 'Platí pro tým A', undefined, chk(z.appliesTo.includes('teamA'), (v) => upd<Zone>('Týmy zóny', (x) => (x.appliesTo = toggle(x.appliesTo, 'teamA', v)))));
-  row(root, 'Platí pro tým B', undefined, chk(z.appliesTo.includes('teamB'), (v) => upd<Zone>('Týmy zóny', (x) => (x.appliesTo = toggle(x.appliesTo, 'teamB', v)))));
-  row(root, 'Odpočet', '1–120 s', num(z.countdown, 1, 120, 1, (v) => upd<Zone>('Odpočet zóny', (x) => (x.countdown = v))));
-  root.appendChild(el('div', { class: 'note' }, 'Zóna platí jen ve scénářích, které ji mají zapnutou (vlastnosti mapy → Scénáře). Odpočet běží jen během pobytu, po návratu se resetuje.'));
+  const dims: Array<[number, string]> = [[0, 'Š'], [2, 'H'], [1, 'V']];
+  for (const [i, l] of dims) {
+    const inp = num(z.halfExtents[i] * 2, 1, 4000, 1, (nv) => u('Rozměr zóny', (x) => {
+      const bottom = x.center[1] - x.halfExtents[1];
+      x.halfExtents[i] = nv / 2;
+      if (i === 1) x.center[1] = Math.round((bottom + nv / 2) * 100) / 100;
+    }));
+    inp.title = `${l} (m)`;
+    inp.setAttribute('aria-label', `${l} v metrech`);
+    he.appendChild(inp);
+  }
+  row(root, 'Rozměr', 'Š × H × V (m)', he);
+
+  const quick = el('div', { class: 'seg' });
+  const qb = (label: string, title: string, fn: () => void) => {
+    const b = el('button', { title }, label);
+    b.addEventListener('click', fn);
+    quick.appendChild(b);
+  };
+  const span = () => groundSpan(editor, z.center[0], z.center[2], z.halfExtents[0], z.halfExtents[2], z.yaw);
+  qb('⤓ Na zem', 'Spodek zóny kousek pod nejnižší terén, výška zůstane', () => {
+    const [lo] = span();
+    u('Zóna na zem', (x) => (x.center[1] = Math.round((lo - ZONE_BELOW + x.halfExtents[1]) * 100) / 100));
+  });
+  qb('⇕ Celá výška', `Od terénu do ${ZONE_TOP[z.kind]} m nad nejvyšší bod`, () => {
+    const [lo, hi] = span();
+    const bottom = lo - ZONE_BELOW, top = hi + ZONE_TOP[z.kind];
+    u('Celá výška zóny', (x) => {
+      x.center[1] = Math.round(((bottom + top) / 2) * 100) / 100;
+      x.halfExtents[1] = Math.round(((top - bottom) / 2) * 100) / 100;
+    });
+  });
+  row(root, 'Výška', undefined, quick);
+
+  row(root, 'Střed', 'm (X, Y, Z)', vec(z.center, (i, v) => u('Posun zóny', (x) => (x.center[i] = v))));
+  const rot = el('div', { class: 'vec' });
+  const r90 = (d: number) => {
+    const b = el('button', { title: `Otočit o ${d}°` }, d < 0 ? '⟲ 90°' : '⟳ 90°');
+    b.addEventListener('click', () => u('Natočení zóny', (x) => (x.yaw = rad(Math.round(deg(x.yaw) + d)))));
+    return b;
+  };
+  rot.append(r90(-90), num(deg(z.yaw), -360, 360, 15, (v) => u('Natočení zóny', (x) => (x.yaw = rad(v)))), r90(90));
+  row(root, 'Natočení', '°', rot);
+
+  if (forb) {
+    const wrap = el('div', { style: 'display:flex;align-items:center;gap:8px;flex:1' });
+    const sl = el('input', { type: 'range', min: '1', max: '60', step: '1', 'aria-label': 'Odpočet v sekundách', style: 'flex:1' }) as HTMLInputElement;
+    sl.value = String(Math.min(60, z.countdown));
+    const out = el('b', { style: 'min-width:3.2em;text-align:right' }, `${z.countdown} s`);
+    sl.addEventListener('input', () => (out.textContent = `${sl.value} s`));
+    sl.addEventListener('change', () => u('Odpočet zóny', (x) => (x.countdown = Number(sl.value))));
+    wrap.append(sl, out);
+    row(root, 'Odpočet', 'pak hráč zemře', wrap);
+  } else row(root, 'Odpočet', '1–120 s', num(z.countdown, 1, 120, 1, (v) => u('Odpočet zóny', (x) => (x.countdown = v))));
+
+  // Scénáře přímo tady: zóna, která není v žádném scénáři, ve hře neplatí.
+  root.appendChild(el('div', { class: 'sect-title' }, 'Platí ve scénářích'));
+  const scs = ed.doc.scenarios;
+  if (!scs.length) root.appendChild(el('div', { class: 'tip warn' }, '⚠ Mapa nemá žádný scénář – přidej ho v panelu Hra.'));
+  for (const sc of scs)
+    row(root, sc.name, undefined, chk(sc.zoneIds.includes(z.id), (v) => history.execute(cmds.entity<Scenario>(ed, 'scenarios', sc.id, (x) => (x.zoneIds = v ? [...new Set([...x.zoneIds, z.id])] : x.zoneIds.filter((q) => q !== z.id)), 'Zóny scénáře'))));
+  const off = scs.filter((sc) => !sc.zoneIds.includes(z.id));
+  if (scs.length && off.length) {
+    const t = el('div', { class: 'tip warn' }, off.length === scs.length ? '⚠ Zóna není v žádném scénáři – ve hře se neprojeví. ' : `Vypnuto ve ${off.length} z ${scs.length} scénářů. `);
+    const b = el('button', {}, 'Zapnout ve všech');
+    b.addEventListener('click', () => {
+      const changes = scs.flatMap((sc) => cmds.entity<Scenario>(ed, 'scenarios', sc.id, (x) => (x.zoneIds = [...new Set([...x.zoneIds, z.id])]), 'Zóna ve všech scénářích').changes);
+      history.execute({ label: 'Zóna ve všech scénářích', changes });
+    });
+    t.appendChild(b);
+    root.appendChild(t);
+  }
+  root.appendChild(el('div', { class: 'note' }, forb ? 'Hráč týmu, kterému zóna vadí, po vstupu vidí odpočet; když neodejde, zemře. Po odchodu se odpočet resetuje.' : 'Hranice: hráč, který z ní vyjde ven, vidí odpočet; po návratu se resetuje.'));
 }
 
 const sel_ = sel;

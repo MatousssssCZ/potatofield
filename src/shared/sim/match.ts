@@ -485,12 +485,12 @@ export class MatchSim {
       this.events.push({ type: 'hit', owner: im.owner, target: v.id, damage: im.damage, zone: im.zone!, hp: v.hp, ...(sh ? { from: [r2(sh.x), r2(sh.y), r2(sh.z)] as [number, number, number] } : {}) });
       if (v.hp <= 0) this.down(v, im.owner);
     }
-    // Zakázané zóny: odpočet jen během pobytu, po návratu reset.
+    // Zóny: zakázaná vadí uvnitř, hranice mapy venku. Odpočet jen během porušení, po návratu reset.
     if (this.conquest && !ended) {
       const zones = this.doc.zones.filter((z) => this.conquest!.zoneIds.includes(z.id));
       for (const p of this.players.values()) {
         if (!p.alive) continue;
-        const z = zones.find((zz) => zz.appliesTo.includes(p.team) && insideZone(zz, p.state.pos));
+        const z = zones.find((zz) => zz.appliesTo.includes(p.team) && zoneViolated(zz, p.state.pos));
         if (!z) p.zone = null;
         else {
           if (!p.zone || p.zone.id !== z.id) p.zone = { id: z.id, t: 0, countdown: z.countdown };
@@ -539,6 +539,11 @@ export class MatchSim {
     for (const p of this.players.values()) p.ctrl.dispose();
     this.players.clear();
   }
+}
+
+/** Porušení zóny: v zakázané zóně, nebo mimo hranici mapy. */
+export function zoneViolated(z: Zone, p: V3) {
+  return z.kind === 'boundary' ? !insideZone(z, p) : insideZone(z, p);
 }
 
 export function insideZone(z: Zone, p: V3) {

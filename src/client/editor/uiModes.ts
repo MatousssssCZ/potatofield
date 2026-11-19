@@ -308,6 +308,8 @@ export function renderPaintPanel(root: HTMLElement, editor: Editor, onChange: ()
 export interface PlayDeps {
   insert: (kind: 'flag' | 'spawnA' | 'spawnB' | 'zone' | 'boundary') => void;
   spawnIssue: () => string | undefined;
+  /** Nakreslit zónu obdélníkem po zemi. */
+  drawZone: (kind: 'forbidden' | 'boundary') => void;
 }
 
 export function renderPlayPanel(root: HTMLElement, ed: EditorDoc, history: History, editor: Editor, deps: PlayDeps) {
@@ -357,15 +359,20 @@ export function renderPlayPanel(root: HTMLElement, ed: EditorDoc, history: Histo
 
   head('Zóny');
   const zs = el('div', { class: 'seg' });
-  const zb = (label: string, kind: 'zone' | 'boundary') => {
-    const b = el('button', {}, label);
-    b.addEventListener('click', () => deps.insert(kind));
+  const zb = (label: string, title: string, kind: 'forbidden' | 'boundary') => {
+    const b = el('button', { title }, label);
+    b.addEventListener('click', () => deps.drawZone(kind));
     zs.appendChild(b);
   };
-  zb('＋ Zakázaná zóna', 'zone');
-  zb('＋ Hranice mapy', 'boundary');
+  zb('✏ Zakázaná zóna', 'Táhni po zemi obdélník; klik = 20 × 20 m', 'forbidden');
+  zb('✏ Hranice mapy', 'Táhni po zemi obdélník hrací plochy', 'boundary');
   root.appendChild(zs);
-  for (const z of doc.zones) rowSel(markerId.zn(z.id), null, z.kind === 'boundary' ? 'Hranice mapy' : 'Zakázaná zóna', `pro ${z.appliesTo.map((t) => (t === 'teamA' ? 'A' : 'B')).join('+') || '—'}`);
+  if (!doc.zones.length) root.appendChild(el('div', { class: 'tip' }, 'Zakázaná zóna chrání základnu: nakresli ji po zemi, výška a tým (nepřítel nejbližší základny) se nastaví samy a zóna se zapne ve všech scénářích.'));
+  for (const z of doc.zones) {
+    const off = !doc.scenarios.some((sc) => sc.zoneIds.includes(z.id));
+    const size = `${Math.round(z.halfExtents[0] * 2)} × ${Math.round(z.halfExtents[2] * 2)} m`;
+    rowSel(markerId.zn(z.id), null, `${off ? '⚠ ' : ''}${z.kind === 'boundary' ? 'Hranice mapy' : 'Zakázaná zóna'}`, off ? 'v žádném scénáři' : `pro ${z.appliesTo.map((t) => (t === 'teamA' ? 'A' : 'B')).join('+') || '—'} · ${size}`);
+  }
 
   head('Testovací spawn');
   rowSel(TEST_SPAWN_ID, null, 'Kde začneš po F5', 'přetáhni v pohledu');

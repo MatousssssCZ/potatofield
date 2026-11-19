@@ -15,7 +15,7 @@ import { Editor, TEST_SPAWN_ID } from './editor/editor';
 import { EditorDoc, History, cmds, type Change } from './editor/editorDoc';
 import { AutoSaver, MapStore, exportMapFile, readMapFile } from './editor/persistence';
 import { buildCatalog, issuesList, modal, renderInspector, renderSceneList, toast } from './editor/ui';
-import { insertMarker, type GameUiState } from './editor/uiGame';
+import { insertMarker, insertZoneRect, type GameUiState } from './editor/uiGame';
 import { MODE_INFO, enterBrushMode, renderPaintPanel, renderPlayPanel, renderTerrainTools, type EditorMode } from './editor/uiModes';
 import { MapSettingsDialog } from './editor/mapSettings';
 import { debugLines } from '../shared/physics/world';
@@ -1213,6 +1213,13 @@ export class App {
     insertMarker(this.ed, this.history, this.editor, kind, at);
   }
 
+  /** Nástroj „nakreslit zónu“: obdélník po zemi → nová zóna s výškou podle terénu. */
+  private async drawZone(kind: 'forbidden' | 'boundary') {
+    const r = await this.editor.drawZone(kind);
+    if (r) insertZoneRect(this.ed, this.history, this.editor, kind, r.a, r.b);
+    this.uiDirty = true;
+  }
+
   private renderUI() {
     renderInspector(this.ed, this.history, this.editor, {
       missing: (id) => this.world.missing.get(id),
@@ -1229,7 +1236,7 @@ export class App {
     if (m === 'select') renderSceneList(this.ed, this.history, this.editor);
     else if (m === 'terrain') renderTerrainTools($('#terrain-panel'), this.editor, () => (this.uiDirty = true));
     else if (m === 'paint') renderPaintPanel($('#paint-panel'), this.editor, () => (this.uiDirty = true));
-    else if (m === 'play') renderPlayPanel($('#play-panel'), this.ed, this.history, this.editor, { insert: (k) => this.insertGameMarker(k), spawnIssue: () => this.spawnIssue() });
+    else if (m === 'play') renderPlayPanel($('#play-panel'), this.ed, this.history, this.editor, { insert: (k) => this.insertGameMarker(k), spawnIssue: () => this.spawnIssue(), drawZone: (k) => void this.drawZone(k) });
     this.catalog?.refresh();
     this.mapSet?.refresh();
     const n = this.editor.selection.size;

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { MapObject, Transform } from '../../shared/map/schema';
+import type { MapObject, Transform, Zone } from '../../shared/map/schema';
 import { generateObject, getAsset, resolveParams, STRETCH, stretchAxes, terrainContext, type AssetDef } from '../../world/registry';
 import { roadModel } from '../../world/assets/osada/road';
 import { snapEndToRoad } from '../../world/assets/osada/roadOps';
@@ -38,7 +38,7 @@ type V3 = [number, number, number];
 
 /** Úchop gizma ve viewportu. */
 interface HandleInfo {
-  kind: 'rotate' | 'size' | 'uniform' | 'point' | 'addPoint' | 'rangeMark';
+  kind: 'rotate' | 'size' | 'uniform' | 'point' | 'addPoint' | 'rangeMark' | 'zone';
   /** Značka úseku povrchu: začátek / konec. */
   end?: 'from' | 'to';
   axis?: 'x' | 'y' | 'z';
@@ -54,7 +54,18 @@ type Drag =
   | { kind: 'size'; id: string; axis: 'x' | 'y' | 'z'; sign: 1 | -1; origin: THREE.Vector3; dir: THREE.Vector3; ext: number; opp: number; f: number; uniform: boolean }
   | { kind: 'point'; id: string; index: number; pts: Pt[]; inserted: boolean; before: string }
   | { kind: 'range'; id: string; index: number; end: 'from' | 'to'; ref: RangeRef }
-  | { kind: 'scale'; center: THREE.Vector3; d0: number; starts: Map<string, { pos: V3; rotY: number; scale: number }>; f: number };
+  | { kind: 'scale'; center: THREE.Vector3; d0: number; starts: Map<string, { pos: V3; rotY: number; scale: number }>; f: number }
+  /** Stěna zóny: protilehlá stěna stojí, střed se posune o polovinu změny. */
+  | { kind: 'zone'; id: string; axis: 'x' | 'y' | 'z'; sign: 1 | -1; origin: THREE.Vector3; dir: THREE.Vector3; he0: V3; c0: V3; yaw: number; half: number };
+
+/** Rozpracované kreslení zóny obdélníkem na zemi. */
+interface ZoneDraw {
+  kind: Zone['kind'];
+  start: THREE.Vector3 | null;
+  end: THREE.Vector3 | null;
+  preview: THREE.Group;
+  resolve: (r: { a: [number, number]; b: [number, number] } | null) => void;
+}
 
 const CLIPBOARD_KEY = 'pf.editorClipboard';
 const HINTS_KEY = 'pf.editorHints';
@@ -125,6 +136,7 @@ export class Editor {
   // kamera
   private yaw = 0;
   /** Probíhající výběr místa pro test (klik = místo, Enter = marker, Esc = zrušit). */
+  private zoneDraw: ZoneDraw | null = null;
   private spawnPick: ((r: { pos: [number, number, number]; yaw: number } | 'marker' | null) => void) | null = null;
   private pitch = -0.5;
   private flying = false;
@@ -303,6 +315,11 @@ export class Editor {
   }
 
   private keyDown(e: KeyboardEvent) {
+    if (this.zoneDraw && e.code === 'Escape') {
+      e.preventDefault();
+      this.zoneDraw.resolve(null);
+      return;
+    }
     if (this.spawnPick) {
       if (e.code === 'Escape') this.spawnPick(null);
       else if (e.code === 'Enter' || e.code === 'NumpadEnter') this.spawnPick('marker');
@@ -397,6 +414,53 @@ export class Editor {
     }
   }
 
+  /** Kreslení zóny: tažení obdélníku po zemi (klik bez tažení = 20 × 20 m). Esc / RMB zruší. */
+  drawZone(kind: Zone['kind']): Promise<{ a: [number, number]; b: [number, number] } | null> {
+    this.zoneDraw?.resolve(null);
+    this.spawnPick?.(null);
+    return new Promise((resolve) => {
+      const col = kind === 'forbidden' ? '#ff3b2f' : '#ffd23f';
+      const box = new THREE.BoxGeometry(1, 1, 1);
+      const preview = new THREE.Group();
+      preview.add(
+        new THREE.Mesh(box, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide })),
+        new THREE.LineSegments(new THREE.EdgesGeometry(box), new THREE.LineBasicMaterial({ color: col })),
+      );
+      preview.visible = false;
+      preview.renderOrder = 25;
+      this.root.add(preview);
+      this.zoneDraw = {
+        kind,
+        start: null,
+        end: null,
+        preview,
+        resolve: (r) => {
+          this.zoneDraw = null;
+          preview.traverse((c) => {
+            const m = c as THREE.Mesh;
+            m.geometry?.dispose();
+            (m.material as THREE.Material | undefined)?.dispose();
+          });
+          preview.removeFromParent();
+          this.canvas.style.cursor = '';
+          resolve(r);
+        },
+      };
+      this.canvas.style.cursor = 'crosshair';
+    });
+  }
+
+  private updateZonePreview() {
+    const zd = this.zoneDraw;
+    if (!zd?.start) return;
+    const a = zd.start, b = zd.end ?? a;
+    const w = Math.max(0.5, Math.abs(b.x - a.x)), dpt = Math.max(0.5, Math.abs(b.z - a.z));
+    const y = Math.min(a.y, b.y);
+    zd.preview.visible = true;
+    zd.preview.scale.set(w, 4, dpt);
+    zd.preview.position.set((a.x + b.x) / 2, y + 2, (a.z + b.z) / 2);
+  }
+
   /** Počká, až uživatel klikne do scény, kde se má objevit (nebo Enter / Esc). */
   pickSpawn(): Promise<{ pos: [number, number, number]; yaw: number } | 'marker' | null> {
     this.spawnPick?.(null);
@@ -421,6 +485,18 @@ export class Editor {
   }
 
   private pointerDown(e: PointerEvent) {
+    if (this.zoneDraw) {
+      this.pointerNdc = this.ndc(e.clientX, e.clientY);
+      if (e.button === 0) {
+        const p = this.groundAtPointer();
+        if (p) {
+          this.zoneDraw.start = this.snapXZ(p);
+          this.zoneDraw.end = null;
+          this.updateZonePreview();
+        }
+      } else if (e.button === 2) this.zoneDraw.resolve(null);
+      return;
+    }
     if (this.spawnPick) {
       if (e.button === 0) {
         const p = this.spawnPointAt(e.clientX, e.clientY);
@@ -490,6 +566,14 @@ export class Editor {
       this.pitch = THREE.MathUtils.clamp(this.pitch - e.movementY * 0.0025, -1.55, 1.55);
       return;
     }
+    if (this.zoneDraw) {
+      const p = this.zoneDraw.start && this.groundAtPointer();
+      if (p) {
+        this.zoneDraw.end = this.snapXZ(p);
+        this.updateZonePreview();
+      }
+      return;
+    }
     if (this.spawnPick) {
       // Náhled: marker spawnu jede s kurzorem, natočený jako kamera.
       const p = this.spawnPointAt(e.clientX, e.clientY);
@@ -526,6 +610,15 @@ export class Editor {
   }
 
   private pointerUp(e: PointerEvent) {
+    if (this.zoneDraw) {
+      const zd = this.zoneDraw;
+      if (e.button !== 0 || !zd.start) return;
+      const a = zd.start, b = zd.end ?? a;
+      // Klik bez tažení = výchozí čtverec 20 × 20 m kolem bodu.
+      if (Math.abs(b.x - a.x) < 1 && Math.abs(b.z - a.z) < 1) zd.resolve({ a: [a.x - 10, a.z - 10], b: [a.x + 10, a.z + 10] });
+      else zd.resolve({ a: [Math.min(a.x, b.x), Math.min(a.z, b.z)], b: [Math.max(a.x, b.x), Math.max(a.z, b.z)] });
+      return;
+    }
     if (this.orbit && e.button === this.orbit.button) {
       this.orbit = null;
       return;
@@ -798,6 +891,13 @@ export class Editor {
     }
     if (ids.length !== 1) return;
     const id = ids[0];
+    if (markerId.parse(id)?.collection === 'zones') {
+      // Zóna: úchop na každé svislé stěně a nahoře (spodek drží u země).
+      for (const axis of ['x', 'z', 'y'] as const)
+        for (const sign of axis === 'y' ? ([1] as const) : ([1, -1] as const)) add(new THREE.BoxGeometry(1, 1, 1), this.handleMat.size, { kind: 'zone', axis, sign });
+      this.layoutHandles();
+      return;
+    }
     const o = this.ed.getObject(id);
     const def = o && getAsset(o.assetId);
     if (!o || !def) return;
@@ -858,6 +958,15 @@ export class Editor {
         if (box.isEmpty()) c.position.set(pivot.x, pivot.y + 0.08, pivot.z);
         else c.position.set(center.x, box.min.y + 0.08, center.z);
         c.userData.radius = radius;
+      } else if (info.kind === 'zone') {
+        const zg = this.groupOf(ids[0]);
+        const z = this.zoneOf(ids[0]);
+        if (zg && z) {
+          zg.updateMatrixWorld(true);
+          const local = new THREE.Vector3();
+          local[info.axis!] = info.sign! * z.halfExtents['xyz'.indexOf(info.axis!)];
+          c.position.copy(local.applyMatrix4(zg.matrixWorld));
+        }
       } else if ((info.kind === 'size' || info.kind === 'uniform') && g && lb) {
         const lc = lb.getCenter(new THREE.Vector3());
         const local = lc.clone();
@@ -964,6 +1073,16 @@ export class Editor {
       const center = ring.position.clone();
       const gp = this.groundAtPointer() ?? point;
       this.drag = { kind: 'rotate', center, a0: Math.atan2(gp.x - center.x, gp.z - center.z), starts: this.startStates(ids), delta: 0 };
+      return;
+    }
+    if (info.kind === 'zone') {
+      const z = this.zoneOf(ids[0]);
+      const zg = this.groupOf(ids[0]);
+      if (!z || !zg) return;
+      const a = info.axis!;
+      const dir = new THREE.Vector3(a === 'x' ? 1 : 0, a === 'y' ? 1 : 0, a === 'z' ? 1 : 0).multiplyScalar(info.sign!).applyQuaternion(zg.quaternion);
+      this.drag = { kind: 'zone', id: ids[0], axis: a, sign: info.sign!, origin: point.clone(), dir, he0: [...z.halfExtents] as V3, c0: [...z.center] as V3, yaw: z.yaw, half: z.halfExtents['xyz'.indexOf(a)] };
+      this.handles.visible = false;
       return;
     }
     const id = ids[0];
@@ -1181,6 +1300,20 @@ export class Editor {
       }
       return;
     }
+    if (d.kind === 'zone') {
+      const zg = this.groupOf(d.id);
+      if (!zg) return;
+      const h0 = d.he0['xyz'.indexOf(d.axis)];
+      let full = num !== null && num > 0 ? num : 2 * h0 + this.alongAxis(d.origin, d.dir);
+      // Mřížka 1 m (Alt = volně); zóna nejmenší 1 m.
+      if (num === null && !this.altHeld) full = Math.round(full);
+      d.half = Math.max(0.5, Math.round(full * 50) / 100);
+      zg.scale.set(1, 1, 1);
+      zg.scale[d.axis] = d.half / h0;
+      zg.position.set(...this.zoneCenter(d));
+      zg.updateMatrixWorld(true);
+      return;
+    }
     if (d.kind === 'size') {
       const g = this.world.objects.get(d.id);
       const o = this.ed.getObject(d.id);
@@ -1301,6 +1434,19 @@ export class Editor {
     } else if (d.kind === 'scale') {
       label = 'Měřítko';
       changes.push(...this.scaleChanges(d));
+    } else if (d.kind === 'zone') {
+      const i = 'xyz'.indexOf(d.axis);
+      const mk = markerId.parse(d.id)!;
+      if (Math.abs(d.half - d.he0[i]) > 1e-4) {
+        label = 'Rozměr zóny';
+        const c = this.zoneCenter(d);
+        changes.push(
+          ...cmds.entity<Zone>(this.ed, 'zones', mk.id, (z) => {
+            z.halfExtents[i] = d.half;
+            z.center = c;
+          }, label).changes,
+        );
+      }
     } else if (d.kind === 'size') {
       const c = this.sizeCommand(d);
       if (c) {
@@ -1357,6 +1503,19 @@ export class Editor {
   }
 
   /** Převod tažení rozměrového úchopu na parametry generátoru (mřížka, meze) a dorovnání polohy. */
+  private zoneOf(id: string): Zone | undefined {
+    const m = markerId.parse(id);
+    return m?.collection === 'zones' ? (this.ed.getEntity('zones', m.id) as Zone | undefined) : undefined;
+  }
+
+  /** Nový střed zóny: posun o změnu poloviny rozměru směrem k tažené stěně (v natočení zóny). */
+  private zoneCenter(d: Extract<Drag, { kind: 'zone' }>): V3 {
+    const v = new THREE.Vector3();
+    v[d.axis] = d.sign * (d.half - d.he0['xyz'.indexOf(d.axis)]);
+    v.applyAxisAngle(new THREE.Vector3(0, 1, 0), d.yaw);
+    return [r4(d.c0[0] + v.x), r4(d.c0[1] + v.y), r4(d.c0[2] + v.z)];
+  }
+
   private sizeCommand(d: Extract<Drag, { kind: 'size' }>): Command | null {
     const o = this.ed.getObject(d.id);
     if (!o) return null;
@@ -1803,6 +1962,12 @@ export class Editor {
   /** Text u kurzoru podle toho, co je pod ním a co právě probíhá. */
   private hintFor(): string | null {
     if (this.drag?.kind === 'range' && this.dragNote) return this.dragNote;
+    if (this.zoneDraw) {
+      const zd = this.zoneDraw;
+      const what = zd.kind === 'forbidden' ? 'zakázanou zónu' : 'hranici mapy';
+      if (zd.start && zd.end) return `${Math.abs(zd.end.x - zd.start.x).toFixed(1)} × ${Math.abs(zd.end.z - zd.start.z).toFixed(1)} m · pusť = hotovo\nAlt = bez mřížky · Esc / pravé tl. = zrušit`;
+      return `Táhni po zemi obdélník pro ${what}\nKlik = čtverec 20 × 20 m · Esc / pravé tl. = zrušit`;
+    }
     if (this.spawnPick) return 'Klikni, kde se objevíš (směr = pohled kamery)\nEnter = uložený spawn · Esc / pravé tl. = zrušit';
     const d = this.drag;
     if (d) {
@@ -1817,6 +1982,7 @@ export class Editor {
         return `Posun${ax}: X ${dx.toFixed(2)} · Z ${dz.toFixed(2)}${Math.abs(dy) > 0.005 ? ` · výška ${dy.toFixed(2)}` : ''} m${num}${mag}\nČíslo = přesná vzdálenost v m · X / Y / Z = osa${tail}`;
       }
       if (d.kind === 'rotate') return `Rotace: ${THREE.MathUtils.radToDeg(d.delta).toFixed(1)}°${num}\nČíslo = úhel ve stupních${tail}`;
+      if (d.kind === 'zone') return `Zóna – ${d.axis === 'y' ? 'výška' : d.axis === 'x' ? 'šířka' : 'hloubka'}: ${(d.half * 2).toFixed(1)} m${num}\nČíslo = nová délka v m · Alt = bez mřížky 1 m${tail}`;
       if (d.kind === 'size') return d.uniform ? `Měřítko ×${d.f.toFixed(2)}${num}\nČíslo = násobek (např. 1.5)${tail}` : `Rozměr: ${(d.ext * d.f).toFixed(2)} m${num}\nČíslo = nová délka v m${tail}`;
       if (d.kind === 'scale') return `Měřítko ×${d.f.toFixed(2)}${num}\nČíslo = násobek${tail}`;
       return 'Táhni bod ulice · pusť = hotovo';

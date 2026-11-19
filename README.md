@@ -217,6 +217,15 @@ bez DOM.
 Bez bodů a scénářů je to volný test od markeru (figuríny na střelnici jdou sestřelit). S body
 a scénáři dialog nabídne Conquest (scénář + tým): zabírání, tickety, respawn, výběr spawnu, zóny.
 
+### Zóny
+
+V režimu Hra (5) tlačítko **✏ Zakázaná zóna** / **✏ Hranice mapy**: táhni obdélník po zemi (klik =
+20 × 20 m, Esc zruší). Výška se dopočítá z terénu, zakázaná zóna dostane tým nepřítele nejbližší
+základny a zapne se ve všech scénářích. Vybraná zóna má úchopy na stěnách a nahoře (protilehlá stěna
+stojí, mřížka 1 m, Alt volně, číslo = přesná délka). Inspektor: typ, komu vadí, Š × H × V, „Na zem“,
+„Celá výška“, otočení o 90°, odpočet a zapnutí po scénářích. Zakázaná zóna trestá pobyt uvnitř,
+hranice mapy pobyt venku.
+
 ## Prohlížeč zbraní
 
 `/viewer.html` – všech 12 zbraní (Hawk Type 97 jako neověřený návrh) s rukama podle frakce a classy: hip/ADS/boky, světlo, kvalita, FOV, animace přebití, počty trojúhelníků a draw calls (`?w=akm` vybere zbraň). Výchozí zbraň volného testu se volí v Nastavení. Rozpočty trojúhelníků: vlastní pohled 3 000–3 500, ostatní hráči 1 000–1 300, vzdálená varianta 200–300 – `npx tsx scripts/weapon-report.ts` je vypíše, `npx tsx scripts/weapon-budget.ts --write` po změně generátoru přepočítá stupně detailu.

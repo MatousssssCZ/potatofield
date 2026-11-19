@@ -176,6 +176,23 @@ describe('Conquest v simulaci zápasu', () => {
     expect(b.alive).toBe(true);
   });
 
+  it('hranice mapy: odpočet běží venku, uvnitř ne', async () => {
+    const m = await sim();
+    m.doc.zones.push({ id: 'hr', kind: 'boundary', center: [0, 5, 0], halfExtents: [40, 20, 40], yaw: 0, appliesTo: ['teamA', 'teamB'], countdown: 5 });
+    m.doc.scenarios[0].zoneIds.push('hr');
+    m.conquest!.zoneIds.push('hr');
+    const a = m.addPlayer('a', 'teamA');
+    m.requestSpawn('a', 'sa');
+    a.ctrl.place(a.state, { x: 0, y: 0.02, z: 4 }, 0);
+    idle(m, 1);
+    expect(a.zone).toBeNull();
+    a.ctrl.place(a.state, { x: -50, y: 0.02, z: 4 }, 0);
+    idle(m, 1);
+    expect(a.zone?.id).toBe('hr');
+    idle(m, 4.1);
+    expect(a.alive).toBe(false);
+  });
+
   it('výškový limit: hráč nad objemem bodu nezabírá; odpojení odstraní hráče z objemu', async () => {
     const m = await sim();
     const a = m.addPlayer('a', 'teamA');
