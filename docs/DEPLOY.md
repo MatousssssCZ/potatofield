@@ -38,7 +38,10 @@ Nastavení serveru (Render → služba → Environment): `PF_NAME` (název v sez
 - **Zákazy** platí podle síťové adresy a jen do restartu serveru (bez trvalého úložiště).
 - **Záznamy** (nahlášení, zákazy, chyby klientů) jdou do logu serveru; `PF_RECORDS=cesta` je navíc zapisuje do souboru
   (řádek = JSON). Chyby klientů chodí na `POST /client-error` – jen text chyby a zásobník volání, žádné osobní údaje.
-- **Mapa:** `PF_MAP=<cesta k JSON>` přepne server na jinou mapu (výchozí a jediná dodávaná je `maps/street_reference.json`; vlastní mapu vyexportuj z editoru).
+- **Mapa:** server hraje `maps/street_reference.json` („Referenční ulice“). Úprava: v editoru otevřít, upravit,
+  Soubor ▾ → Exportovat a JSON nahradit v `maps/` → push na `main` (Render server sám přestaví a restartuje,
+  klienti dostanou mapu od serveru). `scripts/export-maps.ts` tento soubor nepřepíše (jen s `--force`).
+  `PF_MAP=<cesta k JSON>` přepne server na jiný soubor.
 - **Kola:** po konci kola pauza `PF_ROUND_BREAK` s (výchozí 20) a nové kolo s dalším scénářem mapy.
 
 ### Omezení bezplatného plánu
