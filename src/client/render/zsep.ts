@@ -7,9 +7,10 @@ import type { Part } from '../../world/parts';
  * Takové plochy při pohybu kamery „přeskakují“. Před vykreslením se proto najdou dvojice
  * ploch ve stejné rovině, se stejnou orientací a s překryvem, a pozdější díl (detail bývá
  * přidaný po podkladu) se posune o ZSEP_STEP ven ve směru plochy – další v pořadí o další krok.
- * Kolize se nemění (počítají se z původních dílů); posun 1 mm není vidět.
+ * Kolize se nemění (počítají se z původních dílů); posun 3 mm není vidět.
  */
-export const ZSEP_STEP = 0.001;
+/** 3 mm: při ořezové rovině 3 cm rozliší 24bitová hloubka plochy od sebe zhruba do 40 m. */
+export const ZSEP_STEP = 0.003;
 /** Plochy blíž než tato vzdálenost se berou jako jedna rovina. */
 const PLANE_TOL = 0.0004;
 

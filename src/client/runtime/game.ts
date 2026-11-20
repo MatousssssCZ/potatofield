@@ -813,8 +813,12 @@ export class Game {
       this.scope ??= new ScopeView(document.getElementById('viewport') ?? document.body);
       this.scope.update(optic.reticle ?? 'mildot', this.scopeBlend, vfov);
     } else this.scope?.update(null, 0, 0);
-    if (Math.abs(cam.fov - vfov) > 1e-4) {
+    // V puškohledu se zbraň v ruce nekreslí → bližší ořezová rovina není potřeba. Posun 3 cm → 50 cm
+    // zlepší přesnost hloubky ~16× (vzdálené fasády přes zvětšení jinak „přeskakují“: sklo × zeď).
+    const near = this.scopeBlend >= 0.5 ? 0.5 : CAMERA.near;
+    if (Math.abs(cam.fov - vfov) > 1e-4 || cam.near !== near) {
       cam.fov = vfov;
+      cam.near = near;
       cam.updateProjectionMatrix();
     }
     // Citlivost klesá se zvětšením (stejný pohyb myši = stejný posun obrazu v puškohledu).
