@@ -828,6 +828,16 @@ export class App {
         this.pause?.show(false);
         game.hud.deploy.open(false);
       },
+      redeploy: () => {
+        // Znovu nasadit: server postavu zabije; obrazovka nasazení se otevře jako po každé smrti.
+        this.pause?.show(false);
+        game.driver.redeploy();
+        game.hud.deploy.open(false);
+      },
+      canRedeploy: () => {
+        const me = game.driver.local();
+        return !!me && (me.alive || me.life === 'downed') && !me.spectator;
+      },
       leave: () => this.exitPlay(),
       settings: () => this.settingsView.open(),
       controls: () => controlsView(this.settings),

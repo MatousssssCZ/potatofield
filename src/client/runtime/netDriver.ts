@@ -223,6 +223,10 @@ export class NetDriver implements GameDriver {
     }
     return list;
   }
+  redeploy() {
+    this.net.send({ t: 'redeploy' });
+  }
+
   giveUp() {
     this.net.send({ t: 'giveup' });
   }

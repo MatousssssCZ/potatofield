@@ -75,7 +75,7 @@ export type SimEvent =
   | { type: 'shot'; key: string; owner: string; origin: V3; dir: V3; pellet?: number }
   | ({ type: 'impact' } & ImpactEvent)
   | { type: 'hit'; owner: string; target: string; damage: number; zone: string; hp: number; /** Odkud zásah přišel (ukazatel směru u oběti). */ from?: [number, number, number] }
-  | { type: 'death'; id: string; killer: string | null; cause: 'weapon' | 'zone' | 'fall' | 'giveup'; lifeId: number }
+  | { type: 'death'; id: string; killer: string | null; cause: 'weapon' | 'zone' | 'fall' | 'giveup' | 'redeploy'; lifeId: number }
   | { type: 'downed'; id: string; killer: string | null; lifeId: number }
   | { type: 'fall'; id: string; damage: number; hp: number }
   | { type: 'throw'; id: string; kind: 'frag' | 'smoke' }
@@ -327,6 +327,22 @@ export class MatchSim {
     this.events.push({ type: 'downed', id: p.id, killer, lifeId: p.lifeId });
   }
 
+  /**
+   * Znovu nasadit (Redeploy, „sebevražda“): živý nebo vyřazený hráč okamžitě zemře a může se
+   * nasadit jinde / s jinou výbavou. Počítá se jako smrt (tým ztratí ticket), soupeř zabití nedostane.
+   */
+  redeploy(id: string): string | null {
+    const p = this.players.get(id);
+    if (!p) return 'neznámý hráč';
+    if (p.downed) {
+      this.finalizeDowned(p, 'giveup');
+      return null;
+    }
+    if (!p.alive) return 'nejsi nasazen';
+    this.kill(p, null, 'redeploy');
+    return null;
+  }
+
   /** Vzdát pomoc (žádost vyřazeného hráče) – okamžitá definitivní smrt. */
   giveUp(id: string): string | null {
     const p = this.players.get(id);
@@ -356,7 +372,7 @@ export class MatchSim {
     this.events.push({ type: 'revive', id: v.id, by: by.id, lifeId: v.lifeId });
   }
 
-  kill(p: SimPlayer, killer: string | null, cause: 'weapon' | 'zone' | 'fall' | 'giveup', fromDowned = false) {
+  kill(p: SimPlayer, killer: string | null, cause: 'weapon' | 'zone' | 'fall' | 'giveup' | 'redeploy', fromDowned = false) {
     if (!p.alive) return;
     p.alive = false;
     p.downed = false;

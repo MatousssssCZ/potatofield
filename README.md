@@ -152,6 +152,9 @@ Hod granátu: stisk = vytažení pojistky a nápřah, nápřah se drží, dokud 
 puštění = švih a hod (roznětka běží až od uvolnění). Granát se odráží od zdí, plotů i zábradlí,
 po dopadu se kutálí (zastaví ho valivý odpor a obrubníky) a při nárazu ťukne podle povrchu;
 při hodu odskočí pojistná páčka. Ostatní hráči vidí nápřah i švih.
+**Znovu nasadit (Redeploy):** v pauze (Esc) – postava hned zemře a otevře se obrazovka nasazení
+(jiné místo nebo výbava). Počítá se jako smrt (tým ztratí ticket, platí čekání), soupeř zabití nezíská;
+funguje i ve stavu vyřazení. Akce s potvrzením, rozhoduje server.
 
 **Velitel:** v pauze (Esc → Velitel, nebo C) se lze ucházet o roli; velitel posílá četám rozkazy
 klikem do mapy a používá UAV a sken s obnovou ze serveru. Každý příkaz má stav Odesláno →

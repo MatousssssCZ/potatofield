@@ -13,7 +13,7 @@ import type { InvView } from '../sim/inventory';
  */
 /** v3: vyřazení a oživení (stav života, vzdát pomoc), pravidla serveru ve welcome, /info. */
 /** v4: pomalu se měnící části snapshotu (čety, rozkaz, velitel, spawny, figuríny) chodí jen při změně. */
-export const PROTOCOL_VERSION = 5;
+export const PROTOCOL_VERSION = 6;
 /** Pole snapshotu posílaná jen při změně (a pro jistotu každé 2 s); klient si drží poslední hodnotu. */
 export const SLOW_SNAP_FIELDS = ['squads', 'order', 'command', 'spawns', 'dummies', 'cps'] as const;
 export const NET = {
@@ -41,6 +41,8 @@ export type ClientMsg =
   | { t: 'input'; frames: InputFrame[] }
   | { t: 'spawn'; id: string | null; weapon?: string }
   | { t: 'giveup' }
+  /** Znovu nasadit (sebevražda) – živý i vyřazený hráč. */
+  | { t: 'redeploy' }
   | { t: 'command'; op: 'apply' | 'resign' }
   | { t: 'ability'; kind: 'uav' | 'scan'; pos?: [number, number, number] }
   | { t: 'team'; team: Team }
@@ -243,6 +245,7 @@ export function parseClientMsg(raw: string): ClientMsg | null {
       return (RADIO_IDS as readonly string[]).includes(o.id as string) ? (o as ClientMsg) : null;
     case 'spot':
     case 'giveup':
+    case 'redeploy':
       return o as ClientMsg;
     case 'squad':
       return ['create', 'join', 'leave', 'lock', 'unlock', 'kick', 'promote'].includes(o.op as string) ? (o as ClientMsg) : null;

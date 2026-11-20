@@ -69,6 +69,8 @@ export interface GameDriver {
   teamFactions(): Record<Team, Faction>;
   /** Vyřazený hráč vzdá pomoc (definitivní smrt; autorita ji potvrdí). */
   giveUp(): void;
+  /** Znovu nasadit (sebevražda; autorita ji potvrdí). */
+  redeploy(): void;
   dummies(): Array<{ id: string; offset: number; down: boolean }>;
   /** Granáty ve světě (let, na zemi) a hořící dýmovnice (konec kouře v čase simulace). */
   grenades(): GrenadeView[];
@@ -94,6 +96,10 @@ export class OfflineDriver implements GameDriver {
 
   giveUp() {
     this.sim.giveUp(this.localId);
+  }
+
+  redeploy() {
+    this.sim.redeploy(this.localId);
   }
 
   teamFactions(): Record<Team, Faction> {

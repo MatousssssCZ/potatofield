@@ -176,6 +176,26 @@ describe('Conquest v simulaci zápasu', () => {
     expect(b.alive).toBe(true);
   });
 
+  it('živý hráč zemře: smrt s příčinou redeploy, ticket −1, nikdo nezíská zabití, pak se může nasadit', async () => {
+    const m = await sim();
+    const a = m.addPlayer('a', 'teamA');
+    const b = m.addPlayer('b', 'teamB');
+    m.requestSpawn('a', 'sa');
+    m.requestSpawn('b', 'sb');
+    idle(m, 0.5);
+    const t0 = m.conquest!.tickets.teamA;
+    m.events.length = 0;
+    expect(m.redeploy('a')).toBeNull();
+    expect(a.alive).toBe(false);
+    expect(a.deaths).toBe(1);
+    expect(b.kills).toBe(0);
+    expect(m.conquest!.tickets.teamA).toBe(t0 - 1);
+    expect(m.events.some((e) => e.type === 'death' && e.id === 'a' && e.cause === 'redeploy')).toBe(true);
+    expect(m.redeploy('a')).toMatch(/nejsi/); // mrtvý znovu nemůže
+    idle(m, 10.1);
+    expect(m.requestSpawn('a', 'sa')).toBeNull();
+  });
+
   it('hranice mapy: odpočet běží venku, uvnitř ne', async () => {
     const m = await sim();
     m.doc.zones.push({ id: 'hr', kind: 'boundary', center: [0, 5, 0], halfExtents: [40, 20, 40], yaw: 0, appliesTo: ['teamA', 'teamB'], countdown: 5 });
@@ -230,3 +250,4 @@ describe('Conquest v simulaci zápasu', () => {
     expect(JSON.stringify(m.doc)).toBe(snapshot);
   });
 });
+

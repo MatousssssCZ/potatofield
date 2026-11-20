@@ -697,7 +697,7 @@ export class Game {
         // Jména i hráčů, které zrovna nevidím (server je neposílá) – ze skóre.
         const nm = (id: string) => (id === this.driver.localId ? t('common.you') : (this.driver.remotes().find((r) => r.id === id)?.name ?? this.net?.scores.find((r) => r.id === id)?.name ?? id));
         const victim = nm(e.id);
-        const killer = e.killer ? nm(e.killer) : e.cause === 'zone' ? '⚠' : '↓';
+        const killer = e.killer ? nm(e.killer) : e.cause === 'zone' ? '⚠' : e.cause === 'redeploy' ? '↻' : '↓';
         // Jména zbarvená podle týmu (naši modře, nepřátelé červeně), jako kill feed v BF2.
         const teamOf = (id: string | null) => (!id ? null : id === this.driver.localId ? this.driver.local()?.team : (this.driver.remotes().find((r) => r.id === id)?.team ?? this.net?.scores.find((r) => r.id === id)?.team));
         const myTeam = this.driver.local()?.team;

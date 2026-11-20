@@ -145,6 +145,15 @@
   border-color: var(--pf-danger);
   color: #ffc6be;
 }
+/* Nebezpečné potvrzení (odpojit, znovu nasadit): červené tlačítko se světlým textem, ne červený text na žluté. */
+.pf-btn.primary.danger {
+  background: #b8382d;
+  border-color: #d9584b;
+  color: #fff;
+}
+.pf-btn.primary.danger:hover {
+  background: #cf4335;
+}
 .pf-btn.big {
   font-size: 1.25em;
   padding: 12px 36px;

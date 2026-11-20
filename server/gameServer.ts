@@ -401,6 +401,11 @@ export class GameServer {
         }
         break;
       }
+      case 'redeploy': {
+        const err = this.sim.redeploy(c.id);
+        if (err) this.reject(c, 'redeploy', err);
+        break;
+      }
       case 'giveup': {
         const err = this.sim.giveUp(c.id);
         if (err) this.reject(c, 'giveup', err);
