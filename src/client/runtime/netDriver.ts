@@ -169,8 +169,19 @@ export class NetDriver implements GameDriver {
   }
 
   /** Interpolace vzdálených hráčů v plynulém čase (zpoždění podle kolísání sítě, viz InterpClock). */
+  /** Hra se ptá na vzdálené hráče několikrát za snímek – v rámci ~4 ms se vrací týž seznam. */
+  private remoteCache: { at: number; snap: number; list: PlayerView[] } | null = null;
   remotes(): PlayerView[] {
     if (this.buffer.length === 0) return [];
+    const wall = performance.now();
+    const c = this.remoteCache;
+    if (c && wall - c.at < 4 && c.snap === this.buffer.length + this.buffer[this.buffer.length - 1].time) return c.list;
+    const list = this.buildRemotes();
+    this.remoteCache = { at: wall, snap: this.buffer.length + this.buffer[this.buffer.length - 1].time, list };
+    return list;
+  }
+
+  private buildRemotes(): PlayerView[] {
     const now = this.clock.renderTime(performance.now() / 1000);
     const last = this.buffer[this.buffer.length - 1];
     let a = this.buffer[0], b = last;
