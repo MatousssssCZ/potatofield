@@ -305,7 +305,8 @@ regH(199, 'vanSide', 'Převrácená dodávka', {
   describe: () => 'dodávka na boku, odhalený podvozek, velký otvor (propadlá střecha) do nákladového prostoru',
   generate(_p, seed) {
     // Leží na boku −X: dveře na té straně jsou zavřené (otevřené by trčely pod vůz a ten by visel nad zemí).
-    return pose(van(seed + 1, { burnt: true, closedDoor: -1 }), [0, 0, Math.PI / 2]);
+    // Po převrácení leží karoserie v x ∈ ⟨−2,3; 0⟩ – posun o půl výšky vozu ji vycentruje.
+    return pose(van(seed + 1, { burnt: true, closedDoor: -1 }), [0, 0, Math.PI / 2], [1.15, 0, 0]);
   },
 }, {
   target: [2.3, 5.1, 2.0],
