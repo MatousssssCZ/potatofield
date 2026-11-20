@@ -4,7 +4,7 @@ import { FACTION_LABEL, KIT_LABEL, PILOT, arsenalEntry, rulesOf, weaponFor, type
 import { kitItems } from '../../shared/config/kits';
 import type { PlayerView } from '../runtime/driver';
 import { t, type StringKey } from './i18n';
-import { button, fmtTime, h, tabs } from './kit';
+import { button, dialog, fmtTime, h, tabs } from './kit';
 import { DeployIntent, type DeployTarget, type IntentInput } from './deployIntent';
 import { MapView, type MapMarker } from './mapView';
 import { playArea, type TacticalMap } from './tactical';
@@ -85,6 +85,9 @@ export class DeployScreen {
   onDeploy: (spawnId: string | null, weaponId: string) => string | null = () => null;
   /** Zavřít obrazovku a vrátit se do hry (uživatelské gesto → pointer lock). */
   onClose: () => void = () => {};
+  /** Znovu nasadit (sebevražda) – nabízí se jen živému hráči; potvrzení varování řeší obrazovka. */
+  onRedeploy: (() => void) | null = null;
+  private lastLife: IntentInput['life'] = 'dead';
 
   constructor() {
     try {
@@ -236,6 +239,7 @@ export class DeployScreen {
     if (!this.target && avail.length) this.target = (avail.find((x) => x.id === this.lastTarget) ?? avail[0]).id;
     const sel = this.targets.find((x) => x.id === this.target) ?? null;
     const life: IntentInput['life'] = c.me.alive ? 'alive' : c.me.life === 'downed' ? 'downed' : 'dead';
+    this.lastLife = life;
     const wait = Math.max(0, c.me.respawnAt - c.simTime);
     const w = this.weapon(c);
     this.intent.update({ now: performance.now() / 1000, life, lifeId: c.me.lifeId ?? 0, waitLeft: life === 'dead' ? wait : Infinity, target: sel, kitOk: c.kits.includes(this.kit) && w.available !== false, roundKey: c.roundKey, ended: !!c.cq?.ended });
@@ -360,15 +364,26 @@ export class DeployScreen {
       this.lastKey = '';
     }, 'pf-btn primary big pf-deploy-go', { disabled: st.main === 'blocked', title: st.text || undefined });
     const secondary = life !== 'alive' ? button(t('common.close'), () => this.onClose(), 'pf-btn') : null;
+    // Živý hráč: „Znovu nasadit“ (s varováním) – zvolené místo a výbava se použijí hned po čekání.
+    const redeploy = life === 'alive' && this.onRedeploy ? button(t('pause.redeploy'), () => void this.confirmRedeploy(), 'pf-btn danger') : null;
     const bottom = h('footer', { class: 'pf-deploy-bottom' },
       h('div', { class: 'pf-deploy-sum' }, h('span', { class: 'pf-dim' }, `${t('deploy.class')}: `), h('b', {}, KIT_LABEL[this.kit])),
       h('div', { class: 'pf-deploy-sum' }, h('span', { class: 'pf-dim' }, `${t('deploy.place')}: `), h('b', {}, sel?.name ?? t('deploy.placeNone'))),
       h('div', { class: `pf-deploy-msg ${msg ? msgKind : ''}`, role: 'status', 'aria-live': 'polite' }, msg ? h('div', {}, msg) : null, st.text && st.text !== msg ? h('div', { class: msg ? 'pf-dim' : '' }, st.text) : null),
-      h('div', { class: 'pf-row-inline' }, secondary, main),
+      h('div', { class: 'pf-row-inline' }, redeploy, secondary, main),
     );
     this.root.replaceChildren(top, body, bottom);
     this.silKey = '';
     this.drawSil();
+  }
+
+  private async confirmRedeploy() {
+    const ch = await dialog(t('pause.redeployTitle'), h('p', { class: 'pf-warn' }, t('pause.redeployConfirm')), [
+      { id: 'no', label: t('common.cancel') },
+      { id: 'yes', label: t('pause.redeploy'), danger: true, primary: true },
+    ]);
+    // Mezitím mohl hráč zemřít nebo být vyřazen – potvrzení platí jen pro živého.
+    if (ch === 'yes' && this.lastLife === 'alive') this.onRedeploy?.();
   }
 
   /** Levý panel: classy v kompaktních řádcích, pod nimi kit (silueta, mířidla, výbava). */

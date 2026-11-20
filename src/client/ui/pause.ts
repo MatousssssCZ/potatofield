@@ -8,9 +8,6 @@ import { button, dialog, h } from './kit';
 export interface PauseHooks {
   resume(): void;
   deploy(): void;
-  /** Znovu nasadit (sebevražda) – jen když je hráč nasazený (živý nebo vyřazený). */
-  redeploy?: () => void;
-  canRedeploy?: () => boolean;
   leave(): void;
   settings(): HTMLElement;
   controls(): HTMLElement;
@@ -58,7 +55,6 @@ export class PauseMenu {
     const nav = h('nav', { class: 'pf-nav' },
       button(t('pause.resume'), () => k.resume(), 'pf-nav-item primary'),
       button(t('pause.deploy'), () => k.deploy(), 'pf-nav-item'),
-      k.redeploy && (k.canRedeploy?.() ?? true) ? button(t('pause.redeploy'), () => void this.confirmRedeploy(), 'pf-nav-item') : null,
       ...k.extra.map((x) => item(x.id, x.label)),
       item('settings', t('pause.settings')),
       item('controls', t('pause.controls')),
@@ -82,15 +78,6 @@ export class PauseMenu {
     else if (this.section === 'settings') this.body.replaceChildren(k.settings());
     else if (this.section === 'controls') this.body.replaceChildren(k.controls());
     else this.body.replaceChildren(h('p', { class: 'pf-dim' }, t('hud.lockHint')));
-  }
-
-  private async confirmRedeploy() {
-    const ch = await dialog(t('pause.redeployTitle'), h('p', { class: 'pf-warn' }, t('pause.redeployConfirm')), [
-      { id: 'no', label: t('common.cancel') },
-      { id: 'yes', label: t('pause.redeploy'), danger: true, primary: true },
-    ]);
-    // Mezitím mohl hráč zemřít nebo být vyřazen – potvrzení platí jen pro živého.
-    if (ch === 'yes' && (this.hooks.canRedeploy?.() ?? true)) this.hooks.redeploy?.();
   }
 
   private async confirmLeave() {

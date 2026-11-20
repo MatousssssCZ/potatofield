@@ -811,6 +811,9 @@ export class App {
       }
       return false;
     };
+    // Znovu nasadit (sebevražda) z obrazovky nasazení: server postavu zabije, obrazovka zůstane
+    // otevřená a po čekání nasadí na zvolené místo se zvolenou výbavou.
+    game.hud.deploy.onRedeploy = () => game.driver.redeploy();
     game.hud.deploy.onClose = () => {
       game.hud.deploy.close();
       // Tlačítko „Zpět do hry“ je uživatelské gesto → pointer lock (živý hráč).
@@ -827,17 +830,6 @@ export class App {
         // Nasazení za živa: změna výbavy platí pro příští nasazení (obrazovka to vysvětluje).
         this.pause?.show(false);
         game.hud.deploy.open(false);
-      },
-      redeploy: () => {
-        // Znovu nasadit: server postavu zabije; obrazovka nasazení se otevře jako po každé smrti.
-        this.pause?.show(false);
-        game.driver.redeploy();
-        game.hud.deploy.open(false);
-      },
-      canRedeploy: () => {
-        const me = game.driver.local();
-        // Jen živý hráč (vyřazený má „Vzdát pomoc“, mrtvý obrazovku nasazení).
-        return !!me && me.alive && me.life === 'alive' && !me.spectator;
       },
       leave: () => this.exitPlay(),
       settings: () => this.settingsView.open(),
