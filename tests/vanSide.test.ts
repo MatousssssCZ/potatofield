@@ -7,7 +7,7 @@ describe('H199 Převrácená dodávka', () => {
   it('leží bokem na zemi (žádné dveře pod karoserií, vůz nevisí)', () => {
     const def = allAssets().find((a) => a.assetId.endsWith('vanSide'))!;
     expect(def).toBeTruthy();
-    const parts = def.generate(def.params ? Object.fromEntries(def.params.map((p) => [p.key, p.default])) : {}, 7, {} as never) as Array<{ pos: number[]; rot?: number[]; size: number[]; collide?: boolean }>;
+    const parts = def.generate(def.params ? Object.fromEntries(def.params.map((p) => [p.key, p.default])) : {}, 7, {} as never, {} as never) as Array<{ pos: number[]; rot?: number[]; size: number[]; collide?: boolean }>;
     const minY = (p: (typeof parts)[number]) => {
       const q = quatFromEuler(p.rot?.[0] ?? 0, p.rot?.[1] ?? 0, p.rot?.[2] ?? 0);
       let m = Infinity;

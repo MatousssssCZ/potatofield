@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { separateCoplanar } from './zsep';
 import type { Part } from '../../world/parts';
 import { tileOf } from './materials';
 import { blobRadius, icosphere } from '../../world/blob';
@@ -384,6 +385,7 @@ export interface ObjectGeometry {
 export function buildObjectGeometry(parts: Part[], scale = 1): ObjectGeometry {
   const builders = new Map<string, { b: Builder; cast: boolean }>();
   const labels: ObjectGeometry['labels'] = [];
+  parts = separateCoplanar(parts);
   for (let p of parts) {
     if (p.render === false) continue;
     if (p.shape === 'label') {
