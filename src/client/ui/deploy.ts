@@ -87,6 +87,12 @@ export class DeployScreen {
   onClose: () => void = () => {};
   /** Znovu nasadit (sebevražda) – nabízí se jen živému hráči; potvrzení varování řeší obrazovka. */
   onRedeploy: (() => void) | null = null;
+  /** Změna týmu (síťová hra): obsazenost týmů a odeslání požadavku; null = volba se nenabízí. */
+  teamInfo: (() => { counts: Record<Team, number>; size: number; factions: Record<Team, Faction> } | null) | null = null;
+  onTeamSwitch: ((team: Team) => void) | null = null;
+  /** Odpojení ze serveru / ukončení tréninku (potvrzení řeší obrazovka). */
+  onLeave: (() => void) | null = null;
+  leaveNetwork = true;
   private lastLife: IntentInput['life'] = 'dead';
 
   constructor() {
@@ -247,12 +253,33 @@ export class DeployScreen {
     const lifeKey = `${c.me.lifeId}|${life}`;
     if (this.openedLife && lifeKey !== this.openedLife && life === 'alive' && this.autoOpened) this.close();
     this.renderChip(c, sel, wait);
-    const key = [this.tab, this.kit, fac, this.target, life, Math.ceil(wait), Math.ceil(c.me.downedLeft), this.message?.text, this.intent.phase, this.intent.note?.key, this.targets.map((x) => `${x.id}${x.available ? 1 : 0}${x.rel}`).join(), c.cq?.tickets.teamA, c.cq?.tickets.teamB, Math.floor(c.cq?.time ?? 0)].join('|');
+    // Celé překreslení jen při skutečné změně (třída, místo, stav, tým…). Odpočty, čas kola a tickety
+    // se mění každou sekundu – ty se přepisují jen jako text (jinak obrazovka problikávala).
+    const ti = this.teamInfo?.();
+    const key = [this.tab, this.kit, fac, this.target, life, wait > 0, c.me.downedLeft > 0, this.message?.text, this.intent.phase, this.intent.note?.key, JSON.stringify(this.intent.note?.vars ?? null), this.targets.map((x) => `${x.id}${x.available ? 1 : 0}${x.rel}`).join(), c.team, ti ? `${ti.counts.teamA}/${ti.counts.teamB}` : ''].join('|');
     if (this.visible && key !== this.lastKey) {
       this.lastKey = key;
       this.render(c, sel, life, wait);
     }
+    if (this.visible) this.updateLive(c, sel, life, wait);
     if (this.visible) this.updateMap(c);
+  }
+
+  /** Průběžné hodnoty bez překreslení: tickety, čas kola, odpočet nasazení / vyřazení. */
+  private updateLive(c: DeployContext, sel: DeployTarget | null, life: IntentInput['life'], wait: number) {
+    const set = (k: string, v: string) => {
+      const e = this.root.querySelector(`[data-live="${k}"]`);
+      if (e && e.textContent !== v) e.textContent = v;
+    };
+    const cq = c.cq;
+    if (cq) {
+      const enemy: Team = c.team === 'teamA' ? 'teamB' : 'teamA';
+      set('own', `${cq.tickets[c.team]}`);
+      set('enemy', `${cq.tickets[enemy]}`);
+      set('time', fmtTime(cq.timeLimit - cq.time));
+    }
+    const st = this.status(c, sel, life, wait);
+    if (st.text) set('status', st.text);
   }
 
   private autoOpened = false;
@@ -329,9 +356,9 @@ export class DeployScreen {
     const rel = (team: Team) => (team === c.team ? 'own' : 'enemy');
     const enemy: Team = c.team === 'teamA' ? 'teamB' : 'teamA';
     const top = h('header', { class: 'pf-deploy-top' },
-      h('div', { class: 'pf-deploy-title' }, h('b', {}, c.doc.name), h('span', { class: 'pf-dim' }, cq ? 'Conquest' : t('mode.free')), h('span', {}, `${t('deploy.team')}: `, h('b', { class: 'own' }, FACTION_LABEL[fac]))),
+      h('div', { class: 'pf-deploy-title' }, h('b', {}, c.doc.name), h('span', { class: 'pf-dim' }, cq ? 'Conquest' : t('mode.free')), this.teamSwitch(c, life) ?? h('span', {}, `${t('deploy.team')}: `, h('b', { class: 'own' }, FACTION_LABEL[fac]))),
       h('div', { class: 'pf-deploy-banner' }, t('deploy.selectSpawn')),
-      cq ? h('div', { class: 'pf-tickets tnum' }, h('span', { class: rel(c.team) }, `${cq.tickets[c.team]}`), h('span', { class: 'pf-dim' }, fmtTime(cq.timeLimit - cq.time)), h('span', { class: rel(enemy) }, `${cq.tickets[enemy]}`)) : h('div'),
+      cq ? h('div', { class: 'pf-tickets tnum' }, h('span', { class: rel(c.team), 'data-live': 'own' }, `${cq.tickets[c.team]}`), h('span', { class: 'pf-dim', 'data-live': 'time' }, fmtTime(cq.timeLimit - cq.time)), h('span', { class: rel(enemy), 'data-live': 'enemy' }, `${cq.tickets[enemy]}`)) : h('div'),
       tabs([{ id: 'deploy', label: t('deploy.tabDeploy') }, ...c.extraTabs.map((x) => ({ id: x.id, label: x.label }))], this.tab, (id) => {
         this.tab = id;
         this.lastKey = '';
@@ -366,15 +393,67 @@ export class DeployScreen {
     const secondary = life !== 'alive' ? button(t('common.close'), () => this.onClose(), 'pf-btn') : null;
     // Živý hráč: „Znovu nasadit“ (s varováním) – zvolené místo a výbava se použijí hned po čekání.
     const redeploy = life === 'alive' && this.onRedeploy ? button(t('pause.redeploy'), () => void this.confirmRedeploy(), 'pf-btn danger') : null;
+    const leave = this.onLeave ? button(`⏏ ${this.leaveNetwork ? t('pause.disconnect') : t('pause.leave')}`, () => void this.confirmLeave(), 'pf-btn pf-deploy-leave') : null;
     const bottom = h('footer', { class: 'pf-deploy-bottom' },
+      leave,
       h('div', { class: 'pf-deploy-sum' }, h('span', { class: 'pf-dim' }, `${t('deploy.class')}: `), h('b', {}, KIT_LABEL[this.kit])),
       h('div', { class: 'pf-deploy-sum' }, h('span', { class: 'pf-dim' }, `${t('deploy.place')}: `), h('b', {}, sel?.name ?? t('deploy.placeNone'))),
-      h('div', { class: `pf-deploy-msg ${msg ? msgKind : ''}`, role: 'status', 'aria-live': 'polite' }, msg ? h('div', {}, msg) : null, st.text && st.text !== msg ? h('div', { class: msg ? 'pf-dim' : '' }, st.text) : null),
+      h('div', { class: `pf-deploy-msg ${msg ? msgKind : ''}`, role: 'status', 'aria-live': 'polite' }, msg ? h('div', {}, msg) : null, st.text && st.text !== msg ? h('div', { class: msg ? 'pf-dim' : '', 'data-live': 'status' }, st.text) : null),
       h('div', { class: 'pf-row-inline' }, redeploy, secondary, main),
     );
     this.root.replaceChildren(top, body, bottom);
     this.silKey = '';
     this.drawSil();
+  }
+
+  /**
+   * Přepínač týmů v horní liště: oba týmy s počtem hráčů, vlastní zvýrazněný. Přechod mimo boj
+   * hned; za živa po potvrzení (postava zemře – počítá se jako smrt). Plný / přeplněný tým nelze.
+   */
+  private teamSwitch(c: DeployContext, life: IntentInput['life']): HTMLElement | null {
+    const info = this.teamInfo?.();
+    if (!info || !this.onTeamSwitch || c.me.spectator) return null;
+    const box = h('div', { class: 'pf-teamswitch', role: 'group', 'aria-label': t('deploy.team') });
+    box.append(h('span', { class: 'pf-dim' }, `${t('deploy.team')}:`));
+    for (const team of ['teamA', 'teamB'] as Team[]) {
+      const own = team === c.team;
+      const n = info.counts[team];
+      const full = n >= info.size;
+      const unbalanced = !own && n + 1 - (info.counts[c.team] - 1) > 1;
+      const label = h('span', {}, h('b', {}, FACTION_LABEL[info.factions[team]]), h('small', { class: 'tnum' }, ` ${n}/${info.size}`));
+      if (own) {
+        box.append(h('span', { class: `pf-team own ${team === 'teamA' ? 'a' : 'b'}`, title: t('deploy.teamYours') }, label));
+        continue;
+      }
+      const why = full ? t('deploy.teamFull') : unbalanced ? t('deploy.teamUnbalanced') : '';
+      const b = button('', () => void this.switchTo(team, life), `pf-team other ${team === 'teamA' ? 'a' : 'b'}`, { disabled: !!why, title: why || t('deploy.teamSwitch') });
+      b.replaceChildren(h('span', { class: 'pf-team-arrow', 'aria-hidden': 'true' }, '⇄'), label);
+      box.append(b);
+    }
+    return box;
+  }
+
+  private async switchTo(team: Team, life: IntentInput['life']) {
+    if (life !== 'dead') {
+      const ch = await dialog(t('deploy.teamSwitchTitle'), h('p', { class: 'pf-warn' }, t(life === 'alive' ? 'deploy.teamSwitchAlive' : 'deploy.teamSwitchDowned')), [
+        { id: 'no', label: t('common.cancel') },
+        { id: 'yes', label: t('deploy.teamSwitch'), danger: true, primary: true },
+      ]);
+      if (ch !== 'yes') return;
+      if (this.lastLife === 'alive') this.onRedeploy?.();
+      else if (this.lastLife !== 'dead') return; // vyřazený: nejdřív „Vzdát pomoc“
+    }
+    this.onTeamSwitch?.(team);
+    this.lastKey = '';
+  }
+
+  private async confirmLeave() {
+    const net = this.leaveNetwork;
+    const ch = await dialog(net ? t('pause.disconnect') : t('pause.leave'), net ? t('pause.confirmLeave') : t('pause.confirmTraining'), [
+      { id: 'no', label: t('common.cancel') },
+      { id: 'yes', label: net ? t('pause.disconnect') : t('pause.leave'), danger: true, primary: true },
+    ]);
+    if (ch === 'yes') this.onLeave?.();
   }
 
   private async confirmRedeploy() {

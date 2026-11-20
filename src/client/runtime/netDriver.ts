@@ -227,6 +227,22 @@ export class NetDriver implements GameDriver {
     this.net.send({ t: 'redeploy' });
   }
 
+  switchTeam(team: Team) {
+    this.net.send({ t: 'team', team });
+  }
+
+  /** Obsazenost týmů (výsledková tabulka chodí jednou za sekundu) a velikost týmu ze serveru. */
+  teamInfo(): { counts: Record<Team, number>; size: number; factions: Record<Team, Faction> } | null {
+    const w = this.net.welcome;
+    if (!w || !this.factions) return null;
+    const counts: Record<Team, number> = { teamA: 0, teamB: 0 };
+    for (const s of this.scores) counts[s.team]++;
+    const me = this.local();
+    // Vlastní tým hned po přechodu (tabulka se obnoví až za chvíli).
+    if (me && !this.scores.some((s) => s.id === this.localId)) counts[me.team]++;
+    return { counts, size: w.rules.teamSize, factions: this.factions };
+  }
+
   giveUp() {
     this.net.send({ t: 'giveup' });
   }

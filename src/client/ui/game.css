@@ -2071,3 +2071,58 @@ body.mode-play .tui-log div {
   width: 28px;
   height: 28px;
 }
+
+/* Přepínač týmů v horní liště nasazení: vlastní tým zvýrazněný, druhý jako tlačítko s ⇄. */
+.pf-teamswitch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 6px;
+}
+.pf-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--pf-line);
+  border-radius: 3px;
+  font: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.pf-team b {
+  font-size: 1em !important;
+}
+.pf-team.own.a {
+  background: rgba(70, 150, 230, 0.22);
+  border-color: #5eb3ff;
+  color: #9fd2ff;
+}
+.pf-team.own.b {
+  background: rgba(230, 80, 70, 0.22);
+  border-color: #ee6a5e;
+  color: #ffb3aa;
+}
+.pf-team.other {
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--pf-text);
+  cursor: pointer;
+}
+.pf-team.other:hover:not(:disabled) {
+  border-color: var(--pf-accent);
+  color: var(--pf-accent);
+}
+.pf-team.other:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.pf-team-arrow {
+  font-size: 1.1em;
+}
+.pf-deploy-leave {
+  margin-right: auto;
+}
+.pf-deploy-bottom {
+  grid-template-columns: auto auto minmax(180px, auto) minmax(0, 1fr) auto;
+}

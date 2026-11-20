@@ -814,6 +814,13 @@ export class App {
     // Znovu nasadit (sebevražda) z obrazovky nasazení: server postavu zabije, obrazovka zůstane
     // otevřená a po čekání nasadí na zvolené místo se zvolenou výbavou.
     game.hud.deploy.onRedeploy = () => game.driver.redeploy();
+    // Změna týmu a odpojení přímo z obrazovky nasazení (pauza je za ní nedostupná).
+    if (game.driver.switchTeam && game.driver.teamInfo) {
+      game.hud.deploy.onTeamSwitch = (team) => game.driver.switchTeam!(team);
+      game.hud.deploy.teamInfo = () => game.driver.teamInfo!();
+    }
+    game.hud.deploy.leaveNetwork = !!net;
+    game.hud.deploy.onLeave = () => this.exitPlay();
     game.hud.deploy.onClose = () => {
       game.hud.deploy.close();
       // Tlačítko „Zpět do hry“ je uživatelské gesto → pointer lock (živý hráč).

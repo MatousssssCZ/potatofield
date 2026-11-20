@@ -156,6 +156,10 @@ při hodu odskočí pojistná páčka. Ostatní hráči vidí nápřah i švih.
 „Nasazení“), jen pro živého hráče. Po potvrzení varování („počítá se jako smrt, tým přijde o bod“)
 postava hned zemře a obrazovka zůstane otevřená pro nové nasazení. Soupeř zabití nezíská. Vyřazený
 hráč místo toho použije „Vzdát pomoc“. Rozhoduje server.
+**Změna týmu a odpojení:** na obrazovce nasazení (síťová hra) je v horní liště přepínač týmů s počty
+hráčů (vlastní tým zvýrazněný, druhý s ⇄). Mimo boj přechod hned, za živa po potvrzení (postava
+zemře – počítá se jako smrt). Plný tým ani tým, který by měl o 2 hráče víc, nelze. Vlevo dole
+„Odpojit“ (v tréninku „Ukončit trénink“) s potvrzením.
 
 **Velitel:** v pauze (Esc → Velitel, nebo C) se lze ucházet o roli; velitel posílá četám rozkazy
 klikem do mapy a používá UAV a sken s obnovou ze serveru. Každý příkaz má stav Odesláno →

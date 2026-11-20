@@ -71,6 +71,9 @@ export interface GameDriver {
   giveUp(): void;
   /** Znovu nasadit (sebevražda; autorita ji potvrdí). */
   redeploy(): void;
+  /** Přechod do druhého týmu (jen mimo boj; síťová hra) a obsazenost týmů. */
+  switchTeam?(team: Team): void;
+  teamInfo?(): { counts: Record<Team, number>; size: number; factions: Record<Team, Faction> } | null;
   dummies(): Array<{ id: string; offset: number; down: boolean }>;
   /** Granáty ve světě (let, na zemi) a hořící dýmovnice (konec kouře v čase simulace). */
   grenades(): GrenadeView[];

@@ -413,9 +413,14 @@ export class GameServer {
       }
       case 'team': {
         if (p.alive || p.downed) return this.reject(c, 'team', 'tým lze změnit jen mrtvý / před nasazením');
-        if (m.team !== p.team && [...this.sim.players.values()].filter((o) => o.team === m.team).length >= this.teamSize) return this.reject(c, 'team', 'tým je plný');
+        if (m.team === p.team) return this.send(c, { t: 'ack', what: 'team', detail: m.team });
+        const count = (t: string) => [...this.sim.players.values()].filter((o) => o.team === t && !this.clients.get(o.id)?.spectator).length;
+        if (count(m.team) >= this.teamSize) return this.reject(c, 'team', 'tým je plný');
+        // Vyrovnanost: do týmu, který by měl o 2 a víc hráčů víc, přejít nelze.
+        if (count(m.team) + 1 - (count(p.team) - 1) > 1) return this.reject(c, 'team', 'týmy by byly nevyrovnané');
         p.team = m.team;
         this.team.setTeam(c.id, m.team);
+        this.send(c, { t: 'ack', what: 'team', detail: m.team });
         break;
       }
       case 'chat': {
