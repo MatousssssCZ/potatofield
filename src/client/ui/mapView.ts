@@ -241,6 +241,8 @@ export class MapView {
     }
     const g = c.getContext('2d')!;
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    // Popisky rostou s velikostí textu rozhraní (Nastavení → Rozhraní); dřív pevných 11–12 px.
+    const fs = Math.max(13, parseFloat(getComputedStyle(c).getPropertyValue('--pf-fs')) || 15);
     g.fillStyle = '#151b1b';
     g.fillRect(0, 0, W, H);
     this.map.draw(g, this.cx, this.cz, W / 2, H / 2, this.scale);
@@ -323,12 +325,13 @@ export class MapView {
       if (m.selectable && m.available === false) noEntry(g, x + 9, y - 9);
       const name = [m.letter, m.label].filter(Boolean).join(' · ');
       if (name) {
-        g.font = `${sel ? 700 : 600} 12px "Barlow Semi Condensed", sans-serif`;
+        g.font = `${sel ? 700 : 600} ${Math.round(fs * 1.05)}px "Barlow Semi Condensed", sans-serif`;
         // Popisky se nepřekrývají: posun dolů, dokud nekoliduje s již položeným.
         const w = g.measureText(name).width;
         let ly = y;
-        for (let k = 0; k < 6 && labels.some(([lx, lyy, lw, lh]) => x + 14 < lx + lw && x + 14 + w > lx && ly - 7 < lyy + lh && ly + 7 > lyy); k++) ly += 15;
-        labels.push([x + 14, ly - 7, w, 14]);
+        const lh2 = Math.round(fs * 0.6);
+        for (let k = 0; k < 6 && labels.some(([lx, lyy, lw, lh]) => x + 14 < lx + lw && x + 14 + w > lx && ly - lh2 < lyy + lh && ly + lh2 > lyy); k++) ly += lh2 * 2 + 3;
+        labels.push([x + 14, ly - lh2, w, lh2 * 2]);
         g.lineWidth = 3;
         g.strokeStyle = 'rgba(21,27,27,0.85)';
         g.strokeText(name, x + 14, ly);
@@ -344,10 +347,10 @@ export class MapView {
     g.moveTo(12, H - 14);
     g.lineTo(12 + px, H - 14);
     g.stroke();
-    g.font = '600 11px "Barlow Semi Condensed", sans-serif';
+    g.font = `600 ${Math.round(fs * 0.9)}px "Barlow Semi Condensed", sans-serif`;
     g.fillStyle = '#e5e7d8';
-    g.fillText('50 m', 16 + px, H - 14);
-    g.fillText('N ↑', 12, 16);
+    g.fillText('50 m', 16 + px, H - 10);
+    g.fillText('N ↑', 12, 8 + fs);
   }
 }
 

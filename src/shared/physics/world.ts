@@ -28,6 +28,8 @@ const groups = (membership: number, filter: number) => ((membership & 0xffff) <<
 
 export const MOVE_QUERY_GROUPS = groups(GROUP.PLAYER, GROUP.WORLD | GROUP.MOVE_ONLY);
 export const BULLET_QUERY_GROUPS = groups(GROUP.BULLET, GROUP.WORLD | GROUP.BULLET_ONLY);
+/** Granát: odráží se od všeho – zdí, plotů z pletiva, zábradlí i krytů jen pro kulky. */
+export const GRENADE_QUERY_GROUPS = groups(GROUP.BULLET, GROUP.WORLD | GROUP.BULLET_ONLY | GROUP.MOVE_ONLY);
 
 export interface RayHit {
   distance: number;

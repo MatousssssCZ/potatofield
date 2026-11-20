@@ -7,6 +7,7 @@ import type { MatchSim, SimPlayer } from './match';
 import type { V3 } from '../math';
 import { switchTo } from './inventory';
 import { rulesOf } from '../config/arsenal';
+import { GRENADE_QUERY_GROUPS } from '../physics/world';
 
 /**
  * Akce nestřelných položek na serveru (autorita): nůž (útok zblízka), granáty, nástroje.
@@ -160,7 +161,7 @@ function release(sim: MatchSim, p: SimPlayer, ws: WeaponState, t: number, kind: 
   // Nevyhodit skrz zeď těsně před hráčem.
   const toStart = sub(start, eye);
   const l = len(toStart);
-  const wall = sim.phys.castRay(eye, { x: toStart.x / l, y: toStart.y / l, z: toStart.z / l }, l);
+  const wall = sim.phys.castRay(eye, { x: toStart.x / l, y: toStart.y / l, z: toStart.z / l }, l + ITEM_RULES.bounce.radius, GRENADE_QUERY_GROUPS);
   if (wall) start = { x: eye.x + (toStart.x / l) * Math.max(0, wall.distance - 0.08), y: eye.y + (toStart.y / l) * Math.max(0, wall.distance - 0.08), z: eye.z + (toStart.z / l) * Math.max(0, wall.distance - 0.08) };
   const v = p.state.vel;
   sim.grenades.push({
@@ -190,8 +191,12 @@ export function stepGrenades(sim: MatchSim, dt: number) {
       const l = len(step);
       if (l > 1e-6) {
         const d = { x: step.x / l, y: step.y / l, z: step.z / l };
-        const hit = sim.phys.castRay(n.pos, d, l + B.radius);
-        if (hit) {
+        const hit = sim.phys.castRay(n.pos, d, l + B.radius, GRENADE_QUERY_GROUPS);
+        if (hit && hit.distance < 1e-5 && Math.hypot(hit.normal.x, hit.normal.y, hit.normal.z) < 0.5) {
+          // Začátek kroku uvnitř překážky (zaklíněný v zábradlí, odhozený těsně u zdi): neprojít dál,
+          // odrazit zpět směrem, odkud přiletěl.
+          n.vel = { x: -n.vel.x * B.restitution, y: Math.max(0, -n.vel.y) * B.restitution, z: -n.vel.z * B.restitution };
+        } else if (hit) {
           const nn = hit.normal;
           const vn = dot(n.vel, nn);
           // Odraz: normálová složka × restituce, tečná × tření.

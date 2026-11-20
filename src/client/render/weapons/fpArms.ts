@@ -79,6 +79,7 @@ export class FPArms {
       const m = o as THREE.SkinnedMesh;
       if (!m.isSkinnedMesh) return;
       m.geometry = armsOnly(m.geometry, m.skeleton, new THREE.Color(gloveColor));
+      thickenArms(m.geometry, m.skeleton, m.bindMatrix);
       m.material = [sleeve, glove];
       m.frustumCulled = false;
       m.castShadow = false;
@@ -128,11 +129,19 @@ export class FPArms {
     for (const side of this.sides) {
       const h = side.s === 'r' ? right : left;
       const fr = h.frame();
-      const shoulder = space.localToWorld((side.s === 'r' ? shoulders.r : shoulders.l).clone());
+      let shoulder = space.localToWorld((side.s === 'r' ? shoulders.r : shoulders.l).clone());
       const pole = space.localToWorld((side.s === 'r' ? elbows.r : elbows.l).clone());
       // Dvoukloubová IK: loket v rovině rameno–zápěstí–pól.
       const a = side.lenUpper, b = side.lenLower;
-      const toW = fr.wrist.clone().sub(shoulder);
+      let toW = fr.wrist.clone().sub(shoulder);
+      // Úchop dál, než paže dosáhne (levá ruka na předpažbí dlouhé pušky): rameno (mimo záběr) se
+      // posune za rukou. Jinak by ruka stála na úchopu a kůže mezi předloktím a dlaní se natáhla
+      // do tenkého „krčku“.
+      const reach = (a + b) * 0.97;
+      if (toW.length() > reach) {
+        shoulder = fr.wrist.clone().addScaledVector(toW.normalize(), -reach);
+        toW = fr.wrist.clone().sub(shoulder);
+      }
       const d = Math.min(toW.length(), (a + b) * 0.999);
       const dir = toW.clone().normalize();
       const cosA = (a * a + d * d - b * b) / (2 * a * d);
@@ -171,6 +180,63 @@ export class FPArms {
   dispose() {
     this.root.removeFromParent();
   }
+}
+
+/**
+ * Mannequin má štíhlé paže; v první osobě s rukávem a výstrojí působily nepřirozeně hubeně.
+ * Vrcholy rukávu se odsunou od osy kosti (předloktí víc, k zápěstí méně, nadloktí méně),
+ * ruka a prsty zůstanou. Počítá se v klidové póze (prostor po bindMatrix).
+ */
+const THICKEN = { lower: 0.28, upper: 0.15, wrist: 0.3 };
+function thickenArms(g: THREE.BufferGeometry, sk: THREE.Skeleton, bind: THREE.Matrix4) {
+  const pos = g.getAttribute('position') as THREE.BufferAttribute;
+  const si = g.getAttribute('skinIndex') as THREE.BufferAttribute, sw = g.getAttribute('skinWeight') as THREE.BufferAttribute;
+  const at = (name: string) => {
+    const i = sk.bones.findIndex((b) => b.name === name);
+    return i < 0 ? null : { i, p: new THREE.Vector3().setFromMatrixPosition(sk.boneInverses[i].clone().invert()) };
+  };
+  const bindInv = bind.clone().invert();
+  for (const s of ['l', 'r']) {
+    const up = at(`upperarm_${s}`), lo = at(`lowerarm_${s}`), hd = at(`hand_${s}`), mid = at(`middle_01_${s}`);
+    if (!up || !lo || !hd) continue;
+    const segs: Array<{ bone: number; a: THREE.Vector3; b: THREE.Vector3; k: number; taper: number; only?: number }> = [
+      { bone: lo.i, a: lo.p, b: hd.p, k: THICKEN.lower, taper: 0.3 },
+      { bone: up.i, a: up.p, b: lo.p, k: THICKEN.upper, taper: 0 },
+    ];
+    // Zápěstí: část ruky před dlaní je navázaná na kost ruky, která se pro úchop zmenšuje
+    // (HAND_SCALE) – bez rozšíření zůstal mezi rukávem a dlaní tenký „krček“. Dlaň a prsty beze změny.
+    if (mid) {
+      const dir = mid.p.clone().sub(hd.p);
+      segs.push({ bone: hd.i, a: hd.p.clone().addScaledVector(dir, -0.6), b: hd.p.clone().addScaledVector(dir, 0.35), k: THICKEN.wrist, taper: 1, only: 0.35 });
+    }
+    const v = new THREE.Vector3(), ab = new THREE.Vector3(), c = new THREE.Vector3();
+    for (let n = 0; n < pos.count; n++) {
+      let dx = 0, dy = 0, dz = 0, moved = false;
+      v.fromBufferAttribute(pos, n).applyMatrix4(bind);
+      for (const sg of segs) {
+        let w = 0;
+        for (let k = 0; k < 4; k++) if (si.getComponent(n, k) === sg.bone) w += sw.getComponent(n, k);
+        if (w <= 0) continue;
+        ab.subVectors(sg.b, sg.a);
+        const raw = c.subVectors(v, sg.a).dot(ab) / ab.lengthSq();
+        // Segment zápěstí: jen vrcholy na úseku (dál k prstům = dlaň, ta zůstává).
+        if (sg.only !== undefined && raw > 1) continue;
+        const t = THREE.MathUtils.clamp(raw, 0, 1);
+        c.copy(sg.a).addScaledVector(ab, t);
+        const f = sg.k * (1 - sg.taper * t) * w;
+        dx += (v.x - c.x) * f;
+        dy += (v.y - c.y) * f;
+        dz += (v.z - c.z) * f;
+        moved = true;
+      }
+      if (!moved) continue;
+      v.set(v.x + dx, v.y + dy, v.z + dz).applyMatrix4(bindInv);
+      pos.setXYZ(n, v.x, v.y, v.z);
+    }
+  }
+  // Normály se nepřepočítávají: radiální rozšíření jejich směr zachová (přepočet by dal hranaté plochy).
+  pos.needsUpdate = true;
+  g.computeBoundingSphere();
 }
 
 /** Geometrie jen s trojúhelníky paží (dominantní kost), rozdělená na rukáv a ruku. */

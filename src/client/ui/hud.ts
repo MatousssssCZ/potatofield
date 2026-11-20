@@ -256,8 +256,8 @@ export class Hud {
       const s = me.state;
       const low = me.hp <= 30;
       e['h-vitals'].replaceChildren(
-        h('div', { class: `h-hp${low ? ' low' : ''}` }, h('span', { class: 'h-stance', title: t(`stance.${s.stance}` as never) }, stanceGlyph(s.stance)), h('b', { class: 'tnum' }, String(Math.ceil(me.hp))), h('div', { class: 'h-bar' }, h('i', { style: { width: `${Math.max(0, Math.min(100, me.hp))}%` } }))),
-        h('div', { class: `h-stam${s.sprintLocked ? ' locked' : ''}${s.stamina < 99.5 ? '' : ' full'}` }, h('div', { class: 'h-bar thin' }, h('i', { style: { width: `${s.stamina}%` } }))),
+        h('div', { class: `h-hp${low ? ' low' : ''}` }, h('span', { class: 'h-stance', title: t(`stance.${s.stance}` as never) }, stanceGlyph(s.stance)), h('b', { class: 'tnum' }, String(Math.ceil(me.hp))), segBar(me.hp / 100, 20)),
+        h('div', { class: `h-stam${s.sprintLocked ? ' locked' : ''}${s.stamina < 99.5 ? '' : ' full'}` }, segBar(s.stamina / 100, 20, 'thin')),
       );
     } else e['h-vitals'].replaceChildren();
     this.renderSquad(c);
@@ -272,7 +272,7 @@ export class Hud {
         // Režim jen podle skutečných možností zbraně.
         const modes = rulesOf(w.weaponId).modes;
         const magMax = Math.max(1, rulesOf(w.weaponId).magazine);
-        e['h-ammo'].replaceChildren(h('b', {}, String(w.mag)), h('span', {}, `/ ${w.reserve}`), h('div', { class: 'h-bar thin h-magbar' }, h('i', { style: { width: `${Math.min(100, (w.mag / magMax) * 100)}%` } })), h('small', {}, `${modes.length > 1 || w.mode === 'auto' ? (w.mode === 'auto' ? 'AUTO' : 'SEMI') : 'SEMI'}${act ? ` · ${act}` : ''}`));
+        e['h-ammo'].replaceChildren(h('b', {}, String(w.mag)), h('span', {}, `/ ${w.reserve}`), segBar(w.mag / magMax, magMax <= 40 ? magMax : 30, 'thin h-magbar'), h('small', {}, `${modes.length > 1 || w.mode === 'auto' ? (w.mode === 'auto' ? 'AUTO' : 'SEMI') : 'SEMI'}${act ? ` · ${act}` : ''}`));
       } else {
         const name = it ? t(`item.${it.kind}` as StringKey) : w.weaponId;
         e['h-ammo'].replaceChildren(it?.max !== undefined ? h('b', {}, String(w.mag)) : h('span'), h('small', {}, `${name}${act ? ` · ${act}` : ''}`));
@@ -574,6 +574,19 @@ export class Hud {
     this.mapOverlay.remove();
     for (const id of ['h-tl', 'h-tr', 'h-bl', 'h-br', 'h-score', 'h-hit', 'h-hurt', 'h-spec', 'h-killer', 'h-dirs', 'h-center', 'h-zone', 'h-downed', 'h-end']) document.getElementById(id)?.remove();
   }
+}
+
+/**
+ * Dílkový ukazatel (zdraví, výdrž, zásobník): skutečné dílky se stejnou mezerou, ne opakovaný
+ * přechod – ten se při zvětšení HUD převzorkuje a mezery mezi dílky se rozjedou.
+ * Částečně plný poslední dílek je tlumený.
+ */
+function segBar(frac: number, n: number, cls = '') {
+  const f = Math.max(0, Math.min(1, frac)) * n;
+  const full = Math.floor(f + 1e-6);
+  const cells: HTMLElement[] = [];
+  for (let i = 0; i < n; i++) cells.push(h('i', { class: i < full ? 'on' : i === full && f - full > 0.05 ? 'part' : '' }));
+  return h('div', { class: `h-seg${cls ? ` ${cls}` : ''}${n > 24 ? ' fine' : ''}` }, ...cells);
 }
 
 function stanceGlyph(s: string) {
