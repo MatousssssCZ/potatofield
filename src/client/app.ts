@@ -820,6 +820,14 @@ export class App {
       game.hud.deploy.teamInfo = () => game.driver.teamInfo!();
     }
     game.hud.deploy.leaveNetwork = !!net;
+    // Nasadit: obrazovku zavřít a myš zamknout ještě v rámci kliknutí – po spawnu se rovnou hraje
+    // (čekání na nasazení ukazuje štítek ve hře; Enter otevře obrazovku znovu).
+    game.hud.deploy.onDeployGesture = () => {
+      game.hud.deploy.close();
+      // Zámek synchronně v rámci kliknutí (celá obrazovka by gesto spotřebovala), pak celá obrazovka.
+      if (!this.cursorUi()) this.session?.input.requestLock();
+      void this.lockPointer();
+    };
     game.hud.deploy.onLeave = () => this.exitPlay();
     game.hud.deploy.onClose = () => {
       game.hud.deploy.close();

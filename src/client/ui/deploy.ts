@@ -92,6 +92,11 @@ export class DeployScreen {
   onTeamSwitch: ((team: Team) => void) | null = null;
   /** Odpojení ze serveru / ukončení tréninku (potvrzení řeší obrazovka). */
   onLeave: (() => void) | null = null;
+  /**
+   * Potvrzené nasazení (klik / Enter / dvojklik = uživatelské gesto): aplikace hned zavře obrazovku
+   * a zamkne myš – jen během gesta to prohlížeč dovolí; po potvrzení serverem už by bylo pozdě.
+   */
+  onDeployGesture: (() => void) | null = null;
   leaveNetwork = true;
   private lastLife: IntentInput['life'] = 'dead';
 
@@ -132,6 +137,8 @@ export class DeployScreen {
   reject(reason: string) {
     this.intent.reject(reason);
     this.lastKey = '';
+    // Obrazovka mohla být po potvrzení zavřená (hráč už „ve hře“) – důvod musí být vidět.
+    if (!this.visible) this.show(true);
   }
 
   dispose() {
@@ -389,6 +396,7 @@ export class DeployScreen {
       this.message = null;
       this.intent.confirm(inp());
       this.lastKey = '';
+      if (this.intent.phase !== 'idle') this.onDeployGesture?.();
     }, 'pf-btn primary big pf-deploy-go', { disabled: st.main === 'blocked', title: st.text || undefined });
     const secondary = life !== 'alive' ? button(t('common.close'), () => this.onClose(), 'pf-btn') : null;
     // Živý hráč: „Znovu nasadit“ (s varováním) – zvolené místo a výbava se použijí hned po čekání.
