@@ -72,7 +72,7 @@ export function resolveRequest(inv: Inventory, req: number): number | null {
 
 /** Probíhá akce, kterou přepnutí nesmí přerušit (hod, použití nástroje, útok nožem). */
 export function switchLocked(ws: WeaponState) {
-  return ws.action === 'throw' || ws.action === 'use' || ws.action === 'attack';
+  return ws.action === 'throw' || ws.action === 'windup' || ws.action === 'use' || ws.action === 'attack';
 }
 
 /**

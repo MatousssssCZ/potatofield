@@ -257,12 +257,18 @@ export class SoldierAnimator {
       const off = new THREE.Vector3(pistol ? -0.1 : 0.0, pistol ? -0.05 : -0.2, -reach);
       // Akce s předmětem (časy ze simulace): hod = nápřah vzad a švih vpřed, nůž = bodnutí,
       // lékárna / munice / defibrilátor = sehnutí ruky dolů před tělo s drobnou prací.
-      if (!pistol && inp.life === 'alive' && inp.actionEnd > inp.actionStart && (inp.action === 'throw' || inp.action === 'attack' || inp.action === 'use')) {
+      if (!pistol && inp.life === 'alive' && inp.actionEnd > inp.actionStart && (inp.action === 'throw' || inp.action === 'windup' || inp.action === 'attack' || inp.action === 'use')) {
         const k = clamp((simTime - inp.actionStart) / (inp.actionEnd - inp.actionStart), 0, 1);
-        if (inp.action === 'throw') {
-          const wind = ss(k, 0, 0.35) * (1 - ss(k, 0.4, 0.55));
-          const swing = ss(k, 0.4, 0.6) * (1 - ss(k, 0.75, 1));
-          off.add(new THREE.Vector3(0.12 * wind, 0.42 * wind + 0.25 * swing, 0.3 * wind - 0.38 * swing));
+        if (inp.action === 'windup') {
+          // Pojistka u hrudi → nápřah za hlavu; po dokončení se nápřah drží (s drobným pohupem).
+          const pin = ss(k, 0, 0.45) * (1 - ss(k, 0.5, 0.75));
+          const wind = ss(k, 0.45, 1);
+          const sway = k >= 1 ? Math.sin(simTime * 3) * 0.01 : 0;
+          off.add(new THREE.Vector3(-0.08 * pin + 0.12 * wind, 0.12 * pin + 0.42 * wind + sway, -0.05 * pin + 0.3 * wind));
+        } else if (inp.action === 'throw') {
+          // Švih z nápřahu vpřed a dolů, dokončení pohybu, návrat.
+          const swing = ss(k, 0, 0.3), follow = ss(k, 0.3, 0.6), back = ss(k, 0.6, 1);
+          off.add(new THREE.Vector3(0.12 * (1 - swing) - 0.06 * follow * (1 - back), 0.42 * (1 - swing) + 0.12 * swing * (1 - follow) - 0.12 * follow * (1 - back), 0.3 * (1 - swing) - 0.42 * swing * (1 - back)));
         } else if (inp.action === 'attack') {
           const jab = Math.sin(ss(k, 0, 0.6) * Math.PI);
           off.add(new THREE.Vector3(-0.08 * jab, 0.1 * jab, -0.34 * jab));
@@ -270,7 +276,7 @@ export class SoldierAnimator {
           const work = Math.sin(k * Math.PI);
           off.add(new THREE.Vector3(-0.06 * work, -0.22 * work + Math.sin(k * 22) * 0.015 * work, -0.12 * work));
         }
-        this.layers.upper = inp.action === 'throw' ? 'hod' : inp.action === 'attack' ? 'nůž' : 'použití předmětu';
+        this.layers.upper = inp.action === 'throw' ? 'hod' : inp.action === 'windup' ? 'nápřah granátu' : inp.action === 'attack' ? 'nůž' : 'použití předmětu';
       }
       weapon.position.copy(shoulder).add(off.applyQuaternion(wq));
     }

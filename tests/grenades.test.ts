@@ -29,6 +29,23 @@ async function setup(weapon = 'svd', enemyAt = -9) {
 }
 
 describe('granáty', () => {
+  it('nápřah: drží se, dokud hráč drží spoušť; puštění = švih a hod, roznětka běží až od uvolnění', async () => {
+    const { m, a } = await setup('svd');
+    const tick = (held: boolean, pressed = false, slot = 0) => m.step(new Map([['a', { ...emptyInput(m.tick), held: held ? BTN.FIRE : 0, pressed: pressed ? BTN.FIRE : 0, slot }], ['b', emptyInput(m.tick)]]));
+    tick(false, false, 4);
+    for (let i = 0; i < 40; i++) tick(false);
+    tick(true, true);
+    expect(a.weapon.action).toBe('windup');
+    for (let i = 0; i < 180; i++) tick(true); // 3 s držení
+    expect(a.weapon.action).toBe('windup');
+    expect(m.grenades.length).toBe(0);
+    tick(false);
+    expect(a.weapon.action).toBe('throw');
+    for (let i = 0; i < Math.ceil(ITEM_RULES.throw.releaseAt * 60) + 1; i++) tick(false);
+    expect(m.grenades.length).toBe(1);
+    expect(m.grenades[0].fuseAt - m.time).toBeGreaterThan(ITEM_RULES.frag.fuse - 0.1);
+  });
+
   it('hod: granát vznikne v okamžiku uvolnění, počet klesne; po posledním kusu zpět na primární zbraň', async () => {
     const { m, a, step } = await setup('svd');
     step(1, { slot: 4 });
@@ -36,8 +53,8 @@ describe('granáty', () => {
     expect(a.weapon.weaponId).toBe('frag');
     expect(a.weapon.mag).toBe(1);
     step(1, { pressed: BTN.FIRE });
-    expect(a.weapon.action).toBe('throw');
-    step(Math.ceil(ITEM_RULES.throw.releaseAt * 60) + 1);
+    expect(a.weapon.action).toBe('windup');
+    step(Math.ceil((ITEM_RULES.throw.prep + ITEM_RULES.throw.releaseAt) * 60) + 1);
     expect(m.grenades.length).toBe(1);
     expect(a.inv!.states[4].mag).toBe(0);
     step(40);

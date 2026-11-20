@@ -6,8 +6,8 @@ import { box, makeWorld } from './helpers';
 
 /** Granáty nesmí projít zdí, plotem (překážka jen pro pohyb) ani rohem. */
 async function world() {
-  const wall = box([0, 30, -5], [40, 60, 0.2]); // zeď budovy 20 cm (vysoká – nejde přehodit)
-  const fence = { ...box([0, 30, 5], [40, 60, 0.06]), moveOnly: true, objectId: 'fence' }; // pletivo
+  const wall = box([0, 30, -5], [400, 60, 0.2]); // zeď budovy 20 cm (vysoká – nejde přehodit)
+  const fence = { ...box([0, 30, 5], [400, 60, 0.06]), moveOnly: true, objectId: 'fence' }; // pletivo
   const cornerA = box([20, 30, -20], [0.2, 60, 10]);
   const cornerB = box([15, 30, -25], [10, 60, 0.2]);
   const phys = await makeWorld([wall, fence, cornerA, cornerB]);

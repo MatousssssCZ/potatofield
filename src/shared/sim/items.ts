@@ -23,7 +23,7 @@ export function stepItem(kind: string, mv: MovementConfig, ps: PlayerState, ws: 
   ws.adsProgress = Math.max(0, ws.adsProgress - 1 / (mv.tickRate * 0.12));
   ps.adsProgress = ws.adsProgress;
   ws.obstruction = 0;
-  ps.weaponBlocksSprint = (input.held & (1 << 4)) !== 0 && (ws.action === 'use' || ws.action === 'throw');
+  ps.weaponBlocksSprint = (input.held & (1 << 4)) !== 0 && (ws.action === 'use' || ws.action === 'throw' || ws.action === 'windup');
   if (ps.sprinting) ws.wasSprinting = true;
   else if (ws.wasSprinting) {
     ws.wasSprinting = false;

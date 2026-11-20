@@ -399,6 +399,15 @@ export class GameAudio {
     if (!this.sample(STEP_BANK[surface] ?? 'stepConcrete', o)) this.burst({ gain: 0.12, decay: 0.05, lp: surface === 'sand' || surface === 'dirt' ? 900 : 2200, hp: 120 }, o);
   }
 
+  /** Ťuknutí granátu o povrch (síla podle rychlosti nárazu): kov granátu + povrch. */
+  grenadeBounce(surface: string, pos: V3Like, speed: number) {
+    if (this.dist(pos) > 45) return;
+    const g = Math.min(0.75, 0.15 + speed * 0.06);
+    const o: PlayOpts = { pos, ref: 2, gain: g, rate: 1.35, bus: 'impacts' };
+    if (!this.sample('hitMetal', { ...o, gain: g * 0.6, rate: 1.7 })) this.burst({ gain: g * 0.3, decay: 0.04, lp: 8000, hp: 1500 }, o);
+    this.sample(HIT_BANK[surface] ?? 'hitHard', { ...o, gain: g * 0.7 });
+  }
+
   /** Dopad po skoku / pádu. */
   land(surface: string, pos: V3Like | null, hard = false) {
     const o: PlayOpts = { pos, ref: 2.5, gain: hard ? 1.2 : 0.6, rate: 0.8, bus: 'steps' };
@@ -407,8 +416,19 @@ export class GameAudio {
   }
 
   /** Mechanika zbraně: pumpa, vložení náboje, víko, závěr; `pos` pro cizího hráče. */
-  mech(kind: 'pump' | 'shell' | 'cover' | 'bolt' | 'magOut' | 'magIn' | 'rack', pos: V3Like | null = null, gun: 'rifle' | 'pistol' = 'rifle') {
+  mech(kind: 'pump' | 'shell' | 'cover' | 'bolt' | 'magOut' | 'magIn' | 'rack' | 'pin' | 'spoon', pos: V3Like | null = null, gun: 'rifle' | 'pistol' = 'rifle') {
     const o: PlayOpts = { pos, ref: 1.5, gain: pos ? 0.9 : 0.6, bus: 'gear' };
+    if (kind === 'pin') {
+      // Vytažení pojistky: kovové cvaknutí a cinknutí kroužku.
+      if (!this.sample('latch', { ...o, rate: 1.7, gain: (o.gain ?? 1) * 0.8 })) this.burst({ gain: 0.18, decay: 0.03, lp: 7000, hp: 1500, rate: 1.4 }, o);
+      this.sample('click', { ...o, rate: 1.9, gain: (o.gain ?? 1) * 0.5, delay: 0.06 });
+      return;
+    }
+    if (kind === 'spoon') {
+      // Odskok páčky granátu: krátké kovové cinknutí.
+      if (!this.sample('plate', { ...o, rate: 2.1, gain: (o.gain ?? 1) * 0.35 })) this.burst({ gain: 0.12, decay: 0.05, lp: 9000, hp: 2500, rate: 1.6 }, o);
+      return;
+    }
     if (kind === 'magOut') {
       if (!this.sample(gun === 'pistol' ? 'pistolMagOut' : 'rifleMagOut', o) && !this.sample('latch', o)) this.burst({ gain: 0.2, decay: 0.05, lp: 3500, hp: 500, rate: 0.8 }, o);
     } else if (kind === 'magIn') {

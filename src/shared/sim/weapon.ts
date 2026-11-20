@@ -13,7 +13,8 @@ import { eyePosition, type PlayerState } from './player';
  * směr zamíření (myš + zbývající recoil), kamerový recoil, rozptyl (kužel), kosmetické kopnutí (jen render).
  */
 /** Akce aktivní položky: zbraně (equip, reload, sprintOut), položky (throw = hod, use = nástroj, attack = nůž). */
-export type WeaponAction = 'equip' | 'idle' | 'reload' | 'sprintOut' | 'throw' | 'use' | 'attack';
+/** `windup` = granát: vytažená pojistka a nápřah, drží se, dokud hráč drží spoušť; `throw` = švih a dokončení. */
+export type WeaponAction = 'equip' | 'idle' | 'reload' | 'sprintOut' | 'throw' | 'use' | 'attack' | 'windup';
 
 export interface WeaponState {
   mode: 'semi' | 'auto';

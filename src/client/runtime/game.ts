@@ -658,7 +658,10 @@ export class Game {
         else this.audio.mech('bolt', this.posOf(e.id));
         if (e.target && e.id === this.driver.localId) this.hud.system(t('sys.revived', { name: this.driver.remotes().find((r) => r.id === e.target)?.name ?? '' }), this.now);
       } else if (e.type === 'throw') {
-        this.audio.mech('cover', e.id === this.driver.localId ? null : this.posOf(e.id));
+        // Vlastní hod ozvučuje animace v ruce (pojistka, páčka); cizí hod = odskok páčky u hráče.
+        if (e.id !== this.driver.localId) this.audio.mech('spoon', this.posOf(e.id));
+      } else if (e.type === 'bounce') {
+        this.audio.grenadeBounce(e.surface, e.pos, e.speed);
       } else if (e.type === 'fall') {
         // Tvrdý dopad: tupý zvuk a krátké zčervenání okraje obrazu (poškození pádem).
         if (e.id === this.driver.localId) {

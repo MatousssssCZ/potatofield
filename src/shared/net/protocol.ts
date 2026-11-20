@@ -13,7 +13,7 @@ import type { InvView } from '../sim/inventory';
  */
 /** v3: vyřazení a oživení (stav života, vzdát pomoc), pravidla serveru ve welcome, /info. */
 /** v4: pomalu se měnící části snapshotu (čety, rozkaz, velitel, spawny, figuríny) chodí jen při změně. */
-export const PROTOCOL_VERSION = 4;
+export const PROTOCOL_VERSION = 5;
 /** Pole snapshotu posílaná jen při změně (a pro jistotu každé 2 s); klient si drží poslední hodnotu. */
 export const SLOW_SNAP_FIELDS = ['squads', 'order', 'command', 'spawns', 'dummies', 'cps'] as const;
 export const NET = {
@@ -274,7 +274,7 @@ export const RADIO_TEXT: Record<RadioId, string> = {
 /** Kompaktní n-tice vzdáleného hráče (pořadí polí = verze protokolu). */
 export type RemoteTuple = [string, string, 0 | 1, 0 | 1, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, string | null, string | null, number];
 const STANCES = ['stand', 'crouch', 'prone'] as const;
-const ACTIONS = ['equip', 'idle', 'reload', 'sprintOut', 'throw', 'use', 'attack'] as const;
+const ACTIONS = ['equip', 'idle', 'reload', 'sprintOut', 'throw', 'use', 'attack', 'windup'] as const;
 /** ID aktivní položky vzdáleného hráče (primární zbraně, pistole, nůž, granáty, nástroje). */
 const ITEM_IDS = [...WEAPON_IDS, ...Object.keys(SIDEARMS), ...Object.keys(ITEM_EQUIP)];
 const LIFE = ['alive', 'downed', 'dead'] as const;

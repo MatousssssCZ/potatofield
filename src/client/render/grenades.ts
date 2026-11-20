@@ -68,6 +68,12 @@ export class GrenadeRenderer {
   private scorchMat: THREE.MeshStandardMaterial;
   private scorches: THREE.Mesh[] = [];
   private smokeAcc = new Map<string, number>();
+  /** Pohybový stav zobrazení granátu: rotace v letu, kutálení, uložení na bok v klidu. */
+  private motion = new Map<string, { prev: THREE.Vector3; spin: number; axis: THREE.Vector3; still: number; lieYaw: number }>();
+  /** Odlétající pojistné páčky (jen vizuál, pár desetin sekundy). */
+  private spoons: Array<{ mesh: THREE.Mesh; vel: THREE.Vector3; spin: THREE.Vector3; life: number }> = [];
+  private spoonGeo = new THREE.BoxGeometry(0.012, 0.003, 0.075);
+  private spoonMat = new THREE.MeshStandardMaterial({ color: '#8d9194', metalness: 0.7, roughness: 0.4 });
   private time = 0;
 
   constructor(private maxParticles = 420) {
@@ -125,12 +131,14 @@ export class GrenadeRenderer {
         m = new THREE.Mesh(itemGeometry(n.kind), this.mat);
         m.castShadow = true;
         m.position.set(n.pos.x, n.pos.y, n.pos.z);
+        m.rotation.set(Math.random() * 6.3, Math.random() * 6.3, 0);
         this.root.add(m);
         this.meshes.set(n.id, m);
+        this.motion.set(n.id, { prev: m.position.clone(), spin: 13 + Math.random() * 5, axis: new THREE.Vector3(1, 0, 0), still: 0, lieYaw: Math.random() * 6.3 });
+        this.spawnSpoon(m.position);
       }
       m.position.lerp(new THREE.Vector3(n.pos.x, n.pos.y, n.pos.z), 1 - Math.exp(-dt * 25));
-      m.rotation.x += dt * 8;
-      m.rotation.z += dt * 5;
+      this.animateMotion(n.id, m, dt);
       // Hořící dýmovnice: emise kouře (~4 větší obláčky/s), poslední 4 s řídne.
       if (n.kind === 'smoke' && n.smokeUntil > simTime) {
         const left = n.smokeUntil - simTime;
@@ -145,7 +153,44 @@ export class GrenadeRenderer {
       this.root.remove(m);
       this.meshes.delete(id);
       this.smokeAcc.delete(id);
+      this.motion.delete(id);
     }
+  }
+
+  /**
+   * Rotace podle skutečného pohybu zobrazení: v letu přemet kolem osy kolmé na směr (roztočení
+   * z hodu pomalu slábne), po zemi kutálení podle ujeté dráhy, v klidu se granát položí na bok.
+   */
+  private animateMotion(id: string, m: THREE.Mesh, dt: number) {
+    const st = this.motion.get(id);
+    if (!st || dt <= 0) return;
+    const v = m.position.clone().sub(st.prev).divideScalar(dt);
+    st.prev.copy(m.position);
+    const sp = v.length(), horiz = Math.hypot(v.x, v.z);
+    if (sp < 0.08) st.still += dt;
+    else st.still = 0;
+    if (st.still > 0.15) {
+      // Klid: na bok (osa granátu vodorovně), náhodné natočení.
+      const lie = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2, 0, st.lieYaw, 'YXZ'));
+      m.quaternion.slerp(lie, 1 - Math.exp(-dt * 6));
+      return;
+    }
+    if (horiz > 0.05) st.axis.set(v.z, 0, -v.x).normalize();
+    const rolling = Math.abs(v.y) < 0.35 && horiz > 0.05;
+    // Kutálení: úhel = dráha / poloměr (granát ~3,5 cm); let: roztočení z hodu, pomalu slábne.
+    const w = rolling ? horiz / 0.035 : st.spin;
+    st.spin = Math.max(2, st.spin - dt * 1.5);
+    m.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(st.axis, w * dt));
+  }
+
+  /** Pojistná páčka odskočí při uvolnění granátu (krátký let a zmizení). */
+  private spawnSpoon(at: THREE.Vector3) {
+    const mesh = new THREE.Mesh(this.spoonGeo, this.spoonMat);
+    mesh.position.copy(at);
+    mesh.castShadow = false;
+    this.root.add(mesh);
+    const a = Math.random() * Math.PI * 2;
+    this.spoons.push({ mesh, vel: new THREE.Vector3(Math.cos(a) * 1.6, 2.6 + Math.random(), Math.sin(a) * 1.6), spin: new THREE.Vector3(14 + Math.random() * 8, 5, 9), life: 0.9 });
   }
 
   private smokePuff(at: THREE.Vector3, left: number) {
@@ -251,6 +296,19 @@ export class GrenadeRenderer {
 
   update(dt: number, camera?: THREE.Camera) {
     this.time += dt;
+    for (let i = this.spoons.length - 1; i >= 0; i--) {
+      const s = this.spoons[i];
+      s.life -= dt;
+      s.vel.y -= 9.81 * dt;
+      s.mesh.position.addScaledVector(s.vel, dt);
+      s.mesh.rotation.x += s.spin.x * dt;
+      s.mesh.rotation.y += s.spin.y * dt;
+      s.mesh.rotation.z += s.spin.z * dt;
+      if (s.life <= 0) {
+        s.mesh.removeFromParent();
+        this.spoons.splice(i, 1);
+      }
+    }
     if (camera) {
       this.smoke.update(dt, camera.position);
       this.updateVeil(dt, camera);
@@ -313,6 +371,8 @@ export class GrenadeRenderer {
     for (const p of this.particles) (p.sprite.material as THREE.Material).dispose();
     this.fireTex.dispose();
     this.mat.dispose();
+    this.spoonGeo.dispose();
+    this.spoonMat.dispose();
     this.scorchGeo.dispose();
     (this.scorchMat.map as THREE.Texture | null)?.dispose();
     this.scorchMat.dispose();

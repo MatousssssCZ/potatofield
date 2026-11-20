@@ -4,6 +4,7 @@ import type { PlayerState } from '../../../shared/sim/player';
 import { HAND_LOOKS, Hand, POSES, buildHandGeometry, makeCamoTexture, type HandGeometry } from './hands';
 import { buildItem, type ItemKindModel } from './items';
 import type { WeaponModel } from './types';
+import { ITEM_RULES } from '../../../shared/sim/matchItems';
 
 /**
  * Nestřelná položka v první osobě (nůž, granáty, lékárna, defibrilátor, zásobování) s rukama.
@@ -41,7 +42,6 @@ export class FPItem {
   private textures: THREE.Texture[] = [];
   private geometries: THREE.BufferGeometry[] = [];
   private lastSeq = -1;
-  private swingAt = -10;
   private time = 0;
   private equipT = 0;
   /** Stejné rozhraní jako FPWeapon (hra čte optiku a zaneprázdnění). */
@@ -49,7 +49,11 @@ export class FPItem {
   busy = false;
   showCasings = false;
   onShot: () => void = () => {};
-  onMech: (kind: 'pump' | 'shell' | 'cover' | 'bolt') => void = () => {};
+  onMech: (kind: 'pump' | 'shell' | 'cover' | 'bolt' | 'pin' | 'spoon') => void = () => {};
+  /** Pojistný kroužek granátu v levé ruce (po vytažení). */
+  private pinRing: THREE.Mesh | null = null;
+  private pinSeq = -1;
+  private spoonSeq = -1;
 
   constructor(readonly kind: ItemKindModel, lookId: string, quality: 'low' | 'standard' | 'high' = 'standard') {
     const seg = quality === 'low' ? 0.6 : quality === 'high' ? 1.25 : 1;
@@ -106,12 +110,23 @@ export class FPItem {
     this.pres.add(this.itemRoot, this.second);
     this.root.add(this.pres);
     this.root.name = 'fpItem';
+    if (kind === 'frag' || kind === 'smoke') {
+      // Kroužek pojistky: po vytažení zůstává v prstech levé ruky až do švihu.
+      const ringGeo = new THREE.TorusGeometry(0.011, 0.0018, 6, 18);
+      this.geometries.push(ringGeo);
+      this.pinRing = new THREE.Mesh(ringGeo, metal);
+      this.pinRing.position.set(0, -0.02, -0.075);
+      this.pinRing.rotation.set(0.3, 0, 0);
+      this.pinRing.visible = false;
+      this.pinRing.frustumCulled = false;
+      this.leftHand.root.add(this.pinRing);
+    }
   }
 
   /** Znovu zobrazená položka z mezipaměti: znovu vytáhnout, zapomenout staré použití. */
   reactivate() {
     this.lastSeq = -1;
-    this.swingAt = -10;
+    this.pinSeq = this.spoonSeq = -1;
     this.equipT = 0;
   }
 
@@ -122,10 +137,7 @@ export class FPItem {
     const u = THREE.MathUtils.clamp((simTime - ws.actionStart) / span, 0, 1);
     if (ws.action === 'equip') this.equipT = u;
     else this.equipT = Math.min(1, this.equipT + dt * 4);
-    if (ws.shotSeq !== this.lastSeq) {
-      if (this.lastSeq >= 0) this.swingAt = this.time;
-      this.lastSeq = ws.shotSeq;
-    }
+    if (ws.shotSeq !== this.lastSeq) this.lastSeq = ws.shotSeq;
     const base = BASE[this.kind];
     const p = new THREE.Vector3(...base.pos), r = new THREE.Euler(...base.rot);
     const e = this.equipT * this.equipT * (3 - 2 * this.equipT);
@@ -133,7 +145,7 @@ export class FPItem {
     r.x += (1 - e) * 0.7;
     let showItem = true;
     let leftTarget: THREE.Vector3 | null = null;
-    this.busy = ws.action === 'attack' || ws.action === 'throw' || ws.action === 'use';
+    this.busy = ws.action === 'attack' || ws.action === 'throw' || ws.action === 'windup' || ws.action === 'use';
     if (ws.action === 'attack' && this.kind === 'knife') {
       // Nápřah vpravo nahoru → sek šikmo doleva dolů → návrat.
       const wind = sm(u, 0, 0.28), strike = sm(u, 0.28, 0.5), back = sm(u, 0.62, 1);
@@ -143,17 +155,51 @@ export class FPItem {
       r.x += -wind * 0.3 + strike * 0.55 - back * 0.25;
       r.y += wind * 0.4 - strike * 1.1 + back * 0.7;
       r.z += -wind * 0.6 + strike * 1.0 - back * 0.4;
-    } else if (ws.action === 'throw') {
-      // Pojistka (levá ruka) → nápřah za hlavu → hod; po uvolnění je ruka prázdná.
-      const pin = sm(u, 0.02, 0.15) * (1 - sm(u, 0.2, 0.3));
-      const wind = sm(u, 0.2, 0.45), thr = sm(u, 0.45, 0.58), rec = sm(u, 0.62, 1);
-      leftTarget = p.clone().add(new THREE.Vector3(-0.05, 0.06, 0.02)).lerp(new THREE.Vector3(-0.2, -0.45, -0.2), 1 - pin);
-      p.x += wind * 0.06 - thr * 0.1 + rec * 0.04;
-      p.y += wind * 0.22 - thr * 0.18 - rec * 0.1;
-      p.z += wind * 0.12 - thr * 0.32 + rec * 0.2;
-      r.x += -wind * 1.0 + thr * 1.6 - rec * 0.6;
-      showItem = u < 0.52;
-      if (Math.abs(u - 0.5) < 0.02 && this.time - this.swingAt < 2) this.onMech('cover');
+    } else if (ws.action === 'windup' || ws.action === 'throw') {
+      // Granát: levá ruka sáhne na pojistku a vytáhne ji (cvak, kroužek v prstech) → pravá ruka
+      // nápřah za hlavu, levá míří vpřed; nápřah se drží, dokud hráč drží spoušť → švih,
+      // granát opustí ruku (odskok páčky) → dokončení pohybu a prázdná ruka mizí dolů.
+      const T = ITEM_RULES.throw;
+      const raisePose = (k: number) => {
+        p.x += k * 0.07;
+        p.y += k * 0.2;
+        p.z += k * 0.15;
+        r.x -= k * 1.05;
+        r.z += k * 0.25;
+      };
+      const point = new THREE.Vector3(-0.17, -0.1, -0.42);
+      const rest = new THREE.Vector3(-0.22, -0.5, -0.2);
+      if (ws.action === 'windup') {
+        const w = THREE.MathUtils.clamp((simTime - ws.actionStart) / T.prep, 0, 1);
+        const grab = sm(w, 0, 0.3), pull = sm(w, 0.3, 0.55), aim = sm(w, 0.6, 1);
+        raisePose(sm(w, 0.45, 1));
+        // Držený nápřah: drobné chvění ruky.
+        if (w >= 1) p.y += Math.sin(this.time * 3.1) * 0.003;
+        const atPin = p.clone().add(new THREE.Vector3(-0.035, 0.055, 0.0));
+        const pulled = atPin.clone().add(new THREE.Vector3(-0.12, -0.03, 0.05));
+        leftTarget = rest.clone().lerp(atPin, grab).lerp(pulled, pull).lerp(point, aim);
+        if (this.pinRing) this.pinRing.visible = pull > 0.3;
+        if (pull > 0.4 && this.pinSeq !== ws.shotSeq) {
+          this.pinSeq = ws.shotSeq;
+          this.onMech('pin');
+        }
+      } else {
+        const sw = sm(u, 0, 0.26), follow = sm(u, 0.26, 0.6), lower = sm(u, 0.6, 1);
+        raisePose(1 - sw);
+        p.x += -sw * 0.08 - follow * 0.06;
+        p.y += -sw * 0.12 - follow * 0.14 - lower * 0.22;
+        p.z += -sw * 0.3 + follow * 0.08;
+        r.x += sw * 1.1 + follow * 0.5;
+        r.y += -follow * 0.4;
+        const rel = T.releaseAt / T.swing;
+        showItem = u < rel;
+        leftTarget = point.clone().lerp(rest, sm(u, 0.05, 0.45));
+        if (this.pinRing) this.pinRing.visible = u < 0.3;
+        if (u >= rel && this.spoonSeq !== ws.shotSeq) {
+          this.spoonSeq = ws.shotSeq;
+          this.onMech('spoon');
+        }
+      }
     } else if (ws.action === 'use') {
       // Nástroj před sebe (léčení / zásobování / elektrody k tělu spolubojovníka).
       const reach = sm(u, 0, 0.2);
@@ -162,7 +208,8 @@ export class FPItem {
       p.y += reach * (this.kind === 'defib' ? -0.03 : 0.02) + pulse;
       r.x += reach * (this.kind === 'defib' ? -0.6 : -0.2);
     }
-    if ((this.kind === 'frag' || this.kind === 'smoke') && ws.mag <= 0 && ws.action !== 'throw') showItem = false;
+    if ((this.kind === 'frag' || this.kind === 'smoke') && ws.mag <= 0 && ws.action !== 'throw' && ws.action !== 'windup') showItem = false;
+    if (this.pinRing && ws.action !== 'windup' && ws.action !== 'throw') this.pinRing.visible = false;
     // Kosmetika: bob, sway (jako u zbraní, tlumeně).
     p.x += Math.cos(bobPhase) * Math.min(0.005, bobAmp * 0.45) + THREE.MathUtils.clamp(-lookDYaw * 0.3, -0.02, 0.02);
     p.y += Math.sin(bobPhase * 2) * Math.min(ps.sprinting ? 0.015 : 0.008, bobAmp * 0.7) + THREE.MathUtils.clamp(lookDPitch * 0.3, -0.02, 0.02);

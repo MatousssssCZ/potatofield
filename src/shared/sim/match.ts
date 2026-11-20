@@ -79,6 +79,8 @@ export type SimEvent =
   | { type: 'downed'; id: string; killer: string | null; lifeId: number }
   | { type: 'fall'; id: string; damage: number; hp: number }
   | { type: 'throw'; id: string; kind: 'frag' | 'smoke' }
+  /** Náraz letícího / kutálejícího se granátu (ťuknutí podle povrchu; jen znatelné nárazy). */
+  | { type: 'bounce'; key: string; pos: V3; surface: string; speed: number }
   | { type: 'defib'; id: string; target: string | null }
   | { type: 'heal'; id: string; target: string; hp: number }
   | { type: 'explosion'; key: string; pos: V3; owner: string }

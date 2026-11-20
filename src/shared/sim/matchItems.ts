@@ -15,14 +15,18 @@ import { GRENADE_QUERY_GROUPS } from '../physics/world';
  */
 export const ITEM_RULES = {
   knife: { swing: 0.6, hitAt: 0.2, reach: 1.4, coneDeg: 40, damage: 100 },
-  /** Hod: celkový čas, okamžik uvolnění, rychlost, tasení dalšího kusu. */
-  throw: { time: 0.9, releaseAt: 0.5, speed: 15, upBoost: 2.5, nextEquip: 0.45 },
+  /**
+   * Hod: `prep` = vytažení pojistky a nápřah (pak se nápřah drží, dokud hráč drží spoušť),
+   * `swing` = švih po puštění a dokončení pohybu, `releaseAt` = granát opustí ruku (od začátku švihu).
+   */
+  throw: { prep: 0.42, swing: 0.5, releaseAt: 0.12, speed: 15, upBoost: 2.5, nextEquip: 0.45 },
   /** Tříštivý granát: zpoždění od hodu, dosah a maximum poškození (kryt mezi = bez zásahu). */
   frag: { fuse: 3.2, radius: 9, damage: 150, falloff: 1.6 },
   /** Dýmovnice: zážeh po dopadu, trvání a poloměr clony. */
   smoke: { fuse: 1.5, duration: 25, radius: 5.5 },
   /** Odraz granátu (koeficient restituce a tření). */
-  bounce: { restitution: 0.35, friction: 0.7, radius: 0.05 },
+  /** Odraz: restituce, tření při nárazu, poloměr; kutálení po zemi: zpomalení (m/s²), klid pod `restSpeed`. */
+  bounce: { restitution: 0.35, friction: 0.7, radius: 0.05, rollDecel: 4.5, restSpeed: 0.12, rollContact: 1.2 },
   /** Nástroje: dosah a výseč cíle před hráčem (jinak sám sebe). */
   tool: { reach: 2.0, coneDeg: 50 },
   /** Lékárna: HP/s; defibrilátor: zásah elektrodami, nabití po úspěchu / minutí. */
@@ -44,6 +48,8 @@ export interface Grenade {
   /** Kouř: konec clony (s); 0 = ještě nehoří. */
   smokeUntil: number;
   rest: boolean;
+  /** Kutálí se po zemi (valivý odpor v každém kroku, drží se terénu). */
+  rolling?: boolean;
 }
 
 const sub = (a: V3, b: V3) => ({ x: a.x - b.x, y: a.y - b.y, z: a.z - b.z });
@@ -62,7 +68,7 @@ export function itemHooksFor(sim: MatchSim, p: SimPlayer): ItemHooks {
     act(kind: string, ws: WeaponState, input: InputFrame, t: number) {
       const pressed = (input.pressed & BTN.FIRE) !== 0;
       if (kind === 'knife') knife(sim, p, ws, pressed, t);
-      else if (kind === 'frag' || kind === 'smoke') throwItem(sim, p, ws, pressed, t, kind);
+      else if (kind === 'frag' || kind === 'smoke') throwItem(sim, p, ws, pressed, (input.held & BTN.FIRE) !== 0, t, kind);
       else if (kind === 'defib') defib(sim, p, ws, pressed, t);
       else if (kind === 'medkit' || kind === 'ammo') supply(sim, p, ws, (input.held & BTN.FIRE) !== 0, t, kind);
     },
@@ -118,11 +124,24 @@ function melee(sim: MatchSim, p: SimPlayer, ws: WeaponState) {
 }
 
 /**
- * Hod granátu: nápřah → uvolnění (granát vznikne, počet −1) → další kus se tasí, nebo po
- * posledním návrat na poslední střelnou zbraň. Hod nelze přerušit přepnutím.
+ * Hod granátu: stisk → pojistka a nápřah (`windup`), nápřah se drží, dokud hráč drží spoušť →
+ * puštění → švih (`throw`), granát opustí ruku (vznikne, počet −1) → další kus se tasí, nebo po
+ * posledním návrat na poslední střelnou zbraň. Puštění během nápřahu = hod hned po jeho dokončení.
+ * Hod nelze přerušit přepnutím. Zpoždění roznětky běží až od uvolnění (žádné „vaření“).
  */
-function throwItem(sim: MatchSim, p: SimPlayer, ws: WeaponState, pressed: boolean, t: number, kind: 'frag' | 'smoke') {
+function throwItem(sim: MatchSim, p: SimPlayer, ws: WeaponState, pressed: boolean, held: boolean, t: number, kind: 'frag' | 'smoke') {
   const R = ITEM_RULES.throw;
+  if (ws.action === 'windup') {
+    // shellsPlanned = 1: spoušť už byla puštěna (hodit hned, jak bude nápřah hotový).
+    if (!held) ws.shellsPlanned = 1;
+    if (ws.shellsPlanned === 1 && t >= ws.actionEnd - 1e-9) {
+      ws.action = 'throw';
+      ws.actionStart = t;
+      ws.actionEnd = t + R.swing;
+      ws.shellsLoaded = 0;
+    }
+    return;
+  }
   if (ws.action === 'throw') {
     if (ws.shellsLoaded === 0 && t >= ws.actionStart + R.releaseAt - 1e-9) {
       ws.shellsLoaded = 1;
@@ -143,10 +162,11 @@ function throwItem(sim: MatchSim, p: SimPlayer, ws: WeaponState, pressed: boolea
     return;
   }
   if (pressed && ws.mag > 0 && (ws.action === 'idle' || ws.action === 'sprintOut') && !p.state.ladder) {
-    ws.action = 'throw';
+    ws.action = 'windup';
     ws.actionStart = t;
-    ws.actionEnd = t + R.time;
+    ws.actionEnd = t + R.prep;
     ws.shellsLoaded = 0;
+    ws.shellsPlanned = held ? 0 : 1;
     ws.shotSeq++;
   }
 }
@@ -185,7 +205,44 @@ export function stepGrenades(sim: MatchSim, dt: number) {
   const g = 9.81;
   sim.grenades = sim.grenades.filter((n) => {
     if (n.kind === 'smoke' && n.smokeUntil > 0) return t < n.smokeUntil;
-    if (!n.rest) {
+    if (!n.rest && n.rolling) {
+      // Kutálení: drží se země pod sebou; když pod ním zem zmizí (hrana), znovu padá.
+      const ground = sim.phys.castRay({ x: n.pos.x, y: n.pos.y + 0.1, z: n.pos.z }, { x: 0, y: -1, z: 0 }, 0.1 + B.radius + 0.08, GRENADE_QUERY_GROUPS);
+      if (!ground || ground.normal.y < 0.6) n.rolling = false;
+      else {
+        const sp = Math.hypot(n.vel.x, n.vel.z);
+        const k = sp > 1e-6 ? Math.max(0, sp - B.rollDecel * dt) / sp : 0;
+        n.vel = { x: n.vel.x * k, y: 0, z: n.vel.z * k };
+        if (sp * k < B.restSpeed) {
+          n.rest = true;
+          n.rolling = false;
+          n.vel = { x: 0, y: 0, z: 0 };
+        } else {
+          // Vodorovný krok s kontrolou překážky (zeď, obrubník) a přilepení na povrch.
+          const st = { x: n.vel.x * dt, y: 0, z: n.vel.z * dt };
+          const l = Math.hypot(st.x, st.z);
+          const wall = sim.phys.castRay(n.pos, { x: st.x / l, y: 0, z: st.z / l }, l + B.radius, GRENADE_QUERY_GROUPS);
+          if (wall && wall.normal.y < 0.6) {
+            const nn = wall.normal;
+            const vn = dot(n.vel, nn);
+            n.vel = { x: (n.vel.x - nn.x * vn) * B.friction - nn.x * vn * B.restitution, y: 0, z: (n.vel.z - nn.z * vn) * B.friction - nn.z * vn * B.restitution };
+            if (-vn > 1.5) sim.events.push({ type: 'bounce', key: n.id, pos: { ...wall.point }, surface: wall.surface, speed: Math.round(-vn * 10) / 10 });
+          } else {
+            const nx = n.pos.x + st.x, nz = n.pos.z + st.z;
+            const g2 = sim.phys.castRay({ x: nx, y: n.pos.y + 0.15, z: nz }, { x: 0, y: -1, z: 0 }, 0.15 + B.radius + 0.12, GRENADE_QUERY_GROUPS);
+            const rise = g2 ? g2.point.y + B.radius - n.pos.y : 0;
+            if (g2 && g2.normal.y >= 0.6 && rise <= 0.03 && rise >= -0.02) n.pos = { x: nx, y: g2.point.y + B.radius, z: nz };
+            else if (g2 && rise > 0.03) {
+              // Hrana (obrubník, schod): granát na ni nevyleze, odrazí se zpět.
+              n.vel = { x: -n.vel.x * B.restitution, y: 0, z: -n.vel.z * B.restitution };
+            } else {
+              n.pos = { x: nx, y: n.pos.y, z: nz };
+              n.rolling = false;
+            }
+          }
+        }
+      }
+    } else if (!n.rest) {
       n.vel.y -= g * dt;
       const step = { x: n.vel.x * dt, y: n.vel.y * dt, z: n.vel.z * dt };
       const l = len(step);
@@ -199,14 +256,22 @@ export function stepGrenades(sim: MatchSim, dt: number) {
         } else if (hit) {
           const nn = hit.normal;
           const vn = dot(n.vel, nn);
-          // Odraz: normálová složka × restituce, tečná × tření.
           const vt = { x: n.vel.x - nn.x * vn, y: n.vel.y - nn.y * vn, z: n.vel.z - nn.z * vn };
-          n.vel = { x: vt.x * B.friction - nn.x * vn * B.restitution, y: vt.y * B.friction - nn.y * vn * B.restitution, z: vt.z * B.friction - nn.z * vn * B.restitution };
-          n.pos = { x: hit.point.x + nn.x * B.radius, y: hit.point.y + nn.y * B.radius, z: hit.point.z + nn.z * B.radius };
-          if (len(n.vel) < 0.6 && nn.y > 0.6) {
-            n.rest = true;
-            n.vel = { x: 0, y: 0, z: 0 };
+          const st = len(vt);
+          if (nn.y > 0.6 && -vn < B.rollContact) {
+            // Dosednutí: normálová složka zmizí, dál se kutálí (valivý odpor v každém kroku).
+            n.vel = { x: vt.x, y: 0, z: vt.z };
+            n.rolling = st > B.restSpeed;
+            if (!n.rolling) {
+              n.rest = true;
+              n.vel = { x: 0, y: 0, z: 0 };
+            }
+          } else {
+            // Odraz: normálová složka × restituce, tečná × tření; znatelný náraz = ťuknutí.
+            n.vel = { x: vt.x * B.friction - nn.x * vn * B.restitution, y: vt.y * B.friction - nn.y * vn * B.restitution, z: vt.z * B.friction - nn.z * vn * B.restitution };
+            if (-vn > 1.5) sim.events.push({ type: 'bounce', key: n.id, pos: { ...hit.point }, surface: hit.surface, speed: Math.round(-vn * 10) / 10 });
           }
+          n.pos = { x: hit.point.x + nn.x * B.radius, y: hit.point.y + nn.y * B.radius, z: hit.point.z + nn.z * B.radius };
         } else n.pos = { x: n.pos.x + step.x, y: n.pos.y + step.y, z: n.pos.z + step.z };
       }
       if (n.pos.y < -60) return false;

@@ -148,6 +148,10 @@ změna výběru, oživení nebo nové kolo čekání zruší s vysvětlením –
 overlay vpravo nad municí ukáže siluety, klávesy a skutečné počty. Nůž (útok zblízka), pistole,
 tříštivý granát (výbuch po 3,2 s, kryt chrání), dýmovnice (25 s clona), lékárna, defibrilátor
 (jediný způsob oživení) a zásobování (munice a granáty do maxima kitu).
+Hod granátu: stisk = vytažení pojistky a nápřah, nápřah se drží, dokud držíš levé tlačítko;
+puštění = švih a hod (roznětka běží až od uvolnění). Granát se odráží od zdí, plotů i zábradlí,
+po dopadu se kutálí (zastaví ho valivý odpor a obrubníky) a při nárazu ťukne podle povrchu;
+při hodu odskočí pojistná páčka. Ostatní hráči vidí nápřah i švih.
 
 **Velitel:** v pauze (Esc → Velitel, nebo C) se lze ucházet o roli; velitel posílá četám rozkazy
 klikem do mapy a používá UAV a sken s obnovou ze serveru. Každý příkaz má stav Odesláno →
