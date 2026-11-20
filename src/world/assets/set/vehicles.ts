@@ -261,7 +261,8 @@ regH(197, 'pickupNoBed', 'Pickup bez korby', {
   notes: ['Kolize spodku: jeden kvádr 0,8 m po celé délce (rám a kola kryjí vleže).'],
 });
 
-function van(seed: number, o: { burnt: boolean }): Part[] {
+/** `closedDoor`: strana (−1 / 1), jejíž zadní dveře jsou zavřené (převrácená dodávka leží na boku −X). */
+function van(seed: number, o: { burnt: boolean; closedDoor?: -1 | 1 }): Part[] {
   const r = rng(seed), parts: Part[] = [];
   const W = 2.0, hw = W / 2, L = 5.0, H = 2.3, z0 = -L / 2, z1 = L / 2, mat = o.burnt ? BURNT : color(seed);
   const floor = 0.55, t = 0.05;
@@ -277,7 +278,10 @@ function van(seed: number, o: { burnt: boolean }): Part[] {
   parts.push({ shape: 'box', pos: [0, H - 0.3, z0 + 4.0], rot: [0.32, 0, 0.12], size: [W - 0.1, 0.05, 1.9], material: mat, collide: true });
   parts.push(bx(-hw + 0.05, hw - 0.05, floor, floor + 0.03, z0 + 1.27, z1, o.burnt ? RUST : DARK, false));
   // Zadní dveře otevřené o 90° ven (do stran).
-  for (const s of [-1, 1]) parts.push({ shape: 'box', pos: [s * (hw + 0.47), (floor + H - 0.1) / 2, z1 + 0.04], rot: [0, s * 0.15, 0], size: [0.95, H - 0.1 - floor, 0.05], material: mat, collide: true });
+  for (const s of [-1, 1] as const) {
+    if (s === o.closedDoor) parts.push({ shape: 'box', pos: [s * hw / 2, (floor + H - 0.1) / 2, z1 - 0.03], size: [hw - 0.02, H - 0.1 - floor, 0.05], material: mat, collide: true });
+    else parts.push({ shape: 'box', pos: [s * (hw + 0.47), (floor + H - 0.1) / 2, z1 + 0.04], rot: [0, s * 0.15, 0], size: [0.95, H - 0.1 - floor, 0.05], material: mat, collide: true });
+  }
   for (const x of [-0.45, 0.45]) parts.push(bx(x - 0.24, x + 0.24, floor, 1.45, z0 + 0.95, z0 + 1.05, o.burnt ? 'gunMetal' : 'fabricSand', false));
   for (const z of [z0 + 0.8, z1 - 0.9]) for (const x of [-hw + 0.12, hw - 0.12]) parts.push(...wheel(x, 0.34, z, 0.34, 0.22, { burnt: o.burnt }));
   if (o.burnt) for (let i = 0; i < 3; i++) parts.push({ shape: 'box', pos: [(r() - 0.5) * 1.2, floor + 0.08, z0 + 2.4 + r() * 1.6], rot: [0, r() * 3, 0.1], size: [0.5, 0.15, 0.4], material: RUST });
@@ -300,7 +304,8 @@ regH(198, 'vanBurnt', 'Ohořelá dodávka', {
 regH(199, 'vanSide', 'Převrácená dodávka', {
   describe: () => 'dodávka na boku, odhalený podvozek, velký otvor (propadlá střecha) do nákladového prostoru',
   generate(_p, seed) {
-    return pose(van(seed + 1, { burnt: true }), [0, 0, Math.PI / 2]);
+    // Leží na boku −X: dveře na té straně jsou zavřené (otevřené by trčely pod vůz a ten by visel nad zemí).
+    return pose(van(seed + 1, { burnt: true, closedDoor: -1 }), [0, 0, Math.PI / 2]);
   },
 }, {
   target: [2.3, 5.1, 2.0],
