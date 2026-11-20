@@ -836,7 +836,8 @@ export class App {
       },
       canRedeploy: () => {
         const me = game.driver.local();
-        return !!me && (me.alive || me.life === 'downed') && !me.spectator;
+        // Jen živý hráč (vyřazený má „Vzdát pomoc“, mrtvý obrazovku nasazení).
+        return !!me && me.alive && me.life === 'alive' && !me.spectator;
       },
       leave: () => this.exitPlay(),
       settings: () => this.settingsView.open(),

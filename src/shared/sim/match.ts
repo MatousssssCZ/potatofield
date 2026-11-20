@@ -328,16 +328,14 @@ export class MatchSim {
   }
 
   /**
-   * Znovu nasadit (Redeploy, „sebevražda“): živý nebo vyřazený hráč okamžitě zemře a může se
-   * nasadit jinde / s jinou výbavou. Počítá se jako smrt (tým ztratí ticket), soupeř zabití nedostane.
+   * Znovu nasadit (Redeploy, „sebevražda“): jen živý hráč (ne vyřazený – ten má „Vzdát pomoc“)
+   * okamžitě zemře a může se nasadit jinde / s jinou výbavou. Počítá se jako smrt (tým ztratí
+   * ticket), soupeř zabití nedostane.
    */
   redeploy(id: string): string | null {
     const p = this.players.get(id);
     if (!p) return 'neznámý hráč';
-    if (p.downed) {
-      this.finalizeDowned(p, 'giveup');
-      return null;
-    }
+    if (p.downed) return 'vyřazený hráč nemůže znovu nasadit (použij Vzdát pomoc)';
     if (!p.alive) return 'nejsi nasazen';
     this.kill(p, null, 'redeploy');
     return null;

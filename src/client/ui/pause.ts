@@ -85,11 +85,12 @@ export class PauseMenu {
   }
 
   private async confirmRedeploy() {
-    const ch = await dialog(t('pause.redeploy'), t('pause.redeployConfirm'), [
+    const ch = await dialog(t('pause.redeployTitle'), h('p', { class: 'pf-warn' }, t('pause.redeployConfirm')), [
       { id: 'no', label: t('common.cancel') },
       { id: 'yes', label: t('pause.redeploy'), danger: true, primary: true },
     ]);
-    if (ch === 'yes') this.hooks.redeploy?.();
+    // Mezitím mohl hráč zemřít nebo být vyřazen – potvrzení platí jen pro živého.
+    if (ch === 'yes' && (this.hooks.canRedeploy?.() ?? true)) this.hooks.redeploy?.();
   }
 
   private async confirmLeave() {

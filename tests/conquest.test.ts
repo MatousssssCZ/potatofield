@@ -196,6 +196,21 @@ describe('Conquest v simulaci zápasu', () => {
     expect(m.requestSpawn('a', 'sa')).toBeNull();
   });
 
+  it('Znovu nasadit jen živý: vyřazený (downed) ani mrtvý nemůže', async () => {
+    const m = await sim();
+    const a = m.addPlayer('a', 'teamA');
+    m.addPlayer('b', 'teamB');
+    m.requestSpawn('a', 'sa');
+    m.requestSpawn('b', 'sb');
+    idle(m, 0.5);
+    m.down(a, 'b');
+    expect(a.downed).toBe(true);
+    const deaths = a.deaths;
+    expect(m.redeploy('a')).toMatch(/vyřazený/);
+    expect(a.downed).toBe(true);
+    expect(a.deaths).toBe(deaths);
+  });
+
   it('hranice mapy: odpočet běží venku, uvnitř ne', async () => {
     const m = await sim();
     m.doc.zones.push({ id: 'hr', kind: 'boundary', center: [0, 5, 0], halfExtents: [40, 20, 40], yaw: 0, appliesTo: ['teamA', 'teamB'], countdown: 5 });
