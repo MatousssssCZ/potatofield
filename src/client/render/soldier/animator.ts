@@ -90,6 +90,7 @@ export class SoldierAnimator {
   private time = 0;
   /** Pohyb vůči pánvi: +1 vpřed, −1 vzad (couvání = chůze pozpátku). Čte tělo z modelu. */
   legForward = 1;
+  private backward = false;
 
   /** Zásah: `from` = světová poloha střelce (směr škubnutí), síla 0–1. */
   hit(from: { x: number; z: number } | null, pos: { x: number; z: number }, power = 1) {
@@ -153,7 +154,11 @@ export class SoldierAnimator {
         const ax = inp.vel.x * Math.cos(aimYaw) - inp.vel.z * Math.sin(aimYaw);
         const af = -(inp.vel.x * Math.sin(aimYaw) + inp.vel.z * Math.cos(aimYaw));
         let ang = Math.atan2(ax, af);
-        if (Math.abs(ang) > THREE.MathUtils.degToRad(100)) {
+        // Hystereze vpřed/vzad: úkrok do strany (~90°) s pohybem myši jinak přepínal každý snímek mezi
+        // chůzí vpřed a pozpátku (pánev skočila o ~130° a klip nohou běžel střídavě oběma směry).
+        const deg = Math.abs(THREE.MathUtils.radToDeg(ang));
+        if (this.backward ? deg < 75 : deg > 115) this.backward = !this.backward;
+        if (this.backward) {
           ang -= Math.sign(ang) * Math.PI;
           this.legForward = -1;
         }

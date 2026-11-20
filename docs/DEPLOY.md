@@ -24,6 +24,12 @@ Bez serveru na webu funguje trénink (offline Conquest), editor map i ukládán�
    variables → Actions → Variables** → nová proměnná `PF_SERVER_URL` = `wss://<adresa>.onrender.com`
    → v Actions znovu spustit workflow (Run workflow). Web pak nabízí tento server jako výchozí.
 
+Server se při buildu sestaví do jednoho souboru (`npm run build:server` → `dist-server/main.mjs`)
+a běží přímo v `node` – bez `npm` a `tsx` (bezplatná instance má jen 0,1 jádra a 512 MB). Kdyby
+Render změnu v `render.yaml` nepřevzal sám (Blueprint → *Sync*), funguje dál i původní `npm run server`.
+Komprese WebSocketu je vypnutá (byla nejdražší částí práce serveru); snímky jsou kompaktní
+(vlastní stav jen změněná pole). Měření: `scripts/loadtest.ts`, plynulost `scripts/net-smooth.ts`.
+
 Nastavení serveru (Render → služba → Environment): `PF_NAME` (název v seznamu), `PF_TEAM_SIZE`
 (výchozí 8), `PF_FF=1` (friendly fire), `PF_MAP`, `PF_SCENARIO`, `PF_NO_PILOT=1`.
 

@@ -57,6 +57,9 @@ export class NetClient {
       } catch {
         return;
       }
+      // Vlastní stav chodí jako rozdíl: doplní se hned v pořadí příchodu (před simulovanou ztrátou
+      // a zpožděním, které by pořadí přeházely).
+      if (m.t === 'snap') this.mergeMe(m);
       this.delay(() => this.receive(m), m.t === 'snap' && this.lost());
     };
     ws.onclose = () => {
@@ -64,6 +67,17 @@ export class NetClient {
       if (this.pingTimer) clearInterval(this.pingTimer);
     };
     ws.onerror = () => {};
+  }
+
+  private mergeMe(m: Extract<ServerMsg, { t: 'snap' }>) {
+    // Vlastní stav jako rozdíl: chybějící pole z předchozího snímku (musí proběhnout u každé zprávy).
+    const meIn = m.me as unknown as Record<string, unknown> & { delta?: number };
+    if (meIn.delta && this.meFull) {
+      meIn.state = { ...this.meFull.state, ...(meIn.state as object) };
+      meIn.weapon = { ...this.meFull.weapon, ...(meIn.weapon as object) };
+    }
+    delete meIn.delta;
+    this.meFull = { state: meIn.state as Record<string, unknown>, weapon: meIn.weapon as Record<string, unknown> };
   }
 
   private lost() {
@@ -78,6 +92,7 @@ export class NetClient {
   }
 
   private slow: Record<string, unknown> = {};
+  private meFull: { state: Record<string, unknown>; weapon: Record<string, unknown> } | null = null;
 
   private receive(m: ServerMsg) {
     if (m.t === 'welcome') {
@@ -124,7 +139,9 @@ export class NetClient {
   sendInput(f: InputFrame) {
     this.pending.push(f);
     if (this.pending.length > 4) this.pending.shift();
-    const msg: ClientMsg = { t: 'input', frames: [...this.pending].slice(-Math.min(4, NET.maxInputsPerMessage)) };
+    // Spojení (TCP) neztrácí zprávy: posílá se jen nový vstup. Poslední 4 (redundance) jen při
+    // simulované ztrátě paketů – server duplicitní vstupy podle seq zahodí.
+    const msg: ClientMsg = { t: 'input', frames: this.cond.lossPct > 0 ? [...this.pending].slice(-Math.min(4, NET.maxInputsPerMessage)) : [f] };
     this.delay(() => this.sendNow(msg), this.lost());
   }
 

@@ -331,12 +331,15 @@ export class MannequinBody {
     // Vpřed i vzad (chůze pozpátku); úkroky řeší natočení pánve v animátoru, takže pohyb je vůči pánvi skoro vždy podélný.
     const useClip = s.life === 'alive' && !s.prone && !s.ladder && (air || (s.grounded && (s.speed < 0.3 || Math.abs(s.forward) > 0.7)));
     let want: LegClip;
+    // Prahy s hysterezí (rychlost vzdáleného hráče z interpolace kolísá – klip se nesmí přepínat sem a tam).
+    const cur = this.legClip;
+    const idleBelow = cur === 'Idle_Loop' || cur === 'Crouch_Idle_Loop' ? 0.45 : 0.25;
     if (air) want = 'Jump_Loop';
     else if (this.landT > 0 && s.speed < 4) want = 'Jump_Land';
-    else if (s.crouch > 0.5) want = s.speed < 0.3 ? 'Crouch_Idle_Loop' : 'Crouch_Fwd_Loop';
-    else if (s.speed < 0.3) want = 'Idle_Loop';
+    else if (s.crouch > 0.5) want = s.speed < idleBelow ? 'Crouch_Idle_Loop' : 'Crouch_Fwd_Loop';
+    else if (s.speed < idleBelow) want = 'Idle_Loop';
     else if (s.sprinting) want = 'Sprint_Loop';
-    else want = s.speed > 2.4 ? 'Jog_Fwd_Loop' : 'Walk_Loop';
+    else want = s.speed > (cur === 'Jog_Fwd_Loop' || cur === 'Sprint_Loop' ? 2.1 : 2.7) ? 'Jog_Fwd_Loop' : 'Walk_Loop';
     if (want !== this.legClip) {
       const next = this.actions.get(want);
       const prev = this.legClip ? this.actions.get(this.legClip) : undefined;
@@ -347,7 +350,7 @@ export class MannequinBody {
       this.legClip = want;
     }
     const act = this.actions.get(want);
-    if (act) act.timeScale = want === 'Jump_Loop' || want === 'Jump_Land' || s.speed < 0.3 ? 1 : THREE.MathUtils.clamp(s.speed / CLIP_SPEED[want], 0.5, 1.8) * (s.forward < 0 ? -1 : 1);
+    if (act) act.timeScale = want === 'Jump_Loop' || want === 'Jump_Land' || want === 'Idle_Loop' || want === 'Crouch_Idle_Loop' ? 1 : THREE.MathUtils.clamp(s.speed / CLIP_SPEED[want], 0.5, 1.8) * (s.forward < 0 ? -1 : 1);
     this.legW = THREE.MathUtils.damp(this.legW, useClip ? 1 : 0, 10, dt);
 
     // Klip nastaví celou kostru; nohy si z něj vezmeme (s vahou), zbytek přepíše přenos.

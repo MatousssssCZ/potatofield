@@ -15,7 +15,9 @@ import { MannequinBody, hasMannequin } from './soldier/mannequin';
  * postavě nikdy nezobrazují; herní hitboxy určuje server, LOD je nemění.
  */
 const LOD_DIST = [18, 55] as const;
-const LOD_HZ = [0, 20, 10];
+const LOD_HZ = [0, 30, 15];
+/** Do tohoto počtu viditelných vojáků se všichni animují v plné frekvenci. */
+const FULL_RATE_UNDER = 8;
 /** Jak dlouho zůstane tělo padlého na místě (s) – konfigurovatelné podle výkonu. */
 export const CORPSE_TIME = 10;
 
@@ -197,6 +199,7 @@ export class SoldierPool {
 
   /** Vlastní hráč míří puškohledem: vzdálení vojáci se animují v plné frekvenci (jinak je pohyb v optice trhaný). */
   fullRate = false;
+  private lastVisible = 0;
 
   /** Zásah vojáka: škubnutí trupu od střelce. */
   hit(id: string, from: { x: number; z: number } | null, power = 1) {
@@ -215,6 +218,7 @@ export class SoldierPool {
    */
   update(list: PlayerView[], dt: number, simTime: number, eye?: THREE.Vector3, camera?: THREE.Camera) {
     this.time += dt;
+    this.lastVisible = this.visibleCount;
     this.lodCounts = [0, 0, 0];
     this.visibleCount = 0;
     for (const s of this.soldiers.values()) s.seen = false;
@@ -274,13 +278,15 @@ export class SoldierPool {
       }
       s.weapon.castShadow = wl < 2;
       this.lodCounts[lod]++;
-      // Vzdálené LOD: kostra 20 / 10 Hz (stav akcí se dál odvozuje z hodin simulace).
+      // Poloha každý snímek (jinak vzdálený voják „poskakuje“ po krocích nižší frekvence).
+      s.group.position.copy(pos);
+      // Vzdálené LOD: kostra 30 / 15 Hz – jen když je vidět hodně vojáků (pár vojáků stojí zlomek
+      // milisekundy, snížená frekvence by jen zhoršila plynulost pohybu).
       s.acc += dt;
-      const hz = this.fullRate ? 0 : LOD_HZ[lod];
+      const hz = this.fullRate || this.lastVisible <= FULL_RATE_UNDER ? 0 : LOD_HZ[lod];
       if (hz && s.acc < 1 / hz) continue;
       const step = s.acc;
       s.acc = 0;
-      s.group.position.copy(pos);
       const ps = p.state;
       const inp: AnimInput = {
         pos,
@@ -313,7 +319,7 @@ export class SoldierPool {
           s.lastFwd = sp > 0.01 ? (-Math.sin(ps.yaw) * ps.vel.x - Math.cos(ps.yaw) * ps.vel.z) / sp : 1;
         }
         s.group.updateMatrixWorld(true);
-        s.body.update(step, { group: s.group, speed: sp, forward: fwd, crouch: ps.height < 1.45 && ps.height > 0.8 ? 1 : 0, sprinting: ps.sprinting, grounded: ps.grounded, life: p.life, prone: ps.height <= 0.8, ladder: !!ps.ladder, deathClip: s.death === 'clip' ? 'normal' : s.death === 'clipFast' ? 'fast' : null });
+        s.body.update(step, { group: s.group, speed: sp, forward: Math.abs(fwd) * s.anim.legForward, crouch: ps.height < 1.45 && ps.height > 0.8 ? 1 : 0, sprinting: ps.sprinting, grounded: ps.grounded, life: p.life, prone: ps.height <= 0.8, ladder: !!ps.ladder, deathClip: s.death === 'clip' ? 'normal' : s.death === 'clipFast' ? 'fast' : null });
       }
       s.flash.visible = this.time < s.flashUntil;
     }

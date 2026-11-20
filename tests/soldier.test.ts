@@ -32,6 +32,22 @@ describe('voják – animační pravidla', () => {
     expect(Math.abs(r.anim.pelvisYaw - deg(60))).toBeLessThan(deg(6));
   });
 
+  it('úkrok do strany s pohybem myši: nepřepíná každý snímek mezi chůzí vpřed a pozpátku', () => {
+    const r = rig();
+    // Směr pohybu kolísá kolem 100° od pohledu (dřívější práh) – pánev nesmí skákat, nohy se nesmí obracet.
+    let flips = 0, last = 1, maxStep = 0, prev = 0;
+    for (let i = 0; i < 240; i++) {
+      const a = deg(100 + 12 * Math.sin(i * 0.9));
+      r.anim.update(base({ yaw: 0, vel: new THREE.Vector3(-Math.sin(a) * 4, 0, -Math.cos(a) * 4) }), i / 60, 1 / 60, r.root, r.weapon, wf);
+      if (r.anim.legForward !== last) flips++;
+      last = r.anim.legForward;
+      if (i > 60) maxStep = Math.max(maxStep, Math.abs(Math.atan2(Math.sin(r.anim.pelvisYaw - prev), Math.cos(r.anim.pelvisYaw - prev))));
+      prev = r.anim.pelvisYaw;
+    }
+    expect(flips).toBeLessThanOrEqual(1);
+    expect(maxStep).toBeLessThan(deg(8));
+  });
+
   it('přetočení přes ±180° jde nejkratší cestou', () => {
     const r = rig();
     run(r, base({ yaw: deg(170) }), 3);

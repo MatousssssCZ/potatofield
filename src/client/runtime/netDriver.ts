@@ -1,7 +1,9 @@
+import { InterpClock } from './interpClock';
 import type { MapDocument, SpawnPoint } from '../../shared/map/schema';
 import type { PhysicsWorld } from '../../shared/physics/world';
 import { NetClient, type NetConditions, type WsLike } from '../../shared/net/client';
 import type { CommandInfo, ContactInfo, OrderInfo, RemoteState, ServerMsg, SquadInfo } from '../../shared/net/protocol';
+import { NET } from '../../shared/net/protocol';
 import { createConquest, type ConquestState } from '../../shared/sim/conquest';
 import type { InputFrame } from '../../shared/sim/input';
 import { MOVEMENT } from '../../shared/config/movement';
@@ -45,6 +47,7 @@ export class NetDriver implements GameDriver {
   private factions: Record<Team, Faction> | null = null;
   private serverTime = 0;
   private serverTimeAt = 0;
+  private clock = new InterpClock(1 / NET.snapshotHz);
   onReject: (what: string, reason: string) => void = () => {};
 
   constructor(ws: WsLike, name: string, cond?: NetConditions) {
@@ -96,6 +99,7 @@ export class NetDriver implements GameDriver {
   private onSnap(s: Extract<ServerMsg, { t: 'snap' }>) {
     this.serverTime = s.time;
     this.serverTimeAt = performance.now();
+    this.clock.onSnap(s.time, this.serverTimeAt / 1000);
     this.buffer.push({ time: s.time, recv: performance.now(), others: s.others });
     if (this.buffer.length > 40) this.buffer.shift();
     // Nové kolo s jiným scénářem: stav bodů se založí znovu podle scénáře.
@@ -164,11 +168,12 @@ export class NetDriver implements GameDriver {
     return { id: this.localId, name: 'Ty', team: me.team, state: this.state!, weapon: this.weapon!, hp: me.hp, alive: me.alive, respawnAt: me.respawnAt, zone: me.zone, kills: me.kills, deaths: me.deaths, life: me.alive ? 'alive' : me.downed ? 'downed' : 'dead', downedLeft: me.downedLeft, reviveProgress: me.reviveProgress, revives: me.revives, lifeId: me.lifeId, inv: me.inv, spectator: !!me.spectator, primary: me.inv?.items.find((i) => i.slot === 3)?.id };
   }
 
-  /** Interpolace vzdálených hráčů v čase (serverTime − 100 ms). */
+  /** Interpolace vzdálených hráčů v plynulém čase (zpoždění podle kolísání sítě, viz InterpClock). */
   remotes(): PlayerView[] {
     if (this.buffer.length === 0) return [];
-    const now = this.serverTime + (performance.now() - this.serverTimeAt) / 1000 - 0.1;
-    let a = this.buffer[0], b = this.buffer[this.buffer.length - 1];
+    const now = this.clock.renderTime(performance.now() / 1000);
+    const last = this.buffer[this.buffer.length - 1];
+    let a = this.buffer[0], b = last;
     for (let i = 0; i < this.buffer.length - 1; i++) {
       if (this.buffer[i].time <= now && this.buffer[i + 1].time >= now) {
         a = this.buffer[i];
@@ -176,13 +181,17 @@ export class NetDriver implements GameDriver {
         break;
       }
     }
+    // Za posledním snímkem (zpožděný paket): krátké dopočítání z rychlosti místo zastavení a skoku.
+    const ahead = now > last.time ? Math.min(0.15, now - last.time) : 0;
+    if (ahead > 0) a = b = last;
     const k = b.time > a.time ? Math.min(1, Math.max(0, (now - a.time) / (b.time - a.time))) : 1;
     const prev = new Map(a.others.map((o) => [o.id, o]));
     return b.others.map((o) => {
       const p = prev.get(o.id) ?? o;
       const L = (x: number, y: number) => x + (y - x) * k;
-      const st = createPlayerState(MOVEMENT, { x: L(p.pos[0], o.pos[0]), y: L(p.pos[1], o.pos[1]), z: L(p.pos[2], o.pos[2]) }, p.yaw + angleDiff(o.yaw, p.yaw) * k);
-      st.vel = { x: o.vel[0], y: o.vel[1], z: o.vel[2] };
+      const ex = o.alive && !o.ladder ? ahead : 0;
+      const st = createPlayerState(MOVEMENT, { x: L(p.pos[0], o.pos[0]) + o.vel[0] * ex, y: L(p.pos[1], o.pos[1]) + (o.grounded ? 0 : o.vel[1] * ex), z: L(p.pos[2], o.pos[2]) + o.vel[2] * ex }, p.yaw + angleDiff(o.yaw, p.yaw) * k);
+      st.vel = { x: L(p.vel[0], o.vel[0]), y: L(p.vel[1], o.vel[1]), z: L(p.vel[2], o.vel[2]) };
       st.pitch = L(p.pitch, o.pitch);
       st.bodyYaw = p.bodyYaw + angleDiff(o.bodyYaw, p.bodyYaw) * k;
       st.height = L(p.height, o.height);
@@ -210,7 +219,7 @@ export class NetDriver implements GameDriver {
     return e;
   }
   time() {
-    return this.serverTime + (performance.now() - this.serverTimeAt) / 1000;
+    return this.clock.serverNow(performance.now() / 1000);
   }
   spawnOptions(): SpawnPoint[] {
     const ids = new Set(this.net.lastSnap?.spawns ?? []);

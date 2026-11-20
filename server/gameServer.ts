@@ -69,6 +69,8 @@ interface Client {
   spectator: boolean;
   /** Naposledy odeslané hodnoty polí posílaných jen při změně (JSON) a kdy naposledy vše. */
   slowSent: Record<string, string>;
+  /** Naposledy poslané hodnoty vlastního stavu (me.state / me.weapon) – posílají se jen změněná pole. */
+  meSent: { state: Record<string, unknown>; weapon: Record<string, unknown> };
   slowAt: number;
   /** Nepřátelé, které tento klient smí vidět: id → čas, do kdy (grace po ztrátě výhledu). */
   visible: Map<string, number>;
@@ -91,7 +93,7 @@ export class GameServer {
   readonly clients = new Map<string, Client>();
   readonly hash: string;
   private wss: WebSocketServer | null = null;
-  private timer: ReturnType<typeof setInterval> | null = null;
+  private timer: ReturnType<typeof setTimeout> | null = null;
   private acc = 0;
   private last = 0;
   private seq = 0;
@@ -209,7 +211,10 @@ export class GameServer {
           res.end();
         }
       });
-      this.wss = new WebSocketServer({ server: this.http, maxPayload: NET.maxMessageBytes, perMessageDeflate: { threshold: 2048 } });
+      this.wss = new WebSocketServer({ server: this.http, maxPayload: NET.maxMessageBytes, perMessageDeflate: false });
+      // Bez komprese: zlib (rozbalování 60 vstupů/s od každého prohlížeče + balení snímků) byl největší
+      // náklad serveru – na hostingu s 0,1 jádra vedl k přibrzďování procesu a trhaným snímkům.
+      // Snímky jsou místo toho kompaktní (vzdálení hráči jako n-tice, čísla zaokrouhlená).
       this.http.listen(port);
       // Za proxy hostingu (Render) je skutečná adresa v x-forwarded-for; slouží jen pro zákazy vstupu.
       this.wss.on('connection', (ws, req) => this.onConnection(ws, String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() || req.socket.remoteAddress || '?'));
@@ -228,8 +233,10 @@ export class GameServer {
 
   private startLoop() {
     this.last = performance.now();
-    // Časovač s dorovnáním driftu: pevný krok 60 Hz, omezené dohánění.
-    this.timer = setInterval(() => {
+    // Pevný krok 60 Hz s dorovnáním driftu a omezeným doháněním. Časovač se plánuje přesně na další
+    // tick (≈60 probuzení/s místo 250 při dotazování po 4 ms) – na sdíleném CPU hostingu (0,1 jádra)
+    // šetří znatelnou část rozpočtu.
+    const run = () => {
       const now = performance.now();
       this.acc += Math.min(0.25, (now - this.last) / 1000);
       this.last = now;
@@ -240,7 +247,10 @@ export class GameServer {
         n++;
       }
       if (n >= 6) this.acc = 0;
-    }, 4);
+      const wait = Math.max(1, (1 / 60 - this.acc) * 1000 - (performance.now() - now));
+      this.timer = setTimeout(run, wait);
+    };
+    this.timer = setTimeout(run, 1000 / 60);
   }
 
   // ---------------- spojení ----------------
@@ -257,7 +267,7 @@ export class GameServer {
       return;
     }
     const id = `p${++this.seq}`;
-    const c: Client = { id, ws, name: id, player: null, inputs: [], lastSeq: 0, lastInputAt: performance.now(), lastHeld: 0, msgTimes: [], rejected: 0, ping: 0, bytesOut: 0, pingSentAt: 0, visible: new Map(), ip, admin: false, adminTries: 0, lastReportAt: -1e9, lastVoteAt: -1e9, spectator: false, slowSent: {}, slowAt: -1e9 };
+    const c: Client = { id, ws, name: id, player: null, inputs: [], lastSeq: 0, lastInputAt: performance.now(), lastHeld: 0, msgTimes: [], rejected: 0, ping: 0, bytesOut: 0, pingSentAt: 0, visible: new Map(), ip, admin: false, adminTries: 0, lastReportAt: -1e9, lastVoteAt: -1e9, spectator: false, slowSent: {}, slowAt: -1e9, meSent: { state: {}, weapon: {} } };
     // Odezva měřená serverem (klient ji nemůže zfalšovat ve svůj prospěch nad rámec limitu kompenzace).
     ws.on('pong', () => {
       if (c.pingSentAt) c.ping = Math.round(performance.now() - c.pingSentAt);
@@ -684,7 +694,7 @@ export class GameServer {
       tick: this.sim.tick,
       time: this.sim.time,
       ack: c.lastSeq,
-      me: { state: { ...p.state, blocked: [] }, weapon: p.weapon, hp: p.hp, alive: p.alive, respawnAt: p.respawnAt, zone: p.zone, kills: p.kills, deaths: p.deaths, team: p.team, squad: mem?.squad ?? null, canSquadSpawn: canSquad, downed: p.downed, downedLeft: p.downed ? r3(Math.max(0, p.downedUntil - this.sim.time)) : 0, reviveProgress: p.reviveTarget ? r3(p.reviveHeld / PILOT.reviveHold) : 0, revives: p.revives, lifeId: p.lifeId, inv: p.inv ? invView(p.inv) : null, ...(c.spectator ? { spectator: true } : {}) },
+      me: { state: round4({ ...p.state, blocked: [] }), weapon: round4(p.weapon), hp: p.hp, alive: p.alive, respawnAt: p.respawnAt, zone: p.zone, kills: p.kills, deaths: p.deaths, team: p.team, squad: mem?.squad ?? null, canSquadSpawn: canSquad, downed: p.downed, downedLeft: p.downed ? r3(Math.max(0, p.downedUntil - this.sim.time)) : 0, reviveProgress: p.reviveTarget ? r3(p.reviveHeld / PILOT.reviveHold) : 0, revives: p.revives, lifeId: p.lifeId, inv: p.inv ? invView(p.inv) : null, ...(c.spectator ? { spectator: true } : {}) },
       others: [],
       o,
       cps: cq ? cq.cps.map((x) => ({ id: x.id, owner: x.owner, p: r3(x.p), activity: x.activity })) : null,
@@ -718,6 +728,16 @@ export class GameServer {
     const ij = JSON.stringify(meWire.inv);
     if (!full && c.slowSent['me.inv'] === ij) delete meWire.inv;
     else c.slowSent['me.inv'] = ij;
+    // Vlastní stav a zbraň: jen pole změněná od minulého snímku (spojení je spolehlivé a v pořadí);
+    // celé každé 2 s. Klient chybějící pole převezme z předchozího stavu.
+    if (!full) {
+      meWire.state = diffFields(meWire.state as Record<string, unknown>, c.meSent.state);
+      meWire.weapon = diffFields(meWire.weapon as Record<string, unknown>, c.meSent.weapon);
+      meWire.delta = 1;
+    } else {
+      diffFields(meWire.state as Record<string, unknown>, c.meSent.state);
+      diffFields(meWire.weapon as Record<string, unknown>, c.meSent.weapon);
+    }
     this.send(c, snap);
   }
 
@@ -1019,7 +1039,8 @@ export class GameServer {
   }
 
   async close() {
-    if (this.timer) clearInterval(this.timer);
+    if (this.timer) clearTimeout(this.timer);
+    this.timer = null;
     for (const c of this.clients.values()) c.ws.close();
     await new Promise<void>((r) => (this.wss ? this.wss.close(() => r()) : r()));
     await new Promise<void>((r) => (this.http ? this.http.close(() => r()) : r()));
@@ -1030,4 +1051,20 @@ export class GameServer {
 
 const r3 = (v: number) => Math.round(v * 1000) / 1000;
 const r4 = (v: number) => Math.round(v * 10000) / 10000;
+/** Pole objektu `cur`, která se liší od `sent` (vnořené objekty porovnané přes JSON); `sent` se aktualizuje. */
+function diffFields(cur: Record<string, unknown>, sent: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(cur)) {
+    const key = v !== null && typeof v === 'object' ? JSON.stringify(v) : v;
+    if (sent[k] !== key || !(k in sent)) out[k] = v;
+    sent[k] = key;
+  }
+  return out;
+}
+/** Kopie objektu s čísly na 4 desetinná místa (0,1 mm; 0,1 ms) – JSON snímku je o třetinu kratší. */
+function round4<T>(o: T): T {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(o as Record<string, unknown>)) out[k] = typeof v === 'number' ? r4(v) : v && typeof v === 'object' && !Array.isArray(v) ? round4(v) : v;
+  return out as T;
+}
 void RADIO_TEXT;
