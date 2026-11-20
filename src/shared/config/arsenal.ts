@@ -37,7 +37,7 @@ export const ARSENAL: ArsenalEntry[] = [
   { id: 'qbb95', name: 'JP-95 LMG', faction: 'pla', kit: 'support', rules: PF_MG, sight: IRON },
   { id: 'hawk97', name: 'JP-97 Pump', faction: 'pla', kit: 'engineer', rules: PF_PUMP, sight: IRON },
   { id: 'm24', name: 'FC-24 Sniper', faction: 'usmc', kit: 'sniper', rules: PF_SNIPER, sight: { kind: 'scope', zoom: 10 } },
-  { id: 'svd', name: 'DL-63 Marksman', faction: 'mec', kit: 'sniper', rules: PF_SNIPER, sight: { kind: 'scope', zoom: 4 } },
+  { id: 'svd', name: 'DL-98 Sniper', faction: 'mec', kit: 'sniper', rules: PF_SNIPER, sight: { kind: 'scope', zoom: 7 } },
 ];
 
 /**

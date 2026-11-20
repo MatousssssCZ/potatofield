@@ -187,7 +187,7 @@ export class FPArms {
  * Vrcholy rukávu se odsunou od osy kosti (předloktí víc, k zápěstí méně, nadloktí méně),
  * ruka a prsty zůstanou. Počítá se v klidové póze (prostor po bindMatrix).
  */
-const THICKEN = { lower: 0.28, upper: 0.15, wrist: 0.3 };
+const THICKEN = { lower: 0.14, upper: 0.1, wrist: 0.22 };
 function thickenArms(g: THREE.BufferGeometry, sk: THREE.Skeleton, bind: THREE.Matrix4) {
   const pos = g.getAttribute('position') as THREE.BufferAttribute;
   const si = g.getAttribute('skinIndex') as THREE.BufferAttribute, sw = g.getAttribute('skinWeight') as THREE.BufferAttribute;

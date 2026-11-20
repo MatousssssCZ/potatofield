@@ -43,6 +43,17 @@ const BANK: Record<string, string[]> = {
   pouch: ['handleSmallLeather'],
 };
 
+/** Profily výstřelů (síly vrstev a délky dozvuku) – odstřelovačka nejmohutnější. */
+const SHOT_PROFILE: Record<ShotKind, { crack: number; body: number; bodyDecay: number; bodyLp: number; rate: number; boomF: number; boom: number; boomDecay: number; tail: number; tailDecay: number }> = {
+  pistol: { crack: 0.55, body: 0.75, bodyDecay: 0.07, bodyLp: 6500, rate: 1.1, boomF: 110, boom: 0.55, boomDecay: 0.12, tail: 0.45, tailDecay: 0.35 },
+  rifle: { crack: 0.85, body: 0.95, bodyDecay: 0.09, bodyLp: 8000, rate: 1, boomF: 74, boom: 0.85, boomDecay: 0.19, tail: 0.75, tailDecay: 0.5 },
+  mg: { crack: 0.75, body: 0.9, bodyDecay: 0.085, bodyLp: 7000, rate: 0.92, boomF: 64, boom: 0.85, boomDecay: 0.17, tail: 0.65, tailDecay: 0.45 },
+  shotgun: { crack: 0.6, body: 1.05, bodyDecay: 0.15, bodyLp: 4500, rate: 0.75, boomF: 50, boom: 1.05, boomDecay: 0.28, tail: 0.9, tailDecay: 0.65 },
+  sniper: { crack: 1.05, body: 1.05, bodyDecay: 0.13, bodyLp: 9500, rate: 0.88, boomF: 52, boom: 1.15, boomDecay: 0.32, tail: 1.1, tailDecay: 0.95 },
+};
+/** Ozvěny výstřelu: zpoždění (s), síla, horní mez filtru (Hz). */
+const ECHOES: Array<[number, number, number]> = [[0.09, 0.11, 2000], [0.21, 0.07, 1300], [0.42, 0.04, 850]];
+
 const STEP_BANK: Record<string, string> = { concrete: 'stepConcrete', plaster: 'stepConcrete', brick: 'stepConcrete', asphalt: 'stepConcrete', metal: 'stepMetal', wood: 'stepWood', sand: 'stepSand', dirt: 'stepGrass', grass: 'stepGrass', gravel: 'stepConcrete', fabric: 'stepCarpet', flesh: 'stepGrass' };
 const HIT_BANK: Record<string, string> = { concrete: 'hitHard', plaster: 'hitHard', brick: 'hitHard', asphalt: 'hitHard', metal: 'hitMetal', wood: 'hitWood', sand: 'hitSoft', dirt: 'hitSoft', grass: 'hitSoft', gravel: 'hitHard', fabric: 'hitSoft', flesh: 'hitFlesh' };
 
@@ -111,7 +122,17 @@ export class GameAudio {
     if (!g) {
       g = this.ctx.createGain();
       g.gain.value = this.busVolume[bus];
-      g.connect(this.master);
+      if (bus === 'shots') {
+        // Jemné přebuzení (měkké omezení) dodá ráně „punč“ a zhutní vrstvy do jedné rány.
+        const sh = this.ctx.createWaveShaper();
+        const n = 1024, curve = new Float32Array(n), k = 2.2;
+        for (let i = 0; i < n; i++) {
+          const x = (i / (n - 1)) * 2 - 1;
+          curve[i] = Math.tanh(k * x) / Math.tanh(k);
+        }
+        sh.curve = curve;
+        g.connect(sh).connect(this.master);
+      } else g.connect(this.master);
       this.buses.set(bus, g);
     }
     return g;
@@ -305,28 +326,25 @@ export class GameAudio {
     osc.stop(t + decay + 0.03);
   }
 
-  /** Syntéza výstřelu podle druhu zbraně: třesk, úder těla a dozvuk. */
+  /**
+   * Syntéza výstřelu ve vrstvách: ostré prásknutí (nadzvuková střela / ústí), střední tělo rány,
+   * dvojitý basový úder a ozvěny od okolí. Vzdálený výstřel ztrácí výšky a prásknutí.
+   */
   private gun(kind: ShotKind, o0: PlayOpts) {
     const o: PlayOpts = { ...o0, bus: 'shots' };
+    const P = SHOT_PROFILE[kind];
     const r = 0.95 + Math.random() * 0.1;
-    if (kind === 'shotgun') {
-      this.burst({ gain: 1.0, decay: 0.14, lp: 5000, hp: 140, rate: r * 0.75 }, o);
-      this.thump(52, 0.95, 0.24, o);
-      this.burst({ gain: 0.26, decay: 0.7, lp: 1000, hp: 90, delay: 0.025, rate: 0.5 }, o);
-    } else if (kind === 'sniper') {
-      this.burst({ gain: 1.0, decay: 0.11, lp: 9500, hp: 220, rate: r * 0.9 }, o);
-      this.thump(58, 1.0, 0.28, o);
-      this.burst({ gain: 0.32, decay: 1.1, lp: 1200, hp: 80, delay: 0.03, rate: 0.45 }, o);
-    } else if (kind === 'pistol') {
-      this.burst({ gain: 0.75, decay: 0.06, lp: 8000, hp: 500, rate: r * 1.15 }, o);
-      this.thump(95, 0.5, 0.1, o);
-      this.burst({ gain: 0.12, decay: 0.3, lp: 1800, hp: 200, delay: 0.02, rate: 0.7 }, o);
-    } else {
-      const mg = kind === 'mg';
-      this.burst({ gain: mg ? 0.8 : 0.9, decay: 0.09, lp: mg ? 7500 : 9000, hp: 300, rate: r * (mg ? 0.92 : 1) }, o);
-      this.thump(mg ? 62 : 70, 0.7, 0.16, o);
-      this.burst({ gain: 0.18, decay: 0.45, lp: 1400, hp: 120, delay: 0.02, rate: 0.6 }, o);
-    }
+    const far = o0.pos ? Math.min(1, this.dist(o0.pos) / 220) : 0;
+    const lp = (f: number) => f * (1 - 0.65 * far);
+    // 1) Prásknutí: velmi krátký širokopásmový impulz.
+    this.burst({ gain: P.crack * 3 * (1 - 0.55 * far), decay: 0.03, lp: lp(14000), hp: 900, rate: 1.7 }, o);
+    // 2) Tělo rány.
+    this.burst({ gain: P.body * 1.4, decay: P.bodyDecay, lp: lp(P.bodyLp), hp: 160, rate: r * P.rate }, o);
+    // 3) Basový úder (dva tóny – úder a „podlaha“).
+    this.thump(P.boomF, P.boom * 0.75, P.boomDecay, o);
+    this.thump(P.boomF * 0.75, P.boom * 0.3, P.boomDecay * 1.3, { ...o, delay: (o.delay ?? 0) + 0.004 });
+    // 4) Ozvěny od okolí: tři odrazy, každý tišší a tmavší.
+    for (const [d, g, f] of ECHOES) this.burst({ gain: P.tail * g, decay: P.tailDecay, lp: lp(f), hp: 90, rate: 0.5, delay: d }, o);
   }
 
   /** Vlastní výstřel (bez prostoru – zbraň je u hlavy). */

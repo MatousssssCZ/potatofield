@@ -27,12 +27,10 @@ export const GLB_GUNS: Record<string, GunSpec> = {
   m4a1: { file: 'Rifle_Assault_West.glb', handle: 'Charging_Handle', optic: 'reddot' },
   m16a2: { file: 'Rifle_Assault_West.glb', handle: 'Charging_Handle' },
   r870: { file: 'Shotgun_Pump_East.glb' },
-  m24: { file: 'Sniper_Rifle_West.glb', handle: 'Bolt', optic: 'scope' },
   m9: { file: 'Pistol_Full_West.glb', handle: 'Slide' },
   ak101: { file: 'Rifle_Assault_East.glb', handle: 'Bolt', optic: 'reddot' },
   akm: { file: 'Rifle_Battle_East.glb', handle: 'Bolt' },
   saiga: { file: 'Shotgun_Auto_East.glb', handle: 'Bolt' },
-  svd: { file: 'Sniper_Rifle_East.glb', handle: 'Bolt', optic: 'scope' },
   pm: { file: 'Pistol_Compact_East.glb', handle: 'Slide' },
 };
 

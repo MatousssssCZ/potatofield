@@ -592,8 +592,12 @@ export class FPWeapon {
     let target: THREE.Vector3 | null = null;
     const onHandle = (l: number, b: number) => this.boltHandleAt(l, b).add(new THREE.Vector3(0.018, -0.012, 0.06));
     this.busy = false;
-    this.mag.visible = false;
-    if (ws?.action === 'reload') {
+    // Opakovačka se zásobníkem (SV-98): přebíjí se výměnou zásobníku jako puška, závěr jen cykluje.
+    const loose = this.model.reloadStyle === 'bolt';
+    if (loose) this.mag.visible = false;
+    if (ws?.action === 'reload' && !loose) {
+      this.boltStart = -1;
+    } else if (ws?.action === 'reload') {
       this.busy = true;
       this.boltStart = -1;
       if (ws.actionStart !== this.boltReloadKey) {

@@ -138,20 +138,22 @@ describe('arzenál – pevné sestavy', () => {
     expect(qbb.optic).toBeUndefined();
   });
 
-  it('odstřelovací pušky: zvětšení M24 10×, SVD 4×; M24 opakovačka se závěrem, SVD zásobník', () => {
+  it('odstřelovací pušky (obě opakovačky): M24 10× nabíjená po nábojích, SV-98 7× se zásobníkem', () => {
     const m24 = buildFirstPerson('m24'), svd = buildFirstPerson('svd');
     expect(m24.optic?.zoom).toBe(10);
-    expect(svd.optic?.zoom).toBe(4);
+    expect(svd.optic?.zoom).toBe(7);
+    expect(svd.name).toBe('SV-98');
     expect(m24.optic?.reticle).toBe('mildot');
     expect(svd.optic?.reticle).toBe('pso1');
     expect(m24.cycle).toBe('bolt');
     expect(m24.reloadStyle).toBe('bolt');
-    expect(svd.cycle).toBe('none');
+    expect(svd.cycle).toBe('bolt');
     expect(svd.reloadStyle).toBe('magazine');
+    expect(svd.points.chargingHandle.x).toBeGreaterThan(0.03); // páka závěru vpravo
     // Páka závěru M24 je vpravo od pouzdra; okulár je za pouzdrem, objektiv před ním.
     expect(m24.points.chargingHandle.x).toBeGreaterThan(0.03);
     expect(m24.points.sightRear.z).toBeGreaterThan(0.1);
-    // Siluety: obě delší než M16A2, SVD má delší hlaveň (ústí dál vpředu).
+    // Siluety: obě delší než M16A2.
     const len = (m: typeof m24) => {
       const b = new THREE.Box3().setFromBufferAttribute(m.static.polymer.getAttribute('position') as THREE.BufferAttribute);
       b.union(new THREE.Box3().setFromBufferAttribute(m.static.metal.getAttribute('position') as THREE.BufferAttribute));

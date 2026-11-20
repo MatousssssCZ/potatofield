@@ -128,7 +128,7 @@ const cs = {
   'kit.support.role': 'Kulomet, krycí palba',
   'kit.support.note': 'Kulomet s velkým zásobníkem; zásobování (držet LMB) doplní munici a granáty spolubojovníkům.',
   'kit.sniper.role': 'Přesná palba na velkou vzdálenost',
-  'kit.sniper.note': 'Puškohled s velkým zvětšením. Opakovačka po každé ráně cykluje závěr, samonabíjecí puška střílí rychleji s menším zvětšením.',
+  'kit.sniper.note': 'Opakovačka s puškohledem: po každé ráně cykluje závěr. FC-24 (zvětšení 10×) se nabíjí po nábojích, DL-98 (7×) výměnou zásobníku.',
   'kit.engineer.role': 'Technik',
   'kit.engineer.note': 'V pilotní verzi není dostupný.',
 
@@ -525,7 +525,7 @@ const en: Record<StringKey, string> = {
   'kit.support.role': 'Machine gun, suppressing fire',
   'kit.support.note': 'Machine gun with a large magazine; ammo supply (hold LMB) refills teammates\' ammo and grenades.',
   'kit.sniper.role': 'Precise long-range fire',
-  'kit.sniper.note': 'High-magnification scope. The bolt action cycles after every shot; the semi-automatic rifle fires faster at lower magnification.',
+  'kit.sniper.note': 'Scoped bolt action: the bolt cycles after every shot. The FC-24 (10×) loads round by round, the DL-98 (7×) by swapping magazines.',
   'kit.engineer.role': 'Engineer',
   'kit.engineer.note': 'Not available in the pilot.',
 

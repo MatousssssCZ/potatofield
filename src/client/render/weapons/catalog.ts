@@ -4,7 +4,7 @@ import { buildAK101, buildAKM, buildSaiga12, buildType81 } from './ak';
 import { buildQBB95, buildQBZ95 } from './bullpup';
 import { buildM249, buildPKM } from './belt';
 import { buildHawk97, buildR870 } from './shotgun';
-import { buildM24, buildSVD } from './sniper';
+import { buildM24, buildSV98 } from './sniper';
 import { buildM9, buildPM } from './pistol';
 import type { WeaponModel } from './types';
 import { BUDGET_TABLE } from './budgetTable';
@@ -40,7 +40,7 @@ const BUILD: Record<string, { build: (s: number) => WeaponModel; verified?: bool
   qbb95: { build: buildQBB95 },
   hawk97: { build: buildHawk97, verified: false },
   m24: { build: buildM24 },
-  svd: { build: buildSVD },
+  svd: { build: buildSV98 },
 };
 
 /** Vizuální katalog nad sdíleným arzenálem (pravidla a frakce jsou v shared/config/arsenal). */

@@ -1,18 +1,17 @@
 import * as THREE from 'three';
-import { bevelBox, crossProfile, curvedMag, fwd, lathe, merge, plainBox, sideProfile, transform, tube, type P2 } from './meshkit';
+import { bevelBox, fwd, lathe, merge, plainBox, sideProfile, transform, tube, type P2 } from './meshkit';
 import { PAL as C, hipFromGrip, triCount, type WeaponModel, type WeaponPoints } from './types';
 
 /**
- * Odstřelovací pušky (Sniper): M24 (USMC) a SVD (MEC). Rozměry jsou umělecký odhad
- * (docs/weapons/M24.md, SVD.md), ne výkresové míry. Kořen: osa vývrtu y = 0, z = 0 u zadní
+ * Odstřelovací pušky (Sniper), obě opakovačky: M24 (USMC) a SV-98 (MEC). Rozměry jsou umělecký
+ * odhad (docs/weapons/M24.md, SV-98.md), ne výkresové míry. Kořen: osa vývrtu y = 0, z = 0 u zadní
  * hrany šachty zásobníku / čela lučíku. Obě mají puškohled se zvětšením: tubus je dutý
  * (osa průhledu volná), okulár nese tmavé sklo; zaměřovací obraz kreslí hra přes celou obrazovku.
  *
  * M24: opakovací (otočný závěr Remington 700), kompozitní pažba s nastavitelnou botkou,
  * těžká hlaveň, sklopená dvojnožka, puškohled 10× na dvou kroužcích. Nabíjí se po jednom
  * nábojem do otevřeného závěru (pevná schránka 5 nábojů).
- * SVD: samonabíjecí, pouzdro z rodiny AK, dřevěná pažba s průchodem pro palec a lícnicí,
- * větrané předpažbí, štěrbinový tlumič plamene, zásobník 10 nábojů, PSO-1 4× na boční montáži.
+ * SV-98: viz buildSV98.
  */
 
 type Seg = (n: number) => number;
@@ -21,8 +20,6 @@ const OD = '#3d4234';
 const OD_DARK = '#30352a';
 const RUBBER = '#161616';
 const SCOPE = '#1b1c1d';
-const WOOD = '#7a4a2a';
-const WOOD_DARK = '#643b20';
 
 /** Dutý tubus puškohledu: profil [poloměr, z] (z kladně dozadu), vnitřní stěna `inner`. */
 function scopeBody(outer: Array<[number, number]>, inner: number, axisY: number, S: Seg) {
@@ -168,135 +165,148 @@ export function buildM24(segScale = 1): WeaponModel {
   };
 }
 
-export function buildSVD(segScale = 1): WeaponModel {
+const LAMINATE = '#6a5a47';
+const LAMINATE_DARK = '#52463a';
+
+/**
+ * SV-98 (MEC): opakovací odstřelovací puška ruské konstrukce – válcové pouzdro s dlouhou lištou,
+ * těžká volná hlaveň s úsťovým zařízením, vrstvená dřevěná pažba s průchodem pro palec,
+ * nastavitelnou lícnicí a botkou, odnímatelný krátký zásobník, rovná páka závěru s kulovou hlavicí,
+ * záložní mířidla a puškohled 7× v kroužcích na liště. Umělecký odhad tvaru (délka ~1,2 m,
+ * hlaveň ~0,65 m), ne výkresové míry. Přebíjí se výměnou zásobníku, po výstřelu cykluje závěr.
+ */
+export function buildSV98(segScale = 1): WeaponModel {
   const S: Seg = (n) => Math.max(8, Math.round(n * segScale));
   const metal: THREE.BufferGeometry[] = [];
   const wood: THREE.BufferGeometry[] = [];
-  const SY = 0.046;
 
-  // --- Pouzdro (frézované, delší než AK), víko, okno vyhazování, páka závěru vpravo. ---
-  const rearZ = 0.135;
-  metal.push(sideProfile([[rearZ, 0.012], [rearZ, -0.022], [rearZ - 0.02, -0.036], [-0.13, -0.036], [-0.13, 0.012]], 0.033, 0.0015, C.blued));
-  metal.push(crossProfile([[-0.0168, 0.008], [0.0168, 0.008], [0.0168, 0.018], [0.0125, 0.0265], [0.006, 0.0305], [-0.006, 0.0305], [-0.0125, 0.0265], [-0.0168, 0.018]], rearZ + 0.004, -0.122, 0.0012, C.blued));
-  metal.push(bevelBox(0.008, 0.006, 0.008, 0.0015, C.metalWorn, [0, 0.012, rearZ + 0.008]));
-  metal.push(plainBox(0.0015, 0.011, 0.07, C.metalDark, [0.0168, 0.004, 0.0]));
-  // Pojistka (velká páka vpravo) a boční lišta montáže vlevo.
-  metal.push(sideProfile([[0.12, 0.004], [0.12, -0.004], [-0.02, -0.006], [-0.035, -0.012], [-0.04, -0.007], [-0.028, 0.003]], 0.0022, 0.0006, C.blued, 0.0182));
-  metal.push(bevelBox(0.004, 0.018, 0.13, 0.001, C.blued, [-0.0185, -0.006, 0.01]));
-  // Lučík, spoušť, záchyt zásobníku.
-  metal.push(sideProfile([[0.0, -0.035], [-0.002, -0.062], [0.064, -0.062], [0.066, -0.035], [0.06, -0.035], [0.06, -0.056], [0.004, -0.056], [0.006, -0.035]], 0.01, 0.0012, C.blued));
-  metal.push(sideProfile([[0.028, -0.036], [0.032, -0.052], [0.026, -0.056], [0.022, -0.038]], 0.005, 0.0008, C.metalWorn));
-  metal.push(bevelBox(0.014, 0.006, 0.01, 0.0015, C.metalWorn, [0, -0.052, 0.0]));
+  // --- Pouzdro (válcové) se zadním krytem závěru, okno vyhazování vpravo, lišta nahoře. ---
+  const rR = 0.0172;
+  metal.push(lathe([[0, -0.125], [0.018, -0.125], [rR, -0.118], [rR, 0.1], [0.0148, 0.108], [0, 0.108]], S(24), C.blued, 0, 0));
+  metal.push(lathe([[0, 0.108], [0.013, 0.108], [0.013, 0.142], [0.0095, 0.152], [0, 0.152]], S(18), C.blued, 0, 0));
+  metal.push(plainBox(0.0012, 0.015, 0.08, C.metalDark, [0.0168, 0.007, 0.0]));
+  // Lišta (Picatinny) po celé délce pouzdra s příčnými drážkami.
+  const railY = 0.0215;
+  metal.push(bevelBox(0.021, 0.008, 0.27, 0.0012, C.metalDark, [0, railY, -0.005]));
+  for (let i = 0; i < 18; i++) metal.push(plainBox(0.0215, 0.0022, 0.0045, '#1d1e1f', [0, railY + 0.0035, -0.135 + i * 0.0155]));
+  // Pojistka (posuvná) za závěrem vpravo a záchyt zásobníku.
+  metal.push(bevelBox(0.006, 0.007, 0.014, 0.0012, C.metalWorn, [0.013, -0.006, 0.118]));
+  metal.push(bevelBox(0.008, 0.006, 0.012, 0.0015, C.metalWorn, [0, -0.06, -0.068]));
+  // Lučík (široký, i pro rukavici) a spoušť.
+  metal.push(sideProfile([[0.006, -0.05], [0.0, -0.082], [0.082, -0.084], [0.088, -0.05], [0.079, -0.05], [0.075, -0.075], [0.01, -0.075], [0.014, -0.05]], 0.013, 0.0015, C.blued));
+  metal.push(sideProfile([[0.036, -0.051], [0.04, -0.067], [0.034, -0.071], [0.03, -0.053]], 0.005, 0.0008, C.metalWorn));
 
-  // --- Hledí (záložní mechanická mířidla), plynová trubice, předpažbí, hlaveň. ---
-  const rsZ = -0.125;
-  metal.push(sideProfile([[rsZ, 0.0], [rsZ, 0.026], [rsZ - 0.012, 0.034], [rsZ - 0.07, 0.03], [rsZ - 0.08, 0.016], [rsZ - 0.08, 0.0]], 0.026, 0.0015, C.blued));
-  metal.push(bevelBox(0.016, 0.003, 0.06, 0.0008, C.blued, [0, 0.0345, rsZ - 0.036], [-0.03, 0, 0]));
-  const gasEnd = -0.42;
-  metal.push(tube(0.0098, rsZ - 0.08, gasEnd, S(16), C.blued, 0, 0.027));
-  // Předpažbí: dvě dřevěné poloviny s větracími otvory (SVD má charakteristické podélné průduchy).
-  const hgZ0 = rsZ - 0.085, hgZ1 = -0.395;
-  const hg: P2[] = [[-0.021, 0.032], [0.021, 0.032], [0.0245, 0.016], [0.0245, -0.006], [0.02, -0.022], [0.0, -0.028], [-0.02, -0.022], [-0.0245, -0.006], [-0.0245, 0.016]];
-  wood.push(crossProfile(hg, hgZ0, hgZ1, 0.004, WOOD));
-  for (const sx of [-1, 1]) for (let i = 0; i < 6; i++) wood.push(plainBox(0.0014, 0.0075, 0.022, '#1d1410', [sx * 0.0246, 0.006, hgZ0 - 0.02 - i * 0.032]));
-  metal.push(crossProfile(hg.map(([x, y]) => [x * 1.07, y * 1.07] as P2), hgZ1 + 0.002, hgZ1 - 0.01, 0.001, C.blued)); // objímka
-  metal.push(crossProfile(hg.map(([x, y]) => [x * 1.05, y * 1.05] as P2), hgZ0 + 0.008, hgZ0 - 0.002, 0.001, C.blued));
-  // Plynový blok s regulátorem.
-  metal.push(sideProfile([[gasEnd, -0.012], [gasEnd, 0.04], [gasEnd - 0.012, 0.04], [gasEnd - 0.036, 0.014], [gasEnd - 0.036, -0.012]], 0.024, 0.0015, C.blued));
-  metal.push(transform(lathe([[0, 0], [0.0075, 0], [0.0075, 0.016], [0, 0.016]], S(12), C.metalWorn), [0.012, 0.027, gasEnd - 0.02], [0, Math.PI / 2, 0]));
-  const barrelEnd = -0.66;
-  metal.push(lathe(fwd([[0, 0.13], [0.0102, 0.13], [0.0102, 0.32], [0.0092, 0.33], [0.0088, -barrelEnd], [0, -barrelEnd]]), S(18), C.blued, 0, 0));
-  // Muška v krytu na bloku u ústí.
-  const fsZ = barrelEnd + 0.02;
-  metal.push(sideProfile([[fsZ + 0.018, -0.012], [fsZ + 0.018, 0.012], [fsZ + 0.012, 0.033], [fsZ - 0.01, 0.033], [fsZ - 0.016, 0.012], [fsZ - 0.016, -0.012]], 0.022, 0.0015, C.blued));
-  metal.push(bevelBox(0.0022, SY - 0.032, 0.0022, 0.0005, C.metalDark, [0, (SY + 0.032) / 2, fsZ]));
-  for (const sx of [-1, 1]) metal.push(bevelBox(0.0022, 0.016, 0.014, 0.0006, C.blued, [sx * 0.0085, SY - 0.004, fsZ]));
-  // Štěrbinový tlumič plamene (5 podélných štěrbin).
-  const fh0 = barrelEnd, fhLen = 0.075;
-  metal.push(lathe(fwd([[0, -fh0], [0.0112, -fh0], [0.0112, -fh0 + fhLen], [0.0094, -fh0 + fhLen + 0.003], [0.0075, -fh0 + fhLen + 0.003], [0.0075, -fh0 + 0.01], [0, -fh0 + 0.01]]), S(18), C.blued, 0, 0));
-  for (let i = 0; i < 5; i++) {
-    const a = (i / 5) * Math.PI * 2 + Math.PI / 2;
-    metal.push(transform(plainBox(0.0028, 0.0018, 0.05, C.metalDark, [0, 0, 0]), [Math.cos(a) * 0.0108, Math.sin(a) * 0.0108, fh0 - 0.045], [0, 0, a - Math.PI / 2]));
+  // --- Hlaveň: těžký profil, úsťové zařízení s průduchy, muška v krytu, záložní hledí na liště. ---
+  const B = 0.70;
+  metal.push(lathe(fwd([[0, 0.125], [0.0162, 0.125], [0.0162, 0.17], [0.0142, 0.21], [0.0126, 0.45], [0.0114, B - 0.06], [0, B - 0.06]]), S(20), C.blued, 0, 0));
+  const md0 = B - 0.065;
+  metal.push(lathe(fwd([[0, md0], [0.0145, md0], [0.0145, B - 0.004], [0.0125, B], [0.006, B], [0, B]]), S(20), C.blued, 0, 0));
+  for (let i = 0; i < 3; i++) for (const sx of [-1, 1]) metal.push(plainBox(0.0025, 0.0065, 0.009, '#121314', [sx * 0.0137, 0, -(md0 + 0.012 + i * 0.016)]));
+  const fsZ = -(md0 - 0.03);
+  metal.push(sideProfile([[fsZ + 0.014, 0.008], [fsZ + 0.012, 0.03], [fsZ - 0.012, 0.03], [fsZ - 0.016, 0.008]], 0.014, 0.0015, C.blued));
+  metal.push(bevelBox(0.0022, 0.016, 0.0022, 0.0005, C.metalDark, [0, 0.032, fsZ]));
+  metal.push(lathe(fwd([[0.0118, -fsZ - 0.018], [0.0168, -fsZ - 0.018], [0.0168, -fsZ + 0.018], [0.0118, -fsZ + 0.018], [0.0118, -fsZ - 0.018]]), S(16), C.blued, 0, 0)); // objímka mušky
+  metal.push(sideProfile([[0.135, railY + 0.004], [0.135, railY + 0.03], [0.118, railY + 0.03], [0.112, railY + 0.004]], 0.018, 0.0015, C.blued)); // dioptr vzadu (sklopený)
+
+  // --- Vrstvená pažba: dlouhé předpažbí, krk s průchodem pro palec, lícnice, botka. ---
+  // Předpažbí a lůžko pouzdra (plochý spodek, hlaveň volně nad ním).
+  wood.push(sideProfile([[-0.46, 0.002], [-0.13, 0.008], [0.1, 0.008], [0.1, -0.05], [-0.01, -0.05], [-0.03, -0.056], [-0.44, -0.046], [-0.465, -0.03]], 0.05, 0.008, LAMINATE));
+  // Horní rám pažby (hřbet) a spodní rám s pistolovou rukojetí – mezi nimi průchod pro palec.
+  wood.push(sideProfile([[0.1, 0.008], [0.2, 0.0], [0.43, -0.006], [0.44, -0.012], [0.44, -0.05], [0.33, -0.045], [0.21, -0.04], [0.16, -0.032], [0.1, -0.03]], 0.04, 0.007, LAMINATE));
+  wood.push(sideProfile([[0.085, -0.05], [0.115, -0.05], [0.165, -0.074], [0.33, -0.112], [0.44, -0.136], [0.44, -0.152], [0.42, -0.158], [0.28, -0.14], [0.16, -0.142], [0.13, -0.148], [0.104, -0.118], [0.092, -0.08]], 0.038, 0.007, LAMINATE));
+  wood.push(sideProfile([[0.44, -0.004], [0.452, -0.004], [0.452, -0.152], [0.44, -0.152]], 0.04, 0.003, LAMINATE_DARK));
+  // Pažba za průchodem pro palec je plná (otvor jen u rukojeti).
+  wood.push(sideProfile([[0.24, -0.04], [0.44, -0.05], [0.44, -0.137], [0.33, -0.113], [0.24, -0.09]], 0.036, 0.004, LAMINATE));
+  // Vrstvy laminátu (tenké tmavší pruhy na bocích předpažbí a pažby).
+  for (const sx of [-1, 1]) for (let i = 0; i < 3; i++) {
+    wood.push(plainBox(0.0008, 0.0016, 0.3, LAMINATE_DARK, [sx * 0.0253, -0.014 - i * 0.011, -0.29]));
+    wood.push(plainBox(0.0008, 0.0016, 0.2, LAMINATE_DARK, [sx * 0.0203, -0.018 - i * 0.009, 0.33]));
+  }
+  // Nastavitelná lícnice na dvou čepech.
+  wood.push(sideProfile([[0.21, 0.016], [0.38, 0.012], [0.39, 0.004], [0.38, -0.008], [0.21, -0.004], [0.2, 0.008]], 0.032, 0.005, LAMINATE_DARK));
+  for (const z of [0.25, 0.35]) metal.push(bevelBox(0.007, 0.012, 0.007, 0.0015, C.metalWorn, [0, 0.0, z]));
+  // Nastavitelná botka: kovové vložky a pryžová opěrka.
+  metal.push(bevelBox(0.03, 0.12, 0.008, 0.002, C.metalDark, [0, -0.078, 0.457]));
+  wood.push(bevelBox(0.044, 0.158, 0.02, 0.006, RUBBER, [0, -0.078, 0.472]));
+  // Poutka.
+  metal.push(bevelBox(0.008, 0.008, 0.022, 0.002, C.metalDark, [0, -0.156, 0.37]));
+  metal.push(bevelBox(0.008, 0.008, 0.022, 0.002, C.metalDark, [0, -0.052, -0.4]));
+
+  // --- Dvojnožka na čele předpažbí, sklopená dopředu pod hlaveň (levá ruka drží předpažbí). ---
+  metal.push(bevelBox(0.046, 0.012, 0.026, 0.003, C.metalDark, [0, -0.04, -0.455]));
+  for (const sx of [-1, 1]) {
+    metal.push(tube(0.0052, -0.465, -0.66, S(10), C.metal, sx * 0.014, -0.03));
+    metal.push(bevelBox(0.011, 0.006, 0.012, 0.0015, RUBBER, [sx * 0.014, -0.03, -0.665]));
   }
 
-  // --- Pažba s průchodem pro palec (skeletová), lícnice, pryžová botka. ---
-  // Horní rám (hřbet a lícnice) a spodní rám s rukojetí jako dva profily – mezi nimi otvor.
-  wood.push(sideProfile([[rearZ, 0.012], [0.17, 0.006], [0.25, 0.004], [0.42, -0.002], [0.43, -0.004], [0.43, -0.05], [0.33, -0.042], [0.2, -0.036], [0.15, -0.03], [rearZ, -0.022]], 0.036, 0.006, WOOD));
-  wood.push(sideProfile([[0.21, 0.032], [0.37, 0.03], [0.38, 0.016], [0.37, -0.004], [0.21, 0.0], [0.2, 0.018]], 0.03, 0.006, WOOD_DARK)); // lícnice
-  wood.push(sideProfile([[0.062, -0.036], [0.1, -0.036], [0.15, -0.06], [0.33, -0.1], [0.43, -0.13], [0.43, -0.145], [0.41, -0.152], [0.27, -0.13], [0.15, -0.135], [0.122, -0.14], [0.098, -0.11], [0.08, -0.07]], 0.034, 0.006, WOOD));
-  wood.push(sideProfile([[0.43, -0.004], [0.44, -0.004], [0.44, -0.145], [0.43, -0.145]], 0.036, 0.003, WOOD_DARK)); // zadní sloupek
-  wood.push(bevelBox(0.04, 0.152, 0.012, 0.004, RUBBER, [0, -0.073, 0.448]));
-  metal.push(bevelBox(0.008, 0.008, 0.02, 0.002, C.metalDark, [0, -0.15, 0.38]));
-
-  // --- PSO-1 4× na boční montáži vlevo (umělecký odhad tvaru). ---
-  const axisY = 0.088;
-  const z0 = 0.14, z1 = -0.24;
-  // Rameno montáže: boční deska na liště, most přes víko, sedlo pod tubusem.
-  metal.push(bevelBox(0.008, 0.028, 0.11, 0.002, SCOPE, [-0.025, -0.002, 0.01]));
-  metal.push(sideProfile([[0.06, 0.008], [0.06, 0.062], [-0.05, 0.062], [-0.05, 0.008], [-0.03, 0.008], [-0.026, 0.036], [0.036, 0.036], [0.04, 0.008]], 0.008, 0.0015, SCOPE, -0.024));
-  metal.push(bevelBox(0.03, 0.01, 0.11, 0.002, SCOPE, [-0.008, 0.066, 0.005]));
-  metal.push(bevelBox(0.006, 0.014, 0.012, 0.0015, C.metalWorn, [-0.031, -0.004, 0.03])); // upínací páka
+  // --- Puškohled 7× v kroužcích na liště (umělecký odhad tvaru, ne konkrétní výrobek). ---
+  const axisY = 0.06;
+  const z0 = 0.19, z1 = -0.17;
   metal.push(scopeBody([
-    [0.016, z0 - 0.068], [0.0185, z0 - 0.07], [0.0185, -0.12], [0.0205, -0.15], [0.0215, z1 + 0.05], [0.0215, z1],
-  ], 0.0125, axisY, S));
-  // Pryžová očnice (dlouhá, PSO-1) – samostatný dutý díl za okulárem.
-  metal.push(lathe([[0.0165, z0 - 0.07], [0.0205, z0 - 0.07], [0.0215, z0 - 0.02], [0.0235, z0], [0.0205, z0], [0.0175, z0 - 0.03], [0.0165, z0 - 0.07]], S(22), RUBBER, 0, axisY, true));
-  // Sluneční clona objektivu.
-  metal.push(lathe(fwd([[0.0205, -z1], [0.0225, -z1], [0.0225, -z1 + 0.06], [0.0205, -z1 + 0.06], [0.0205, -z1]]), S(22), SCOPE, 0, axisY));
-  // Věže (elevace nahoře, náměr vpravo) a pouzdro baterie osvětlení vlevo.
-  metal.push(lathe([[0.0135, -0.057], [0.0182, -0.057], [0.0188, -0.052], [0.0188, -0.018], [0.0182, -0.013], [0.0135, -0.013], [0.0135, -0.057]], S(22), SCOPE, 0, axisY)); // sedlo věží (dutý prstenec)
-  metal.push(transform(turret(0.012, 0.018, S), [0, axisY + 0.015, -0.035], [-Math.PI / 2, 0, 0]));
-  metal.push(transform(turret(0.012, 0.018, S), [0.015, axisY, -0.035], [0, Math.PI / 2, 0]));
-  metal.push(transform(lathe([[0, 0], [0.007, 0], [0.007, 0.022], [0, 0.022]], S(12), SCOPE), [-0.015, axisY - 0.006, -0.035], [0, -Math.PI / 2, 0]));
-  const glass = new THREE.CircleGeometry(0.0125, S(24));
-  glass.translate(0, axisY, z0 - 0.08);
+    [0.019, z0], [0.0205, z0 - 0.004], [0.0205, z0 - 0.045], [0.017, z0 - 0.058], [0.0135, z0 - 0.08],
+    [0.0128, z0 - 0.09], [0.0128, -0.075], [0.015, -0.095], [0.0215, z1 + 0.04], [0.0225, z1 + 0.034], [0.0225, z1 + 0.004], [0.0212, z1],
+  ], 0.0112, axisY, S));
+  for (const z of [-0.07, 0.065]) {
+    metal.push(lathe(fwd([[0.0129, -z - 0.008], [0.0162, -z - 0.008], [0.0162, -z + 0.008], [0.0129, -z + 0.008], [0.0129, -z - 0.008]]), S(20), C.metalDark, 0, axisY));
+    metal.push(bevelBox(0.024, axisY - 0.0129 - railY - 0.004, 0.016, 0.0015, C.metalDark, [0, (axisY - 0.0129 + railY + 0.004) / 2, z]));
+    metal.push(bevelBox(0.006, 0.01, 0.012, 0.0015, C.metalWorn, [0.015, railY + 0.004, z])); // příčný šroub
+  }
+  metal.push(transform(turret(0.0115, 0.02, S), [0, axisY + 0.011, 0.0], [-Math.PI / 2, 0, 0]));
+  metal.push(transform(turret(0.0115, 0.018, S), [0.011, axisY, 0.0], [0, Math.PI / 2, 0]));
+  metal.push(lathe([[0.0122, -0.015], [0.0166, -0.015], [0.017, -0.011], [0.017, 0.011], [0.0166, 0.015], [0.0122, 0.015], [0.0122, -0.015]], S(22), SCOPE, 0, axisY));
+  metal.push(lathe(fwd([[0.0212, -z1], [0.023, -z1], [0.023, -z1 + 0.05], [0.0212, -z1 + 0.05], [0.0212, -z1]]), S(22), SCOPE, 0, axisY)); // sluneční clona
+  const glass = new THREE.CircleGeometry(0.0112, S(24));
+  glass.translate(0, axisY, z0 - 0.012);
 
-  // --- Pohyblivé díly: zásobník 10 nábojů 7,62×54R (mírně zahnutý), páka závěru. ---
-  const magLen = 0.135, magDepth = 0.082;
+  // --- Pohyblivé díly: zásobník (krátký, 7,62×54R) a závěr s rovnou pákou. ---
+  const magDepth = 0.07, magLen = 0.062;
   const magGeo = merge([
-    curvedMag(magLen, magDepth, 0.026, 0.018, '#2b2c2b'),
-    bevelBox(0.028, 0.008, 0.012, 0.002, '#2b2c2b', [0, -0.004, -magDepth / 2]),
-    bevelBox(0.03, 0.008, magDepth + 0.006, 0.002, '#1e1f1e', [0, -magLen, -0.016]),
-    ...[-1, 1].map((sx) => bevelBox(0.0018, 0.09, 0.05, 0.0006, '#232423', [sx * 0.0135, -0.06, -0.004])),
+    bevelBox(0.03, magLen, magDepth, 0.003, '#232425', [0, -magLen / 2, -magDepth / 2 + 0.006]),
+    bevelBox(0.033, 0.008, magDepth + 0.006, 0.002, '#191a1b', [0, -magLen - 0.002, -magDepth / 2 + 0.006]),
+    ...[-1, 1].map((sx) => plainBox(0.0012, magLen * 0.6, magDepth * 0.55, '#1a1b1c', [sx * 0.0153, -magLen * 0.5, -magDepth / 2 + 0.006])),
   ]);
-  const handle = merge([
-    bevelBox(0.016, 0.006, 0.008, 0.0015, C.blued, [0.008, 0, 0]),
-    transform(lathe([[0, 0], [0.0065, 0], [0.0065, 0.01], [0.005, 0.012], [0, 0.012]], S(12), C.blued), [0.014, 0, 0], [0, Math.PI / 2, 0]),
+  const boltPivot = new THREE.Vector3(0, 0, 0.075);
+  const arm = (g: THREE.BufferGeometry, x: number) => g.rotateY(Math.PI / 2).rotateZ(-0.62).translate(x * Math.cos(0.62), -x * Math.sin(0.62), boltPivot.z);
+  const bolt = merge([
+    lathe([[0, -0.06], [0.0094, -0.06], [0.0094, 0.115], [0, 0.115]], S(14), C.metalWorn, 0, 0),
+    arm(lathe([[0, 0], [0.0045, 0], [0.0045, 0.05], [0, 0.05]], S(10), C.metalWorn), 0.008),
+    arm(lathe([[0, -0.0095], [0.0068, -0.008], [0.0096, -0.003], [0.0096, 0.003], [0.0068, 0.008], [0, 0.0095]], S(12), C.blued), 0.063),
   ]);
+  bolt.translate(0, 0, -boltPivot.z);
 
   const P: WeaponPoints = {
     weaponRoot: new THREE.Vector3(),
-    muzzle: new THREE.Vector3(0, 0, barrelEnd - fhLen - 0.003),
-    sightRear: new THREE.Vector3(0, axisY, z0 - 0.068),
+    muzzle: new THREE.Vector3(0, 0, -B),
+    sightRear: new THREE.Vector3(0, axisY, z0),
     sightFront: new THREE.Vector3(0, axisY, z1),
-    opticEye: new THREE.Vector3(0, axisY, z0 + 0.045),
+    opticEye: new THREE.Vector3(0, axisY, z0 + 0.085),
     opticAxis: new THREE.Vector3(0, 0, -1),
-    gripRight: new THREE.Vector3(0, -0.088, 0.105),
-    gripLeft: new THREE.Vector3(0, -0.026, -0.28),
-    magazineSocket: new THREE.Vector3(0, -0.036, -0.04),
-    ejectionPort: new THREE.Vector3(0.017, 0.006, 0.01),
-    chargingHandle: new THREE.Vector3(0.0168, 0.008, -0.05),
-    boltCatch: new THREE.Vector3(0.03, 0.008, -0.05),
+    gripRight: new THREE.Vector3(0, -0.095, 0.124),
+    gripLeft: new THREE.Vector3(0, -0.05, -0.29),
+    magazineSocket: new THREE.Vector3(0, -0.05, -0.03),
+    ejectionPort: new THREE.Vector3(0.018, 0.01, 0.0),
+    chargingHandle: new THREE.Vector3(0.063 * Math.cos(0.62), -0.063 * Math.sin(0.62), boltPivot.z),
+    boltCatch: new THREE.Vector3(0.013, -0.006, 0.118),
   };
   const m = merge(metal), w = merge(wood);
   return {
     id: 'svd',
-    name: 'SVD',
+    name: 'SV-98',
     static: { metal: m, polymer: w },
     moving: {
       magazine: { geometry: magGeo, material: 'polymer', pivot: P.magazineSocket.clone() },
-      chargingHandle: { geometry: handle, material: 'metal', pivot: P.chargingHandle.clone(), travel: new THREE.Vector3(0, 0, 0.13) },
+      chargingHandle: { geometry: bolt, material: 'metal', pivot: boltPivot, travel: new THREE.Vector3(0, 0, 0.095) },
     },
-    optic: { lensZ: z0 - 0.08, axisY, innerR: 0.0125, glass, kind: 'scope', zoom: 4, reticle: 'pso1' },
+    optic: { lensZ: z0 - 0.012, axisY, innerR: 0.0112, glass, kind: 'scope', zoom: 7, reticle: 'pso1' },
     sight: 'optic',
     points: P,
-    hipRoot: hipFromGrip(P.gripRight, [0, 0.0, 0.01]),
+    hipRoot: hipFromGrip(P.gripRight, [0, 0.0, 0.02]),
     hipRot: new THREE.Euler(0.02, 0.05, 0),
-    magRock: 0.6,
-    emptyAction: 'chargingHandle',
+    magRock: 0.3,
+    emptyAction: 'bolt',
     reloadStyle: 'magazine',
-    cycle: 'none',
+    cycle: 'bolt',
     magSide: 0,
-    triangles: triCount(m, w, magGeo, handle, glass),
+    triangles: triCount(m, w, magGeo, bolt, glass),
   };
 }
