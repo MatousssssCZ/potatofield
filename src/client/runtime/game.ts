@@ -1,3 +1,4 @@
+import { perf } from './perf';
 import * as THREE from 'three';
 import { CAMERA, adsVFov, vFovFromH16x9 } from '../../shared/config/camera';
 import { MOVEMENT, type MovementConfig } from '../../shared/config/movement';
@@ -319,6 +320,7 @@ export class Game {
     const dt = 1 / this.cfg.tickRate;
     this.acc += Math.min(frameDt, 0.25);
     let steps = 0;
+    perf.begin('sim');
     while (this.acc >= dt) {
       if (steps >= this.cfg.maxCatchUpSteps) {
         this.stats.droppedSteps += Math.floor(this.acc / dt);
@@ -346,11 +348,19 @@ export class Game {
       steps++;
       this.stats.simSteps++;
     }
+    perf.end('sim');
+    perf.begin('events');
     this.processEvents();
     this.world.updateDummies(this.driver.dummies());
+    perf.end('events');
+    perf.begin('soldiers');
     this.soldiers.update(this.driver.remotes(), frameDt, this.simTime, this.camera.position, this.camera);
+    perf.end('soldiers');
+    perf.begin('camera');
     this.updateCamera(frameDt, this.acc / dt);
+    perf.end('camera');
     this.soldiers.fullRate = this.scopeBlend > 0.5;
+    perf.begin('tags');
     {
       const me = this.driver.local();
       const sq = this.net?.squads.find((s) => me && s.members.includes(me.id));
@@ -361,13 +371,21 @@ export class Game {
         !!me?.alive && !me.spectator,
       );
     }
+    perf.end('tags');
+    perf.begin('sounds');
     this.updateSounds();
+    perf.end('sounds');
+    perf.begin('effects');
+    if (perf.ab.has('noeffects')) this.effects.clear();
     this.effects.update(frameDt);
     this.effects.motes(this.camera.position, this.now, this.moteCount);
     this.nades.sync(this.driver.grenades(), this.simTime, frameDt);
     this.nades.update(frameDt, this.camera);
+    perf.end('effects');
+    perf.begin('hud');
     this.hudT += frameDt;
-    if (this.hudT > 0.05) {
+    if (this.hudT > 0.05 && !(perf.ab.has('nohud') && this.hudDrawn)) {
+      this.hudDrawn = true;
       const hdt = this.hudT;
       this.hudT = 0;
       const me = this.driver.local();
@@ -395,8 +413,10 @@ export class Game {
         spectating: this.specName,
       });
     }
+    perf.end('hud');
   }
 
+  private hudDrawn = false;
   /** Doplňkové záložky nasazení (četa, velitel) – nastavuje aplikace. */
   extraTabs: Array<{ id: string; label: string; view: () => HTMLElement; full?: boolean }> = [];
 

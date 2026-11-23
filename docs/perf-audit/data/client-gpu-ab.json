@@ -1,0 +1,11334 @@
+[
+ {
+  "scenario": "route",
+  "date": "2026-11-23T09:12:09.132Z",
+  "commit": "d8fb6b0",
+  "dirty": true,
+  "machine": {
+   "cpu": "Intel(R) Xeon(R) Processor @ 2.30GHz",
+   "cores": 4,
+   "ramGB": 17,
+   "os": "linux 6.18.44-fc-v726"
+  },
+  "view": {
+   "w": 640,
+   "h": 360,
+   "q": "standard",
+   "extra": "&ab=half"
+  },
+  "stations": [
+   {
+    "label": "základna A, pohled celou ulicí",
+    "x": 0,
+    "z": 9,
+    "yaw": 0,
+    "frame": {
+     "frames": 44,
+     "seconds": 8.332999900817871,
+     "interval": {
+      "mean": 189.39,
+      "p50": 33.4,
+      "p95": 766.7,
+      "p99": 916.6,
+      "max": 916.6
+     },
+     "hitches": {
+      "over25": 24,
+      "over33": 22,
+      "over50": 20,
+      "over100": 18
+     },
+     "cpu": {
+      "mean": 48.63,
+      "p50": 7,
+      "p95": 16.6,
+      "p99": 925.1,
+      "max": 925.1
+     },
+     "gpu": {
+      "mean": 296.79,
+      "p50": 272.53,
+      "p95": 520.8,
+      "p99": 551.17,
+      "max": 551.17
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.5,
+       "p50": 0.4,
+       "p95": 1.5,
+       "p99": 2.5,
+       "max": 2.5
+      },
+      "events": {
+       "mean": 0.06,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 2.5,
+       "max": 2.5
+      },
+      "soldiers": {
+       "mean": 0.2,
+       "p50": 0.2,
+       "p95": 0.3,
+       "p99": 0.4,
+       "max": 0.4
+      },
+      "camera": {
+       "mean": 40.78,
+       "p50": 0.4,
+       "p95": 1.4,
+       "p99": 905.9,
+       "max": 905.9
+      },
+      "tags": {
+       "mean": 0.06,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.4,
+       "max": 0.4
+      },
+      "sounds": {
+       "mean": 0.03,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.09,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.3,
+       "max": 0.3
+      },
+      "hud": {
+       "mean": 1.18,
+       "p50": 1.4,
+       "p95": 3.6,
+       "p99": 4.8,
+       "max": 4.8
+      },
+      "ui": {
+       "mean": 0.1,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.3,
+       "max": 0.3
+      },
+      "env": {
+       "mean": 0.28,
+       "p50": 0.2,
+       "p95": 0.6,
+       "p99": 1.4,
+       "max": 1.4
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "render": {
+       "mean": 5.26,
+       "p50": 4.6,
+       "p95": 11.4,
+       "p99": 18.1,
+       "max": 18.1
+      },
+      "other": {
+       "mean": 0.08,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.3,
+       "max": 0.3
+      }
+     },
+     "calls": {
+      "mean": 198.64,
+      "p50": 231,
+      "p95": 246,
+      "p99": 247,
+      "max": 247
+     },
+     "triangles": {
+      "mean": 135488.91,
+      "p50": 158139,
+      "p95": 163353,
+      "p99": 163647,
+      "max": 163647
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 26,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 3,
+       "interval": 916.6,
+       "cpu": 6.3,
+       "top": [
+        [
+         "render",
+         2.8
+        ],
+        [
+         "hud",
+         1.8
+        ],
+        [
+         "camera",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 6,
+       "interval": 866.6,
+       "cpu": 9.3,
+       "top": [
+        [
+         "render",
+         4.9
+        ],
+        [
+         "hud",
+         2.3
+        ],
+        [
+         "env",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 31,
+       "interval": 766.7,
+       "cpu": 15.3,
+       "top": [
+        [
+         "render",
+         9.5
+        ],
+        [
+         "hud",
+         3.6
+        ],
+        [
+         "env",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 33,
+       "interval": 566.6,
+       "cpu": 12.4,
+       "top": [
+        [
+         "render",
+         7.9
+        ],
+        [
+         "hud",
+         1.8
+        ],
+        [
+         "sim",
+         1
+        ]
+       ]
+      },
+      {
+       "frame": 42,
+       "interval": 533.3,
+       "cpu": 6.5,
+       "top": [
+        [
+         "render",
+         3.3
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "sim",
+         0.7
+        ]
+       ]
+      },
+      {
+       "frame": 39,
+       "interval": 516.6,
+       "cpu": 9.3,
+       "top": [
+        [
+         "render",
+         4.4
+        ],
+        [
+         "hud",
+         3.1
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 25,
+       "interval": 500.1,
+       "cpu": 6.9,
+       "top": [
+        [
+         "render",
+         4.3
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 36,
+       "interval": 350,
+       "cpu": 6,
+       "top": [
+        [
+         "render",
+         3
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 66.7,
+      "jsHeapTotalMB": 118.3,
+      "nodes": 3934,
+      "listeners": 1380,
+      "layoutCount": 0,
+      "recalcStyleCount": 0,
+      "layoutMs": 0,
+      "styleMs": 0,
+      "scriptMs": 900,
+      "taskMs": 900
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 66.8,
+      "jsHeapTotalMB": 120.1,
+      "nodes": 6191,
+      "listeners": 1380,
+      "layoutCount": 49,
+      "recalcStyleCount": 67,
+      "layoutMs": 28,
+      "styleMs": 10.7,
+      "scriptMs": 2156,
+      "taskMs": 2304
+     },
+     "heapSamples": [
+      [
+       21930,
+       144929086
+      ],
+      [
+       23098,
+       148798626
+      ],
+      [
+       24809,
+       149931396
+      ],
+      [
+       26042,
+       150906923
+      ],
+      [
+       27492,
+       151881424
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 840,
+      "listeners": 10,
+      "geometries": 169,
+      "textures": 162,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 102,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "ulice, pohled ke křižovatce",
+    "x": 0,
+    "z": -10,
+    "yaw": 0,
+    "frame": {
+     "frames": 21,
+     "seconds": 7.133100013732911,
+     "interval": {
+      "mean": 339.67,
+      "p50": 333.3,
+      "p95": 600,
+      "p99": 666.7,
+      "max": 666.7
+     },
+     "hitches": {
+      "over25": 21,
+      "over33": 21,
+      "over50": 20,
+      "over100": 20
+     },
+     "cpu": {
+      "mean": 11.24,
+      "p50": 10.2,
+      "p95": 19.7,
+      "p99": 27.1,
+      "max": 27.1
+     },
+     "gpu": {
+      "mean": 267.57,
+      "p50": 272.95,
+      "p95": 272.95,
+      "p99": 272.95,
+      "max": 272.95
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.89,
+       "p50": 0.5,
+       "p95": 2.7,
+       "p99": 6,
+       "max": 6
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.23,
+       "p50": 0.2,
+       "p95": 0.3,
+       "p99": 0.3,
+       "max": 0.3
+      },
+      "camera": {
+       "mean": 0.62,
+       "p50": 0.4,
+       "p95": 1.9,
+       "p99": 2,
+       "max": 2
+      },
+      "tags": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "effects": {
+       "mean": 0.1,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.71,
+       "p50": 1.7,
+       "p95": 2.6,
+       "p99": 2.6,
+       "max": 2.6
+      },
+      "ui": {
+       "mean": 0.1,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "env": {
+       "mean": 0.79,
+       "p50": 0.3,
+       "p95": 2,
+       "p99": 8.6,
+       "max": 8.6
+      },
+      "grass": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "render": {
+       "mean": 6.59,
+       "p50": 4.9,
+       "p95": 15.8,
+       "p99": 17.9,
+       "max": 17.9
+      },
+      "other": {
+       "mean": 0.13,
+       "p50": 0.1,
+       "p95": 0.3,
+       "p99": 1.4,
+       "max": 1.4
+      }
+     },
+     "calls": {
+      "mean": 237.43,
+      "p50": 242,
+      "p95": 245,
+      "p99": 245,
+      "max": 245
+     },
+     "triangles": {
+      "mean": 153508.43,
+      "p50": 156231,
+      "p95": 156237,
+      "p99": 156237,
+      "max": 156237
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 20,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 11,
+       "interval": 666.7,
+       "cpu": 16.4,
+       "top": [
+        [
+         "render",
+         12
+        ],
+        [
+         "hud",
+         2.1
+        ],
+        [
+         "camera",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 14,
+       "interval": 600,
+       "cpu": 8.7,
+       "top": [
+        [
+         "render",
+         4.1
+        ],
+        [
+         "hud",
+         2.6
+        ],
+        [
+         "sim",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 9,
+       "interval": 366.7,
+       "cpu": 17.6,
+       "top": [
+        [
+         "env",
+         8.6
+        ],
+        [
+         "render",
+         5.3
+        ],
+        [
+         "hud",
+         1.8
+        ]
+       ]
+      },
+      {
+       "frame": 18,
+       "interval": 366.7,
+       "cpu": 6.1,
+       "top": [
+        [
+         "render",
+         2.9
+        ],
+        [
+         "hud",
+         1.7
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 16,
+       "interval": 366.6,
+       "cpu": 11.3,
+       "top": [
+        [
+         "render",
+         5.3
+        ],
+        [
+         "sim",
+         2.7
+        ],
+        [
+         "hud",
+         2.1
+        ]
+       ]
+      },
+      {
+       "frame": 15,
+       "interval": 350,
+       "cpu": 10.6,
+       "top": [
+        [
+         "render",
+         4.7
+        ],
+        [
+         "hud",
+         2.3
+        ],
+        [
+         "other",
+         1.4
+        ]
+       ]
+      },
+      {
+       "frame": 17,
+       "interval": 350,
+       "cpu": 19.7,
+       "top": [
+        [
+         "render",
+         15.8
+        ],
+        [
+         "hud",
+         1.7
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 12,
+       "interval": 349.9,
+       "cpu": 27.1,
+       "top": [
+        [
+         "render",
+         17.9
+        ],
+        [
+         "sim",
+         6
+        ],
+        [
+         "hud",
+         1.8
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 23.3,
+      "jsHeapTotalMB": 25.1,
+      "nodes": 3724,
+      "listeners": 1348,
+      "layoutCount": 63,
+      "recalcStyleCount": 81,
+      "layoutMs": 33.6,
+      "styleMs": 13.2,
+      "scriptMs": 2242,
+      "taskMs": 2506
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 24.4,
+      "jsHeapTotalMB": 25.7,
+      "nodes": 5698,
+      "listeners": 1348,
+      "layoutCount": 105,
+      "recalcStyleCount": 123,
+      "layoutMs": 52.1,
+      "styleMs": 22,
+      "scriptMs": 2522,
+      "taskMs": 2904
+     },
+     "heapSamples": [
+      [
+       31277,
+       105981898
+      ],
+      [
+       32575,
+       106096202
+      ],
+      [
+       33806,
+       107115416
+      ],
+      [
+       35135,
+       106304608
+      ],
+      [
+       36468,
+       107239960
+      ],
+      [
+       37538,
+       106466780
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 844,
+      "listeners": 10,
+      "geometries": 169,
+      "textures": 162,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 102,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "křižovatka, pohled k −x",
+    "x": 0,
+    "z": -33.5,
+    "yaw": 1.5707963267948966,
+    "frame": {
+     "frames": 32,
+     "seconds": 7.299600032806397,
+     "interval": {
+      "mean": 228.11,
+      "p50": 233.3,
+      "p95": 350.1,
+      "p99": 550,
+      "max": 550
+     },
+     "hitches": {
+      "over25": 30,
+      "over33": 28,
+      "over50": 28,
+      "over100": 28
+     },
+     "cpu": {
+      "mean": 8.08,
+      "p50": 7.6,
+      "p95": 15.6,
+      "p99": 18.3,
+      "max": 18.3
+     },
+     "gpu": {
+      "mean": 183.13,
+      "p50": 187.86,
+      "p95": 214.32,
+      "p99": 214.32,
+      "max": 214.32
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.73,
+       "p50": 0.4,
+       "p95": 3.2,
+       "p99": 4.9,
+       "max": 4.9
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.19,
+       "p50": 0.2,
+       "p95": 0.3,
+       "p99": 0.3,
+       "max": 0.3
+      },
+      "camera": {
+       "mean": 0.38,
+       "p50": 0.3,
+       "p95": 0.6,
+       "p99": 1.8,
+       "max": 1.8
+      },
+      "tags": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.03,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.09,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.83,
+       "p50": 1.4,
+       "p95": 4.9,
+       "p99": 5.5,
+       "max": 5.5
+      },
+      "ui": {
+       "mean": 0.23,
+       "p50": 0.1,
+       "p95": 1,
+       "p99": 3.5,
+       "max": 3.5
+      },
+      "env": {
+       "mean": 0.45,
+       "p50": 0.3,
+       "p95": 1.3,
+       "p99": 4.5,
+       "max": 4.5
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "render": {
+       "mean": 4.04,
+       "p50": 3.5,
+       "p95": 11.1,
+       "p99": 11.5,
+       "max": 11.5
+      },
+      "other": {
+       "mean": 0.09,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.8,
+       "max": 0.8
+      }
+     },
+     "calls": {
+      "mean": 153.13,
+      "p50": 166,
+      "p95": 166,
+      "p99": 166,
+      "max": 166
+     },
+     "triangles": {
+      "mean": 132950.5,
+      "p50": 140099,
+      "p95": 140099,
+      "p99": 140099,
+      "max": 140099
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 28,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 2,
+       "interval": 550,
+       "cpu": 7.8,
+       "top": [
+        [
+         "render",
+         3.9
+        ],
+        [
+         "hud",
+         2
+        ],
+        [
+         "sim",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 23,
+       "interval": 350.1,
+       "cpu": 4.5,
+       "top": [
+        [
+         "render",
+         2.2
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 5,
+       "interval": 316.6,
+       "cpu": 6.2,
+       "top": [
+        [
+         "render",
+         3.8
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 1,
+       "interval": 300,
+       "cpu": 12.7,
+       "top": [
+        [
+         "sim",
+         4.9
+        ],
+        [
+         "render",
+         3.5
+        ],
+        [
+         "hud",
+         2.8
+        ]
+       ]
+      },
+      {
+       "frame": 4,
+       "interval": 300,
+       "cpu": 6.7,
+       "top": [
+        [
+         "render",
+         2.9
+        ],
+        [
+         "hud",
+         2.3
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 32,
+       "interval": 299.9,
+       "cpu": 6.4,
+       "top": [
+        [
+         "render",
+         2.5
+        ],
+        [
+         "hud",
+         1.7
+        ],
+        [
+         "sim",
+         0.9
+        ]
+       ]
+      },
+      {
+       "frame": 6,
+       "interval": 266.7,
+       "cpu": 7.9,
+       "top": [
+        [
+         "render",
+         4.5
+        ],
+        [
+         "env",
+         1.3
+        ],
+        [
+         "hud",
+         1.1
+        ]
+       ]
+      },
+      {
+       "frame": 7,
+       "interval": 266.6,
+       "cpu": 7.6,
+       "top": [
+        [
+         "render",
+         4.8
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "camera",
+         0.4
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 24.5,
+      "jsHeapTotalMB": 27,
+      "nodes": 6391,
+      "listeners": 1348,
+      "layoutCount": 122,
+      "recalcStyleCount": 140,
+      "layoutMs": 58.2,
+      "styleMs": 25.2,
+      "scriptMs": 2603,
+      "taskMs": 3027
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 25,
+      "jsHeapTotalMB": 27.5,
+      "nodes": 9262,
+      "listeners": 1348,
+      "layoutCount": 180,
+      "recalcStyleCount": 198,
+      "layoutMs": 86.5,
+      "styleMs": 40.6,
+      "scriptMs": 2894,
+      "taskMs": 3490
+     },
+     "heapSamples": [
+      [
+       41465,
+       106712224
+      ],
+      [
+       42664,
+       106823580
+      ],
+      [
+       43692,
+       107683395
+      ],
+      [
+       44898,
+       107163934
+      ],
+      [
+       46006,
+       108193587
+      ],
+      [
+       47046,
+       107605812
+      ],
+      [
+       48136,
+       107828242
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 844,
+      "listeners": 10,
+      "geometries": 169,
+      "textures": 163,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 102,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "křižovatka, pohled k +x",
+    "x": 0,
+    "z": -33.5,
+    "yaw": -1.5707963267948966,
+    "frame": {
+     "frames": 36,
+     "seconds": 6.966399963378906,
+     "interval": {
+      "mean": 193.51,
+      "p50": 200,
+      "p95": 333.3,
+      "p99": 333.3,
+      "max": 333.3
+     },
+     "hitches": {
+      "over25": 36,
+      "over33": 34,
+      "over50": 34,
+      "over100": 32
+     },
+     "cpu": {
+      "mean": 8.01,
+      "p50": 7.2,
+      "p95": 13.8,
+      "p99": 18.4,
+      "max": 18.4
+     },
+     "gpu": {
+      "mean": 174.55,
+      "p50": 167.7,
+      "p95": 208.39,
+      "p99": 208.39,
+      "max": 208.39
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 1.1,
+       "p50": 0.4,
+       "p95": 6,
+       "p99": 7.1,
+       "max": 7.1
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "soldiers": {
+       "mean": 0.25,
+       "p50": 0.2,
+       "p95": 0.6,
+       "p99": 1.6,
+       "max": 1.6
+      },
+      "camera": {
+       "mean": 0.61,
+       "p50": 0.4,
+       "p95": 2.6,
+       "p99": 3.5,
+       "max": 3.5
+      },
+      "tags": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.07,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.63,
+       "p50": 1.4,
+       "p95": 4.2,
+       "p99": 4.4,
+       "max": 4.4
+      },
+      "ui": {
+       "mean": 0.11,
+       "p50": 0.1,
+       "p95": 0.3,
+       "p99": 0.4,
+       "max": 0.4
+      },
+      "env": {
+       "mean": 0.4,
+       "p50": 0.3,
+       "p95": 1.3,
+       "p99": 2.9,
+       "max": 2.9
+      },
+      "grass": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "render": {
+       "mean": 3.75,
+       "p50": 3.2,
+       "p95": 7.8,
+       "p99": 9.8,
+       "max": 9.8
+      },
+      "other": {
+       "mean": 0.05,
+       "p50": 0,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      }
+     },
+     "calls": {
+      "mean": 153.33,
+      "p50": 159,
+      "p95": 160,
+      "p99": 160,
+      "max": 160
+     },
+     "triangles": {
+      "mean": 117006,
+      "p50": 120183,
+      "p95": 120185,
+      "p99": 120185,
+      "max": 120185
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 34,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 4,
+       "interval": 333.3,
+       "cpu": 9,
+       "top": [
+        [
+         "render",
+         4.5
+        ],
+        [
+         "hud",
+         1.7
+        ],
+        [
+         "camera",
+         1.6
+        ]
+       ]
+      },
+      {
+       "frame": 23,
+       "interval": 333.3,
+       "cpu": 11.3,
+       "top": [
+        [
+         "sim",
+         6
+        ],
+        [
+         "render",
+         2.8
+        ],
+        [
+         "hud",
+         1.5
+        ]
+       ]
+      },
+      {
+       "frame": 19,
+       "interval": 249.9,
+       "cpu": 6.4,
+       "top": [
+        [
+         "render",
+         2.7
+        ],
+        [
+         "hud",
+         1.6
+        ],
+        [
+         "sim",
+         0.8
+        ]
+       ]
+      },
+      {
+       "frame": 8,
+       "interval": 233.4,
+       "cpu": 4.5,
+       "top": [
+        [
+         "render",
+         1.7
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 18,
+       "interval": 233.4,
+       "cpu": 11.4,
+       "top": [
+        [
+         "render",
+         5.4
+        ],
+        [
+         "sim",
+         2.1
+        ],
+        [
+         "hud",
+         2.1
+        ]
+       ]
+      },
+      {
+       "frame": 21,
+       "interval": 233.4,
+       "cpu": 13.8,
+       "top": [
+        [
+         "render",
+         7.8
+        ],
+        [
+         "hud",
+         2.9
+        ],
+        [
+         "soldiers",
+         1.6
+        ]
+       ]
+      },
+      {
+       "frame": 28,
+       "interval": 233.4,
+       "cpu": 12,
+       "top": [
+        [
+         "sim",
+         7.1
+        ],
+        [
+         "render",
+         2.3
+        ],
+        [
+         "hud",
+         1.7
+        ]
+       ]
+      },
+      {
+       "frame": 7,
+       "interval": 233.3,
+       "cpu": 5.1,
+       "top": [
+        [
+         "render",
+         2.3
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 25,
+      "jsHeapTotalMB": 28,
+      "nodes": 10353,
+      "listeners": 1348,
+      "layoutCount": 205,
+      "recalcStyleCount": 223,
+      "layoutMs": 96.8,
+      "styleMs": 45.2,
+      "scriptMs": 2990,
+      "taskMs": 3648
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 23.9,
+      "jsHeapTotalMB": 26.7,
+      "nodes": 6508,
+      "listeners": 1348,
+      "layoutCount": 275,
+      "recalcStyleCount": 293,
+      "layoutMs": 121.3,
+      "styleMs": 58.3,
+      "scriptMs": 3308,
+      "taskMs": 4183
+     },
+     "heapSamples": [
+      [
+       51439,
+       107973273
+      ],
+      [
+       52471,
+       108215782
+      ],
+      [
+       53565,
+       106871286
+      ],
+      [
+       54757,
+       106425549
+      ],
+      [
+       56021,
+       107591527
+      ],
+      [
+       57067,
+       106996347
+      ],
+      [
+       58200,
+       106452571
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 844,
+      "listeners": 10,
+      "geometries": 169,
+      "textures": 163,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 102,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "základna B, pohled zpět ulicí",
+    "x": 0,
+    "z": -60,
+    "yaw": 3.141592653589793,
+    "frame": {
+     "frames": 27,
+     "seconds": 7.133000030517578,
+     "interval": {
+      "mean": 264.19,
+      "p50": 266.6,
+      "p95": 300,
+      "p99": 416.6,
+      "max": 416.6
+     },
+     "hitches": {
+      "over25": 27,
+      "over33": 27,
+      "over50": 27,
+      "over100": 27
+     },
+     "cpu": {
+      "mean": 7.6,
+      "p50": 6.9,
+      "p95": 11.7,
+      "p99": 14.1,
+      "max": 14.1
+     },
+     "gpu": {
+      "mean": 262.01,
+      "p50": 261.74,
+      "p95": 283.73,
+      "p99": 283.73,
+      "max": 283.73
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.6,
+       "p50": 0.4,
+       "p95": 1.6,
+       "p99": 3.1,
+       "max": 3.1
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.29,
+       "p50": 0.2,
+       "p95": 1.1,
+       "p99": 1.1,
+       "max": 1.1
+      },
+      "camera": {
+       "mean": 0.41,
+       "p50": 0.3,
+       "p95": 0.6,
+       "p99": 3.2,
+       "max": 3.2
+      },
+      "tags": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.06,
+       "p50": 0.1,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.38,
+       "p50": 1.2,
+       "p95": 2.5,
+       "p99": 2.6,
+       "max": 2.6
+      },
+      "ui": {
+       "mean": 0.16,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 2.2,
+       "max": 2.2
+      },
+      "env": {
+       "mean": 0.49,
+       "p50": 0.3,
+       "p95": 2.2,
+       "p99": 3.7,
+       "max": 3.7
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0,
+       "max": 0
+      },
+      "render": {
+       "mean": 4.12,
+       "p50": 3.9,
+       "p95": 8.5,
+       "p99": 8.9,
+       "max": 8.9
+      },
+      "other": {
+       "mean": 0.05,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      }
+     },
+     "calls": {
+      "mean": 248.37,
+      "p50": 249,
+      "p95": 250,
+      "p99": 250,
+      "max": 250
+     },
+     "triangles": {
+      "mean": 155377.74,
+      "p50": 155379,
+      "p95": 155381,
+      "p99": 155381,
+      "max": 155381
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 27,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 2,
+       "interval": 416.6,
+       "cpu": 6.3,
+       "top": [
+        [
+         "render",
+         3.3
+        ],
+        [
+         "hud",
+         1.8
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 15,
+       "interval": 300,
+       "cpu": 5.2,
+       "top": [
+        [
+         "render",
+         2.7
+        ],
+        [
+         "hud",
+         1.1
+        ],
+        [
+         "soldiers",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 20,
+       "interval": 300,
+       "cpu": 11.7,
+       "top": [
+        [
+         "render",
+         4.9
+        ],
+        [
+         "sim",
+         3.1
+        ],
+        [
+         "hud",
+         2.5
+        ]
+       ]
+      },
+      {
+       "frame": 23,
+       "interval": 300,
+       "cpu": 11.4,
+       "top": [
+        [
+         "render",
+         4.5
+        ],
+        [
+         "env",
+         3.7
+        ],
+        [
+         "hud",
+         1.6
+        ]
+       ]
+      },
+      {
+       "frame": 25,
+       "interval": 300,
+       "cpu": 8.2,
+       "top": [
+        [
+         "render",
+         4.6
+        ],
+        [
+         "sim",
+         1.4
+        ],
+        [
+         "hud",
+         1.1
+        ]
+       ]
+      },
+      {
+       "frame": 19,
+       "interval": 283.4,
+       "cpu": 7.2,
+       "top": [
+        [
+         "render",
+         4.3
+        ],
+        [
+         "hud",
+         1.5
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 21,
+       "interval": 283.3,
+       "cpu": 7,
+       "top": [
+        [
+         "render",
+         3
+        ],
+        [
+         "hud",
+         2.6
+        ],
+        [
+         "env",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 24,
+       "interval": 283.3,
+       "cpu": 7.2,
+       "top": [
+        [
+         "render",
+         4.5
+        ],
+        [
+         "hud",
+         1.1
+        ],
+        [
+         "sim",
+         0.6
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 24.4,
+      "jsHeapTotalMB": 27.5,
+      "nodes": 7636,
+      "listeners": 1348,
+      "layoutCount": 301,
+      "recalcStyleCount": 319,
+      "layoutMs": 134.4,
+      "styleMs": 62.1,
+      "scriptMs": 3431,
+      "taskMs": 4373
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 25.1,
+      "jsHeapTotalMB": 26.5,
+      "nodes": 10268,
+      "listeners": 1348,
+      "layoutCount": 357,
+      "recalcStyleCount": 375,
+      "layoutMs": 153.8,
+      "styleMs": 70.4,
+      "scriptMs": 3676,
+      "taskMs": 4747
+     },
+     "heapSamples": [
+      [
+       61423,
+       107283168
+      ],
+      [
+       62670,
+       106856673
+      ],
+      [
+       63670,
+       106923854
+      ],
+      [
+       64706,
+       107757504
+      ],
+      [
+       65770,
+       107071347
+      ],
+      [
+       66907,
+       107133001
+      ],
+      [
+       68059,
+       107189930
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 844,
+      "listeners": 10,
+      "geometries": 169,
+      "textures": 163,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 102,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "u fasády, pohled přes ulici",
+    "x": 6,
+    "z": -20,
+    "yaw": 1.5707963267948966,
+    "frame": {
+     "frames": 31,
+     "seconds": 7.266300109863281,
+     "interval": {
+      "mean": 234.4,
+      "p50": 233.3,
+      "p95": 283.2,
+      "p99": 283.4,
+      "max": 283.4
+     },
+     "hitches": {
+      "over25": 31,
+      "over33": 31,
+      "over50": 31,
+      "over100": 31
+     },
+     "cpu": {
+      "mean": 8.29,
+      "p50": 8,
+      "p95": 12.1,
+      "p99": 22.5,
+      "max": 22.5
+     },
+     "gpu": {
+      "mean": 201.37,
+      "p50": 201.19,
+      "p95": 223.31,
+      "p99": 223.31,
+      "max": 223.31
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.72,
+       "p50": 0.4,
+       "p95": 2.8,
+       "p99": 2.9,
+       "max": 2.9
+      },
+      "events": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.23,
+       "p50": 0.2,
+       "p95": 0.4,
+       "p99": 1.3,
+       "max": 1.3
+      },
+      "camera": {
+       "mean": 0.48,
+       "p50": 0.3,
+       "p95": 1.4,
+       "p99": 4.4,
+       "max": 4.4
+      },
+      "tags": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "effects": {
+       "mean": 0.06,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.59,
+       "p50": 1.3,
+       "p95": 3.1,
+       "p99": 5.5,
+       "max": 5.5
+      },
+      "ui": {
+       "mean": 0.23,
+       "p50": 0.1,
+       "p95": 0.3,
+       "p99": 2.9,
+       "max": 2.9
+      },
+      "env": {
+       "mean": 0.53,
+       "p50": 0.3,
+       "p95": 1.6,
+       "p99": 6.5,
+       "max": 6.5
+      },
+      "grass": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "render": {
+       "mean": 4.32,
+       "p50": 3.8,
+       "p95": 9.1,
+       "p99": 9.3,
+       "max": 9.3
+      },
+      "other": {
+       "mean": 0.06,
+       "p50": 0,
+       "p95": 0.2,
+       "p99": 0.3,
+       "max": 0.3
+      }
+     },
+     "calls": {
+      "mean": 190.35,
+      "p50": 190,
+      "p95": 192,
+      "p99": 192,
+      "max": 192
+     },
+     "triangles": {
+      "mean": 144639.71,
+      "p50": 144639,
+      "p95": 144643,
+      "p99": 144643,
+      "max": 144643
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 31,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 1,
+       "interval": 283.4,
+       "cpu": 10.8,
+       "top": [
+        [
+         "render",
+         6.1
+        ],
+        [
+         "hud",
+         3.1
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 2,
+       "interval": 283.2,
+       "cpu": 6.9,
+       "top": [
+        [
+         "render",
+         2.9
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "soldiers",
+         1.3
+        ]
+       ]
+      },
+      {
+       "frame": 4,
+       "interval": 283.2,
+       "cpu": 9.2,
+       "top": [
+        [
+         "render",
+         3.9
+        ],
+        [
+         "sim",
+         2.8
+        ],
+        [
+         "hud",
+         1.3
+        ]
+       ]
+      },
+      {
+       "frame": 5,
+       "interval": 266.7,
+       "cpu": 5.7,
+       "top": [
+        [
+         "render",
+         3
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 6,
+       "interval": 266.7,
+       "cpu": 8.4,
+       "top": [
+        [
+         "sim",
+         2.9
+        ],
+        [
+         "render",
+         2.9
+        ],
+        [
+         "hud",
+         1.4
+        ]
+       ]
+      },
+      {
+       "frame": 8,
+       "interval": 266.7,
+       "cpu": 7.2,
+       "top": [
+        [
+         "render",
+         4.2
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "env",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 7,
+       "interval": 266.6,
+       "cpu": 6.8,
+       "top": [
+        [
+         "render",
+         4.2
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 3,
+       "interval": 250.1,
+       "cpu": 6.7,
+       "top": [
+        [
+         "render",
+         2.8
+        ],
+        [
+         "camera",
+         1.4
+        ],
+        [
+         "hud",
+         1.3
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 25.2,
+      "jsHeapTotalMB": 27.8,
+      "nodes": 11114,
+      "listeners": 1348,
+      "layoutCount": 378,
+      "recalcStyleCount": 396,
+      "layoutMs": 163.3,
+      "styleMs": 73.3,
+      "scriptMs": 3773,
+      "taskMs": 4894
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 23.9,
+      "jsHeapTotalMB": 27.5,
+      "nodes": 5134,
+      "listeners": 1348,
+      "layoutCount": 442,
+      "recalcStyleCount": 460,
+      "layoutMs": 187.1,
+      "styleMs": 82.9,
+      "scriptMs": 4053,
+      "taskMs": 5349
+     },
+     "heapSamples": [
+      [
+       71486,
+       107444998
+      ],
+      [
+       72557,
+       108188604
+      ],
+      [
+       73572,
+       108049889
+      ],
+      [
+       74736,
+       108159176
+      ],
+      [
+       75788,
+       106715683
+      ],
+      [
+       76862,
+       106899348
+      ],
+      [
+       78036,
+       106446509
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 844,
+      "listeners": 10,
+      "geometries": 169,
+      "textures": 163,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 102,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   }
+  ]
+ },
+ {
+  "scenario": "route",
+  "date": "2026-11-23T09:13:30.830Z",
+  "commit": "d8fb6b0",
+  "dirty": true,
+  "machine": {
+   "cpu": "Intel(R) Xeon(R) Processor @ 2.30GHz",
+   "cores": 4,
+   "ramGB": 17,
+   "os": "linux 6.18.44-fc-v726"
+  },
+  "view": {
+   "w": 640,
+   "h": 360,
+   "q": "standard",
+   "extra": "&ab=half,noshadow"
+  },
+  "stations": [
+   {
+    "label": "základna A, pohled celou ulicí",
+    "x": 0,
+    "z": 9,
+    "yaw": 0,
+    "frame": {
+     "frames": 47,
+     "seconds": 8.566400020599366,
+     "interval": {
+      "mean": 182.26,
+      "p50": 33.3,
+      "p95": 516.7,
+      "p99": 1183.2,
+      "max": 1183.2
+     },
+     "hitches": {
+      "over25": 24,
+      "over33": 22,
+      "over50": 21,
+      "over100": 21
+     },
+     "cpu": {
+      "mean": 52.66,
+      "p50": 6.2,
+      "p95": 13,
+      "p99": 1173.2,
+      "max": 1173.2
+     },
+     "gpu": {
+      "mean": 255.55,
+      "p50": 245.3,
+      "p95": 364.11,
+      "p99": 438.26,
+      "max": 438.26
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.51,
+       "p50": 0.3,
+       "p95": 2.7,
+       "p99": 4,
+       "max": 4
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.19,
+       "p50": 0.2,
+       "p95": 0.4,
+       "p99": 0.4,
+       "max": 0.4
+      },
+      "camera": {
+       "mean": 46.23,
+       "p50": 0.4,
+       "p95": 1.8,
+       "p99": 1154.7,
+       "max": 1154.7
+      },
+      "tags": {
+       "mean": 0.06,
+       "p50": 0,
+       "p95": 0.2,
+       "p99": 0.4,
+       "max": 0.4
+      },
+      "sounds": {
+       "mean": 0.03,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "effects": {
+       "mean": 0.11,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.9,
+       "max": 0.9
+      },
+      "hud": {
+       "mean": 1.03,
+       "p50": 1.2,
+       "p95": 2.5,
+       "p99": 6.9,
+       "max": 6.9
+      },
+      "ui": {
+       "mean": 0.09,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "env": {
+       "mean": 0.26,
+       "p50": 0.2,
+       "p95": 0.4,
+       "p99": 1.5,
+       "max": 1.5
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "render": {
+       "mean": 4.07,
+       "p50": 3.1,
+       "p95": 8.9,
+       "p99": 15.1,
+       "max": 15.1
+      },
+      "other": {
+       "mean": 0.06,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.3,
+       "max": 0.3
+      }
+     },
+     "calls": {
+      "mean": 144.87,
+      "p50": 142,
+      "p95": 157,
+      "p99": 158,
+      "max": 158
+     },
+     "triangles": {
+      "mean": 102024.23,
+      "p50": 101563,
+      "p95": 106773,
+      "p99": 107067,
+      "max": 107067
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 47,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 3,
+       "interval": 1183.2,
+       "cpu": 10.6,
+       "top": [
+        [
+         "render",
+         4.4
+        ],
+        [
+         "camera",
+         1.5
+        ],
+        [
+         "hud",
+         1.5
+        ]
+       ]
+      },
+      {
+       "frame": 6,
+       "interval": 1016.7,
+       "cpu": 6.5,
+       "top": [
+        [
+         "render",
+         2.6
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "effects",
+         0.9
+        ]
+       ]
+      },
+      {
+       "frame": 35,
+       "interval": 516.7,
+       "cpu": 6.6,
+       "top": [
+        [
+         "render",
+         3
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "camera",
+         0.7
+        ]
+       ]
+      },
+      {
+       "frame": 39,
+       "interval": 516.6,
+       "cpu": 6.2,
+       "top": [
+        [
+         "render",
+         2.8
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "camera",
+         1
+        ]
+       ]
+      },
+      {
+       "frame": 46,
+       "interval": 466.7,
+       "cpu": 6,
+       "top": [
+        [
+         "render",
+         2.6
+        ],
+        [
+         "hud",
+         1.5
+        ],
+        [
+         "sim",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 36,
+       "interval": 466.6,
+       "cpu": 6.9,
+       "top": [
+        [
+         "render",
+         4
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 28,
+       "interval": 350,
+       "cpu": 9.1,
+       "top": [
+        [
+         "render",
+         3.2
+        ],
+        [
+         "hud",
+         2.5
+        ],
+        [
+         "camera",
+         1.8
+        ]
+       ]
+      },
+      {
+       "frame": 34,
+       "interval": 300,
+       "cpu": 12.8,
+       "top": [
+        [
+         "hud",
+         6.9
+        ],
+        [
+         "render",
+         3.9
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 72.6,
+      "jsHeapTotalMB": 115.3,
+      "nodes": 3931,
+      "listeners": 1380,
+      "layoutCount": 0,
+      "recalcStyleCount": 0,
+      "layoutMs": 0,
+      "styleMs": 0,
+      "scriptMs": 1149,
+      "taskMs": 1149
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 69.1,
+      "jsHeapTotalMB": 117.4,
+      "nodes": 6564,
+      "listeners": 1380,
+      "layoutCount": 57,
+      "recalcStyleCount": 78,
+      "layoutMs": 19.2,
+      "styleMs": 12.6,
+      "scriptMs": 2498,
+      "taskMs": 2625
+     },
+     "heapSamples": [
+      [
+       19633,
+       135803223
+      ],
+      [
+       20685,
+       147526272
+      ],
+      [
+       21938,
+       151878906
+      ],
+      [
+       23244,
+       152954922
+      ],
+      [
+       24733,
+       153908972
+      ],
+      [
+       25739,
+       154800194
+      ],
+      [
+       26979,
+       155698464
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 842,
+      "listeners": 10,
+      "geometries": 167,
+      "textures": 160,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 99,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "ulice, pohled ke křižovatce",
+    "x": 0,
+    "z": -10,
+    "yaw": 0,
+    "frame": {
+     "frames": 27,
+     "seconds": 7.383100051879882,
+     "interval": {
+      "mean": 273.45,
+      "p50": 283.2,
+      "p95": 333.2,
+      "p99": 333.4,
+      "max": 333.4
+     },
+     "hitches": {
+      "over25": 27,
+      "over33": 27,
+      "over50": 27,
+      "over100": 27
+     },
+     "cpu": {
+      "mean": 9.44,
+      "p50": 8.3,
+      "p95": 15.6,
+      "p99": 25.1,
+      "max": 25.1
+     },
+     "gpu": {
+      "mean": 230.14,
+      "p50": 224.82,
+      "p95": 305.09,
+      "p99": 305.09,
+      "max": 305.09
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.93,
+       "p50": 0.5,
+       "p95": 2.2,
+       "p99": 5.6,
+       "max": 5.6
+      },
+      "events": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.3,
+       "max": 0.3
+      },
+      "soldiers": {
+       "mean": 0.23,
+       "p50": 0.2,
+       "p95": 0.4,
+       "p99": 0.5,
+       "max": 0.5
+      },
+      "camera": {
+       "mean": 0.47,
+       "p50": 0.4,
+       "p95": 1.3,
+       "p99": 1.5,
+       "max": 1.5
+      },
+      "tags": {
+       "mean": 0.03,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.13,
+       "p50": 0.1,
+       "p95": 0.5,
+       "p99": 0.6,
+       "max": 0.6
+      },
+      "hud": {
+       "mean": 2.71,
+       "p50": 1.7,
+       "p95": 6,
+       "p99": 13.7,
+       "max": 13.7
+      },
+      "ui": {
+       "mean": 0.11,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "env": {
+       "mean": 0.34,
+       "p50": 0.3,
+       "p95": 0.7,
+       "p99": 0.9,
+       "max": 0.9
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "render": {
+       "mean": 4.36,
+       "p50": 4.5,
+       "p95": 7,
+       "p99": 8.1,
+       "max": 8.1
+      },
+      "other": {
+       "mean": 0.08,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.4,
+       "max": 0.4
+      }
+     },
+     "calls": {
+      "mean": 138.48,
+      "p50": 138,
+      "p95": 141,
+      "p99": 141,
+      "max": 141
+     },
+     "triangles": {
+      "mean": 99041.96,
+      "p50": 99041,
+      "p95": 99047,
+      "p99": 99047,
+      "max": 99047
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 27,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 21,
+       "interval": 333.4,
+       "cpu": 6.4,
+       "top": [
+        [
+         "render",
+         3.4
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 15,
+       "interval": 333.2,
+       "cpu": 10.8,
+       "top": [
+        [
+         "render",
+         4.7
+        ],
+        [
+         "hud",
+         1.7
+        ],
+        [
+         "sim",
+         1.5
+        ]
+       ]
+      },
+      {
+       "frame": 14,
+       "interval": 316.7,
+       "cpu": 11.6,
+       "top": [
+        [
+         "render",
+         4.5
+        ],
+        [
+         "hud",
+         4.3
+        ],
+        [
+         "env",
+         0.9
+        ]
+       ]
+      },
+      {
+       "frame": 11,
+       "interval": 300.1,
+       "cpu": 8.6,
+       "top": [
+        [
+         "render",
+         5.6
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "camera",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 16,
+       "interval": 300.1,
+       "cpu": 6.9,
+       "top": [
+        [
+         "render",
+         2.9
+        ],
+        [
+         "hud",
+         1.7
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 2,
+       "interval": 300,
+       "cpu": 7.7,
+       "top": [
+        [
+         "render",
+         2.7
+        ],
+        [
+         "sim",
+         2.1
+        ],
+        [
+         "hud",
+         1.6
+        ]
+       ]
+      },
+      {
+       "frame": 13,
+       "interval": 300,
+       "cpu": 13.7,
+       "top": [
+        [
+         "render",
+         7
+        ],
+        [
+         "hud",
+         4.6
+        ],
+        [
+         "sim",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 5,
+       "interval": 299.9,
+       "cpu": 7.9,
+       "top": [
+        [
+         "hud",
+         3.2
+        ],
+        [
+         "render",
+         2.8
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 72.1,
+      "jsHeapTotalMB": 117.7,
+      "nodes": 7316,
+      "listeners": 1380,
+      "layoutCount": 75,
+      "recalcStyleCount": 96,
+      "layoutMs": 28.1,
+      "styleMs": 16.9,
+      "scriptMs": 2586,
+      "taskMs": 2760
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 23.8,
+      "jsHeapTotalMB": 24.9,
+      "nodes": 5792,
+      "listeners": 1348,
+      "layoutCount": 131,
+      "recalcStyleCount": 152,
+      "layoutMs": 63.1,
+      "styleMs": 27.1,
+      "scriptMs": 2857,
+      "taskMs": 3284
+     },
+     "heapSamples": [
+      [
+       30504,
+       106062750
+      ],
+      [
+       31575,
+       105938273
+      ],
+      [
+       32682,
+       106073414
+      ],
+      [
+       33937,
+       107064834
+      ],
+      [
+       35030,
+       106458251
+      ],
+      [
+       36126,
+       105826437
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 843,
+      "listeners": 10,
+      "geometries": 167,
+      "textures": 160,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 99,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "křižovatka, pohled k −x",
+    "x": 0,
+    "z": -33.5,
+    "yaw": 1.5707963267948966,
+    "frame": {
+     "frames": 40,
+     "seconds": 7.116499996185302,
+     "interval": {
+      "mean": 177.91,
+      "p50": 166.7,
+      "p95": 383.3,
+      "p99": 450,
+      "max": 450
+     },
+     "hitches": {
+      "over25": 40,
+      "over33": 37,
+      "over50": 37,
+      "over100": 36
+     },
+     "cpu": {
+      "mean": 7.25,
+      "p50": 7.2,
+      "p95": 12.4,
+      "p99": 12.5,
+      "max": 12.5
+     },
+     "gpu": {
+      "mean": 156.28,
+      "p50": 140.95,
+      "p95": 170.81,
+      "p99": 381.19,
+      "max": 381.19
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.99,
+       "p50": 0.5,
+       "p95": 4.6,
+       "p99": 5.3,
+       "max": 5.3
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.28,
+       "p50": 0.2,
+       "p95": 0.4,
+       "p99": 3.1,
+       "max": 3.1
+      },
+      "camera": {
+       "mean": 0.61,
+       "p50": 0.4,
+       "p95": 3.2,
+       "p99": 3.9,
+       "max": 3.9
+      },
+      "tags": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "effects": {
+       "mean": 0.06,
+       "p50": 0.1,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.48,
+       "p50": 1.4,
+       "p95": 3.1,
+       "p99": 3.4,
+       "max": 3.4
+      },
+      "ui": {
+       "mean": 0.1,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.3,
+       "max": 0.3
+      },
+      "env": {
+       "mean": 0.4,
+       "p50": 0.2,
+       "p95": 1.4,
+       "p99": 4.3,
+       "max": 4.3
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "render": {
+       "mean": 3.24,
+       "p50": 2.6,
+       "p95": 6.7,
+       "p99": 8.9,
+       "max": 8.9
+      },
+      "other": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.3,
+       "max": 0.3
+      }
+     },
+     "calls": {
+      "mean": 63,
+      "p50": 63,
+      "p95": 63,
+      "p99": 63,
+      "max": 63
+     },
+     "triangles": {
+      "mean": 82911,
+      "p50": 82911,
+      "p95": 82911,
+      "p99": 82911,
+      "max": 82911
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 40,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 4,
+       "interval": 450,
+       "cpu": 7.9,
+       "top": [
+        [
+         "render",
+         2.9
+        ],
+        [
+         "sim",
+         1.8
+        ],
+        [
+         "hud",
+         1.5
+        ]
+       ]
+      },
+      {
+       "frame": 39,
+       "interval": 383.3,
+       "cpu": 12.5,
+       "top": [
+        [
+         "render",
+         8.9
+        ],
+        [
+         "hud",
+         2.1
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 13,
+       "interval": 300.1,
+       "cpu": 5.2,
+       "top": [
+        [
+         "render",
+         2.6
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 19,
+       "interval": 283.3,
+       "cpu": 8.3,
+       "top": [
+        [
+         "render",
+         3.9
+        ],
+        [
+         "hud",
+         2.4
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 5,
+       "interval": 250,
+       "cpu": 5.3,
+       "top": [
+        [
+         "render",
+         2.6
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 2,
+       "interval": 249.9,
+       "cpu": 6.8,
+       "top": [
+        [
+         "sim",
+         2.2
+        ],
+        [
+         "render",
+         2.2
+        ],
+        [
+         "hud",
+         1.4
+        ]
+       ]
+      },
+      {
+       "frame": 6,
+       "interval": 233.4,
+       "cpu": 9.8,
+       "top": [
+        [
+         "render",
+         3.2
+        ],
+        [
+         "camera",
+         3.1
+        ],
+        [
+         "hud",
+         1.9
+        ]
+       ]
+      },
+      {
+       "frame": 3,
+       "interval": 233.3,
+       "cpu": 9.2,
+       "top": [
+        [
+         "render",
+         6.1
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 23.4,
+      "jsHeapTotalMB": 26.2,
+      "nodes": 6782,
+      "listeners": 1348,
+      "layoutCount": 154,
+      "recalcStyleCount": 175,
+      "layoutMs": 74.1,
+      "styleMs": 31.5,
+      "scriptMs": 2928,
+      "taskMs": 3402
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 24,
+      "jsHeapTotalMB": 28.8,
+      "nodes": 10544,
+      "listeners": 1348,
+      "layoutCount": 230,
+      "recalcStyleCount": 251,
+      "layoutMs": 104.4,
+      "styleMs": 47,
+      "scriptMs": 3243,
+      "taskMs": 3894
+     },
+     "heapSamples": [
+      [
+       41064,
+       106264462
+      ],
+      [
+       42188,
+       106755128
+      ],
+      [
+       43465,
+       107390494
+      ],
+      [
+       44503,
+       106885107
+      ],
+      [
+       45635,
+       107050613
+      ],
+      [
+       46877,
+       107845345
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 843,
+      "listeners": 10,
+      "geometries": 167,
+      "textures": 161,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 99,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "křižovatka, pohled k +x",
+    "x": 0,
+    "z": -33.5,
+    "yaw": -1.5707963267948966,
+    "frame": {
+     "frames": 43,
+     "seconds": 7.299800014495849,
+     "interval": {
+      "mean": 169.76,
+      "p50": 166.7,
+      "p95": 216.6,
+      "p99": 333.3,
+      "max": 333.3
+     },
+     "hitches": {
+      "over25": 41,
+      "over33": 41,
+      "over50": 39,
+      "over100": 39
+     },
+     "cpu": {
+      "mean": 6.57,
+      "p50": 6,
+      "p95": 11.1,
+      "p99": 14.9,
+      "max": 14.9
+     },
+     "gpu": {
+      "mean": 148.55,
+      "p50": 148.26,
+      "p95": 176.59,
+      "p99": 189.41,
+      "max": 189.41
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.72,
+       "p50": 0.4,
+       "p95": 2.1,
+       "p99": 5,
+       "max": 5
+      },
+      "events": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.21,
+       "p50": 0.2,
+       "p95": 0.4,
+       "p99": 0.7,
+       "max": 0.7
+      },
+      "camera": {
+       "mean": 0.43,
+       "p50": 0.3,
+       "p95": 0.6,
+       "p99": 3.8,
+       "max": 3.8
+      },
+      "tags": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.09,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 1.2,
+       "max": 1.2
+      },
+      "hud": {
+       "mean": 1.63,
+       "p50": 1.4,
+       "p95": 3.9,
+       "p99": 5.9,
+       "max": 5.9
+      },
+      "ui": {
+       "mean": 0.11,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 1.6,
+       "max": 1.6
+      },
+      "env": {
+       "mean": 0.49,
+       "p50": 0.3,
+       "p95": 1.5,
+       "p99": 5.2,
+       "max": 5.2
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "render": {
+       "mean": 2.77,
+       "p50": 2.4,
+       "p95": 5.5,
+       "p99": 6.4,
+       "max": 6.4
+      },
+      "other": {
+       "mean": 0.07,
+       "p50": 0,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      }
+     },
+     "calls": {
+      "mean": 56,
+      "p50": 56,
+      "p95": 56,
+      "p99": 56,
+      "max": 56
+     },
+     "triangles": {
+      "mean": 62995,
+      "p50": 62995,
+      "p95": 62995,
+      "p99": 62995,
+      "max": 62995
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 43,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 19,
+       "interval": 333.3,
+       "cpu": 6,
+       "top": [
+        [
+         "render",
+         3.3
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 28,
+       "interval": 300,
+       "cpu": 4.4,
+       "top": [
+        [
+         "render",
+         2.1
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "camera",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 12,
+       "interval": 216.6,
+       "cpu": 8.8,
+       "top": [
+        [
+         "hud",
+         3.6
+        ],
+        [
+         "render",
+         2.8
+        ],
+        [
+         "effects",
+         1.2
+        ]
+       ]
+      },
+      {
+       "frame": 41,
+       "interval": 216.6,
+       "cpu": 8,
+       "top": [
+        [
+         "render",
+         3.4
+        ],
+        [
+         "hud",
+         1.7
+        ],
+        [
+         "sim",
+         1.6
+        ]
+       ]
+      },
+      {
+       "frame": 14,
+       "interval": 200.1,
+       "cpu": 7,
+       "top": [
+        [
+         "render",
+         4
+        ],
+        [
+         "hud",
+         1.5
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 42,
+       "interval": 200.1,
+       "cpu": 10.2,
+       "top": [
+        [
+         "render",
+         6.2
+        ],
+        [
+         "hud",
+         1.8
+        ],
+        [
+         "sim",
+         1
+        ]
+       ]
+      },
+      {
+       "frame": 5,
+       "interval": 200,
+       "cpu": 8.3,
+       "top": [
+        [
+         "render",
+         2.9
+        ],
+        [
+         "env",
+         2.5
+        ],
+        [
+         "hud",
+         1.7
+        ]
+       ]
+      },
+      {
+       "frame": 10,
+       "interval": 200,
+       "cpu": 6.7,
+       "top": [
+        [
+         "render",
+         2.4
+        ],
+        [
+         "hud",
+         1.8
+        ],
+        [
+         "sim",
+         1.2
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 24.5,
+      "jsHeapTotalMB": 29.1,
+      "nodes": 4330,
+      "listeners": 1348,
+      "layoutCount": 259,
+      "recalcStyleCount": 280,
+      "layoutMs": 113.3,
+      "styleMs": 52,
+      "scriptMs": 3348,
+      "taskMs": 4092
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 24.9,
+      "jsHeapTotalMB": 28.6,
+      "nodes": 8290,
+      "listeners": 1348,
+      "layoutCount": 339,
+      "recalcStyleCount": 360,
+      "layoutMs": 146.7,
+      "styleMs": 67.2,
+      "scriptMs": 3645,
+      "taskMs": 4578
+     },
+     "heapSamples": [
+      [
+       50103,
+       105851492
+      ],
+      [
+       51203,
+       107182290
+      ],
+      [
+       52356,
+       106666883
+      ],
+      [
+       53413,
+       107519790
+      ],
+      [
+       54630,
+       106241484
+      ],
+      [
+       55726,
+       107417147
+      ],
+      [
+       56854,
+       106865768
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 844,
+      "listeners": 10,
+      "geometries": 167,
+      "textures": 161,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 99,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "základna B, pohled zpět ulicí",
+    "x": 0,
+    "z": -60,
+    "yaw": 3.141592653589793,
+    "frame": {
+     "frames": 32,
+     "seconds": 7.16640002822876,
+     "interval": {
+      "mean": 223.95,
+      "p50": 216.7,
+      "p95": 400,
+      "p99": 483.3,
+      "max": 483.3
+     },
+     "hitches": {
+      "over25": 31,
+      "over33": 31,
+      "over50": 31,
+      "over100": 30
+     },
+     "cpu": {
+      "mean": 7.86,
+      "p50": 7.2,
+      "p95": 13.6,
+      "p99": 15.1,
+      "max": 15.1
+     },
+     "gpu": {
+      "mean": 200.25,
+      "p50": 198.45,
+      "p95": 233.66,
+      "p99": 233.66,
+      "max": 233.66
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.83,
+       "p50": 0.5,
+       "p95": 2.3,
+       "p99": 4.8,
+       "max": 4.8
+      },
+      "events": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.22,
+       "p50": 0.2,
+       "p95": 0.4,
+       "p99": 0.4,
+       "max": 0.4
+      },
+      "camera": {
+       "mean": 0.43,
+       "p50": 0.3,
+       "p95": 2.1,
+       "p99": 2.3,
+       "max": 2.3
+      },
+      "tags": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "effects": {
+       "mean": 0.08,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.62,
+       "p50": 1.4,
+       "p95": 3.2,
+       "p99": 4.3,
+       "max": 4.3
+      },
+      "ui": {
+       "mean": 0.13,
+       "p50": 0.1,
+       "p95": 0.3,
+       "p99": 0.9,
+       "max": 0.9
+      },
+      "env": {
+       "mean": 0.26,
+       "p50": 0.3,
+       "p95": 0.5,
+       "p99": 0.5,
+       "max": 0.5
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "render": {
+       "mean": 4.16,
+       "p50": 3.4,
+       "p95": 9.8,
+       "p99": 10.2,
+       "max": 10.2
+      },
+      "other": {
+       "mean": 0.06,
+       "p50": 0,
+       "p95": 0.3,
+       "p99": 0.3,
+       "max": 0.3
+      }
+     },
+     "calls": {
+      "mean": 151.94,
+      "p50": 152,
+      "p95": 153,
+      "p99": 154,
+      "max": 154
+     },
+     "triangles": {
+      "mean": 98910.88,
+      "p50": 98911,
+      "p95": 98913,
+      "p99": 98915,
+      "max": 98915
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 32,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 16,
+       "interval": 483.3,
+       "cpu": 7.6,
+       "top": [
+        [
+         "render",
+         3.4
+        ],
+        [
+         "hud",
+         1.8
+        ],
+        [
+         "ui",
+         0.9
+        ]
+       ]
+      },
+      {
+       "frame": 19,
+       "interval": 400,
+       "cpu": 10,
+       "top": [
+        [
+         "render",
+         7.2
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 13,
+       "interval": 299.9,
+       "cpu": 10.9,
+       "top": [
+        [
+         "render",
+         6.7
+        ],
+        [
+         "hud",
+         2.1
+        ],
+        [
+         "sim",
+         0.7
+        ]
+       ]
+      },
+      {
+       "frame": 27,
+       "interval": 250.1,
+       "cpu": 6.2,
+       "top": [
+        [
+         "render",
+         3.1
+        ],
+        [
+         "hud",
+         1.5
+        ],
+        [
+         "sim",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 9,
+       "interval": 250,
+       "cpu": 9,
+       "top": [
+        [
+         "hud",
+         2.9
+        ],
+        [
+         "render",
+         2.7
+        ],
+        [
+         "sim",
+         2.3
+        ]
+       ]
+      },
+      {
+       "frame": 12,
+       "interval": 250,
+       "cpu": 10.8,
+       "top": [
+        [
+         "render",
+         6.4
+        ],
+        [
+         "hud",
+         1.9
+        ],
+        [
+         "camera",
+         0.7
+        ]
+       ]
+      },
+      {
+       "frame": 17,
+       "interval": 250,
+       "cpu": 15.1,
+       "top": [
+        [
+         "render",
+         10.2
+        ],
+        [
+         "hud",
+         3.2
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 29,
+       "interval": 250,
+       "cpu": 6.2,
+       "top": [
+        [
+         "render",
+         2.5
+        ],
+        [
+         "hud",
+         1.5
+        ],
+        [
+         "sim",
+         0.7
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 24.4,
+      "jsHeapTotalMB": 29.1,
+      "nodes": 9606,
+      "listeners": 1348,
+      "layoutCount": 369,
+      "recalcStyleCount": 390,
+      "layoutMs": 159.8,
+      "styleMs": 74.6,
+      "scriptMs": 3798,
+      "taskMs": 4809
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 23.6,
+      "jsHeapTotalMB": 27,
+      "nodes": 3630,
+      "listeners": 1348,
+      "layoutCount": 433,
+      "recalcStyleCount": 454,
+      "layoutMs": 182.7,
+      "styleMs": 85.3,
+      "scriptMs": 4092,
+      "taskMs": 5285
+     },
+     "heapSamples": [
+      [
+       60121,
+       107302702
+      ],
+      [
+       61225,
+       106940716
+      ],
+      [
+       62410,
+       107851364
+      ],
+      [
+       63657,
+       107080460
+      ],
+      [
+       64773,
+       107319189
+      ],
+      [
+       65840,
+       107359760
+      ],
+      [
+       66988,
+       107440895
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 844,
+      "listeners": 10,
+      "geometries": 169,
+      "textures": 161,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 99,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "u fasády, pohled přes ulici",
+    "x": 6,
+    "z": -20,
+    "yaw": 1.5707963267948966,
+    "frame": {
+     "frames": 37,
+     "seconds": 7.183000019073487,
+     "interval": {
+      "mean": 194.14,
+      "p50": 183.3,
+      "p95": 316.6,
+      "p99": 366.6,
+      "max": 366.6
+     },
+     "hitches": {
+      "over25": 35,
+      "over33": 35,
+      "over50": 35,
+      "over100": 35
+     },
+     "cpu": {
+      "mean": 7.1,
+      "p50": 6.5,
+      "p95": 13.2,
+      "p99": 14.2,
+      "max": 14.2
+     },
+     "gpu": {
+      "mean": 161.86,
+      "p50": 161.63,
+      "p95": 188.46,
+      "p99": 188.46,
+      "max": 188.46
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.72,
+       "p50": 0.4,
+       "p95": 2.7,
+       "p99": 4.5,
+       "max": 4.5
+      },
+      "events": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.2,
+       "p50": 0.2,
+       "p95": 0.3,
+       "p99": 0.4,
+       "max": 0.4
+      },
+      "camera": {
+       "mean": 0.35,
+       "p50": 0.3,
+       "p95": 0.6,
+       "p99": 1.5,
+       "max": 1.5
+      },
+      "tags": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.05,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.48,
+       "p50": 1.3,
+       "p95": 3.5,
+       "p99": 3.8,
+       "max": 3.8
+      },
+      "ui": {
+       "mean": 0.24,
+       "p50": 0.1,
+       "p95": 1.4,
+       "p99": 3,
+       "max": 3
+      },
+      "env": {
+       "mean": 0.24,
+       "p50": 0.2,
+       "p95": 0.4,
+       "p99": 0.6,
+       "max": 0.6
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "render": {
+       "mean": 3.65,
+       "p50": 2.7,
+       "p95": 9.4,
+       "p99": 10.1,
+       "max": 10.1
+      },
+      "other": {
+       "mean": 0.09,
+       "p50": 0,
+       "p95": 0.4,
+       "p99": 1.1,
+       "max": 1.1
+      }
+     },
+     "calls": {
+      "mean": 86.57,
+      "p50": 87,
+      "p95": 88,
+      "p99": 89,
+      "max": 89
+     },
+     "triangles": {
+      "mean": 87450.14,
+      "p50": 87451,
+      "p95": 87453,
+      "p99": 87455,
+      "max": 87455
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 37,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 29,
+       "interval": 366.6,
+       "cpu": 5,
+       "top": [
+        [
+         "render",
+         2.5
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 32,
+       "interval": 316.6,
+       "cpu": 6.8,
+       "top": [
+        [
+         "hud",
+         3.8
+        ],
+        [
+         "render",
+         1.7
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 3,
+       "interval": 266.7,
+       "cpu": 13.2,
+       "top": [
+        [
+         "render",
+         10.1
+        ],
+        [
+         "hud",
+         1.5
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 1,
+       "interval": 250,
+       "cpu": 7.4,
+       "top": [
+        [
+         "hud",
+         2.8
+        ],
+        [
+         "render",
+         2.8
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 2,
+       "interval": 249.9,
+       "cpu": 4.8,
+       "top": [
+        [
+         "render",
+         2.3
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 6,
+       "interval": 249.9,
+       "cpu": 8.4,
+       "top": [
+        [
+         "render",
+         5.9
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "camera",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 4,
+       "interval": 233.4,
+       "cpu": 5,
+       "top": [
+        [
+         "render",
+         2.1
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.7
+        ]
+       ]
+      },
+      {
+       "frame": 7,
+       "interval": 233.4,
+       "cpu": 9.2,
+       "top": [
+        [
+         "render",
+         6.6
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 24.2,
+      "jsHeapTotalMB": 28,
+      "nodes": 4476,
+      "listeners": 1348,
+      "layoutCount": 453,
+      "recalcStyleCount": 474,
+      "layoutMs": 188.9,
+      "styleMs": 88,
+      "scriptMs": 4181,
+      "taskMs": 5414
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 24.4,
+      "jsHeapTotalMB": 26.7,
+      "nodes": 7860,
+      "listeners": 1348,
+      "layoutCount": 525,
+      "recalcStyleCount": 546,
+      "layoutMs": 211.5,
+      "styleMs": 101.1,
+      "scriptMs": 4459,
+      "taskMs": 5850
+     },
+     "heapSamples": [
+      [
+       70356,
+       106371411
+      ],
+      [
+       71572,
+       106543062
+      ],
+      [
+       72707,
+       106869713
+      ],
+      [
+       73762,
+       107031614
+      ],
+      [
+       74903,
+       106510287
+      ],
+      [
+       76155,
+       106682436
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 844,
+      "listeners": 10,
+      "geometries": 169,
+      "textures": 161,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 99,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   }
+  ]
+ },
+ {
+  "scenario": "route",
+  "date": "2026-11-23T09:14:52.412Z",
+  "commit": "d8fb6b0",
+  "dirty": true,
+  "machine": {
+   "cpu": "Intel(R) Xeon(R) Processor @ 2.30GHz",
+   "cores": 4,
+   "ramGB": 17,
+   "os": "linux 6.18.44-fc-v726"
+  },
+  "view": {
+   "w": 640,
+   "h": 360,
+   "q": "standard",
+   "extra": "&ab=half,nograss"
+  },
+  "stations": [
+   {
+    "label": "základna A, pohled celou ulicí",
+    "x": 0,
+    "z": 9,
+    "yaw": 0,
+    "frame": {
+     "frames": 44,
+     "seconds": 8.549700145721436,
+     "interval": {
+      "mean": 194.31,
+      "p50": 16.7,
+      "p95": 883.3,
+      "p99": 1133.3,
+      "max": 1133.3
+     },
+     "hitches": {
+      "over25": 20,
+      "over33": 20,
+      "over50": 19,
+      "over100": 18
+     },
+     "cpu": {
+      "mean": 55.02,
+      "p50": 6.2,
+      "p95": 15.5,
+      "p99": 1132.8,
+      "max": 1132.8
+     },
+     "gpu": {
+      "mean": 288.71,
+      "p50": 269.83,
+      "p95": 383.06,
+      "p99": 564.17,
+      "max": 564.17
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.46,
+       "p50": 0.3,
+       "p95": 1.2,
+       "p99": 3.9,
+       "max": 3.9
+      },
+      "events": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.16,
+       "p50": 0.2,
+       "p95": 0.3,
+       "p99": 0.3,
+       "max": 0.3
+      },
+      "camera": {
+       "mean": 48.71,
+       "p50": 0.3,
+       "p95": 1.2,
+       "p99": 1119.2,
+       "max": 1119.2
+      },
+      "tags": {
+       "mean": 0.05,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "sounds": {
+       "mean": 0.03,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "effects": {
+       "mean": 0.09,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.7,
+       "max": 0.7
+      },
+      "hud": {
+       "mean": 1.04,
+       "p50": 1.2,
+       "p95": 3.3,
+       "p99": 6.3,
+       "max": 6.3
+      },
+      "ui": {
+       "mean": 0.09,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.5,
+       "max": 0.5
+      },
+      "env": {
+       "mean": 0.29,
+       "p50": 0.2,
+       "p95": 0.8,
+       "p99": 2.5,
+       "max": 2.5
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0,
+       "max": 0
+      },
+      "render": {
+       "mean": 4.04,
+       "p50": 3.4,
+       "p95": 11.6,
+       "p99": 13.1,
+       "max": 13.1
+      },
+      "other": {
+       "mean": 0.06,
+       "p50": 0,
+       "p95": 0.2,
+       "p99": 0.7,
+       "max": 0.7
+      }
+     },
+     "calls": {
+      "mean": 196.02,
+      "p50": 231,
+      "p95": 247,
+      "p99": 248,
+      "max": 248
+     },
+     "triangles": {
+      "mean": 134201.91,
+      "p50": 158139,
+      "p95": 158173,
+      "p99": 163647,
+      "max": 163647
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 25,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 3,
+       "interval": 1133.3,
+       "cpu": 9.3,
+       "top": [
+        [
+         "render",
+         4
+        ],
+        [
+         "hud",
+         1.5
+        ],
+        [
+         "sim",
+         1.2
+        ]
+       ]
+      },
+      {
+       "frame": 6,
+       "interval": 1033.3,
+       "cpu": 7.8,
+       "top": [
+        [
+         "render",
+         4.7
+        ],
+        [
+         "hud",
+         1.5
+        ],
+        [
+         "sim",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 28,
+       "interval": 883.3,
+       "cpu": 6.4,
+       "top": [
+        [
+         "render",
+         3.4
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "camera",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 31,
+       "interval": 566.7,
+       "cpu": 9.5,
+       "top": [
+        [
+         "render",
+         5.3
+        ],
+        [
+         "hud",
+         2.7
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 32,
+       "interval": 550,
+       "cpu": 6.5,
+       "top": [
+        [
+         "render",
+         3.2
+        ],
+        [
+         "hud",
+         1.8
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 36,
+       "interval": 516.7,
+       "cpu": 11.1,
+       "top": [
+        [
+         "render",
+         5.6
+        ],
+        [
+         "sim",
+         2.6
+        ],
+        [
+         "hud",
+         1.3
+        ]
+       ]
+      },
+      {
+       "frame": 26,
+       "interval": 333.4,
+       "cpu": 15.5,
+       "top": [
+        [
+         "render",
+         6.8
+        ],
+        [
+         "hud",
+         6.3
+        ],
+        [
+         "sim",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 34,
+       "interval": 316.6,
+       "cpu": 6.4,
+       "top": [
+        [
+         "render",
+         3.4
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 73.9,
+      "jsHeapTotalMB": 116.9,
+      "nodes": 3934,
+      "listeners": 1380,
+      "layoutCount": 0,
+      "recalcStyleCount": 0,
+      "layoutMs": 0,
+      "styleMs": 0,
+      "scriptMs": 1118,
+      "taskMs": 1118
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 70.2,
+      "jsHeapTotalMB": 119,
+      "nodes": 6097,
+      "listeners": 1380,
+      "layoutCount": 47,
+      "recalcStyleCount": 67,
+      "layoutMs": 16.1,
+      "styleMs": 8.3,
+      "scriptMs": 2465,
+      "taskMs": 2575
+     },
+     "heapSamples": [
+      [
+       19534,
+       136412980
+      ],
+      [
+       20588,
+       148269151
+      ],
+      [
+       22209,
+       152478142
+      ],
+      [
+       23602,
+       153371681
+      ],
+      [
+       24984,
+       154349458
+      ],
+      [
+       26045,
+       155289206
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 840,
+      "listeners": 10,
+      "geometries": 169,
+      "textures": 162,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 102,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "ulice, pohled ke křižovatce",
+    "x": 0,
+    "z": -10,
+    "yaw": 0,
+    "frame": {
+     "frames": 25,
+     "seconds": 7.416499980926513,
+     "interval": {
+      "mean": 296.66,
+      "p50": 300,
+      "p95": 483.3,
+      "p99": 583.3,
+      "max": 583.3
+     },
+     "hitches": {
+      "over25": 24,
+      "over33": 24,
+      "over50": 23,
+      "over100": 23
+     },
+     "cpu": {
+      "mean": 7.6,
+      "p50": 6.9,
+      "p95": 12.6,
+      "p99": 16.5,
+      "max": 16.5
+     },
+     "gpu": {
+      "mean": 290.15,
+      "p50": 303.64,
+      "p95": 311.28,
+      "p99": 311.28,
+      "max": 311.28
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.82,
+       "p50": 0.5,
+       "p95": 2.8,
+       "p99": 4.1,
+       "max": 4.1
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.26,
+       "p50": 0.2,
+       "p95": 0.5,
+       "p99": 1.7,
+       "max": 1.7
+      },
+      "camera": {
+       "mean": 0.46,
+       "p50": 0.3,
+       "p95": 1,
+       "p99": 2.1,
+       "max": 2.1
+      },
+      "tags": {
+       "mean": 0.11,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 2.5,
+       "max": 2.5
+      },
+      "sounds": {
+       "mean": 0.03,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.08,
+       "p50": 0.1,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.62,
+       "p50": 1.4,
+       "p95": 3,
+       "p99": 3,
+       "max": 3
+      },
+      "ui": {
+       "mean": 0.08,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "env": {
+       "mean": 0.34,
+       "p50": 0.3,
+       "p95": 0.4,
+       "p99": 1.8,
+       "max": 1.8
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0,
+       "max": 0
+      },
+      "render": {
+       "mean": 3.72,
+       "p50": 3.3,
+       "p95": 5.9,
+       "p99": 7.9,
+       "max": 7.9
+      },
+      "other": {
+       "mean": 0.06,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      }
+     },
+     "calls": {
+      "mean": 233.2,
+      "p50": 242,
+      "p95": 243,
+      "p99": 243,
+      "max": 243
+     },
+     "triangles": {
+      "mean": 151654.84,
+      "p50": 156231,
+      "p95": 156233,
+      "p99": 156233,
+      "max": 156233
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 23,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 4,
+       "interval": 583.3,
+       "cpu": 9,
+       "top": [
+        [
+         "render",
+         5.9
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 7,
+       "interval": 483.3,
+       "cpu": 6.3,
+       "top": [
+        [
+         "render",
+         2.9
+        ],
+        [
+         "hud",
+         2.1
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 10,
+       "interval": 350.1,
+       "cpu": 6.9,
+       "top": [
+        [
+         "render",
+         4.3
+        ],
+        [
+         "hud",
+         1.1
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 22,
+       "interval": 333.4,
+       "cpu": 16.5,
+       "top": [
+        [
+         "render",
+         7.9
+        ],
+        [
+         "hud",
+         2.7
+        ],
+        [
+         "sim",
+         2.5
+        ]
+       ]
+      },
+      {
+       "frame": 2,
+       "interval": 333.3,
+       "cpu": 11.5,
+       "top": [
+        [
+         "render",
+         3.6
+        ],
+        [
+         "sim",
+         2.8
+        ],
+        [
+         "env",
+         1.8
+        ]
+       ]
+      },
+      {
+       "frame": 17,
+       "interval": 333.3,
+       "cpu": 5.9,
+       "top": [
+        [
+         "render",
+         2.9
+        ],
+        [
+         "hud",
+         1.5
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 24,
+       "interval": 333.3,
+       "cpu": 6.2,
+       "top": [
+        [
+         "render",
+         3.3
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 1,
+       "interval": 316.7,
+       "cpu": 9.6,
+       "top": [
+        [
+         "render",
+         4.9
+        ],
+        [
+         "hud",
+         3
+        ],
+        [
+         "sim",
+         0.7
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 72.2,
+      "jsHeapTotalMB": 119,
+      "nodes": 6849,
+      "listeners": 1380,
+      "layoutCount": 63,
+      "recalcStyleCount": 83,
+      "layoutMs": 22,
+      "styleMs": 11.4,
+      "scriptMs": 2567,
+      "taskMs": 2720
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 23.9,
+      "jsHeapTotalMB": 25.4,
+      "nodes": 5510,
+      "listeners": 1348,
+      "layoutCount": 111,
+      "recalcStyleCount": 131,
+      "layoutMs": 40.8,
+      "styleMs": 19.6,
+      "scriptMs": 2791,
+      "taskMs": 3145
+     },
+     "heapSamples": [
+      [
+       29597,
+       158804898
+      ],
+      [
+       31139,
+       105643225
+      ],
+      [
+       32228,
+       105816617
+      ],
+      [
+       33426,
+       106840548
+      ],
+      [
+       34508,
+       106160478
+      ],
+      [
+       35693,
+       107211421
+      ],
+      [
+       36983,
+       106630311
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 842,
+      "listeners": 10,
+      "geometries": 169,
+      "textures": 162,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 102,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "křižovatka, pohled k −x",
+    "x": 0,
+    "z": -33.5,
+    "yaw": 1.5707963267948966,
+    "frame": {
+     "frames": 31,
+     "seconds": 7.133100006103516,
+     "interval": {
+      "mean": 230.1,
+      "p50": 233.3,
+      "p95": 383.4,
+      "p99": 400.1,
+      "max": 400.1
+     },
+     "hitches": {
+      "over25": 30,
+      "over33": 29,
+      "over50": 29,
+      "over100": 27
+     },
+     "cpu": {
+      "mean": 7.17,
+      "p50": 6.4,
+      "p95": 13.8,
+      "p99": 17.5,
+      "max": 17.5
+     },
+     "gpu": {
+      "mean": 181.19,
+      "p50": 184.16,
+      "p95": 201.34,
+      "p99": 201.34,
+      "max": 201.34
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.7,
+       "p50": 0.4,
+       "p95": 1.9,
+       "p99": 2.8,
+       "max": 2.8
+      },
+      "events": {
+       "mean": 0.06,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 1.8,
+       "max": 1.8
+      },
+      "soldiers": {
+       "mean": 0.19,
+       "p50": 0.2,
+       "p95": 0.3,
+       "p99": 0.6,
+       "max": 0.6
+      },
+      "camera": {
+       "mean": 0.38,
+       "p50": 0.3,
+       "p95": 0.7,
+       "p99": 1.5,
+       "max": 1.5
+      },
+      "tags": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.03,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.07,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.78,
+       "p50": 1.4,
+       "p95": 5.4,
+       "p99": 5.6,
+       "max": 5.6
+      },
+      "ui": {
+       "mean": 0.1,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.3,
+       "max": 0.3
+      },
+      "env": {
+       "mean": 0.26,
+       "p50": 0.3,
+       "p95": 0.4,
+       "p99": 0.4,
+       "max": 0.4
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0,
+       "max": 0
+      },
+      "render": {
+       "mean": 3.52,
+       "p50": 3.1,
+       "p95": 9.3,
+       "p99": 11.2,
+       "max": 11.2
+      },
+      "other": {
+       "mean": 0.06,
+       "p50": 0,
+       "p95": 0.2,
+       "p99": 0.4,
+       "max": 0.4
+      }
+     },
+     "calls": {
+      "mean": 159.35,
+      "p50": 166,
+      "p95": 166,
+      "p99": 166,
+      "max": 166
+     },
+     "triangles": {
+      "mean": 136409.45,
+      "p50": 140099,
+      "p95": 140099,
+      "p99": 140099,
+      "max": 140099
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 29,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 25,
+       "interval": 400.1,
+       "cpu": 6,
+       "top": [
+        [
+         "render",
+         3.1
+        ],
+        [
+         "hud",
+         1.5
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 11,
+       "interval": 383.4,
+       "cpu": 6.3,
+       "top": [
+        [
+         "render",
+         2.5
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         1.1
+        ]
+       ]
+      },
+      {
+       "frame": 22,
+       "interval": 383.2,
+       "cpu": 6.2,
+       "top": [
+        [
+         "render",
+         2.7
+        ],
+        [
+         "hud",
+         1.8
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 2,
+       "interval": 350,
+       "cpu": 7.5,
+       "top": [
+        [
+         "render",
+         3
+        ],
+        [
+         "hud",
+         1.7
+        ],
+        [
+         "camera",
+         1.5
+        ]
+       ]
+      },
+      {
+       "frame": 1,
+       "interval": 316.7,
+       "cpu": 12.6,
+       "top": [
+        [
+         "hud",
+         5.4
+        ],
+        [
+         "render",
+         3.2
+        ],
+        [
+         "sim",
+         2.8
+        ]
+       ]
+      },
+      {
+       "frame": 6,
+       "interval": 300,
+       "cpu": 9.3,
+       "top": [
+        [
+         "hud",
+         3.8
+        ],
+        [
+         "render",
+         3.7
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 7,
+       "interval": 300,
+       "cpu": 5.9,
+       "top": [
+        [
+         "render",
+         3.1
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 3,
+       "interval": 299.9,
+       "cpu": 6.1,
+       "top": [
+        [
+         "render",
+         2.4
+        ],
+        [
+         "sim",
+         1.4
+        ],
+        [
+         "hud",
+         1.3
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 24,
+      "jsHeapTotalMB": 25.9,
+      "nodes": 6203,
+      "listeners": 1348,
+      "layoutCount": 126,
+      "recalcStyleCount": 146,
+      "layoutMs": 47.2,
+      "styleMs": 22.8,
+      "scriptMs": 2852,
+      "taskMs": 3247
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 24.4,
+      "jsHeapTotalMB": 27,
+      "nodes": 9173,
+      "listeners": 1348,
+      "layoutCount": 186,
+      "recalcStyleCount": 206,
+      "layoutMs": 75.6,
+      "styleMs": 35.1,
+      "scriptMs": 3104,
+      "taskMs": 3665
+     },
+     "heapSamples": [
+      [
+       40815,
+       106608581
+      ],
+      [
+       41983,
+       106727631
+      ],
+      [
+       43027,
+       106951226
+      ],
+      [
+       44109,
+       107213397
+      ],
+      [
+       45134,
+       107491419
+      ],
+      [
+       46243,
+       107656205
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 842,
+      "listeners": 10,
+      "geometries": 169,
+      "textures": 163,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 102,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "křižovatka, pohled k +x",
+    "x": 0,
+    "z": -33.5,
+    "yaw": -1.5707963267948966,
+    "frame": {
+     "frames": 39,
+     "seconds": 7.366400032043457,
+     "interval": {
+      "mean": 188.88,
+      "p50": 183.3,
+      "p95": 366.7,
+      "p99": 383.3,
+      "max": 383.3
+     },
+     "hitches": {
+      "over25": 37,
+      "over33": 36,
+      "over50": 36,
+      "over100": 36
+     },
+     "cpu": {
+      "mean": 6.63,
+      "p50": 6.2,
+      "p95": 10.8,
+      "p99": 12.3,
+      "max": 12.3
+     },
+     "gpu": {
+      "mean": 163.87,
+      "p50": 161.1,
+      "p95": 202.49,
+      "p99": 202.49,
+      "max": 202.49
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.46,
+       "p50": 0.3,
+       "p95": 1.6,
+       "p99": 2.1,
+       "max": 2.1
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.21,
+       "p50": 0.2,
+       "p95": 0.4,
+       "p99": 1.2,
+       "max": 1.2
+      },
+      "camera": {
+       "mean": 0.39,
+       "p50": 0.3,
+       "p95": 1,
+       "p99": 2.7,
+       "max": 2.7
+      },
+      "tags": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.2,
+       "p99": 0.4,
+       "max": 0.4
+      },
+      "sounds": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.05,
+       "p50": 0,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.4,
+       "p50": 1.3,
+       "p95": 3,
+       "p99": 6.1,
+       "max": 6.1
+      },
+      "ui": {
+       "mean": 0.11,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.5,
+       "max": 0.5
+      },
+      "env": {
+       "mean": 0.46,
+       "p50": 0.2,
+       "p95": 4.2,
+       "p99": 4.3,
+       "max": 4.3
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0,
+       "max": 0
+      },
+      "render": {
+       "mean": 3.29,
+       "p50": 2.6,
+       "p95": 6.8,
+       "p99": 7.6,
+       "max": 7.6
+      },
+      "other": {
+       "mean": 0.19,
+       "p50": 0.1,
+       "p95": 1.8,
+       "p99": 3.4,
+       "max": 3.4
+      }
+     },
+     "calls": {
+      "mean": 151.08,
+      "p50": 159,
+      "p95": 159,
+      "p99": 159,
+      "max": 159
+     },
+     "triangles": {
+      "mean": 115783.92,
+      "p50": 120183,
+      "p95": 120183,
+      "p99": 120183,
+      "max": 120183
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 36,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 13,
+       "interval": 383.3,
+       "cpu": 10.3,
+       "top": [
+        [
+         "hud",
+         6.1
+        ],
+        [
+         "render",
+         2.6
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 1,
+       "interval": 366.7,
+       "cpu": 6.6,
+       "top": [
+        [
+         "hud",
+         3
+        ],
+        [
+         "render",
+         2.4
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 15,
+       "interval": 350.1,
+       "cpu": 10.8,
+       "top": [
+        [
+         "render",
+         3.5
+        ],
+        [
+         "other",
+         3.4
+        ],
+        [
+         "hud",
+         1.8
+        ]
+       ]
+      },
+      {
+       "frame": 25,
+       "interval": 283.3,
+       "cpu": 8.5,
+       "top": [
+        [
+         "env",
+         4.3
+        ],
+        [
+         "render",
+         1.8
+        ],
+        [
+         "hud",
+         1.3
+        ]
+       ]
+      },
+      {
+       "frame": 26,
+       "interval": 250.1,
+       "cpu": 5.8,
+       "top": [
+        [
+         "render",
+         2.7
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 9,
+       "interval": 216.7,
+       "cpu": 7.3,
+       "top": [
+        [
+         "render",
+         3.5
+        ],
+        [
+         "sim",
+         1.6
+        ],
+        [
+         "hud",
+         1.2
+        ]
+       ]
+      },
+      {
+       "frame": 17,
+       "interval": 216.6,
+       "cpu": 9.7,
+       "top": [
+        [
+         "render",
+         6.8
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "camera",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 11,
+       "interval": 200.1,
+       "cpu": 4.8,
+       "top": [
+        [
+         "render",
+         2.6
+        ],
+        [
+         "hud",
+         1.1
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 25.1,
+      "jsHeapTotalMB": 27.8,
+      "nodes": 10264,
+      "listeners": 1348,
+      "layoutCount": 210,
+      "recalcStyleCount": 230,
+      "layoutMs": 84.9,
+      "styleMs": 39.7,
+      "scriptMs": 3222,
+      "taskMs": 3860
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 24.5,
+      "jsHeapTotalMB": 30.7,
+      "nodes": 6013,
+      "listeners": 1348,
+      "layoutCount": 284,
+      "recalcStyleCount": 304,
+      "layoutMs": 109.7,
+      "styleMs": 52.9,
+      "scriptMs": 3502,
+      "taskMs": 4328
+     },
+     "heapSamples": [
+      [
+       49610,
+       107981158
+      ],
+      [
+       50763,
+       108123779
+      ],
+      [
+       51934,
+       107698881
+      ],
+      [
+       53070,
+       106417369
+      ],
+      [
+       54193,
+       106763083
+      ],
+      [
+       55377,
+       106480290
+      ],
+      [
+       56427,
+       107538119
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 843,
+      "listeners": 10,
+      "geometries": 169,
+      "textures": 163,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 102,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "základna B, pohled zpět ulicí",
+    "x": 0,
+    "z": -60,
+    "yaw": 3.141592653589793,
+    "frame": {
+     "frames": 28,
+     "seconds": 7.266300018310547,
+     "interval": {
+      "mean": 259.51,
+      "p50": 266.7,
+      "p95": 533.2,
+      "p99": 533.4,
+      "max": 533.4
+     },
+     "hitches": {
+      "over25": 26,
+      "over33": 25,
+      "over50": 24,
+      "over100": 23
+     },
+     "cpu": {
+      "mean": 7.45,
+      "p50": 6.5,
+      "p95": 15.1,
+      "p99": 16.5,
+      "max": 16.5
+     },
+     "gpu": {
+      "mean": 249.86,
+      "p50": 254.35,
+      "p95": 261.88,
+      "p99": 261.88,
+      "max": 261.88
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.56,
+       "p50": 0.4,
+       "p95": 2.4,
+       "p99": 2.6,
+       "max": 2.6
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.19,
+       "p50": 0.2,
+       "p95": 0.4,
+       "p99": 0.5,
+       "max": 0.5
+      },
+      "camera": {
+       "mean": 0.33,
+       "p50": 0.3,
+       "p95": 0.4,
+       "p99": 1,
+       "max": 1
+      },
+      "tags": {
+       "mean": 0.03,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.49,
+       "p50": 1.3,
+       "p95": 4.1,
+       "p99": 4.5,
+       "max": 4.5
+      },
+      "ui": {
+       "mean": 0.14,
+       "p50": 0.1,
+       "p95": 0.6,
+       "p99": 0.9,
+       "max": 0.9
+      },
+      "env": {
+       "mean": 0.48,
+       "p50": 0.3,
+       "p95": 0.7,
+       "p99": 5.4,
+       "max": 5.4
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0,
+       "max": 0
+      },
+      "render": {
+       "mean": 4.06,
+       "p50": 3.5,
+       "p95": 7.2,
+       "p99": 8.9,
+       "max": 8.9
+      },
+      "other": {
+       "mean": 0.09,
+       "p50": 0.1,
+       "p95": 0.3,
+       "p99": 0.3,
+       "max": 0.3
+      }
+     },
+     "calls": {
+      "mean": 239.43,
+      "p50": 250,
+      "p95": 252,
+      "p99": 252,
+      "max": 252
+     },
+     "triangles": {
+      "mean": 149330.5,
+      "p50": 155381,
+      "p95": 155385,
+      "p99": 155385,
+      "max": 155385
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 25,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 20,
+       "interval": 533.4,
+       "cpu": 6.5,
+       "top": [
+        [
+         "render",
+         3.1
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "ui",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 24,
+       "interval": 533.2,
+       "cpu": 5.4,
+       "top": [
+        [
+         "render",
+         3
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 17,
+       "interval": 483.4,
+       "cpu": 12.8,
+       "top": [
+        [
+         "render",
+         5.1
+        ],
+        [
+         "hud",
+         4.1
+        ],
+        [
+         "sim",
+         2.6
+        ]
+       ]
+      },
+      {
+       "frame": 11,
+       "interval": 483.3,
+       "cpu": 16.5,
+       "top": [
+        [
+         "render",
+         7.2
+        ],
+        [
+         "env",
+         5.4
+        ],
+        [
+         "hud",
+         2
+        ]
+       ]
+      },
+      {
+       "frame": 3,
+       "interval": 383.3,
+       "cpu": 8.3,
+       "top": [
+        [
+         "render",
+         3.6
+        ],
+        [
+         "hud",
+         2.5
+        ],
+        [
+         "camera",
+         1
+        ]
+       ]
+      },
+      {
+       "frame": 7,
+       "interval": 316.7,
+       "cpu": 5.9,
+       "top": [
+        [
+         "render",
+         3.4
+        ],
+        [
+         "hud",
+         1.1
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 18,
+       "interval": 316.6,
+       "cpu": 9.4,
+       "top": [
+        [
+         "render",
+         3.5
+        ],
+        [
+         "sim",
+         2.4
+        ],
+        [
+         "hud",
+         2.1
+        ]
+       ]
+      },
+      {
+       "frame": 19,
+       "interval": 300,
+       "cpu": 6.5,
+       "top": [
+        [
+         "render",
+         3.4
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 25.1,
+      "jsHeapTotalMB": 30.7,
+      "nodes": 6953,
+      "listeners": 1348,
+      "layoutCount": 306,
+      "recalcStyleCount": 326,
+      "layoutMs": 122.2,
+      "styleMs": 56.6,
+      "scriptMs": 3606,
+      "taskMs": 4491
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 24.3,
+      "jsHeapTotalMB": 28,
+      "nodes": 9303,
+      "listeners": 1348,
+      "layoutCount": 356,
+      "recalcStyleCount": 376,
+      "layoutMs": 145.4,
+      "styleMs": 64.9,
+      "scriptMs": 3833,
+      "taskMs": 4858
+     },
+     "heapSamples": [
+      [
+       59692,
+       107826643
+      ],
+      [
+       60700,
+       107218455
+      ],
+      [
+       61774,
+       108058727
+      ],
+      [
+       62807,
+       107278191
+      ],
+      [
+       63914,
+       107399651
+      ],
+      [
+       65042,
+       107376815
+      ],
+      [
+       66163,
+       107362778
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 844,
+      "listeners": 10,
+      "geometries": 169,
+      "textures": 163,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 102,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "u fasády, pohled přes ulici",
+    "x": 6,
+    "z": -20,
+    "yaw": 1.5707963267948966,
+    "frame": {
+     "frames": 32,
+     "seconds": 7.266400022506714,
+     "interval": {
+      "mean": 227.08,
+      "p50": 233.3,
+      "p95": 466.6,
+      "p99": 466.7,
+      "max": 466.7
+     },
+     "hitches": {
+      "over25": 28,
+      "over33": 27,
+      "over50": 26,
+      "over100": 26
+     },
+     "cpu": {
+      "mean": 7.57,
+      "p50": 7.7,
+      "p95": 11.8,
+      "p99": 13.5,
+      "max": 13.5
+     },
+     "gpu": {
+      "mean": 197.26,
+      "p50": 198.06,
+      "p95": 218.55,
+      "p99": 218.55,
+      "max": 218.55
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.62,
+       "p50": 0.4,
+       "p95": 2.1,
+       "p99": 2.4,
+       "max": 2.4
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.22,
+       "p50": 0.2,
+       "p95": 0.3,
+       "p99": 1.2,
+       "max": 1.2
+      },
+      "camera": {
+       "mean": 0.36,
+       "p50": 0.3,
+       "p95": 0.5,
+       "p99": 1.5,
+       "max": 1.5
+      },
+      "tags": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "effects": {
+       "mean": 0.1,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 1,
+       "max": 1
+      },
+      "hud": {
+       "mean": 1.33,
+       "p50": 1.3,
+       "p95": 4.4,
+       "p99": 5.4,
+       "max": 5.4
+      },
+      "ui": {
+       "mean": 0.09,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "env": {
+       "mean": 0.32,
+       "p50": 0.2,
+       "p95": 0.5,
+       "p99": 2.5,
+       "max": 2.5
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0,
+       "max": 0
+      },
+      "render": {
+       "mean": 4.43,
+       "p50": 4,
+       "p95": 7.7,
+       "p99": 8.6,
+       "max": 8.6
+      },
+      "other": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      }
+     },
+     "calls": {
+      "mean": 173.63,
+      "p50": 189,
+      "p95": 191,
+      "p99": 192,
+      "max": 192
+     },
+     "triangles": {
+      "mean": 135702.81,
+      "p50": 144637,
+      "p95": 144641,
+      "p99": 144643,
+      "max": 144643
+     },
+     "passes": {
+      "mean": 2,
+      "p50": 2,
+      "p95": 2,
+      "p99": 2,
+      "max": 2
+     },
+     "shadowFrames": 27,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 4,
+       "interval": 466.7,
+       "cpu": 7.3,
+       "top": [
+        [
+         "render",
+         3.2
+        ],
+        [
+         "sim",
+         1.9
+        ],
+        [
+         "hud",
+         1.3
+        ]
+       ]
+      },
+      {
+       "frame": 11,
+       "interval": 466.6,
+       "cpu": 11,
+       "top": [
+        [
+         "render",
+         6.5
+        ],
+        [
+         "sim",
+         2.1
+        ],
+        [
+         "hud",
+         1.2
+        ]
+       ]
+      },
+      {
+       "frame": 31,
+       "interval": 433.4,
+       "cpu": 10.6,
+       "top": [
+        [
+         "render",
+         6.8
+        ],
+        [
+         "sim",
+         1.5
+        ],
+        [
+         "hud",
+         1.3
+        ]
+       ]
+      },
+      {
+       "frame": 24,
+       "interval": 433.3,
+       "cpu": 8.6,
+       "top": [
+        [
+         "render",
+         4.9
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "effects",
+         1
+        ]
+       ]
+      },
+      {
+       "frame": 15,
+       "interval": 383.4,
+       "cpu": 8.8,
+       "top": [
+        [
+         "render",
+         6.3
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 19,
+       "interval": 383.3,
+       "cpu": 7.8,
+       "top": [
+        [
+         "render",
+         4
+        ],
+        [
+         "hud",
+         1.9
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 13,
+       "interval": 266.7,
+       "cpu": 11.8,
+       "top": [
+        [
+         "hud",
+         5.4
+        ],
+        [
+         "render",
+         4.1
+        ],
+        [
+         "sim",
+         0.8
+        ]
+       ]
+      },
+      {
+       "frame": 3,
+       "interval": 266.6,
+       "cpu": 8.5,
+       "top": [
+        [
+         "render",
+         4.9
+        ],
+        [
+         "hud",
+         1.5
+        ],
+        [
+         "sim",
+         1.1
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 25.1,
+      "jsHeapTotalMB": 28.8,
+      "nodes": 9961,
+      "listeners": 1348,
+      "layoutCount": 370,
+      "recalcStyleCount": 390,
+      "layoutMs": 151.1,
+      "styleMs": 71.4,
+      "scriptMs": 3912,
+      "taskMs": 4990
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 23.8,
+      "jsHeapTotalMB": 28,
+      "nodes": 3818,
+      "listeners": 1348,
+      "layoutCount": 424,
+      "recalcStyleCount": 444,
+      "layoutMs": 171.5,
+      "styleMs": 80.1,
+      "scriptMs": 4177,
+      "taskMs": 5411
+     },
+     "heapSamples": [
+      [
+       69641,
+       107945095
+      ],
+      [
+       70869,
+       107838200
+      ],
+      [
+       71892,
+       107851122
+      ],
+      [
+       73035,
+       107864084
+      ],
+      [
+       74229,
+       108037810
+      ],
+      [
+       75359,
+       108152447
+      ],
+      [
+       76462,
+       106178923
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 844,
+      "listeners": 10,
+      "geometries": 169,
+      "textures": 163,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 102,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   }
+  ]
+ },
+ {
+  "scenario": "route",
+  "date": "2026-11-23T09:16:07.093Z",
+  "commit": "d8fb6b0",
+  "dirty": true,
+  "machine": {
+   "cpu": "Intel(R) Xeon(R) Processor @ 2.30GHz",
+   "cores": 4,
+   "ramGB": 17,
+   "os": "linux 6.18.44-fc-v726"
+  },
+  "view": {
+   "w": 640,
+   "h": 360,
+   "q": "low",
+   "extra": "&ab=half"
+  },
+  "stations": [
+   {
+    "label": "základna A, pohled celou ulicí",
+    "x": 0,
+    "z": 9,
+    "yaw": 0,
+    "frame": {
+     "frames": 97,
+     "seconds": 7.833000053405762,
+     "interval": {
+      "mean": 80.75,
+      "p50": 83.3,
+      "p95": 183.3,
+      "p99": 366.6,
+      "max": 366.6
+     },
+     "hitches": {
+      "over25": 70,
+      "over33": 67,
+      "over50": 65,
+      "over100": 21
+     },
+     "cpu": {
+      "mean": 10.28,
+      "p50": 6.8,
+      "p95": 13.3,
+      "p99": 302.9,
+      "max": 302.9
+     },
+     "gpu": {
+      "mean": 73.33,
+      "p50": 71.77,
+      "p95": 88.66,
+      "p99": 141.21,
+      "max": 141.21
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.6,
+       "p50": 0.4,
+       "p95": 2.1,
+       "p99": 5.3,
+       "max": 5.3
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "soldiers": {
+       "mean": 0.22,
+       "p50": 0.2,
+       "p95": 0.3,
+       "p99": 1.4,
+       "max": 1.4
+      },
+      "camera": {
+       "mean": 3.49,
+       "p50": 0.3,
+       "p95": 1.1,
+       "p99": 295.6,
+       "max": 295.6
+      },
+      "tags": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "sounds": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.08,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 2.1,
+       "max": 2.1
+      },
+      "hud": {
+       "mean": 1.24,
+       "p50": 1.3,
+       "p95": 3.1,
+       "p99": 4.3,
+       "max": 4.3
+      },
+      "ui": {
+       "mean": 0.1,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.6,
+       "max": 0.6
+      },
+      "env": {
+       "mean": 0.31,
+       "p50": 0.2,
+       "p95": 1,
+       "p99": 3.5,
+       "max": 3.5
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0,
+       "max": 0
+      },
+      "render": {
+       "mean": 4.14,
+       "p50": 3.6,
+       "p95": 8.1,
+       "p99": 11.2,
+       "max": 11.2
+      },
+      "other": {
+       "mean": 0.06,
+       "p50": 0,
+       "p95": 0.2,
+       "p99": 0.6,
+       "max": 0.6
+      }
+     },
+     "calls": {
+      "mean": 191.96,
+      "p50": 205,
+      "p95": 215,
+      "p99": 216,
+      "max": 216
+     },
+     "triangles": {
+      "mean": 121955.61,
+      "p50": 128136,
+      "p95": 128154,
+      "p99": 132166,
+      "max": 132166
+     },
+     "passes": {
+      "mean": 1,
+      "p50": 1,
+      "p95": 1,
+      "p99": 1,
+      "max": 1
+     },
+     "shadowFrames": 74,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 1,
+       "interval": 366.6,
+       "cpu": 6.4,
+       "top": [
+        [
+         "render",
+         3.8
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 4,
+       "interval": 300,
+       "cpu": 14.1,
+       "top": [
+        [
+         "sim",
+         5.3
+        ],
+        [
+         "render",
+         4.5
+        ],
+        [
+         "hud",
+         3.3
+        ]
+       ]
+      },
+      {
+       "frame": 31,
+       "interval": 183.4,
+       "cpu": 9.1,
+       "top": [
+        [
+         "env",
+         3.5
+        ],
+        [
+         "render",
+         2.7
+        ],
+        [
+         "hud",
+         1.3
+        ]
+       ]
+      },
+      {
+       "frame": 44,
+       "interval": 183.4,
+       "cpu": 9.1,
+       "top": [
+        [
+         "render",
+         6.2
+        ],
+        [
+         "hud",
+         1.1
+        ],
+        [
+         "sim",
+         0.7
+        ]
+       ]
+      },
+      {
+       "frame": 49,
+       "interval": 183.3,
+       "cpu": 9.4,
+       "top": [
+        [
+         "render",
+         3.8
+        ],
+        [
+         "sim",
+         2.7
+        ],
+        [
+         "hud",
+         1.8
+        ]
+       ]
+      },
+      {
+       "frame": 39,
+       "interval": 166.7,
+       "cpu": 7.2,
+       "top": [
+        [
+         "render",
+         3.9
+        ],
+        [
+         "hud",
+         1.5
+        ],
+        [
+         "sim",
+         0.7
+        ]
+       ]
+      },
+      {
+       "frame": 64,
+       "interval": 166.6,
+       "cpu": 6.4,
+       "top": [
+        [
+         "render",
+         2.5
+        ],
+        [
+         "sim",
+         1.5
+        ],
+        [
+         "hud",
+         1.3
+        ]
+       ]
+      },
+      {
+       "frame": 61,
+       "interval": 150,
+       "cpu": 10.5,
+       "top": [
+        [
+         "hud",
+         4.2
+        ],
+        [
+         "render",
+         3
+        ],
+        [
+         "env",
+         1.7
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 60.9,
+      "jsHeapTotalMB": 119.2,
+      "nodes": 4121,
+      "listeners": 1380,
+      "layoutCount": 1,
+      "recalcStyleCount": 1,
+      "layoutMs": 0.3,
+      "styleMs": 0.1,
+      "scriptMs": 4,
+      "taskMs": 4
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 47,
+      "jsHeapTotalMB": 110.9,
+      "nodes": 10211,
+      "listeners": 1348,
+      "layoutCount": 143,
+      "recalcStyleCount": 154,
+      "layoutMs": 54.5,
+      "styleMs": 25.2,
+      "scriptMs": 1006,
+      "taskMs": 1320
+     },
+     "heapSamples": [
+      [
+       14897,
+       96589697
+      ],
+      [
+       15993,
+       99506193
+      ],
+      [
+       17062,
+       101514820
+      ],
+      [
+       18079,
+       103494832
+      ],
+      [
+       19096,
+       105300107
+      ],
+      [
+       20138,
+       107380353
+      ],
+      [
+       21159,
+       109499376
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 836,
+      "listeners": 10,
+      "geometries": 162,
+      "textures": 158,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 101,
+      "buffer": [
+       240,
+       135
+      ]
+     }
+    }
+   },
+   {
+    "label": "ulice, pohled ke křižovatce",
+    "x": 0,
+    "z": -10,
+    "yaw": 0,
+    "frame": {
+     "frames": 78,
+     "seconds": 7.449700037002564,
+     "interval": {
+      "mean": 95.51,
+      "p50": 100,
+      "p95": 150,
+      "p99": 200,
+      "max": 200
+     },
+     "hitches": {
+      "over25": 72,
+      "over33": 71,
+      "over50": 68,
+      "over100": 24
+     },
+     "cpu": {
+      "mean": 7.41,
+      "p50": 6.9,
+      "p95": 11.4,
+      "p99": 16.9,
+      "max": 16.9
+     },
+     "gpu": {
+      "mean": 74.74,
+      "p50": 72.88,
+      "p95": 92.93,
+      "p99": 103.8,
+      "max": 103.8
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.61,
+       "p50": 0.4,
+       "p95": 2.5,
+       "p99": 3.5,
+       "max": 3.5
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.19,
+       "p50": 0.2,
+       "p95": 0.4,
+       "p99": 0.7,
+       "max": 0.7
+      },
+      "camera": {
+       "mean": 0.4,
+       "p50": 0.3,
+       "p95": 1.1,
+       "p99": 2.9,
+       "max": 2.9
+      },
+      "tags": {
+       "mean": 0.03,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 1.6,
+       "max": 1.6
+      },
+      "sounds": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.07,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 2.1,
+       "max": 2.1
+      },
+      "hud": {
+       "mean": 1.5,
+       "p50": 1.3,
+       "p95": 3.6,
+       "p99": 5.6,
+       "max": 5.6
+      },
+      "ui": {
+       "mean": 0.13,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 1.5,
+       "max": 1.5
+      },
+      "env": {
+       "mean": 0.4,
+       "p50": 0.2,
+       "p95": 1.4,
+       "p99": 4.5,
+       "max": 4.5
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0,
+       "max": 0
+      },
+      "render": {
+       "mean": 3.97,
+       "p50": 3.6,
+       "p95": 6.6,
+       "p99": 9.4,
+       "max": 9.4
+      },
+      "other": {
+       "mean": 0.07,
+       "p50": 0,
+       "p95": 0.2,
+       "p99": 1.1,
+       "max": 1.1
+      }
+     },
+     "calls": {
+      "mean": 216.05,
+      "p50": 228,
+      "p95": 229,
+      "p99": 230,
+      "max": 230
+     },
+     "triangles": {
+      "mean": 148367.59,
+      "p50": 155622,
+      "p95": 155624,
+      "p99": 155626,
+      "max": 155626
+     },
+     "passes": {
+      "mean": 1,
+      "p50": 1,
+      "p95": 1,
+      "p99": 1,
+      "max": 1
+     },
+     "shadowFrames": 68,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 31,
+       "interval": 200,
+       "cpu": 6.5,
+       "top": [
+        [
+         "render",
+         2.7
+        ],
+        [
+         "hud",
+         1.6
+        ],
+        [
+         "camera",
+         1.2
+        ]
+       ]
+      },
+      {
+       "frame": 5,
+       "interval": 166.6,
+       "cpu": 6.4,
+       "top": [
+        [
+         "render",
+         2.9
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "env",
+         0.9
+        ]
+       ]
+      },
+      {
+       "frame": 53,
+       "interval": 166.6,
+       "cpu": 5.9,
+       "top": [
+        [
+         "render",
+         3.4
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 44,
+       "interval": 150,
+       "cpu": 8.5,
+       "top": [
+        [
+         "render",
+         5.8
+        ],
+        [
+         "hud",
+         1.1
+        ],
+        [
+         "sim",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 55,
+       "interval": 150,
+       "cpu": 5.4,
+       "top": [
+        [
+         "render",
+         2.9
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 63,
+       "interval": 150,
+       "cpu": 7.3,
+       "top": [
+        [
+         "render",
+         4.2
+        ],
+        [
+         "hud",
+         1.7
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 15,
+       "interval": 133.4,
+       "cpu": 7.5,
+       "top": [
+        [
+         "render",
+         4.9
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 74,
+       "interval": 133.4,
+       "cpu": 6.7,
+       "top": [
+        [
+         "render",
+         4.1
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "soldiers",
+         0.4
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 24.3,
+      "jsHeapTotalMB": 95.1,
+      "nodes": 3911,
+      "listeners": 1348,
+      "layoutCount": 191,
+      "recalcStyleCount": 202,
+      "layoutMs": 69.8,
+      "styleMs": 32.1,
+      "scriptMs": 1200,
+      "taskMs": 1620
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 37.4,
+      "jsHeapTotalMB": 95.1,
+      "nodes": 10397,
+      "listeners": 1348,
+      "layoutCount": 329,
+      "recalcStyleCount": 340,
+      "layoutMs": 127,
+      "styleMs": 55.9,
+      "scriptMs": 1789,
+      "taskMs": 2531
+     },
+     "heapSamples": [
+      [
+       25302,
+       90310295
+      ],
+      [
+       26371,
+       92368096
+      ],
+      [
+       27547,
+       94221115
+      ],
+      [
+       28563,
+       95939294
+      ],
+      [
+       29581,
+       97524830
+      ],
+      [
+       30595,
+       99100280
+      ],
+      [
+       31675,
+       100833032
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 836,
+      "listeners": 10,
+      "geometries": 162,
+      "textures": 158,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 101,
+      "buffer": [
+       240,
+       135
+      ]
+     }
+    }
+   },
+   {
+    "label": "křižovatka, pohled k −x",
+    "x": 0,
+    "z": -33.5,
+    "yaw": 1.5707963267948966,
+    "frame": {
+     "frames": 87,
+     "seconds": 7.449700040817261,
+     "interval": {
+      "mean": 85.63,
+      "p50": 83.3,
+      "p95": 133.3,
+      "p99": 166.7,
+      "max": 166.7
+     },
+     "hitches": {
+      "over25": 83,
+      "over33": 81,
+      "over50": 76,
+      "over100": 18
+     },
+     "cpu": {
+      "mean": 5.74,
+      "p50": 5.5,
+      "p95": 8.7,
+      "p99": 9.8,
+      "max": 9.8
+     },
+     "gpu": {
+      "mean": 64.31,
+      "p50": 63.83,
+      "p95": 78.28,
+      "p99": 110.44,
+      "max": 110.44
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.56,
+       "p50": 0.3,
+       "p95": 1.7,
+       "p99": 5.1,
+       "max": 5.1
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.3,
+       "max": 0.3
+      },
+      "soldiers": {
+       "mean": 0.19,
+       "p50": 0.2,
+       "p95": 0.3,
+       "p99": 0.5,
+       "max": 0.5
+      },
+      "camera": {
+       "mean": 0.3,
+       "p50": 0.3,
+       "p95": 0.4,
+       "p99": 1.4,
+       "max": 1.4
+      },
+      "tags": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.5,
+       "max": 0.5
+      },
+      "sounds": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.03,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "hud": {
+       "mean": 1.33,
+       "p50": 1.3,
+       "p95": 2.7,
+       "p99": 4.9,
+       "max": 4.9
+      },
+      "ui": {
+       "mean": 0.1,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.5,
+       "max": 0.5
+      },
+      "env": {
+       "mean": 0.25,
+       "p50": 0.2,
+       "p95": 0.3,
+       "p99": 2.4,
+       "max": 2.4
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "render": {
+       "mean": 2.86,
+       "p50": 2.5,
+       "p95": 4.7,
+       "p99": 6.4,
+       "max": 6.4
+      },
+      "other": {
+       "mean": 0.06,
+       "p50": 0,
+       "p95": 0.2,
+       "p99": 0.4,
+       "max": 0.4
+      }
+     },
+     "calls": {
+      "mean": 145.74,
+      "p50": 158,
+      "p95": 158,
+      "p99": 158,
+      "max": 158
+     },
+     "triangles": {
+      "mean": 132238.37,
+      "p50": 139378,
+      "p95": 139378,
+      "p99": 139378,
+      "max": 139378
+     },
+     "passes": {
+      "mean": 1,
+      "p50": 1,
+      "p95": 1,
+      "p99": 1,
+      "max": 1
+     },
+     "shadowFrames": 76,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 8,
+       "interval": 166.7,
+       "cpu": 6.9,
+       "top": [
+        [
+         "render",
+         3.2
+        ],
+        [
+         "sim",
+         1.6
+        ],
+        [
+         "hud",
+         1.1
+        ]
+       ]
+      },
+      {
+       "frame": 27,
+       "interval": 166.7,
+       "cpu": 7.3,
+       "top": [
+        [
+         "render",
+         4.7
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 44,
+       "interval": 150,
+       "cpu": 6.5,
+       "top": [
+        [
+         "sim",
+         2.7
+        ],
+        [
+         "render",
+         1.5
+        ],
+        [
+         "hud",
+         1.4
+        ]
+       ]
+      },
+      {
+       "frame": 40,
+       "interval": 133.4,
+       "cpu": 8.3,
+       "top": [
+        [
+         "render",
+         5.7
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 33,
+       "interval": 133.3,
+       "cpu": 4.6,
+       "top": [
+        [
+         "render",
+         2.1
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 36,
+       "interval": 133.3,
+       "cpu": 7.5,
+       "top": [
+        [
+         "env",
+         2.4
+        ],
+        [
+         "render",
+         2.1
+        ],
+        [
+         "hud",
+         1.5
+        ]
+       ]
+      },
+      {
+       "frame": 48,
+       "interval": 133.3,
+       "cpu": 4.7,
+       "top": [
+        [
+         "render",
+         2.4
+        ],
+        [
+         "hud",
+         1.1
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 69,
+       "interval": 133.3,
+       "cpu": 5,
+       "top": [
+        [
+         "render",
+         1.9
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "sim",
+         0.9
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 24.1,
+      "jsHeapTotalMB": 26.7,
+      "nodes": 5218,
+      "listeners": 1348,
+      "layoutCount": 376,
+      "recalcStyleCount": 387,
+      "layoutMs": 155.9,
+      "styleMs": 65.8,
+      "scriptMs": 1970,
+      "taskMs": 2892
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 24.2,
+      "jsHeapTotalMB": 27.2,
+      "nodes": 5022,
+      "listeners": 1348,
+      "layoutCount": 531,
+      "recalcStyleCount": 542,
+      "layoutMs": 211.4,
+      "styleMs": 97.8,
+      "scriptMs": 2475,
+      "taskMs": 3710
+     },
+     "heapSamples": [
+      [
+       34811,
+       86621308
+      ],
+      [
+       35831,
+       86668412
+      ],
+      [
+       36915,
+       87058167
+      ],
+      [
+       37998,
+       87092291
+      ],
+      [
+       39002,
+       87293597
+      ],
+      [
+       40072,
+       87502057
+      ],
+      [
+       41158,
+       86526065
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 836,
+      "listeners": 10,
+      "geometries": 162,
+      "textures": 159,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 101,
+      "buffer": [
+       240,
+       135
+      ]
+     }
+    }
+   },
+   {
+    "label": "křižovatka, pohled k +x",
+    "x": 0,
+    "z": -33.5,
+    "yaw": -1.5707963267948966,
+    "frame": {
+     "frames": 88,
+     "seconds": 7.3330000820159915,
+     "interval": {
+      "mean": 83.33,
+      "p50": 83.3,
+      "p95": 116.6,
+      "p99": 166.7,
+      "max": 166.7
+     },
+     "hitches": {
+      "over25": 85,
+      "over33": 84,
+      "over50": 82,
+      "over100": 8
+     },
+     "cpu": {
+      "mean": 5.88,
+      "p50": 5.6,
+      "p95": 9.2,
+      "p99": 13.3,
+      "max": 13.3
+     },
+     "gpu": {
+      "mean": 65.01,
+      "p50": 65.88,
+      "p95": 74.99,
+      "p99": 85.35,
+      "max": 85.35
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.46,
+       "p50": 0.3,
+       "p95": 1.4,
+       "p99": 2.2,
+       "max": 2.2
+      },
+      "events": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 2,
+       "max": 2
+      },
+      "soldiers": {
+       "mean": 0.2,
+       "p50": 0.2,
+       "p95": 0.3,
+       "p99": 0.9,
+       "max": 0.9
+      },
+      "camera": {
+       "mean": 0.28,
+       "p50": 0.3,
+       "p95": 0.4,
+       "p99": 0.8,
+       "max": 0.8
+      },
+      "tags": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "sounds": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 1,
+       "max": 1
+      },
+      "effects": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.49,
+       "p50": 1.3,
+       "p95": 2.4,
+       "p99": 7.5,
+       "max": 7.5
+      },
+      "ui": {
+       "mean": 0.11,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 2.1,
+       "max": 2.1
+      },
+      "env": {
+       "mean": 0.29,
+       "p50": 0.2,
+       "p95": 0.6,
+       "p99": 2.5,
+       "max": 2.5
+      },
+      "grass": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.6,
+       "max": 0.6
+      },
+      "render": {
+       "mean": 2.82,
+       "p50": 2.6,
+       "p95": 4.7,
+       "p99": 7.6,
+       "max": 7.6
+      },
+      "other": {
+       "mean": 0.09,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 2.1,
+       "max": 2.1
+      }
+     },
+     "calls": {
+      "mean": 145.51,
+      "p50": 151,
+      "p95": 151,
+      "p99": 152,
+      "max": 152
+     },
+     "triangles": {
+      "mean": 116253.64,
+      "p50": 119462,
+      "p95": 119462,
+      "p99": 119464,
+      "max": 119464
+     },
+     "passes": {
+      "mean": 1,
+      "p50": 1,
+      "p95": 1,
+      "p99": 1,
+      "max": 1
+     },
+     "shadowFrames": 83,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 20,
+       "interval": 166.7,
+       "cpu": 5.2,
+       "top": [
+        [
+         "render",
+         2.9
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 15,
+       "interval": 150,
+       "cpu": 10,
+       "top": [
+        [
+         "hud",
+         5.4
+        ],
+        [
+         "render",
+         2.4
+        ],
+        [
+         "ui",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 2,
+       "interval": 116.6,
+       "cpu": 5.6,
+       "top": [
+        [
+         "render",
+         2.4
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.9
+        ]
+       ]
+      },
+      {
+       "frame": 5,
+       "interval": 116.6,
+       "cpu": 6.1,
+       "top": [
+        [
+         "render",
+         3.6
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 31,
+       "interval": 116.6,
+       "cpu": 6.6,
+       "top": [
+        [
+         "render",
+         4.3
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "soldiers",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 16,
+       "interval": 100.1,
+       "cpu": 7.8,
+       "top": [
+        [
+         "render",
+         5.3
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 66,
+       "interval": 100.1,
+       "cpu": 6.8,
+       "top": [
+        [
+         "render",
+         2.7
+        ],
+        [
+         "hud",
+         2.5
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 74,
+       "interval": 100.1,
+       "cpu": 5.9,
+       "top": [
+        [
+         "render",
+         3.5
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 24.8,
+      "jsHeapTotalMB": 28.8,
+      "nodes": 7200,
+      "listeners": 1348,
+      "layoutCount": 578,
+      "recalcStyleCount": 589,
+      "layoutMs": 235.1,
+      "styleMs": 107.1,
+      "scriptMs": 2646,
+      "taskMs": 3983
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 25.9,
+      "jsHeapTotalMB": 29.1,
+      "nodes": 8289,
+      "listeners": 1348,
+      "layoutCount": 746,
+      "recalcStyleCount": 757,
+      "layoutMs": 292.5,
+      "styleMs": 133.2,
+      "scriptMs": 3156,
+      "taskMs": 4800
+     },
+     "heapSamples": [
+      [
+       45386,
+       87266089
+      ],
+      [
+       46439,
+       87203750
+      ],
+      [
+       47454,
+       87411451
+      ],
+      [
+       48473,
+       87370412
+      ],
+      [
+       49527,
+       87647163
+      ],
+      [
+       50579,
+       87613282
+      ],
+      [
+       51647,
+       87601676
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 836,
+      "listeners": 10,
+      "geometries": 162,
+      "textures": 159,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 101,
+      "buffer": [
+       240,
+       135
+      ]
+     }
+    }
+   },
+   {
+    "label": "základna B, pohled zpět ulicí",
+    "x": 0,
+    "z": -60,
+    "yaw": 3.141592653589793,
+    "frame": {
+     "frames": 78,
+     "seconds": 7.449700029373169,
+     "interval": {
+      "mean": 95.51,
+      "p50": 100,
+      "p95": 150,
+      "p99": 183.3,
+      "max": 183.3
+     },
+     "hitches": {
+      "over25": 73,
+      "over33": 73,
+      "over50": 71,
+      "over100": 24
+     },
+     "cpu": {
+      "mean": 7.19,
+      "p50": 6.6,
+      "p95": 12.7,
+      "p99": 18.5,
+      "max": 18.5
+     },
+     "gpu": {
+      "mean": 76.75,
+      "p50": 76.39,
+      "p95": 92.67,
+      "p99": 102.75,
+      "max": 102.75
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.5,
+       "p50": 0.3,
+       "p95": 1.3,
+       "p99": 2.2,
+       "max": 2.2
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.19,
+       "p50": 0.2,
+       "p95": 0.3,
+       "p99": 0.6,
+       "max": 0.6
+      },
+      "camera": {
+       "mean": 0.33,
+       "p50": 0.3,
+       "p95": 0.6,
+       "p99": 1.1,
+       "max": 1.1
+      },
+      "tags": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.03,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.05,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 2.1,
+       "max": 2.1
+      },
+      "hud": {
+       "mean": 1.38,
+       "p50": 1.2,
+       "p95": 3.1,
+       "p99": 5.2,
+       "max": 5.2
+      },
+      "ui": {
+       "mean": 0.13,
+       "p50": 0.1,
+       "p95": 0.5,
+       "p99": 0.9,
+       "max": 0.9
+      },
+      "env": {
+       "mean": 0.31,
+       "p50": 0.2,
+       "p95": 0.4,
+       "p99": 5.3,
+       "max": 5.3
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0,
+       "max": 0
+      },
+      "render": {
+       "mean": 4.16,
+       "p50": 3.6,
+       "p95": 8.4,
+       "p99": 15.7,
+       "max": 15.7
+      },
+      "other": {
+       "mean": 0.08,
+       "p50": 0.1,
+       "p95": 0.3,
+       "p99": 0.4,
+       "max": 0.4
+      }
+     },
+     "calls": {
+      "mean": 224.08,
+      "p50": 231,
+      "p95": 234,
+      "p99": 235,
+      "max": 235
+     },
+     "triangles": {
+      "mean": 148627.08,
+      "p50": 153528,
+      "p95": 153534,
+      "p99": 153536,
+      "max": 153536
+     },
+     "passes": {
+      "mean": 1,
+      "p50": 1,
+      "p95": 1,
+      "p99": 1,
+      "max": 1
+     },
+     "shadowFrames": 71,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 27,
+       "interval": 183.3,
+       "cpu": 7.9,
+       "top": [
+        [
+         "render",
+         3.3
+        ],
+        [
+         "hud",
+         2
+        ],
+        [
+         "sim",
+         1.3
+        ]
+       ]
+      },
+      {
+       "frame": 62,
+       "interval": 166.7,
+       "cpu": 5.2,
+       "top": [
+        [
+         "render",
+         2.7
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "camera",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 4,
+       "interval": 150,
+       "cpu": 6.2,
+       "top": [
+        [
+         "render",
+         3.4
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 12,
+       "interval": 150,
+       "cpu": 7,
+       "top": [
+        [
+         "render",
+         3.5
+        ],
+        [
+         "sim",
+         1.3
+        ],
+        [
+         "hud",
+         1.2
+        ]
+       ]
+      },
+      {
+       "frame": 50,
+       "interval": 133.4,
+       "cpu": 6.6,
+       "top": [
+        [
+         "render",
+         3.9
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "camera",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 72,
+       "interval": 133.4,
+       "cpu": 4.9,
+       "top": [
+        [
+         "render",
+         2.7
+        ],
+        [
+         "hud",
+         1.1
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 48,
+       "interval": 133.3,
+       "cpu": 6.8,
+       "top": [
+        [
+         "render",
+         2.7
+        ],
+        [
+         "hud",
+         2
+        ],
+        [
+         "sim",
+         1.2
+        ]
+       ]
+      },
+      {
+       "frame": 52,
+       "interval": 133.3,
+       "cpu": 9.4,
+       "top": [
+        [
+         "render",
+         6.3
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.8
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 24.9,
+      "jsHeapTotalMB": 29.1,
+      "nodes": 10827,
+      "listeners": 1348,
+      "layoutCount": 803,
+      "recalcStyleCount": 814,
+      "layoutMs": 311,
+      "styleMs": 141.5,
+      "scriptMs": 3327,
+      "taskMs": 5063
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 25.1,
+      "jsHeapTotalMB": 29.6,
+      "nodes": 9363,
+      "listeners": 1348,
+      "layoutCount": 947,
+      "recalcStyleCount": 958,
+      "layoutMs": 361.8,
+      "styleMs": 166,
+      "scriptMs": 3897,
+      "taskMs": 5941
+     },
+     "heapSamples": [
+      [
+       54887,
+       88212296
+      ],
+      [
+       55930,
+       86975159
+      ],
+      [
+       56949,
+       87129785
+      ],
+      [
+       57982,
+       87409818
+      ],
+      [
+       59066,
+       87532213
+      ],
+      [
+       60078,
+       87502426
+      ],
+      [
+       61148,
+       87489500
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 836,
+      "listeners": 10,
+      "geometries": 162,
+      "textures": 159,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 101,
+      "buffer": [
+       240,
+       135
+      ]
+     }
+    }
+   },
+   {
+    "label": "u fasády, pohled přes ulici",
+    "x": 6,
+    "z": -20,
+    "yaw": 1.5707963267948966,
+    "frame": {
+     "frames": 81,
+     "seconds": 7.466400054931641,
+     "interval": {
+      "mean": 92.18,
+      "p50": 83.4,
+      "p95": 150,
+      "p99": 183.3,
+      "max": 183.3
+     },
+     "hitches": {
+      "over25": 75,
+      "over33": 73,
+      "over50": 68,
+      "over100": 24
+     },
+     "cpu": {
+      "mean": 6.57,
+      "p50": 6.2,
+      "p95": 11.4,
+      "p99": 15.4,
+      "max": 15.4
+     },
+     "gpu": {
+      "mean": 70.77,
+      "p50": 69.4,
+      "p95": 86.2,
+      "p99": 104.42,
+      "max": 104.42
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.61,
+       "p50": 0.4,
+       "p95": 2.4,
+       "p99": 4.2,
+       "max": 4.2
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.19,
+       "p50": 0.2,
+       "p95": 0.3,
+       "p99": 0.6,
+       "max": 0.6
+      },
+      "camera": {
+       "mean": 0.3,
+       "p50": 0.3,
+       "p95": 0.5,
+       "p99": 1.6,
+       "max": 1.6
+      },
+      "tags": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.03,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "hud": {
+       "mean": 1.41,
+       "p50": 1.2,
+       "p95": 3.3,
+       "p99": 5.8,
+       "max": 5.8
+      },
+      "ui": {
+       "mean": 0.1,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.6,
+       "max": 0.6
+      },
+      "env": {
+       "mean": 0.3,
+       "p50": 0.2,
+       "p95": 0.4,
+       "p99": 4.4,
+       "max": 4.4
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0,
+       "max": 0
+      },
+      "render": {
+       "mean": 3.49,
+       "p50": 3,
+       "p95": 6.9,
+       "p99": 8.6,
+       "max": 8.6
+      },
+      "other": {
+       "mean": 0.1,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 2.3,
+       "max": 2.3
+      }
+     },
+     "calls": {
+      "mean": 165.3,
+      "p50": 178,
+      "p95": 180,
+      "p99": 180,
+      "max": 180
+     },
+     "triangles": {
+      "mean": 136377.26,
+      "p50": 144066,
+      "p95": 144070,
+      "p99": 144070,
+      "max": 144070
+     },
+     "passes": {
+      "mean": 1,
+      "p50": 1,
+      "p95": 1,
+      "p99": 1,
+      "max": 1
+     },
+     "shadowFrames": 70,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 61,
+       "interval": 183.3,
+       "cpu": 4.6,
+       "top": [
+        [
+         "render",
+         2.2
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 14,
+       "interval": 166.6,
+       "cpu": 6.4,
+       "top": [
+        [
+         "render",
+         3.9
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 45,
+       "interval": 166.6,
+       "cpu": 6.8,
+       "top": [
+        [
+         "render",
+         3.4
+        ],
+        [
+         "hud",
+         1.9
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 1,
+       "interval": 150,
+       "cpu": 7.9,
+       "top": [
+        [
+         "render",
+         4
+        ],
+        [
+         "hud",
+         2.2
+        ],
+        [
+         "sim",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 29,
+       "interval": 150,
+       "cpu": 6.3,
+       "top": [
+        [
+         "render",
+         3.9
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "camera",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 41,
+       "interval": 150,
+       "cpu": 5.4,
+       "top": [
+        [
+         "render",
+         2.5
+        ],
+        [
+         "hud",
+         1.6
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 51,
+       "interval": 150,
+       "cpu": 5.7,
+       "top": [
+        [
+         "render",
+         3.2
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 64,
+       "interval": 150,
+       "cpu": 5.7,
+       "top": [
+        [
+         "render",
+         2.5
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.9
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 25.2,
+      "jsHeapTotalMB": 29.6,
+      "nodes": 4287,
+      "listeners": 1348,
+      "layoutCount": 993,
+      "recalcStyleCount": 1004,
+      "layoutMs": 376.5,
+      "styleMs": 172.7,
+      "scriptMs": 4063,
+      "taskMs": 6226
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 26.9,
+      "jsHeapTotalMB": 32.7,
+      "nodes": 10679,
+      "listeners": 1348,
+      "layoutCount": 1129,
+      "recalcStyleCount": 1140,
+      "layoutMs": 431.6,
+      "styleMs": 194.5,
+      "scriptMs": 4590,
+      "taskMs": 7016
+     },
+     "heapSamples": [
+      [
+       65362,
+       89108256
+      ],
+      [
+       66454,
+       87541415
+      ],
+      [
+       67458,
+       89034185
+      ],
+      [
+       68479,
+       87377863
+      ],
+      [
+       69546,
+       88873310
+      ],
+      [
+       70633,
+       87202512
+      ],
+      [
+       71682,
+       88631515
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 836,
+      "listeners": 10,
+      "geometries": 162,
+      "textures": 159,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 101,
+      "buffer": [
+       240,
+       135
+      ]
+     }
+    }
+   }
+  ]
+ },
+ {
+  "scenario": "route",
+  "date": "2026-11-23T09:17:40.655Z",
+  "commit": "d8fb6b0",
+  "dirty": true,
+  "machine": {
+   "cpu": "Intel(R) Xeon(R) Processor @ 2.30GHz",
+   "cores": 4,
+   "ramGB": 17,
+   "os": "linux 6.18.44-fc-v726"
+  },
+  "view": {
+   "w": 640,
+   "h": 360,
+   "q": "high",
+   "extra": "&ab=half"
+  },
+  "stations": [
+   {
+    "label": "základna A, pohled celou ulicí",
+    "x": 0,
+    "z": 9,
+    "yaw": 0,
+    "frame": {
+     "frames": 48,
+     "seconds": 7.549699956893921,
+     "interval": {
+      "mean": 157.29,
+      "p50": 16.8,
+      "p95": 600.1,
+      "p99": 1749.9,
+      "max": 1749.9
+     },
+     "hitches": {
+      "over25": 23,
+      "over33": 21,
+      "over50": 20,
+      "over100": 19
+     },
+     "cpu": {
+      "mean": 74.21,
+      "p50": 9.7,
+      "p95": 603.4,
+      "p99": 1752.8,
+      "max": 1752.8
+     },
+     "gpu": {
+      "mean": 175.75,
+      "p50": 158.63,
+      "p95": 233.56,
+      "p99": 504.23,
+      "max": 504.23
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.45,
+       "p50": 0.4,
+       "p95": 1.1,
+       "p99": 3.5,
+       "max": 3.5
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.23,
+       "p50": 0.1,
+       "p95": 0.3,
+       "p99": 4,
+       "max": 4
+      },
+      "camera": {
+       "mean": 64.74,
+       "p50": 0.4,
+       "p95": 589.1,
+       "p99": 1733.1,
+       "max": 1733.1
+      },
+      "tags": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "sounds": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.09,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.3,
+       "max": 0.3
+      },
+      "hud": {
+       "mean": 1.14,
+       "p50": 1.1,
+       "p95": 3.9,
+       "p99": 6.6,
+       "max": 6.6
+      },
+      "ui": {
+       "mean": 0.13,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 1.3,
+       "max": 1.3
+      },
+      "env": {
+       "mean": 0.24,
+       "p50": 0.2,
+       "p95": 0.7,
+       "p99": 1.4,
+       "max": 1.4
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "render": {
+       "mean": 7.03,
+       "p50": 5.9,
+       "p95": 13.8,
+       "p99": 20.3,
+       "max": 20.3
+      },
+      "other": {
+       "mean": 0.08,
+       "p50": 0,
+       "p95": 0.2,
+       "p99": 1.3,
+       "max": 1.3
+      }
+     },
+     "calls": {
+      "mean": 240.67,
+      "p50": 276,
+      "p95": 306,
+      "p99": 308,
+      "max": 308
+     },
+     "triangles": {
+      "mean": 147181.33,
+      "p50": 169485,
+      "p95": 176105,
+      "p99": 192345,
+      "max": 192345
+     },
+     "passes": {
+      "mean": 25,
+      "p50": 25,
+      "p95": 25,
+      "p99": 25,
+      "max": 25
+     },
+     "shadowFrames": 28,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 3,
+       "interval": 1749.9,
+       "cpu": 6.2,
+       "top": [
+        [
+         "render",
+         3.8
+        ],
+        [
+         "hud",
+         1.1
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 6,
+       "interval": 766.6,
+       "cpu": 9.9,
+       "top": [
+        [
+         "render",
+         6
+        ],
+        [
+         "hud",
+         1.9
+        ],
+        [
+         "camera",
+         0.7
+        ]
+       ]
+      },
+      {
+       "frame": 9,
+       "interval": 600.1,
+       "cpu": 9.4,
+       "top": [
+        [
+         "render",
+         5.6
+        ],
+        [
+         "hud",
+         2.2
+        ],
+        [
+         "camera",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 31,
+       "interval": 516.6,
+       "cpu": 11.9,
+       "top": [
+        [
+         "render",
+         8.2
+        ],
+        [
+         "hud",
+         1.8
+        ],
+        [
+         "sim",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 36,
+       "interval": 333.3,
+       "cpu": 9.7,
+       "top": [
+        [
+         "render",
+         6.6
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "camera",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 40,
+       "interval": 316.6,
+       "cpu": 12.7,
+       "top": [
+        [
+         "hud",
+         6.6
+        ],
+        [
+         "render",
+         4.3
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 42,
+       "interval": 300,
+       "cpu": 12.1,
+       "top": [
+        [
+         "render",
+         6.9
+        ],
+        [
+         "hud",
+         3.9
+        ],
+        [
+         "camera",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 45,
+       "interval": 300,
+       "cpu": 16.9,
+       "top": [
+        [
+         "render",
+         10.6
+        ],
+        [
+         "hud",
+         4.2
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 73,
+      "jsHeapTotalMB": 113.1,
+      "nodes": 4089,
+      "listeners": 1399,
+      "layoutCount": 0,
+      "recalcStyleCount": 0,
+      "layoutMs": 0,
+      "styleMs": 0,
+      "scriptMs": 4,
+      "taskMs": 5
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 56,
+      "jsHeapTotalMB": 115.7,
+      "nodes": 6443,
+      "listeners": 1399,
+      "layoutCount": 51,
+      "recalcStyleCount": 55,
+      "layoutMs": 24.2,
+      "styleMs": 14.6,
+      "scriptMs": 3581,
+      "taskMs": 3719
+     },
+     "heapSamples": [
+      [
+       33636,
+       205524613
+      ],
+      [
+       35072,
+       232302605
+      ],
+      [
+       36152,
+       210187635
+      ],
+      [
+       37236,
+       211526224
+      ],
+      [
+       38420,
+       212910231
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 839,
+      "listeners": 10,
+      "geometries": 170,
+      "textures": 183,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 116,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "ulice, pohled ke křižovatce",
+    "x": 0,
+    "z": -10,
+    "yaw": 0,
+    "frame": {
+     "frames": 37,
+     "seconds": 7.382999986648559,
+     "interval": {
+      "mean": 199.54,
+      "p50": 199.9,
+      "p95": 366.7,
+      "p99": 433.3,
+      "max": 433.3
+     },
+     "hitches": {
+      "over25": 36,
+      "over33": 36,
+      "over50": 35,
+      "over100": 35
+     },
+     "cpu": {
+      "mean": 11.23,
+      "p50": 9.4,
+      "p95": 23.2,
+      "p99": 26.7,
+      "max": 26.7
+     },
+     "gpu": {
+      "mean": 175.31,
+      "p50": 171.22,
+      "p95": 203.39,
+      "p99": 203.39,
+      "max": 203.39
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.78,
+       "p50": 0.5,
+       "p95": 2.6,
+       "p99": 3.9,
+       "max": 3.9
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.21,
+       "p50": 0.2,
+       "p95": 0.3,
+       "p99": 0.3,
+       "max": 0.3
+      },
+      "camera": {
+       "mean": 0.35,
+       "p50": 0.3,
+       "p95": 0.6,
+       "p99": 0.8,
+       "max": 0.8
+      },
+      "tags": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.03,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.09,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.82,
+       "p50": 1.4,
+       "p95": 4.9,
+       "p99": 6.8,
+       "max": 6.8
+      },
+      "ui": {
+       "mean": 0.08,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "env": {
+       "mean": 0.52,
+       "p50": 0.3,
+       "p95": 1.9,
+       "p99": 3.9,
+       "max": 3.9
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "render": {
+       "mean": 7.29,
+       "p50": 5.9,
+       "p95": 19.2,
+       "p99": 22.3,
+       "max": 22.3
+      },
+      "other": {
+       "mean": 0.05,
+       "p50": 0,
+       "p95": 0.2,
+       "p99": 0.3,
+       "max": 0.3
+      }
+     },
+     "calls": {
+      "mean": 288.43,
+      "p50": 294,
+      "p95": 300,
+      "p99": 300,
+      "max": 300
+     },
+     "triangles": {
+      "mean": 163959.76,
+      "p50": 167051,
+      "p95": 167063,
+      "p99": 167063,
+      "max": 167063
+     },
+     "passes": {
+      "mean": 25,
+      "p50": 25,
+      "p95": 25,
+      "p99": 25,
+      "max": 25
+     },
+     "shadowFrames": 35,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 5,
+       "interval": 433.3,
+       "cpu": 7.5,
+       "top": [
+        [
+         "render",
+         4.6
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 7,
+       "interval": 366.7,
+       "cpu": 9.3,
+       "top": [
+        [
+         "render",
+         6.2
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 8,
+       "interval": 266.6,
+       "cpu": 10.5,
+       "top": [
+        [
+         "render",
+         6.2
+        ],
+        [
+         "hud",
+         2.6
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 30,
+       "interval": 233.4,
+       "cpu": 13.8,
+       "top": [
+        [
+         "render",
+         10.6
+        ],
+        [
+         "hud",
+         1.5
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 31,
+       "interval": 233.3,
+       "cpu": 6.9,
+       "top": [
+        [
+         "render",
+         4.3
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 32,
+       "interval": 233.2,
+       "cpu": 12.3,
+       "top": [
+        [
+         "render",
+         8.4
+        ],
+        [
+         "sim",
+         1.5
+        ],
+        [
+         "hud",
+         1.4
+        ]
+       ]
+      },
+      {
+       "frame": 3,
+       "interval": 216.7,
+       "cpu": 23.2,
+       "top": [
+        [
+         "render",
+         19.2
+        ],
+        [
+         "hud",
+         1.6
+        ],
+        [
+         "camera",
+         0.8
+        ]
+       ]
+      },
+      {
+       "frame": 29,
+       "interval": 216.7,
+       "cpu": 10.9,
+       "top": [
+        [
+         "render",
+         6.7
+        ],
+        [
+         "hud",
+         2.4
+        ],
+        [
+         "camera",
+         0.5
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 24.2,
+      "jsHeapTotalMB": 27.2,
+      "nodes": 4584,
+      "listeners": 1367,
+      "layoutCount": 75,
+      "recalcStyleCount": 79,
+      "layoutMs": 33.7,
+      "styleMs": 19.4,
+      "scriptMs": 3711,
+      "taskMs": 3982
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 24.5,
+      "jsHeapTotalMB": 28,
+      "nodes": 7968,
+      "listeners": 1367,
+      "layoutCount": 147,
+      "recalcStyleCount": 151,
+      "layoutMs": 61.4,
+      "styleMs": 32.1,
+      "scriptMs": 4150,
+      "taskMs": 4596
+     },
+     "heapSamples": [
+      [
+       43056,
+       177831828
+      ],
+      [
+       44077,
+       178208180
+      ],
+      [
+       45241,
+       178231741
+      ],
+      [
+       46397,
+       178346609
+      ],
+      [
+       47469,
+       178404349
+      ],
+      [
+       48593,
+       178219096
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 844,
+      "listeners": 10,
+      "geometries": 170,
+      "textures": 183,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 116,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "křižovatka, pohled k −x",
+    "x": 0,
+    "z": -33.5,
+    "yaw": 1.5707963267948966,
+    "frame": {
+     "frames": 44,
+     "seconds": 7.34960000038147,
+     "interval": {
+      "mean": 167.04,
+      "p50": 166.7,
+      "p95": 266.7,
+      "p99": 300,
+      "max": 300
+     },
+     "hitches": {
+      "over25": 43,
+      "over33": 41,
+      "over50": 39,
+      "over100": 38
+     },
+     "cpu": {
+      "mean": 8.62,
+      "p50": 8.3,
+      "p95": 14,
+      "p99": 15.7,
+      "max": 15.7
+     },
+     "gpu": {
+      "mean": 147.25,
+      "p50": 146.59,
+      "p95": 176.71,
+      "p99": 189.45,
+      "max": 189.45
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.49,
+       "p50": 0.4,
+       "p95": 1.2,
+       "p99": 2.4,
+       "max": 2.4
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.18,
+       "p50": 0.2,
+       "p95": 0.3,
+       "p99": 0.4,
+       "max": 0.4
+      },
+      "camera": {
+       "mean": 0.32,
+       "p50": 0.3,
+       "p95": 0.5,
+       "p99": 0.5,
+       "max": 0.5
+      },
+      "tags": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.03,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "effects": {
+       "mean": 0.08,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 1,
+       "max": 1
+      },
+      "hud": {
+       "mean": 1.47,
+       "p50": 1.4,
+       "p95": 2.7,
+       "p99": 4.3,
+       "max": 4.3
+      },
+      "ui": {
+       "mean": 0.1,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "env": {
+       "mean": 0.44,
+       "p50": 0.3,
+       "p95": 1.8,
+       "p99": 5,
+       "max": 5
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0,
+       "max": 0
+      },
+      "render": {
+       "mean": 5.41,
+       "p50": 4.9,
+       "p95": 9.3,
+       "p99": 11.2,
+       "max": 11.2
+      },
+      "other": {
+       "mean": 0.07,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      }
+     },
+     "calls": {
+      "mean": 181.3,
+      "p50": 193,
+      "p95": 193,
+      "p99": 193,
+      "max": 193
+     },
+     "triangles": {
+      "mean": 144370.36,
+      "p50": 150869,
+      "p95": 150869,
+      "p99": 150869,
+      "max": 150869
+     },
+     "passes": {
+      "mean": 25,
+      "p50": 25,
+      "p95": 25,
+      "p99": 25,
+      "max": 25
+     },
+     "shadowFrames": 39,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 16,
+       "interval": 300,
+       "cpu": 7,
+       "top": [
+        [
+         "render",
+         4.5
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "camera",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 13,
+       "interval": 283.3,
+       "cpu": 7.3,
+       "top": [
+        [
+         "render",
+         3.7
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "sim",
+         1.2
+        ]
+       ]
+      },
+      {
+       "frame": 28,
+       "interval": 266.7,
+       "cpu": 5.6,
+       "top": [
+        [
+         "render",
+         3.1
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "camera",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 31,
+       "interval": 266.7,
+       "cpu": 7.7,
+       "top": [
+        [
+         "render",
+         5.1
+        ],
+        [
+         "hud",
+         1.6
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 19,
+       "interval": 250,
+       "cpu": 12.3,
+       "top": [
+        [
+         "render",
+         5.9
+        ],
+        [
+         "hud",
+         2.7
+        ],
+        [
+         "sim",
+         2.4
+        ]
+       ]
+      },
+      {
+       "frame": 3,
+       "interval": 216.7,
+       "cpu": 10,
+       "top": [
+        [
+         "render",
+         6.7
+        ],
+        [
+         "hud",
+         1.6
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 7,
+       "interval": 216.7,
+       "cpu": 10.8,
+       "top": [
+        [
+         "render",
+         7.9
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 25,
+       "interval": 216.7,
+       "cpu": 7.6,
+       "top": [
+        [
+         "render",
+         4.9
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 26.1,
+      "jsHeapTotalMB": 28.6,
+      "nodes": 8859,
+      "listeners": 1367,
+      "layoutCount": 167,
+      "recalcStyleCount": 171,
+      "layoutMs": 68.2,
+      "styleMs": 36.1,
+      "scriptMs": 4270,
+      "taskMs": 4758
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 25.3,
+      "jsHeapTotalMB": 30.4,
+      "nodes": 12819,
+      "listeners": 1367,
+      "layoutCount": 247,
+      "recalcStyleCount": 251,
+      "layoutMs": 100.8,
+      "styleMs": 51.8,
+      "scriptMs": 4683,
+      "taskMs": 5356
+     },
+     "heapSamples": [
+      [
+       51930,
+       180469442
+      ],
+      [
+       53106,
+       179834598
+      ],
+      [
+       54156,
+       179800852
+      ],
+      [
+       55258,
+       179611436
+      ],
+      [
+       56323,
+       179477259
+      ],
+      [
+       57491,
+       179541588
+      ],
+      [
+       58603,
+       179418325
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 844,
+      "listeners": 10,
+      "geometries": 170,
+      "textures": 184,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 116,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "křižovatka, pohled k +x",
+    "x": 0,
+    "z": -33.5,
+    "yaw": -1.5707963267948966,
+    "frame": {
+     "frames": 44,
+     "seconds": 7.33310000038147,
+     "interval": {
+      "mean": 166.66,
+      "p50": 166.7,
+      "p95": 283.3,
+      "p99": 350,
+      "max": 350
+     },
+     "hitches": {
+      "over25": 41,
+      "over33": 39,
+      "over50": 39,
+      "over100": 39
+     },
+     "cpu": {
+      "mean": 8.08,
+      "p50": 7.4,
+      "p95": 13.3,
+      "p99": 14.3,
+      "max": 14.3
+     },
+     "gpu": {
+      "mean": 148.03,
+      "p50": 149.32,
+      "p95": 168.59,
+      "p99": 171.11,
+      "max": 171.11
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.52,
+       "p50": 0.4,
+       "p95": 1,
+       "p99": 3.2,
+       "max": 3.2
+      },
+      "events": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.2,
+       "p50": 0.2,
+       "p95": 0.3,
+       "p99": 0.4,
+       "max": 0.4
+      },
+      "camera": {
+       "mean": 0.38,
+       "p50": 0.3,
+       "p95": 0.6,
+       "p99": 2.2,
+       "max": 2.2
+      },
+      "tags": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "sounds": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.08,
+       "p50": 0.1,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.53,
+       "p50": 1.4,
+       "p95": 3.2,
+       "p99": 6.9,
+       "max": 6.9
+      },
+      "ui": {
+       "mean": 0.08,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "env": {
+       "mean": 0.46,
+       "p50": 0.3,
+       "p95": 1.1,
+       "p99": 4.2,
+       "max": 4.2
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "render": {
+       "mean": 4.72,
+       "p50": 4,
+       "p95": 8.3,
+       "p99": 11.7,
+       "max": 11.7
+      },
+      "other": {
+       "mean": 0.06,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.3,
+       "max": 0.3
+      }
+     },
+     "calls": {
+      "mean": 174.3,
+      "p50": 186,
+      "p95": 186,
+      "p99": 186,
+      "max": 186
+     },
+     "triangles": {
+      "mean": 124454.36,
+      "p50": 130953,
+      "p95": 130953,
+      "p99": 130953,
+      "max": 130953
+     },
+     "passes": {
+      "mean": 25,
+      "p50": 25,
+      "p95": 25,
+      "p99": 25,
+      "max": 25
+     },
+     "shadowFrames": 39,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 10,
+       "interval": 350,
+       "cpu": 6.6,
+       "top": [
+        [
+         "render",
+         4
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "env",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 1,
+       "interval": 300,
+       "cpu": 5.8,
+       "top": [
+        [
+         "render",
+         3
+        ],
+        [
+         "hud",
+         1.7
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 23,
+       "interval": 283.3,
+       "cpu": 7.1,
+       "top": [
+        [
+         "render",
+         4.1
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "sim",
+         0.6
+        ]
+       ]
+      },
+      {
+       "frame": 5,
+       "interval": 250,
+       "cpu": 6.1,
+       "top": [
+        [
+         "render",
+         3.7
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "camera",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 44,
+       "interval": 250,
+       "cpu": 10,
+       "top": [
+        [
+         "render",
+         7.2
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 29,
+       "interval": 216.6,
+       "cpu": 7.3,
+       "top": [
+        [
+         "render",
+         3.6
+        ],
+        [
+         "hud",
+         1.4
+        ],
+        [
+         "env",
+         1.1
+        ]
+       ]
+      },
+      {
+       "frame": 9,
+       "interval": 200,
+       "cpu": 8.5,
+       "top": [
+        [
+         "render",
+         5.8
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 15,
+       "interval": 200,
+       "cpu": 9.8,
+       "top": [
+        [
+         "render",
+         7
+        ],
+        [
+         "hud",
+         1.5
+        ],
+        [
+         "camera",
+         0.4
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 25.5,
+      "jsHeapTotalMB": 30.4,
+      "nodes": 14306,
+      "listeners": 1367,
+      "layoutCount": 280,
+      "recalcStyleCount": 284,
+      "layoutMs": 115.8,
+      "styleMs": 57,
+      "scriptMs": 4831,
+      "taskMs": 5577
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 25.4,
+      "jsHeapTotalMB": 31.4,
+      "nodes": 5614,
+      "listeners": 1367,
+      "layoutCount": 360,
+      "recalcStyleCount": 364,
+      "layoutMs": 144.5,
+      "styleMs": 70.1,
+      "scriptMs": 5204,
+      "taskMs": 6146
+     },
+     "heapSamples": [
+      [
+       62905,
+       180756529
+      ],
+      [
+       63958,
+       180253427
+      ],
+      [
+       65115,
+       180112334
+      ],
+      [
+       66258,
+       179871989
+      ],
+      [
+       67308,
+       179031373
+      ],
+      [
+       68362,
+       178740206
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 844,
+      "listeners": 10,
+      "geometries": 170,
+      "textures": 184,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 116,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "základna B, pohled zpět ulicí",
+    "x": 0,
+    "z": -60,
+    "yaw": 3.141592653589793,
+    "frame": {
+     "frames": 42,
+     "seconds": 7.283100017547607,
+     "interval": {
+      "mean": 173.41,
+      "p50": 183.3,
+      "p95": 266.5,
+      "p99": 350,
+      "max": 350
+     },
+     "hitches": {
+      "over25": 39,
+      "over33": 39,
+      "over50": 38,
+      "over100": 38
+     },
+     "cpu": {
+      "mean": 10.5,
+      "p50": 9.8,
+      "p95": 17.5,
+      "p99": 18.7,
+      "max": 18.7
+     },
+     "gpu": {
+      "mean": 156.85,
+      "p50": 156.73,
+      "p95": 175.15,
+      "p99": 179.09,
+      "max": 179.09
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.79,
+       "p50": 0.5,
+       "p95": 2.2,
+       "p99": 4.6,
+       "max": 4.6
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.25,
+       "p50": 0.2,
+       "p95": 0.6,
+       "p99": 2.5,
+       "max": 2.5
+      },
+      "camera": {
+       "mean": 0.46,
+       "p50": 0.3,
+       "p95": 0.5,
+       "p99": 5.5,
+       "max": 5.5
+      },
+      "tags": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.03,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.06,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.46,
+       "p50": 1.3,
+       "p95": 3.1,
+       "p99": 3.9,
+       "max": 3.9
+      },
+      "ui": {
+       "mean": 0.29,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 8.2,
+       "max": 8.2
+      },
+      "env": {
+       "mean": 0.38,
+       "p50": 0.3,
+       "p95": 0.5,
+       "p99": 4.8,
+       "max": 4.8
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "render": {
+       "mean": 6.61,
+       "p50": 5.7,
+       "p95": 11.8,
+       "p99": 12.8,
+       "max": 12.8
+      },
+      "other": {
+       "mean": 0.14,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 3.1,
+       "max": 3.1
+      }
+     },
+     "calls": {
+      "mean": 295.71,
+      "p50": 307,
+      "p95": 309,
+      "p99": 309,
+      "max": 309
+     },
+     "triangles": {
+      "mean": 161469.57,
+      "p50": 166919,
+      "p95": 166923,
+      "p99": 166923,
+      "max": 166923
+     },
+     "passes": {
+      "mean": 25,
+      "p50": 25,
+      "p95": 25,
+      "p99": 25,
+      "max": 25
+     },
+     "shadowFrames": 38,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 36,
+       "interval": 350,
+       "cpu": 13.7,
+       "top": [
+        [
+         "render",
+         9.4
+        ],
+        [
+         "sim",
+         2.2
+        ],
+        [
+         "hud",
+         1.2
+        ]
+       ]
+      },
+      {
+       "frame": 14,
+       "interval": 300,
+       "cpu": 13.1,
+       "top": [
+        [
+         "render",
+         10.4
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 34,
+       "interval": 266.5,
+       "cpu": 14.3,
+       "top": [
+        [
+         "render",
+         5.7
+        ],
+        [
+         "camera",
+         5.5
+        ],
+        [
+         "hud",
+         1.3
+        ]
+       ]
+      },
+      {
+       "frame": 41,
+       "interval": 233.3,
+       "cpu": 8.1,
+       "top": [
+        [
+         "render",
+         4.9
+        ],
+        [
+         "hud",
+         1.3
+        ],
+        [
+         "sim",
+         0.9
+        ]
+       ]
+      },
+      {
+       "frame": 4,
+       "interval": 216.7,
+       "cpu": 7,
+       "top": [
+        [
+         "render",
+         4
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.7
+        ]
+       ]
+      },
+      {
+       "frame": 8,
+       "interval": 200.1,
+       "cpu": 11.5,
+       "top": [
+        [
+         "render",
+         6.7
+        ],
+        [
+         "hud",
+         2.7
+        ],
+        [
+         "sim",
+         1.1
+        ]
+       ]
+      },
+      {
+       "frame": 17,
+       "interval": 200,
+       "cpu": 17.5,
+       "top": [
+        [
+         "ui",
+         8.2
+        ],
+        [
+         "render",
+         5.1
+        ],
+        [
+         "hud",
+         2.1
+        ]
+       ]
+      },
+      {
+       "frame": 23,
+       "interval": 200,
+       "cpu": 11,
+       "top": [
+        [
+         "render",
+         5.5
+        ],
+        [
+         "hud",
+         3.1
+        ],
+        [
+         "sim",
+         0.6
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 25.6,
+      "jsHeapTotalMB": 31.7,
+      "nodes": 6930,
+      "listeners": 1367,
+      "layoutCount": 390,
+      "recalcStyleCount": 394,
+      "layoutMs": 152.9,
+      "styleMs": 74.1,
+      "scriptMs": 5358,
+      "taskMs": 6360
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 27.3,
+      "jsHeapTotalMB": 34.6,
+      "nodes": 10596,
+      "listeners": 1367,
+      "layoutCount": 468,
+      "recalcStyleCount": 472,
+      "layoutMs": 183.7,
+      "styleMs": 89.3,
+      "scriptMs": 5811,
+      "taskMs": 6993
+     },
+     "heapSamples": [
+      [
+       72709,
+       178679016
+      ],
+      [
+       73809,
+       180028072
+      ],
+      [
+       74829,
+       181303764
+      ],
+      [
+       75947,
+       179716380
+      ],
+      [
+       76990,
+       181055008
+      ],
+      [
+       78183,
+       179226603
+      ],
+      [
+       79301,
+       180546671
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 844,
+      "listeners": 10,
+      "geometries": 170,
+      "textures": 184,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 116,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   },
+   {
+    "label": "u fasády, pohled přes ulici",
+    "x": 6,
+    "z": -20,
+    "yaw": 1.5707963267948966,
+    "frame": {
+     "frames": 39,
+     "seconds": 7.316299993515015,
+     "interval": {
+      "mean": 187.6,
+      "p50": 183.4,
+      "p95": 333.3,
+      "p99": 366.6,
+      "max": 366.6
+     },
+     "hitches": {
+      "over25": 38,
+      "over33": 37,
+      "over50": 35,
+      "over100": 35
+     },
+     "cpu": {
+      "mean": 9.42,
+      "p50": 8.8,
+      "p95": 16.8,
+      "p99": 16.8,
+      "max": 16.8
+     },
+     "gpu": {
+      "mean": 157.24,
+      "p50": 155.93,
+      "p95": 177.44,
+      "p99": 182.72,
+      "max": 182.72
+     },
+     "gpuTimer": true,
+     "sections": {
+      "sim": {
+       "mean": 0.6,
+       "p50": 0.5,
+       "p95": 1.8,
+       "p99": 1.8,
+       "max": 1.8
+      },
+      "events": {
+       "mean": 0.01,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "soldiers": {
+       "mean": 0.21,
+       "p50": 0.2,
+       "p95": 0.4,
+       "p99": 0.6,
+       "max": 0.6
+      },
+      "camera": {
+       "mean": 0.33,
+       "p50": 0.3,
+       "p95": 0.5,
+       "p99": 1.6,
+       "max": 1.6
+      },
+      "tags": {
+       "mean": 0.02,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "sounds": {
+       "mean": 0.04,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.1,
+       "max": 0.1
+      },
+      "effects": {
+       "mean": 0.07,
+       "p50": 0.1,
+       "p95": 0.2,
+       "p99": 0.2,
+       "max": 0.2
+      },
+      "hud": {
+       "mean": 1.54,
+       "p50": 1.3,
+       "p95": 3.7,
+       "p99": 8,
+       "max": 8
+      },
+      "ui": {
+       "mean": 0.17,
+       "p50": 0.1,
+       "p95": 0.8,
+       "p99": 2.2,
+       "max": 2.2
+      },
+      "env": {
+       "mean": 0.34,
+       "p50": 0.2,
+       "p95": 0.9,
+       "p99": 2.3,
+       "max": 2.3
+      },
+      "grass": {
+       "mean": 0,
+       "p50": 0,
+       "p95": 0,
+       "p99": 0,
+       "max": 0
+      },
+      "render": {
+       "mean": 6.06,
+       "p50": 4.9,
+       "p95": 11.8,
+       "p99": 12.4,
+       "max": 12.4
+      },
+      "other": {
+       "mean": 0.05,
+       "p50": 0,
+       "p95": 0.1,
+       "p99": 0.2,
+       "max": 0.2
+      }
+     },
+     "calls": {
+      "mean": 220.36,
+      "p50": 230,
+      "p95": 234,
+      "p99": 236,
+      "max": 236
+     },
+     "triangles": {
+      "mean": 149571.41,
+      "p50": 155435,
+      "p95": 155443,
+      "p99": 155447,
+      "max": 155447
+     },
+     "passes": {
+      "mean": 25,
+      "p50": 25,
+      "p95": 25,
+      "p99": 25,
+      "max": 25
+     },
+     "shadowFrames": 35,
+     "marks": [],
+     "worst": [
+      {
+       "frame": 38,
+       "interval": 366.6,
+       "cpu": 6.3,
+       "top": [
+        [
+         "render",
+         3.3
+        ],
+        [
+         "hud",
+         1.1
+        ],
+        [
+         "env",
+         0.9
+        ]
+       ]
+      },
+      {
+       "frame": 33,
+       "interval": 333.3,
+       "cpu": 8.2,
+       "top": [
+        [
+         "render",
+         4.2
+        ],
+        [
+         "sim",
+         1.8
+        ],
+        [
+         "hud",
+         1.4
+        ]
+       ]
+      },
+      {
+       "frame": 15,
+       "interval": 316.7,
+       "cpu": 7.8,
+       "top": [
+        [
+         "render",
+         5.1
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 36,
+       "interval": 316.7,
+       "cpu": 6.7,
+       "top": [
+        [
+         "render",
+         4.1
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "camera",
+         0.4
+        ]
+       ]
+      },
+      {
+       "frame": 12,
+       "interval": 316.6,
+       "cpu": 6.7,
+       "top": [
+        [
+         "render",
+         3.6
+        ],
+        [
+         "hud",
+         1.6
+        ],
+        [
+         "sim",
+         0.5
+        ]
+       ]
+      },
+      {
+       "frame": 2,
+       "interval": 216.7,
+       "cpu": 11.3,
+       "top": [
+        [
+         "render",
+         8.3
+        ],
+        [
+         "hud",
+         1.7
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      },
+      {
+       "frame": 5,
+       "interval": 216.7,
+       "cpu": 7.7,
+       "top": [
+        [
+         "render",
+         4.8
+        ],
+        [
+         "hud",
+         1.2
+        ],
+        [
+         "sim",
+         0.9
+        ]
+       ]
+      },
+      {
+       "frame": 6,
+       "interval": 216.7,
+       "cpu": 5.7,
+       "top": [
+        [
+         "render",
+         3.5
+        ],
+        [
+         "hud",
+         1.1
+        ],
+        [
+         "sim",
+         0.3
+        ]
+       ]
+      }
+     ],
+     "heapStart": {
+      "jsHeapUsedMB": 25.5,
+      "jsHeapTotalMB": 35.4,
+      "nodes": 11630,
+      "listeners": 1367,
+      "layoutCount": 492,
+      "recalcStyleCount": 496,
+      "layoutMs": 191.1,
+      "styleMs": 92.5,
+      "scriptMs": 5916,
+      "taskMs": 7143
+     },
+     "heapEnd": {
+      "jsHeapUsedMB": 27.5,
+      "jsHeapTotalMB": 35.4,
+      "nodes": 15014,
+      "listeners": 1367,
+      "layoutCount": 564,
+      "recalcStyleCount": 568,
+      "layoutMs": 216.1,
+      "styleMs": 106.1,
+      "scriptMs": 6305,
+      "taskMs": 7687
+     },
+     "heapSamples": [
+      [
+       82703,
+       179982938
+      ],
+      [
+       83732,
+       181005296
+      ],
+      [
+       84848,
+       182155122
+      ],
+      [
+       85872,
+       180260622
+      ],
+      [
+       86956,
+       181500570
+      ],
+      [
+       87970,
+       179644039
+      ],
+      [
+       89211,
+       180745529
+      ]
+     ],
+     "counts": {
+      "sceneObjects": 844,
+      "listeners": 10,
+      "geometries": 170,
+      "textures": 184,
+      "colliders": 410,
+      "soldiersVisible": 0,
+      "soldiers": 0,
+      "programs": 116,
+      "buffer": [
+       320,
+       180
+      ]
+     }
+    }
+   }
+  ]
+ }
+]

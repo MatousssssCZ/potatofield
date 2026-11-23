@@ -1,0 +1,453 @@
+[
+ {
+  "scenario": "long",
+  "date": "2026-11-23T09:26:32.587Z",
+  "commit": "d8fb6b0",
+  "dirty": true,
+  "machine": {
+   "cpu": "Intel(R) Xeon(R) Processor @ 2.30GHz",
+   "cores": 4,
+   "ramGB": 17,
+   "os": "linux 6.18.44-fc-v726"
+  },
+  "view": {
+   "w": 640,
+   "h": 360,
+   "q": "standard",
+   "extra": "&ab=half"
+  },
+  "seconds": 300,
+  "samples": [
+   {
+    "t": 30,
+    "interval": {
+     "mean": 299.16,
+     "p50": 300,
+     "p95": 600,
+     "p99": 699.9,
+     "max": 699.9
+    },
+    "cpu": {
+     "mean": 24.65,
+     "p50": 20.9,
+     "p95": 44.9,
+     "p99": 71.8,
+     "max": 71.8
+    },
+    "calls": 238,
+    "hitches": {
+     "over25": 98,
+     "over33": 94,
+     "over50": 89,
+     "over100": 87
+    },
+    "counts": {
+     "sceneObjects": 2811,
+     "listeners": 10,
+     "geometries": 178,
+     "textures": 244,
+     "colliders": 410
+    },
+    "heap": {
+     "jsHeapUsedMB": 32,
+     "jsHeapTotalMB": 37.2,
+     "nodes": 6066,
+     "listeners": 1348,
+     "layoutCount": 0,
+     "recalcStyleCount": 0,
+     "layoutMs": 0,
+     "styleMs": 0,
+     "scriptMs": 0,
+     "taskMs": 0
+    }
+   },
+   {
+    "t": 60,
+    "interval": {
+     "mean": 289.15,
+     "p50": 299.9,
+     "p95": 449.9,
+     "p99": 583.3,
+     "max": 733.3
+    },
+    "cpu": {
+     "mean": 21.09,
+     "p50": 18,
+     "p95": 39.1,
+     "p99": 68.3,
+     "max": 84.8
+    },
+    "calls": 215,
+    "hitches": {
+     "over25": 103,
+     "over33": 103,
+     "over50": 99,
+     "over100": 96
+    },
+    "counts": {
+     "sceneObjects": 2517,
+     "listeners": 10,
+     "geometries": 181,
+     "textures": 247,
+     "colliders": 410
+    },
+    "heap": {
+     "jsHeapUsedMB": 33.7,
+     "jsHeapTotalMB": 49.5,
+     "nodes": 6578,
+     "listeners": 1348,
+     "layoutCount": 225,
+     "recalcStyleCount": 231,
+     "layoutMs": 92.4,
+     "styleMs": 39.7,
+     "scriptMs": 2299,
+     "taskMs": 3450
+    }
+   },
+   {
+    "t": 91,
+    "interval": {
+     "mean": 283,
+     "p50": 266.7,
+     "p95": 566.6,
+     "p99": 616.7,
+     "max": 650
+    },
+    "cpu": {
+     "mean": 20.92,
+     "p50": 16.9,
+     "p95": 48,
+     "p99": 67.2,
+     "max": 75.2
+    },
+    "calls": 230,
+    "hitches": {
+     "over25": 104,
+     "over33": 98,
+     "over50": 94,
+     "over100": 92
+    },
+    "counts": {
+     "sceneObjects": 2614,
+     "listeners": 10,
+     "geometries": 179,
+     "textures": 277,
+     "colliders": 410
+    },
+    "heap": {
+     "jsHeapUsedMB": 33.5,
+     "jsHeapTotalMB": 51.4,
+     "nodes": 7157,
+     "listeners": 1348,
+     "layoutCount": 437,
+     "recalcStyleCount": 451,
+     "layoutMs": 172.2,
+     "styleMs": 88.5,
+     "scriptMs": 4613,
+     "taskMs": 6763
+    }
+   },
+   {
+    "t": 121,
+    "interval": {
+     "mean": 264,
+     "p50": 266.6,
+     "p95": 416.6,
+     "p99": 483.3,
+     "max": 650
+    },
+    "cpu": {
+     "mean": 19.19,
+     "p50": 15.6,
+     "p95": 45.5,
+     "p99": 71.2,
+     "max": 87.8
+    },
+    "calls": 274,
+    "hitches": {
+     "over25": 113,
+     "over33": 111,
+     "over50": 108,
+     "over100": 105
+    },
+    "counts": {
+     "sceneObjects": 2614,
+     "listeners": 10,
+     "geometries": 179,
+     "textures": 294,
+     "colliders": 410
+    },
+    "heap": {
+     "jsHeapUsedMB": 42.2,
+     "jsHeapTotalMB": 63.2,
+     "nodes": 9044,
+     "listeners": 1348,
+     "layoutCount": 682,
+     "recalcStyleCount": 702,
+     "layoutMs": 273.6,
+     "styleMs": 138.2,
+     "scriptMs": 6893,
+     "taskMs": 10094
+    }
+   },
+   {
+    "t": 151,
+    "interval": {
+     "mean": 283.64,
+     "p50": 283.2,
+     "p95": 516.6,
+     "p99": 600.1,
+     "max": 616.6
+    },
+    "cpu": {
+     "mean": 24.2,
+     "p50": 18.6,
+     "p95": 47.1,
+     "p99": 119.1,
+     "max": 227.6
+    },
+    "calls": 257,
+    "hitches": {
+     "over25": 103,
+     "over33": 100,
+     "over50": 97,
+     "over100": 94
+    },
+    "counts": {
+     "sceneObjects": 2713,
+     "listeners": 10,
+     "geometries": 179,
+     "textures": 310,
+     "colliders": 410
+    },
+    "heap": {
+     "jsHeapUsedMB": 39.1,
+     "jsHeapTotalMB": 70.8,
+     "nodes": 5089,
+     "listeners": 1348,
+     "layoutCount": 901,
+     "recalcStyleCount": 936,
+     "layoutMs": 367.8,
+     "styleMs": 201.7,
+     "scriptMs": 9542,
+     "taskMs": 14331
+    }
+   },
+   {
+    "t": 181,
+    "interval": {
+     "mean": 261,
+     "p50": 250,
+     "p95": 500,
+     "p99": 583.4,
+     "max": 700.1
+    },
+    "cpu": {
+     "mean": 17.77,
+     "p50": 16.1,
+     "p95": 31.7,
+     "p99": 48.9,
+     "max": 74.2
+    },
+    "calls": 208,
+    "hitches": {
+     "over25": 114,
+     "over33": 111,
+     "over50": 106,
+     "over100": 105
+    },
+    "counts": {
+     "sceneObjects": 2812,
+     "listeners": 10,
+     "geometries": 179,
+     "textures": 324,
+     "colliders": 410
+    },
+    "heap": {
+     "jsHeapUsedMB": 29.6,
+     "jsHeapTotalMB": 65.9,
+     "nodes": 6468,
+     "listeners": 1348,
+     "layoutCount": 1140,
+     "recalcStyleCount": 1182,
+     "layoutMs": 469.9,
+     "styleMs": 252.1,
+     "scriptMs": 11718,
+     "taskMs": 17456
+    }
+   },
+   {
+    "t": 211,
+    "interval": {
+     "mean": 239.37,
+     "p50": 233.3,
+     "p95": 533.3,
+     "p99": 616.6,
+     "max": 799.9
+    },
+    "cpu": {
+     "mean": 13.73,
+     "p50": 12.5,
+     "p95": 26.1,
+     "p99": 34.1,
+     "max": 35.4
+    },
+    "calls": 217,
+    "hitches": {
+     "over25": 117,
+     "over33": 109,
+     "over50": 103,
+     "over100": 100
+    },
+    "counts": {
+     "sceneObjects": 2812,
+     "listeners": 10,
+     "geometries": 179,
+     "textures": 343,
+     "colliders": 410
+    },
+    "heap": {
+     "jsHeapUsedMB": 47.6,
+     "jsHeapTotalMB": 93.9,
+     "nodes": 7057,
+     "listeners": 1348,
+     "layoutCount": 1367,
+     "recalcStyleCount": 1413,
+     "layoutMs": 573.9,
+     "styleMs": 297.6,
+     "scriptMs": 13526,
+     "taskMs": 20250
+    }
+   },
+   {
+    "t": 241,
+    "interval": {
+     "mean": 259.55,
+     "p50": 250,
+     "p95": 566.6,
+     "p99": 666.6,
+     "max": 666.6
+    },
+    "cpu": {
+     "mean": 18.7,
+     "p50": 14.6,
+     "p95": 41.4,
+     "p99": 60.1,
+     "max": 63.1
+    },
+    "calls": 224,
+    "hitches": {
+     "over25": 111,
+     "over33": 105,
+     "over50": 95,
+     "over100": 93
+    },
+    "counts": {
+     "sceneObjects": 2713,
+     "listeners": 10,
+     "geometries": 179,
+     "textures": 368,
+     "colliders": 410
+    },
+    "heap": {
+     "jsHeapUsedMB": 45.5,
+     "jsHeapTotalMB": 95.7,
+     "nodes": 6870,
+     "listeners": 1348,
+     "layoutCount": 1587,
+     "recalcStyleCount": 1648,
+     "layoutMs": 672.6,
+     "styleMs": 364.2,
+     "scriptMs": 15815,
+     "taskMs": 23619
+    }
+   },
+   {
+    "t": 271,
+    "interval": {
+     "mean": 265.47,
+     "p50": 250,
+     "p95": 483.3,
+     "p99": 550,
+     "max": 583.3
+    },
+    "cpu": {
+     "mean": 16.19,
+     "p50": 15.3,
+     "p95": 29.5,
+     "p99": 32.8,
+     "max": 44.1
+    },
+    "calls": 223,
+    "hitches": {
+     "over25": 109,
+     "over33": 108,
+     "over50": 105,
+     "over100": 105
+    },
+    "counts": {
+     "sceneObjects": 2713,
+     "listeners": 10,
+     "geometries": 179,
+     "textures": 382,
+     "colliders": 410
+    },
+    "heap": {
+     "jsHeapUsedMB": 36.2,
+     "jsHeapTotalMB": 95.5,
+     "nodes": 8844,
+     "listeners": 1348,
+     "layoutCount": 1810,
+     "recalcStyleCount": 1880,
+     "layoutMs": 759.5,
+     "styleMs": 412.3,
+     "scriptMs": 17765,
+     "taskMs": 26701
+    }
+   },
+   {
+    "t": 302,
+    "interval": {
+     "mean": 269.66,
+     "p50": 250,
+     "p95": 516.6,
+     "p99": 716.6,
+     "max": 766.6
+    },
+    "cpu": {
+     "mean": 17.18,
+     "p50": 15.7,
+     "p95": 31.8,
+     "p99": 52.6,
+     "max": 63.5
+    },
+    "calls": 198,
+    "hitches": {
+     "over25": 107,
+     "over33": 106,
+     "over50": 105,
+     "over100": 104
+    },
+    "counts": {
+     "sceneObjects": 2713,
+     "listeners": 10,
+     "geometries": 179,
+     "textures": 403,
+     "colliders": 410
+    },
+    "heap": {
+     "jsHeapUsedMB": 33.8,
+     "jsHeapTotalMB": 94.7,
+     "nodes": 8441,
+     "listeners": 1348,
+     "layoutCount": 2030,
+     "recalcStyleCount": 2101,
+     "layoutMs": 872.2,
+     "styleMs": 457.9,
+     "scriptMs": 19800,
+     "taskMs": 29710
+    }
+   }
+  ]
+ }
+]

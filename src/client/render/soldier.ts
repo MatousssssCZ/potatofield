@@ -1,3 +1,4 @@
+import { perf } from '../runtime/perf';
 import * as THREE from 'three';
 import type { PlayerView } from '../runtime/driver';
 import { ITEM_EQUIP, SIDEARMS, WEAPON_IDS, arsenalEntry } from '../../shared/config/arsenal';
@@ -65,6 +66,8 @@ export function soldierLook(weaponId: string, team: 'teamA' | 'teamB'): { factio
 
 interface Soldier {
   id: string;
+  /** Diagnostika A/B (perf.ab noanim): póza už nastavená, dál se neanimuje. */
+  frozen?: boolean;
   /** Měkký stín pod vojákem v interiéru (tam se slunce ani stínová mapa nepočítá). */
   blob: THREE.Mesh;
   patch: THREE.Mesh;
@@ -285,6 +288,8 @@ export class SoldierPool {
       s.acc += dt;
       const hz = this.fullRate || this.lastVisible <= FULL_RATE_UNDER ? 0 : LOD_HZ[lod];
       if (hz && s.acc < 1 / hz) continue;
+      if (perf.ab.has('noanim') && s.frozen) continue;
+      s.frozen = true;
       const step = s.acc;
       s.acc = 0;
       const ps = p.state;

@@ -1,3 +1,4 @@
+import { perf } from './runtime/perf';
 import * as THREE from 'three';
 import { CAMERA, vFovFromH16x9 } from '../shared/config/camera';
 import { MOVEMENT, toDeg } from '../shared/config/movement';
@@ -264,6 +265,9 @@ export class App {
     if (new URLSearchParams(location.search).has('editor')) this.openEditor();
     requestAnimationFrame(this.loop);
     (window as unknown as Record<string, unknown>).__pf = this;
+    perf.attach(r);
+    if (new URLSearchParams(location.search).has('perf')) perf.enable();
+    if (perf.ab.has('noshadow')) r.shadowMap.enabled = false;
   }
 
   streetTemplate() {
@@ -1686,6 +1690,9 @@ export class App {
 
   // ---------------- smyčka ----------------
 
+  /** Diagnostika výkonu (`?perf`, viz runtime/perf.ts). */
+  readonly perf = perf;
+
   private last = performance.now();
   private frameTimes: number[] = [];
   private devT = 0;
@@ -1694,7 +1701,7 @@ export class App {
     const vp = $('#viewport');
     const w = Math.max(1, vp.clientWidth), h = Math.max(1, vp.clientHeight);
     const dyn = this.session && this.settings.dynamicRes ? this.dynRes.scale : 1;
-    const dpr = Math.min(window.devicePixelRatio || 1, this.quality.maxDpr) * this.quality.renderScale * dyn;
+    const dpr = Math.min(window.devicePixelRatio || 1, this.quality.maxDpr) * this.quality.renderScale * dyn * (perf.ab.has('half') ? 0.5 : 1);
     this.renderer.setPixelRatio(dpr);
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
@@ -1714,6 +1721,7 @@ export class App {
   }
 
   private loop = (now: number) => {
+    perf.frameBegin(now);
     const dt = Math.min(0.25, (now - this.last) / 1000);
     this.last = now;
     // Hlavní menu je neprůhledné: 3D scéna se pod ním nekreslí (žádná práce GPU navíc).
@@ -1725,9 +1733,11 @@ export class App {
     sharedUniforms.uTime.value = performance.now() / 1000;
     if (this.session) {
       this.session.update(dt);
+      perf.begin('ui');
       if (this.teamUi) this.teamUi.update(this.session.game.driver.local(), this.session.game.driver.remotes());
       this.renderScoreboard(dt);
       this.updateLockPrompt();
+      perf.end('ui');
     } else {
       // Náhledy katalogu: po dvou na snímek, jen v editoru (vykreslí se do rohu, scéna je přepíše).
       if (this.thumbs?.pending) this.thumbs.pump(this.renderer, this.world, 2);
@@ -1738,13 +1748,20 @@ export class App {
         this.renderUI();
       }
     }
+    perf.begin('env');
     this.updateFlags(dt);
     this.env.update(this.camera.position, dt);
-    if (this.grass) {
+    perf.end('env');
+    perf.begin('grass');
+    if (this.grass && perf.ab.has('nograss')) this.grass.mesh.visible = false;
+    else if (this.grass) {
       this.grass.mesh.visible = !!this.session;
       if (this.session) this.grass.update(this.camera.position, performance.now() / 1000);
     }
+    perf.end('grass');
+    perf.renderBegin();
     this.post.render(dt);
+    perf.renderEnd();
     this.adaptResolution(dt);
     this.frameTimes.push(dt * 1000);
     if (this.frameTimes.length > 300) this.frameTimes.shift();
@@ -1753,6 +1770,7 @@ export class App {
       this.devT = 0;
       this.renderDev();
     }
+    perf.frameEnd();
     requestAnimationFrame(this.loop);
   };
 

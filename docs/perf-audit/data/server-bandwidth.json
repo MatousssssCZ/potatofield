@@ -1,0 +1,219 @@
+[
+  {
+    "label": "16 fight – rozpad přenosu",
+    "date": "2026-11-23T08:48:17.686Z",
+    "machine": {
+      "cpu": "Intel(R) Xeon(R) Processor @ 2.30GHz",
+      "cores": 4,
+      "node": "v22.23.4"
+    },
+    "config": {
+      "bots": 16,
+      "mode": "fight",
+      "warmupS": 15,
+      "measuredS": 30,
+      "tickHz": 60,
+      "snapshotHz": 30,
+      "cullEnemies": true,
+      "map": "Referenční ulice"
+    },
+    "players": 12,
+    "aliveAvg": 16,
+    "cpuCorePct": 21.1,
+    "eventLoopDelayMs": {
+      "p50": 5.13,
+      "p99": 10.41,
+      "max": 16.74
+    },
+    "rssMB": {
+      "start": 201,
+      "end": 204
+    },
+    "seconds": 30,
+    "ticks": 1800,
+    "tick": {
+      "mean": 2.602,
+      "p50": 2.106,
+      "p95": 5.961,
+      "p99": 8.314,
+      "max": 12.256,
+      "over16_7": 0,
+      "over8": 25
+    },
+    "phases": {
+      "inputs": {
+        "meanPerTick": 0.0091,
+        "p99": 0.031,
+        "max": 0.069,
+        "msPerSec": 0.544
+      },
+      "sim": {
+        "meanPerTick": 1.4266,
+        "p99": 2.698,
+        "max": 6.03,
+        "msPerSec": 85.59
+      },
+      "events": {
+        "meanPerTick": 0.0719,
+        "p99": 0.334,
+        "max": 1.885,
+        "msPerSec": 4.316
+      },
+      "team": {
+        "meanPerTick": 0.0034,
+        "p99": 0.009,
+        "max": 0.059,
+        "msPerSec": 0.202
+      },
+      "snapshots": {
+        "meanPerTick": 0.5997,
+        "p99": 3.19,
+        "max": 8.067,
+        "msPerSec": 35.982
+      },
+      "visibility": {
+        "meanPerTick": 0.4904,
+        "p99": 5.891,
+        "max": 8.687,
+        "msPerSec": 29.422
+      }
+    },
+    "inbound": {
+      "msgsPerSec": 1007.4,
+      "bytesPerSec": 140293,
+      "handleMsPerSec": 5.573
+    },
+    "outbound": {
+      "msgsPerSec": 843.1,
+      "bytesPerSecByType": {
+        "events": 128006,
+        "snap": 987685,
+        "pong": 763
+      }
+    },
+    "outKiBps": 1137.1,
+    "outKiBpsPerClient": 71.07,
+    "game": {
+      "shotsPerSec": 19.4,
+      "hitsPerSec": 0.23,
+      "impactsPerSec": 17.6
+    },
+    "botSide": {
+      "bots": 16,
+      "mode": "fight",
+      "seconds": 48,
+      "bytesInPerBotPerSec": 71644,
+      "wireInPerBotPerSec": 71860,
+      "alive": 16
+    }
+  },
+  {
+    "label": "64 fight – rozpad přenosu",
+    "date": "2026-11-23T08:49:08.711Z",
+    "machine": {
+      "cpu": "Intel(R) Xeon(R) Processor @ 2.30GHz",
+      "cores": 4,
+      "node": "v22.23.4"
+    },
+    "config": {
+      "bots": 64,
+      "mode": "fight",
+      "warmupS": 15,
+      "measuredS": 30,
+      "tickHz": 60,
+      "snapshotHz": 30,
+      "cullEnemies": true,
+      "map": "Referenční ulice"
+    },
+    "players": 64,
+    "aliveAvg": 51.7,
+    "cpuCorePct": 81.9,
+    "eventLoopDelayMs": {
+      "p50": 5.73,
+      "p99": 75.43,
+      "max": 164.23
+    },
+    "rssMB": {
+      "start": 304,
+      "end": 319
+    },
+    "seconds": 30,
+    "ticks": 1787,
+    "tick": {
+      "mean": 12.546,
+      "p50": 7.625,
+      "p95": 45.805,
+      "p99": 65.883,
+      "max": 124.017,
+      "over16_7": 317,
+      "over8": 870
+    },
+    "phases": {
+      "inputs": {
+        "meanPerTick": 0.0166,
+        "p99": 0.113,
+        "max": 0.239,
+        "msPerSec": 0.991
+      },
+      "sim": {
+        "meanPerTick": 3.636,
+        "p99": 7.621,
+        "max": 13.986,
+        "msPerSec": 216.435
+      },
+      "events": {
+        "meanPerTick": 0.4378,
+        "p99": 1.335,
+        "max": 5.382,
+        "msPerSec": 26.058
+      },
+      "team": {
+        "meanPerTick": 0.0033,
+        "p99": 0.013,
+        "max": 0.054,
+        "msPerSec": 0.197
+      },
+      "snapshots": {
+        "meanPerTick": 3.1445,
+        "p99": 13.27,
+        "max": 30.272,
+        "msPerSec": 187.178
+      },
+      "visibility": {
+        "meanPerTick": 5.3067,
+        "p99": 78.456,
+        "max": 108.686,
+        "msPerSec": 315.882
+      }
+    },
+    "inbound": {
+      "msgsPerSec": 3262.7,
+      "bytesPerSec": 446893,
+      "handleMsPerSec": 14.479
+    },
+    "outbound": {
+      "msgsPerSec": 4812.6,
+      "bytesPerSecByType": {
+        "events": 1811773,
+        "snap": 13185311,
+        "pong": 2958,
+        "reject": 2044
+      }
+    },
+    "outKiBps": 13510.9,
+    "outKiBpsPerClient": 211.11,
+    "game": {
+      "shotsPerSec": 73.5,
+      "hitsPerSec": 3.77,
+      "impactsPerSec": 65.5
+    },
+    "botSide": {
+      "bots": 64,
+      "mode": "fight",
+      "seconds": 48,
+      "bytesInPerBotPerSec": 226228,
+      "wireInPerBotPerSec": 226528,
+      "alive": 47
+    }
+  }
+]

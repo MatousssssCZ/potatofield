@@ -45,6 +45,8 @@ export interface ServerOptions {
   /** Skrývat nepřátele bez přímé viditelnosti (obrana proti wallhacku; výchozí ano). */
   cullEnemies?: boolean;
   log?: (s: string) => void;
+  /** Měření fází ticku a zpracování zpráv (audit výkonu, `profile()`); výchozí vypnuto. */
+  profile?: boolean;
 }
 
 interface Client {
@@ -101,6 +103,17 @@ export class GameServer {
   private snapCount = 0;
   private remoteCache: Map<string, RemoteTuple> | null = null;
   private tickTimes: number[] = [];
+  /** Fáze ticku (ms) při `opts.profile`: kruhová pole posledních 3600 ticků. */
+  private prof: { phases: Record<string, number[]>; inMs: number; inMsgs: number; inBytes: number; outMsgs: number; outByType: Record<string, number>; t0: number } | null = null;
+  private profMark(phase: string, since: number) {
+    const now = performance.now();
+    if (this.prof) {
+      const a = (this.prof.phases[phase] ??= []);
+      a.push(now - since);
+      if (a.length > 3600) a.shift();
+    }
+    return now;
+  }
   private bytesWindow: Array<[number, number]> = [];
   private msgsWindow: number[] = [];
   readonly generators: Record<string, number>;
@@ -278,6 +291,10 @@ export class GameServer {
       if (isBinary) return this.reject(c, 'zpráva', 'binární zprávy nejsou podporovány');
       const raw = data.toString();
       const now = performance.now();
+      if (this.prof) {
+        this.prof.inMsgs++;
+        this.prof.inBytes += raw.length;
+      }
       c.msgTimes = c.msgTimes.filter((t) => now - t < 1000);
       c.msgTimes.push(now);
       this.msgsWindow.push(now);
@@ -289,6 +306,7 @@ export class GameServer {
         return this.reject(c, 'zpráva', 'neplatná nebo nepodporovaná zpráva');
       }
       this.onMessage(c, m);
+      if (this.prof) this.prof.inMs += performance.now() - now;
     });
     ws.on('close', () => this.disconnect(c));
     ws.on('error', () => this.disconnect(c));
@@ -307,6 +325,10 @@ export class GameServer {
     if (c.ws.readyState !== 1) return;
     const s = JSON.stringify(m);
     c.bytesOut += s.length;
+    if (this.prof) {
+      this.prof.outMsgs++;
+      this.prof.outByType[m.t] = (this.prof.outByType[m.t] ?? 0) + s.length;
+    }
     this.bytesWindow.push([performance.now(), s.length]);
     c.ws.send(s);
   }
@@ -599,12 +621,15 @@ export class GameServer {
       }
       // Timeout: žádný vstup → neutrální (server zruší střelbu i sprint).
     }
+    let tp = this.profMark('inputs', t0);
     this.sim.step(inputs);
+    tp = this.profMark('sim', tp);
     this.roundTick();
     if (this.vote && this.sim.tick % 30 === 0) this.voteTick();
     const events = this.sim.events;
     this.sim.events = [];
     if (events.length) this.distributeEvents(events);
+    tp = this.profMark('events', tp);
     this.team.expireContacts(this.sim.time);
     this.commandTick();
     if (this.sim.conquest) {
@@ -614,16 +639,21 @@ export class GameServer {
         return pl?.alive ? pl.state.pos : null;
       });
     }
+    tp = this.profMark('team', tp);
     this.snapAcc += 1 / 60;
     if (this.snapAcc >= 1 / NET.snapshotHz - 1e-9) {
       this.snapAcc -= 1 / NET.snapshotHz;
       this.snapCount++;
       // Vzdálení hráči se kódují jednou pro všechny příjemce.
-      if (this.snapCount % 3 === 0) this.updateVisibility();
+      if (this.snapCount % 3 === 0) {
+        this.updateVisibility();
+        tp = this.profMark('visibility', tp);
+      }
       if (this.snapCount % 60 === 0) this.pingClients();
       this.remoteCache = new Map([...this.sim.players.values()].map((p) => [p.id, encodeRemote(this.remote(p))]));
       for (const c of this.clients.values()) if (c.player) this.sendSnapshot(c);
       this.remoteCache = null;
+      tp = this.profMark('snapshots', tp);
     }
     this.tickTimes.push(performance.now() - t0);
     if (this.tickTimes.length > 3600) this.tickTimes.shift();
@@ -1012,6 +1042,33 @@ export class GameServer {
   private revealKiller(victim: string, killer: string | null) {
     const c = this.clients.get(victim);
     if (c && killer && killer !== victim) c.visible.set(killer, this.sim.time + 8);
+  }
+
+  /** Souhrn měření fází (jen s `opts.profile`); `reset` začne nové okno. */
+  profile(reset = false) {
+    if (!this.opts.profile) return null;
+    if (!this.prof || reset) {
+      this.prof = { phases: {}, inMs: 0, inMsgs: 0, inBytes: 0, outMsgs: 0, outByType: {}, t0: performance.now() };
+      this.tickTimes = [];
+      if (reset) return null;
+    }
+    const q = (a: number[], p: number) => {
+      const s = [...a].sort((x, y) => x - y);
+      return +(s[Math.min(s.length - 1, Math.floor(s.length * p))] ?? 0).toFixed(3);
+    };
+    const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
+    const secs = (performance.now() - this.prof.t0) / 1000;
+    const phases: Record<string, { meanPerTick: number; p99: number; max: number; msPerSec: number }> = {};
+    for (const [k, a] of Object.entries(this.prof.phases)) phases[k] = { meanPerTick: +(sum(a) / Math.max(1, this.tickTimes.length)).toFixed(4), p99: q(a, 0.99), max: q(a, 1), msPerSec: +(sum(a) / secs).toFixed(3) };
+    const tt = this.tickTimes;
+    return {
+      seconds: +secs.toFixed(1),
+      ticks: tt.length,
+      tick: { mean: +(sum(tt) / Math.max(1, tt.length)).toFixed(3), p50: q(tt, 0.5), p95: q(tt, 0.95), p99: q(tt, 0.99), max: q(tt, 1), over16_7: tt.filter((v) => v > 1000 / 60).length, over8: tt.filter((v) => v > 8).length },
+      phases,
+      inbound: { msgsPerSec: +(this.prof.inMsgs / secs).toFixed(1), bytesPerSec: Math.round(this.prof.inBytes / secs), handleMsPerSec: +(this.prof.inMs / secs).toFixed(3) },
+      outbound: { msgsPerSec: +(this.prof.outMsgs / secs).toFixed(1), bytesPerSecByType: Object.fromEntries(Object.entries(this.prof.outByType).map(([k, v]) => [k, Math.round(v / secs)])) },
+    };
   }
 
   stats(): ServerStats {

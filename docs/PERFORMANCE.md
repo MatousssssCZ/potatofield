@@ -1,5 +1,8 @@
 # Výkonový report
 
+> **Novější audit (23. 11. 2026):** [docs/perf-audit/README.md](perf-audit/README.md) – měření serveru 8–64 botů, klientské logiky,
+> vykreslování, úniků a plán oprav; postup měření v [docs/perf-audit/MEASURING.md](perf-audit/MEASURING.md).
+
 ## Server – změřeno (zátěžový test `npm run loadtest -- --bots 16 --seconds 60`)
 
 Stroj: cloudové VM, Intel Xeon @ 2,80 GHz, 4 jádra, Node 22, Linux. Server i 16 botů ve stejném procesu.
